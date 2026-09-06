@@ -31,6 +31,7 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app
+      - ./CSW24.txt:/app/data/CSW24.txt:ro
 
   postgres:
     image: postgres:16

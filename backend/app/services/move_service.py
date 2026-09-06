@@ -9,8 +9,12 @@ from app.game.rules import RuleEngine
 from app.game.game_end import GameEndService
 from app.game.tiles import TileService
 from app.schemas.move import PlacedTileInput, ValidateMoveResponse, CommitMoveResponse, WordFormed
+from app.game.board import Board
+import random
 
 class MoveService:
+
+    CARD_TYPES = ("DRAW_TILE", "HEAL", "STEAL_TILE", "SPY_SWAP", "DESTROY_TILE", "BAN_LETTER")
 
     @classmethod
     def _verify_tile_ownership(cls, player_rack: list[dict[str, Any]], placed_tiles: list[PlacedTileInput]) -> tuple[bool, str | None]:
@@ -55,6 +59,9 @@ class MoveService:
         owns_tiles, err_ownership = cls._verify_tile_ownership(player.rack, placed_tiles)
         if not owns_tiles:
             return ValidateMoveResponse(valid=False, reason=err_ownership)
+        if game.banned_letter and game.banned_until_turn and game.turn_number <= game.banned_until_turn:
+            if any(tile.letter.upper() == game.banned_letter and player.id != game.banned_by_player_id for tile in placed_tiles):
+                return ValidateMoveResponse(valid=False, reason=f"Letter '{game.banned_letter}' is banned this turn")
 
         # Run authoritative rule engine
         placed_dicts = [pt.model_dump() for pt in placed_tiles]
@@ -106,6 +113,9 @@ class MoveService:
         owns_tiles, err_ownership = cls._verify_tile_ownership(player.rack, placed_tiles)
         if not owns_tiles:
             raise HTTPException(status_code=400, detail=err_ownership)
+        if game.banned_letter and game.banned_until_turn and game.turn_number <= game.banned_until_turn:
+            if any(tile.letter.upper() == game.banned_letter and player.id != game.banned_by_player_id for tile in placed_tiles):
+                raise HTTPException(status_code=400, detail=f"Letter '{game.banned_letter}' is banned this turn")
 
         placed_dicts = [pt.model_dump() for pt in placed_tiles]
         is_first = len(game.board_state) == 0
@@ -152,6 +162,12 @@ class MoveService:
         # Award score
         player.score += score
 
+        if any((pt.row, pt.col) in Board.SECRET_POWER for pt in placed_tiles):
+            cards = list(player.cards or [])
+            if len(cards) < 3:
+                cards.append(random.choice(cls.CARD_TYPES))
+                player.cards = cards
+
         words_formed = [
             WordFormed(word=w.word, score=sum(v for _, v, _ in w.letters_with_vals), cells=w.cells)
             for w in words
@@ -174,6 +190,12 @@ class MoveService:
         # Advance turn
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
         all_players = (await db.execute(stmt_players)).scalars().all()
+
+        # Score is authoritative damage to every other living player.
+        for opponent in all_players:
+            if opponent.id != player.id:
+                opponent.hp = max(0, opponent.hp - score)
+
         current_idx = next(i for i, p in enumerate(all_players) if p.id == player_id)
         next_idx = (current_idx + 1) % len(all_players)
         next_player_id = all_players[next_idx].id
@@ -183,7 +205,7 @@ class MoveService:
         game.consecutive_passes = 0
 
         # Check game end
-        players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "rack": p.rack} for p in all_players]
+        players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in all_players]
         is_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
 
         if is_over:

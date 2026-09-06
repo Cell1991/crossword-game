@@ -1,8 +1,11 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { sessionStore, getGameState, validateMove, commitMove, passTurn } from '../../../lib/api';
+import { sessionStore, getGameState, validateMove, commitMove, passTurn, StoredSession } from '../../../lib/api';
 import { useGameSocket } from '../../../hooks/useGameSocket';
 import { useBoardCamera } from '../../../hooks/useBoardCamera';
 import { BoardCanvas } from '../../../components/board/BoardCanvas';
@@ -23,7 +26,8 @@ export default function GamePage() {
   const gameId = params.gameId as string;
 
   // Session
-  const [session] = useState(() => sessionStore.getLast());
+  const [session, setSession] = useState<StoredSession | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   // Game state
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -35,6 +39,9 @@ export default function GamePage() {
   const [temporaryTiles, setTemporaryTiles] = useState<PlacedTile[]>([]);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [estimatedScore, setEstimatedScore] = useState<number>(0);
+  const [validationState, setValidationState] = useState<boolean | null>(null);
+  const [validationReason, setValidationReason] = useState('');
+  const [remotePlacements, setRemotePlacements] = useState<{ row: number; col: number }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastMoveInfo, setLastMoveInfo] = useState<string | null>(null);
 
@@ -62,12 +69,18 @@ export default function GamePage() {
   }, [gameId, myToken]);
 
   useEffect(() => {
+    setSession(sessionStore.get(gameId));
+    setHydrated(true);
+  }, [gameId]);
+
+  useEffect(() => {
+    if (!hydrated) return;
     if (!session) {
       router.replace('/');
       return;
     }
     loadGameState();
-  }, [session, router, loadGameState]);
+  }, [hydrated, session, router, loadGameState]);
 
   // WebSocket events
   const handleSocketEvent = useCallback((event: WebSocketEvent) => {
@@ -83,6 +96,11 @@ export default function GamePage() {
           setTimeout(() => setLastMoveInfo(null), 4000);
         }
         break;
+      case 'PLACEMENT_PREVIEW':
+        if (event.payload?.playerId !== myPlayerId) {
+          setRemotePlacements(event.payload?.tiles ?? []);
+        }
+        break;
       case 'GAME_ENDED':
         setGameState(prev => prev ? { ...prev, status: 'FINISHED' } : prev);
         break;
@@ -93,9 +111,9 @@ export default function GamePage() {
         loadGameState();
         break;
     }
-  }, [loadGameState]);
+  }, [loadGameState, myPlayerId]);
 
-  const { isConnected } = useGameSocket({
+  const { isConnected, sendMessage } = useGameSocket({
     gameId,
     token: myToken,
     onEvent: handleSocketEvent,
@@ -106,16 +124,24 @@ export default function GamePage() {
   useEffect(() => {
     if (temporaryTiles.length === 0) {
       setEstimatedScore(0);
+      setValidationState(null);
+      setValidationReason('');
+      sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: [], valid: null });
       return;
     }
+    sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: temporaryTiles, valid: null });
     if (validateTimeout.current) clearTimeout(validateTimeout.current);
     validateTimeout.current = setTimeout(async () => {
       if (!myPlayerId) return;
       const result = await validateMove(gameId, myPlayerId, temporaryTiles);
       setEstimatedScore(result.valid ? result.estimated_score : 0);
+      setValidationState(result.valid);
+      setValidationReason(result.reason ?? '');
+      setError(result.valid ? '' : (result.reason ?? 'Invalid move'));
+      sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: temporaryTiles, valid: result.valid });
     }, 400);
     return () => { if (validateTimeout.current) clearTimeout(validateTimeout.current); };
-  }, [temporaryTiles, gameId, myPlayerId]);
+  }, [temporaryTiles, gameId, myPlayerId, sendMessage]);
 
   // Handle cell click on board
   const handleCellClick = useCallback((row: number, col: number) => {
@@ -157,6 +183,10 @@ export default function GamePage() {
 
   const handleConfirmMove = async () => {
     if (!myPlayerId || temporaryTiles.length === 0) return;
+    if (validationState !== true) {
+      setError(validationReason || 'Fix the invalid word before confirming');
+      return;
+    }
     setIsSubmitting(true);
     try {
       await commitMove(gameId, myPlayerId, temporaryTiles);
@@ -186,15 +216,9 @@ export default function GamePage() {
     }
   };
 
-  if (!session) return null;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-white text-xl animate-pulse">Loading game...</div>
-      </div>
-    );
-  }
+  // Keep the pre-hydration and pre-fetch output empty on both server and client.
+  // The game UI is rendered only after the browser session and game snapshot exist.
+  if (!hydrated || !session || loading || !gameState) return null;
 
   if (gameState?.status === 'FINISHED') {
     const sorted = [...(gameState.players ?? [])].sort((a, b) => b.score - a.score);
@@ -274,6 +298,8 @@ export default function GamePage() {
           <BoardCanvas
             boardState={boardState}
             temporaryTiles={temporaryTiles}
+            remotePlacements={remotePlacements}
+            temporaryTilesValid={validationState}
             selectedCell={selectedCell}
             onCellClick={handleCellClick}
             isMyTurn={isMyTurn}

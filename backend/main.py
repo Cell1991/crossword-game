@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.database.session import init_db
-from app.api import rooms, games, moves
+from app.api import rooms, games, moves, cards
 from app.websocket import handlers
 
 @asynccontextmanager
@@ -31,6 +31,7 @@ app.add_middleware(
 app.include_router(rooms.router, prefix=settings.API_V1_STR)
 app.include_router(games.router, prefix=settings.API_V1_STR)
 app.include_router(moves.router, prefix=settings.API_V1_STR)
+app.include_router(cards.router, prefix=settings.API_V1_STR)
 app.include_router(handlers.router)
 
 @app.get("/")

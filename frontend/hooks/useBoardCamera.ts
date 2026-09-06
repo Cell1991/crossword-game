@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 
 const BASE_CELL_SIZE = 40;
-const BOARD_SIZE = 63;
+const BOARD_SIZE = 15;
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 3.0;
 

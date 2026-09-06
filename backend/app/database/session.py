@@ -1,5 +1,6 @@
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy import inspect, text
 from sqlalchemy.pool import NullPool
 from app.core.config import settings
 from app.database.models import Base
@@ -26,9 +27,36 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 async def init_db():
-    """Create tables if they do not exist."""
+    """Create tables and add columns introduced after the initial schema."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(_upgrade_existing_schema)
+
+
+def _upgrade_existing_schema(connection):
+    """Apply small additive upgrades without destroying an existing game database."""
+    inspector = inspect(connection)
+    upgrades = {
+        "games": {
+            "banned_letter": "VARCHAR(1)",
+            "banned_until_turn": "INTEGER",
+            "banned_by_player_id": "VARCHAR(36)",
+        },
+        "game_players": {
+            "hp": "INTEGER DEFAULT 100 NOT NULL",
+            "cards": "JSON",
+            "banned_letter": "VARCHAR(1)",
+            "banned_until_turn": "INTEGER",
+        },
+    }
+
+    for table_name, columns in upgrades.items():
+        existing = {column["name"] for column in inspector.get_columns(table_name)}
+        for column_name, column_definition in columns.items():
+            if column_name not in existing:
+                connection.execute(text(
+                    f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_definition}"
+                ))
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Dependency for obtaining async DB session."""

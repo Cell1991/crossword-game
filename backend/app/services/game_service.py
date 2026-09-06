@@ -36,10 +36,12 @@ class GameService:
                 display_name=p.display_name,
                 is_host=p.is_host,
                 score=p.score,
+                hp=p.hp,
                 turn_order=p.turn_order,
                 connection_status=p.connection_status,
                 rack_count=len(p.rack),
                 rack=p_rack
+                ,cards=p.cards if requesting_player_id and p.id == requesting_player_id else None
             ))
 
         return GameStateResponse(
@@ -91,7 +93,7 @@ class GameService:
         db.add(pass_move)
 
         # Check end condition
-        players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "rack": p.rack} for p in players]
+        players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in players]
         is_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
 
         if is_over:

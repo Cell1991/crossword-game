@@ -7,19 +7,23 @@ import { useBoardCamera } from '../../hooks/useBoardCamera';
 interface BoardCanvasProps {
   boardState: Record<string, BoardCell>;
   temporaryTiles: PlacedTile[];
+  remotePlacements: { row: number; col: number }[];
+  temporaryTilesValid: boolean | null;
   selectedCell: { row: number; col: number } | null;
   onCellClick: (row: number, col: number) => void;
   isMyTurn: boolean;
   camera: ReturnType<typeof useBoardCamera>;
 }
 
-const BOARD_SIZE = 63;
-const CENTER_ROW = 31;
-const CENTER_COL = 31;
+const BOARD_SIZE = 15;
+const CENTER_ROW = 7;
+const CENTER_COL = 7;
 
 export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   boardState,
   temporaryTiles,
+  remotePlacements,
+  temporaryTilesValid,
   selectedCell,
   onCellClick,
   isMyTurn,
@@ -101,6 +105,25 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
 
         // Is Center cell
         const isCenter = r === CENTER_ROW && c === CENTER_COL;
+        const isTriple = (r === 0 && c === 7) || (r === 1 && (c === 1 || c === 13)) ||
+          (r === 7 && (c === 0 || c === 14)) || (r === 13 && (c === 1 || c === 13)) ||
+          (r === 14 && c === 7);
+        const isDouble = (r === 2 && (c === 5 || c === 9)) || (r === 4 && c === 7) ||
+          (r === 5 && (c === 2 || c === 12)) || (r === 7 && (c === 4 || c === 10)) ||
+          (r === 9 && (c === 2 || c === 12)) || (r === 10 && c === 7) ||
+          (r === 12 && (c === 5 || c === 9));
+        const isPower = (r === 2 && (c === 2 || c === 12)) || (r === 4 && (c === 4 || c === 10)) ||
+          (r === 10 && (c === 4 || c === 10)) || (r === 12 && (c === 2 || c === 12));
+        if (isTriple) {
+          ctx.fillStyle = '#7f1d1d';
+          ctx.fillRect(x, y, cellSize, cellSize);
+        } else if (isDouble) {
+          ctx.fillStyle = '#854d0e';
+          ctx.fillRect(x, y, cellSize, cellSize);
+        } else if (isPower) {
+          ctx.fillStyle = '#075985';
+          ctx.fillRect(x, y, cellSize, cellSize);
+        }
         if (isCenter) {
           ctx.fillStyle = '#1e1b4b'; // Soft indigo center
           ctx.fillRect(x, y, cellSize, cellSize);
@@ -118,6 +141,12 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);
+        } else if ((isTriple || isDouble || isPower) && cellSize >= 16) {
+          ctx.fillStyle = '#f8fafc';
+          ctx.font = `${Math.max(8, cellSize * 0.28)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(isPower ? '⚡' : isTriple ? '3L' : '2L', x + cellSize / 2, y + cellSize / 2);
         }
       }
     }
@@ -134,6 +163,12 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     for (const pt of temporaryTiles) {
       if (pt.row >= minRow && pt.row <= maxRow && pt.col >= minCol && pt.col <= maxCol) {
         drawTile(ctx, pt.row, pt.col, pt.letter, pt.value, true);
+      }
+    }
+
+    for (const placement of remotePlacements) {
+      if (placement.row >= minRow && placement.row <= maxRow && placement.col >= minCol && placement.col <= maxCol) {
+        drawTile(ctx, placement.row, placement.col, '', 0, true, false, true);
       }
     }
 
@@ -160,7 +195,9 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     col: number,
     letter: string,
     value: number,
-    isTemporary: boolean
+    isTemporary: boolean,
+    showLetter = true,
+    isRemote = false
   ) => {
     const x = offset.x + col * cellSize;
     const y = offset.y + row * cellSize;
@@ -174,7 +211,11 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     ctx.fill();
 
     // Tile Body
-    ctx.fillStyle = isTemporary ? '#fef08a' : '#fef3c7'; // Amber yellow for temporary, Warm ivory for committed
+    ctx.fillStyle = isRemote
+      ? '#cbd5e1'
+      : isTemporary
+      ? (temporaryTilesValid === false ? '#fecaca' : temporaryTilesValid === true ? '#bbf7d0' : '#fef08a')
+      : '#fef3c7';
     drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
     ctx.fill();
 
@@ -184,7 +225,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     ctx.stroke();
 
     // Tile Letter
-    if (cellSize >= 12) {
+    if (showLetter && cellSize >= 12) {
       ctx.fillStyle = '#1c1917';
       ctx.font = `bold ${Math.max(10, cellSize * 0.52)}px 'Geist', 'Segoe UI', sans-serif`;
       ctx.textAlign = 'center';

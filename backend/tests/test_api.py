@@ -105,7 +105,7 @@ async def test_full_game_api_flow():
         res = await client.post(
             f"/api/games/{game_id}/moves/validate",
             headers={"X-Player-ID": bob_id},
-            json={"placed_tiles": [{"row": 31, "col": 31, "tile_id": "fake", "letter": "Z", "value": 10}]}
+            json={"placed_tiles": [{"row": 7, "col": 7, "tile_id": "fake", "letter": "Z", "value": 10}]}
         )
         assert res.status_code == 200
         # If 'Z' is not in rack, valid is False

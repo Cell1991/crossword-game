@@ -2,8 +2,8 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 class PlacedTileInput(BaseModel):
-    row: int = Field(..., ge=0, le=62)
-    col: int = Field(..., ge=0, le=62)
+    row: int = Field(..., ge=0, le=14)
+    col: int = Field(..., ge=0, le=14)
     tile_id: str
     letter: str = Field(..., min_length=1, max_length=1)
     value: int = Field(..., ge=0)

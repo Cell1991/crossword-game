@@ -75,6 +75,12 @@ export function useGameSocket({ gameId, token, onEvent }: UseGameSocketProps) {
     };
   }, [gameId, token]);
 
+  const sendMessage = useCallback((message: Record<string, unknown>) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify(message));
+    }
+  }, []);
+
   useEffect(() => {
     connect();
 
@@ -87,5 +93,5 @@ export function useGameSocket({ gameId, token, onEvent }: UseGameSocketProps) {
     };
   }, [connect]);
 
-  return { isConnected, connectionError };
+  return { isConnected, connectionError, sendMessage };
 }

@@ -26,10 +26,12 @@ export interface Player {
   display_name: string;
   is_host: boolean;
   score: number;
+  hp: number;
   turn_order: number;
   connection_status: 'ONLINE' | 'DISCONNECTED' | 'OFFLINE';
   rack_count: number;
   rack?: Tile[];
+  cards?: string[] | null;
 }
 
 export interface GameState {
@@ -104,7 +106,8 @@ export type WebSocketEventType =
   | 'TURN_PASSED'
   | 'GAME_STATE_SYNC'
   | 'GAME_ENDED'
-  | 'ERROR';
+  | 'ERROR'
+  | 'PLACEMENT_PREVIEW';
 
 export interface WebSocketEvent {
   type: WebSocketEventType;

@@ -8,6 +8,21 @@ import {
   CommitMoveResponse,
 } from './types';
 
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (typeof error === 'string') return error;
+  if (Array.isArray(error)) {
+    return error.map((item) => {
+      if (typeof item === 'string') return item;
+      if (item && typeof item === 'object' && 'msg' in item) return String(item.msg);
+      return JSON.stringify(item);
+    }).join('; ');
+  }
+  if (error && typeof error === 'object' && 'detail' in error) {
+    return getErrorMessage(error.detail, fallback);
+  }
+  return fallback;
+}
+
 export const getApiBase = () => {
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
   if (typeof window !== 'undefined') {
@@ -129,7 +144,7 @@ export async function validateMove(
     const err = await res.json().catch(() => ({}));
     return {
       valid: false,
-      reason: err.detail || 'Move validation failed',
+      reason: getErrorMessage(err, 'Move validation failed'),
       words_formed: [],
       estimated_score: 0,
     };
@@ -152,7 +167,7 @@ export async function commitMove(
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Failed to commit move');
+    throw new Error(getErrorMessage(err, 'Failed to commit move'));
   }
   return res.json();
 }

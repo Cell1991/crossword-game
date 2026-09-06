@@ -9,6 +9,7 @@ class DictionaryService:
         if custom_words:
             self._words.update(w.upper().strip() for w in custom_words)
         
+        wordlist_files: list[str] = []
         if not wordlist_file:
             env_path = os.getenv("WORDLIST_PATH")
             candidates = [
@@ -19,12 +20,13 @@ class DictionaryService:
                 os.path.join(os.path.dirname(__file__), "..", "..", "..", "wordlist.txt"),
             ]
             for candidate in candidates:
-                if candidate and os.path.exists(candidate):
-                    wordlist_file = candidate
-                    break
+                if candidate and os.path.exists(candidate) and candidate not in wordlist_files:
+                    wordlist_files.append(candidate)
+        else:
+            wordlist_files = [wordlist_file] if os.path.exists(wordlist_file) else []
 
-        if wordlist_file and os.path.exists(wordlist_file):
-            self.load_from_file(wordlist_file)
+        for path in wordlist_files:
+            self.load_from_file(path)
         if not self._words:
             self._load_default_wordlist()
 

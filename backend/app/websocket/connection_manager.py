@@ -36,4 +36,30 @@ class ConnectionManager:
             for p_id in dead_players:
                 self.disconnect(game_id, p_id)
 
+    async def broadcast_preview(self, game_id: str, owner_id: str, message: dict[str, Any]):
+        """Send a placement preview while hiding letters from every other player."""
+        if game_id not in self.active_connections:
+            return
+        dead_players = []
+        for player_id, connection in self.active_connections[game_id].items():
+            try:
+                outgoing = message
+                if player_id != owner_id:
+                    outgoing = {
+                        **message,
+                        "payload": {
+                            "playerId": owner_id,
+                            "tiles": [
+                                {"row": tile["row"], "col": tile["col"]}
+                                for tile in message["payload"].get("tiles", [])
+                            ],
+                            "valid": None,
+                        },
+                    }
+                await connection.send_text(json.dumps(outgoing))
+            except Exception:
+                dead_players.append(player_id)
+        for player_id in dead_players:
+            self.disconnect(game_id, player_id)
+
 manager = ConnectionManager()

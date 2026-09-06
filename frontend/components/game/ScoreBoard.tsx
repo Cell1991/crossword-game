@@ -39,7 +39,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
           return (
             <div
               key={player.id}
-              className={`flex items-center justify-between p-2 rounded-xl transition-all ${
+              className={`relative flex items-center justify-between p-2 pb-3 rounded-xl transition-all ${
                 isCurrent
                   ? 'bg-indigo-950/70 border border-indigo-500/50 shadow-sm'
                   : 'bg-slate-800/40 border border-slate-700/30'
@@ -51,7 +51,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                 </span>
                 <div className="flex items-center gap-1.5 truncate">
                   <span className={`text-sm truncate ${isMe ? 'font-bold text-amber-300' : 'font-medium'}`}>
-                    {player.display_name} {isMe && '(You)'}
+                    {player.display_name} {isMe && '(You)'} {player.hp <= 0 && '💀'}
                   </span>
                   {player.is_host && (
                     <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
@@ -68,6 +68,12 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                 ) : (
                   <WifiOff className="w-3 h-3 text-rose-400/80" />
                 )}
+              </div>
+              <div className="absolute left-9 right-2 bottom-1 h-1 rounded-full bg-slate-950/80 overflow-hidden">
+                <div
+                  className={`h-full ${player.hp <= 0 ? 'bg-slate-600' : 'bg-rose-500'}`}
+                  style={{ width: `${Math.max(0, Math.min(100, player.hp))}%` }}
+                />
               </div>
             </div>
           );

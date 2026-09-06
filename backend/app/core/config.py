@@ -24,9 +24,9 @@ class Settings(BaseModel):
     CORS_ORIGINS: list[str] = ["*"]
     
     # Configurable Game Engine Settings
-    BOARD_SIZE: int = 63
-    CENTER_ROW: int = 31
-    CENTER_COL: int = 31
+    BOARD_SIZE: int = 15
+    CENTER_ROW: int = 7
+    CENTER_COL: int = 7
     RACK_SIZE: int = 7
     MIN_PLAYERS: int = 1  # Allow solo play / testing
     MAX_PLAYERS: int = 6

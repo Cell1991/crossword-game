@@ -1,5 +1,6 @@
 from typing import Any
 from app.game.extractor import ExtractedWord
+from app.game.board import Board
 
 class ScoringService:
     """Configurable scoring engine for moves and words."""
@@ -12,6 +13,7 @@ class ScoringService:
         cls, 
         words: list[ExtractedWord], 
         placed_tiles_count: int,
+        placed_coords: set[tuple[int, int]] | None = None,
         apply_bingo: bool = True
     ) -> tuple[int, list[dict[str, Any]]]:
         """
@@ -24,7 +26,11 @@ class ScoringService:
         breakdown: list[dict[str, Any]] = []
 
         for w in words:
-            word_base_score = sum(val for _, val, _ in w.letters_with_vals)
+            word_base_score = 0
+            for index, (_, val, _) in enumerate(w.letters_with_vals):
+                row, col = w.cells[index]
+                multiplier = Board.multiplier_at(row, col) if placed_coords is None or (row, col) in placed_coords else 1
+                word_base_score += val * multiplier
             breakdown.append({
                 "word": w.word,
                 "base_score": word_base_score,

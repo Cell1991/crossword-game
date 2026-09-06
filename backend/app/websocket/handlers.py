@@ -43,6 +43,15 @@ async def websocket_endpoint(
                 # Handle client ping/pong heartbeat
                 if msg.get("type") == "PING":
                     await websocket.send_text(json.dumps({"type": "PONG"}))
+                elif msg.get("type") == EventType.PLACEMENT_PREVIEW:
+                    await manager.broadcast_preview(game_id, player_id, WebSocketEvent(
+                        type=EventType.PLACEMENT_PREVIEW,
+                        payload={
+                            "playerId": player_id,
+                            "tiles": msg.get("tiles", []),
+                            "valid": msg.get("valid"),
+                        },
+                    ).model_dump())
             except json.JSONDecodeError:
                 pass
     except WebSocketDisconnect:

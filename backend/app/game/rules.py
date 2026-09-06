@@ -106,6 +106,10 @@ class RuleEngine:
                 return False, f"Word '{w.word}' is not recognized in the dictionary", [], 0, []
 
         # 6. Authoritative score calculation
-        score, breakdown = ScoringService.calculate_move_score(words, len(placed_tiles))
+        score, breakdown = ScoringService.calculate_move_score(
+            words,
+            len(placed_tiles),
+            placed_coords=set(placed_coords),
+        )
 
         return True, None, words, score, breakdown

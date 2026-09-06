@@ -2,10 +2,23 @@ from typing import Any, Optional
 from app.core.config import settings
 
 class Board:
-    """Logical 63x63 Game Board with sparse cell storage."""
+    """Logical 15x15 game board with sparse cell storage."""
 
     SIZE = settings.BOARD_SIZE
     CENTER = (settings.CENTER_ROW, settings.CENTER_COL)
+    TRIPLE_LETTER = frozenset({
+        (0, 7), (1, 1), (1, 13), (7, 0),
+        (7, 14), (13, 1), (13, 13), (14, 7),
+    })
+    DOUBLE_LETTER = frozenset({
+        (2, 5), (2, 9), (4, 7), (5, 2),
+        (5, 12), (7, 4), (7, 10), (9, 2),
+        (9, 12), (10, 7), (12, 5), (12, 9),
+    })
+    SECRET_POWER = frozenset({
+        (2, 2), (2, 12), (4, 4), (4, 10),
+        (10, 4), (10, 10), (12, 2), (12, 12),
+    })
 
     def __init__(self, sparse_state: Optional[dict[str, Any]] = None):
         # sparse_state format: {"row_col": {"row": r, "col": c, "letter": "A", "value": 1, ...}}
@@ -22,6 +35,14 @@ class Board:
     @classmethod
     def is_center(cls, row: int, col: int) -> bool:
         return row == cls.CENTER[0] and col == cls.CENTER[1]
+
+    @classmethod
+    def multiplier_at(cls, row: int, col: int) -> int:
+        if (row, col) in cls.TRIPLE_LETTER:
+            return 3
+        if (row, col) in cls.DOUBLE_LETTER:
+            return 2
+        return 1
 
     def is_empty(self, row: int, col: int) -> bool:
         return self.key(row, col) not in self.cells

@@ -16,6 +16,11 @@ class GameEndService:
         Evaluate if the game has ended.
         Returns: (is_game_over, reason, winner_player_id)
         """
+        living_players = [p for p in players if p.get("hp", 100) > 0]
+        if len(players) > 1 and len(living_players) <= 1:
+            winner = living_players[0].get("id") if living_players else cls.determine_winner(players)
+            return True, "Game ended: only one player has HP remaining", winner
+
         # Rule 1: All players passed consecutively
         if consecutive_passes >= max_passes and len(players) > 0:
             winner = cls.determine_winner(players)
@@ -35,7 +40,7 @@ class GameEndService:
     def determine_winner(cls, players: list[dict[str, Any]]) -> str | None:
         if not players:
             return None
-        sorted_players = sorted(players, key=lambda p: p.get("score", 0), reverse=True)
+        sorted_players = sorted(players, key=lambda p: (p.get("hp", 100) > 0, p.get("score", 0)), reverse=True)
         return sorted_players[0].get("id")
 
     @classmethod
