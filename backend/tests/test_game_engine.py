@@ -128,3 +128,16 @@ def test_game_end_conditions():
     assert is_over
     assert winner == "p1"
     assert "consecutive passes" in reason
+
+
+def test_csw24_dictionary_loading():
+    dict_svc = DictionaryService()
+    # Ensure large dictionary loaded (> 100,000 words)
+    assert len(dict_svc._words) > 100000
+    # Spot-check Scrabble words from CSW24
+    assert dict_svc.is_valid_word("AARDVARK")
+    assert dict_svc.is_valid_word("ZYZZYVA")
+    assert dict_svc.is_valid_word("QI")
+    assert dict_svc.is_valid_word("ZA")
+    assert not dict_svc.is_valid_word("XYZABC123")
+

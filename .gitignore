@@ -47,3 +47,5 @@ __pycache__/
 backend/crossword.db
 crossword.db
 .pytest_cache/
+/CSW24.txt
+

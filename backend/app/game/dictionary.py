@@ -10,9 +10,18 @@ class DictionaryService:
             self._words.update(w.upper().strip() for w in custom_words)
         
         if not wordlist_file:
-            default_txt = os.path.join(os.path.dirname(__file__), "..", "..", "data", "wordlist.txt")
-            if os.path.exists(default_txt):
-                wordlist_file = default_txt
+            env_path = os.getenv("WORDLIST_PATH")
+            candidates = [
+                env_path,
+                os.path.join(os.path.dirname(__file__), "..", "..", "data", "wordlist.txt"),
+                os.path.join(os.path.dirname(__file__), "..", "..", "data", "CSW24.txt"),
+                os.path.join(os.path.dirname(__file__), "..", "..", "..", "CSW24.txt"),
+                os.path.join(os.path.dirname(__file__), "..", "..", "..", "wordlist.txt"),
+            ]
+            for candidate in candidates:
+                if candidate and os.path.exists(candidate):
+                    wordlist_file = candidate
+                    break
 
         if wordlist_file and os.path.exists(wordlist_file):
             self.load_from_file(wordlist_file)
@@ -20,7 +29,7 @@ class DictionaryService:
             self._load_default_wordlist()
 
     def load_from_file(self, file_path: str) -> None:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
             for line in f:
                 word = line.strip().upper()
                 if word and word.isalpha():
