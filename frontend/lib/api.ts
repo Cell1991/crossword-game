@@ -8,7 +8,23 @@ import {
   CommitMoveResponse,
 } from './types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+export const getApiBase = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== 'undefined') {
+    return `${window.location.protocol}//${window.location.hostname}:8000/api`;
+  }
+  return 'http://127.0.0.1:8000/api';
+};
+
+export const getWsBase = () => {
+  if (process.env.NEXT_PUBLIC_WS_URL) return process.env.NEXT_PUBLIC_WS_URL;
+  if (typeof window !== 'undefined') {
+    const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${wsProto}//${window.location.hostname}:8000`;
+  }
+  return 'ws://127.0.0.1:8000';
+};
+
 export const WS_BASE = process.env.NEXT_PUBLIC_WS_URL || 'ws://127.0.0.1:8000';
 
 export interface StoredSession {
@@ -39,7 +55,7 @@ export const sessionStore = {
 };
 
 export async function createRoom(hostName: string): Promise<CreateRoomResponse> {
-  const res = await fetch(`${API_BASE}/rooms`, {
+  const res = await fetch(`${getApiBase()}/rooms`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ host_name: hostName }),
@@ -52,7 +68,7 @@ export async function createRoom(hostName: string): Promise<CreateRoomResponse> 
 }
 
 export async function joinRoom(gamePin: string, playerName: string): Promise<JoinRoomResponse> {
-  const res = await fetch(`${API_BASE}/rooms/${gamePin}/join`, {
+  const res = await fetch(`${getApiBase()}/rooms/${gamePin}/join`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ game_pin: gamePin, player_name: playerName }),
@@ -65,7 +81,7 @@ export async function joinRoom(gamePin: string, playerName: string): Promise<Joi
 }
 
 export async function getRoom(gamePin: string): Promise<RoomDetailResponse> {
-  const res = await fetch(`${API_BASE}/rooms/${gamePin}`);
+  const res = await fetch(`${getApiBase()}/rooms/${gamePin}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Failed to fetch room');
@@ -74,7 +90,7 @@ export async function getRoom(gamePin: string): Promise<RoomDetailResponse> {
 }
 
 export async function startGame(gamePin: string, hostPlayerId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/rooms/${gamePin}/start`, {
+  const res = await fetch(`${getApiBase()}/rooms/${gamePin}/start`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -88,7 +104,7 @@ export async function startGame(gamePin: string, hostPlayerId: string): Promise<
 }
 
 export async function getGameState(gameId: string, token: string): Promise<GameState> {
-  const res = await fetch(`${API_BASE}/games/${gameId}?token=${encodeURIComponent(token)}`);
+  const res = await fetch(`${getApiBase()}/games/${gameId}?token=${encodeURIComponent(token)}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Failed to fetch game state');
@@ -101,7 +117,7 @@ export async function validateMove(
   playerId: string,
   placedTiles: PlacedTile[]
 ): Promise<ValidateMoveResponse> {
-  const res = await fetch(`${API_BASE}/games/${gameId}/moves/validate`, {
+  const res = await fetch(`${getApiBase()}/games/${gameId}/moves/validate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -126,7 +142,7 @@ export async function commitMove(
   playerId: string,
   placedTiles: PlacedTile[]
 ): Promise<CommitMoveResponse> {
-  const res = await fetch(`${API_BASE}/games/${gameId}/moves`, {
+  const res = await fetch(`${getApiBase()}/games/${gameId}/moves`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -142,7 +158,7 @@ export async function commitMove(
 }
 
 export async function passTurn(gameId: string, playerId: string): Promise<any> {
-  const res = await fetch(`${API_BASE}/games/${gameId}/pass`, {
+  const res = await fetch(`${getApiBase()}/games/${gameId}/pass`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

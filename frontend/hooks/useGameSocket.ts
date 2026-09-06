@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { WS_BASE } from '../lib/api';
+import { getWsBase } from '../lib/api';
 import { WebSocketEvent } from '../lib/types';
 
 interface UseGameSocketProps {
@@ -30,7 +30,7 @@ export function useGameSocket({ gameId, token, onEvent }: UseGameSocketProps) {
       wsRef.current.close();
     }
 
-    const wsUrl = `${WS_BASE}/ws/games/${gameId}?token=${encodeURIComponent(token)}`;
+    const wsUrl = `${getWsBase()}/ws/games/${gameId}?token=${encodeURIComponent(token)}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
