@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createRoom, joinRoom, sessionStore } from '../lib/api';
+import { TurnTimeLimit } from '../lib/types';
 
 type Mode = 'home' | 'create' | 'join';
 
@@ -13,13 +14,14 @@ export default function HomePage() {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [turnTimeLimit, setTurnTimeLimit] = useState<TurnTimeLimit>(null);
 
   const handleCreate = async () => {
     if (!name.trim()) { setError('Please enter your name'); return; }
     setLoading(true);
     setError('');
     try {
-      const res = await createRoom(name.trim());
+      const res = await createRoom(name.trim(), turnTimeLimit);
       sessionStore.save({
         gameId: res.game_id,
         playerId: res.host_player_id,
@@ -29,8 +31,8 @@ export default function HomePage() {
         gamePin: res.game_pin,
       });
       router.push(`/lobby/${res.game_pin}`);
-    } catch (e: any) {
-      setError(e.message || 'Failed to create room');
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to create room');
     } finally {
       setLoading(false);
     }
@@ -52,8 +54,8 @@ export default function HomePage() {
         gamePin: pin.trim(),
       });
       router.push(`/lobby/${pin.trim()}`);
-    } catch (e: any) {
-      setError(e.message || 'Failed to join room');
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to join room');
     } finally {
       setLoading(false);
     }
@@ -103,7 +105,22 @@ export default function HomePage() {
                   ← Back
                 </button>
                 <h2 className="text-xl font-bold text-white mb-1">Create a Room</h2>
-                <p className="text-slate-400 text-sm">You'll be the host and receive a Game PIN to share</p>
+                <p className="text-slate-400 text-sm">You&apos;ll be the host and receive a Game PIN to share</p>
+              </div>
+              <div>
+                <label htmlFor="turn-time" className="block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Turn Time</label>
+                <select
+                  id="turn-time"
+                  value={turnTimeLimit ?? ''}
+                  onChange={event => setTurnTimeLimit(event.target.value === '' ? null : Number(event.target.value) as TurnTimeLimit)}
+                  className="w-full bg-slate-800 border border-slate-600 focus:border-amber-400 rounded-xl px-4 py-3 text-white outline-none transition-colors"
+                >
+                  <option value="">Unlimited</option>
+                  <option value="30">30 sec</option>
+                  <option value="60">60 sec</option>
+                  <option value="90">90 sec</option>
+                  <option value="120">120 sec</option>
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Your Name</label>
