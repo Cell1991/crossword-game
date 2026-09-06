@@ -1,6 +1,6 @@
 import pytest
 from app.game.board import Board
-from app.game.extractor import extract_all_words
+from app.game.extractor import extract_all_words, ExtractedWord
 from app.game.dictionary import DictionaryService
 from app.game.scoring import ScoringService
 from app.game.rules import RuleEngine
@@ -16,6 +16,54 @@ def test_board_initialization_and_boundaries():
     assert not Board.is_valid_coord(-1, 0)
     assert Board.is_center(7, 7)
     assert not Board.is_center(6, 7)
+
+def test_board_special_cells_match_the_rendered_15x15_grid():
+    assert Board.TRIPLE_LETTER == frozenset({
+        (0, 7), (1, 1), (1, 13), (6, 0),
+        (6, 14), (13, 1), (13, 13), (14, 7),
+    })
+    assert Board.DOUBLE_LETTER == frozenset({
+        (2, 5), (2, 9), (4, 7), (5, 2),
+        (5, 12), (6, 4), (6, 10), (8, 2),
+        (8, 12), (9, 7), (11, 5), (11, 9),
+    })
+    assert Board.SECRET_POWER == frozenset({
+        (2, 2), (2, 12), (4, 4), (4, 10),
+        (10, 4), (10, 10), (12, 2), (12, 12),
+    })
+    assert Board.CENTER == (7, 7)
+
+def test_new_tiles_receive_letter_multipliers_only():
+    word = ExtractedWord(
+        "AB",
+        [(6, 4), (6, 5)],
+        [("A", 1, True), ("B", 3, True)],
+    )
+    score, _ = ScoringService.calculate_move_score(
+        [word], placed_tiles_count=2, placed_coords={(6, 4), (6, 5)}, apply_bingo=False
+    )
+    assert score == (1 * 2) + 3
+
+    triple_word = ExtractedWord(
+        "AB",
+        [(0, 7), (0, 8)],
+        [("A", 1, True), ("B", 3, True)],
+    )
+    score, _ = ScoringService.calculate_move_score(
+        [triple_word], placed_tiles_count=2, placed_coords={(0, 7), (0, 8)}, apply_bingo=False
+    )
+    assert score == (1 * 3) + 3
+
+def test_committed_multiplier_cell_is_not_multiplied_again():
+    word = ExtractedWord(
+        "AB",
+        [(6, 4), (6, 5)],
+        [("A", 1, False), ("B", 3, True)],
+    )
+    score, _ = ScoringService.calculate_move_score(
+        [word], placed_tiles_count=1, placed_coords={(6, 5)}, apply_bingo=False
+    )
+    assert score == 1 + 3
 
 def test_tile_bag_generation():
     bag = TileService.create_tile_bag()
@@ -45,6 +93,7 @@ def test_first_move_center_requirement():
     valid, err, _, _, _ = RuleEngine.validate_move(board_cells, invalid_placed, custom_dict, is_first_move=True)
     assert not valid
     assert "center star" in err
+    assert "(7, 7)" in err
 
     # Placing CAT covering center (7, 7)
     valid_placed = [
@@ -62,16 +111,16 @@ def test_first_move_center_requirement():
 def test_word_extraction_and_cross_words():
     # Setup existing board with "CAT" at row 31, cols 30..32
     board_cells = {
-        "7_6": {"row": 7, "col": 6, "letter": "C", "value": 3},
-        "7_7": {"row": 7, "col": 7, "letter": "A", "value": 1},
-        "7_8": {"row": 7, "col": 8, "letter": "T", "value": 1},
+        "6_6": {"row": 6, "col": 6, "letter": "C", "value": 3},
+        "6_7": {"row": 6, "col": 7, "letter": "A", "value": 1},
+        "6_8": {"row": 6, "col": 8, "letter": "T", "value": 1},
     }
 
     # Now place "AT" vertically intersecting at 'T' (row 31, col 32)
     # So we place 'O' at (32, 32) to make "TO" vertically!
     custom_dict = DictionaryService(custom_words={"CAT", "TO"})
     placed = [
-        {"row": 8, "col": 8, "letter": "O", "value": 1}
+        {"row": 7, "col": 8, "letter": "O", "value": 1}
     ]
 
     valid, err, words, score, _ = RuleEngine.validate_move(board_cells, placed, custom_dict, is_first_move=False)
@@ -82,8 +131,8 @@ def test_word_extraction_and_cross_words():
 
 def test_disconnected_subsequent_move_rejected():
     board_cells = {
-        "7_7": {"row": 7, "col": 7, "letter": "A", "value": 1},
-        "7_8": {"row": 7, "col": 8, "letter": "T", "value": 1},
+        "6_7": {"row": 6, "col": 7, "letter": "A", "value": 1},
+        "6_8": {"row": 6, "col": 8, "letter": "T", "value": 1},
     }
     custom_dict = DictionaryService(custom_words={"AT", "DOG"})
     
