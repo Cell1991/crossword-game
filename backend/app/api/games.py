@@ -61,3 +61,26 @@ async def pass_turn(
         "game_over": is_over,
         "winner_id": winner_id
     }
+
+@router.post("/{game_id}/timeout")
+async def timeout_turn(game_id: str, db: AsyncSession = Depends(get_db)):
+    game, expired, reason, winner_id = await GameService.expire_turn_if_needed(db, game_id)
+    if not expired:
+        return {"status": "active", "expired": False, "turn_number": game.turn_number}
+
+    await manager.broadcast(game_id, WebSocketEvent(
+        type=EventType.TURN_PASSED,
+        payload={
+            "passedPlayerId": None,
+            "nextPlayerId": game.current_player_id,
+            "turnNumber": game.turn_number,
+            "consecutivePasses": game.consecutive_passes,
+            "reason": "TIMEOUT"
+        }
+    ).model_dump())
+    if game.status == "FINISHED":
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.GAME_ENDED,
+            payload={"reason": reason or "TIMEOUT", "winnerId": winner_id}
+        ).model_dump())
+    return {"status": "expired", "expired": True, "turn_number": game.turn_number, "game_over": game.status == "FINISHED"}
