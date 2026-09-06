@@ -24,6 +24,7 @@ class GameRoom(Base):
     game_pin = Column(String(6), unique=True, index=True, nullable=False)
     host_player_id = Column(String(36), nullable=False)
     status = Column(String(32), default="WAITING", nullable=False)  # WAITING, PLAYING, FINISHED, ABANDONED
+    turn_time_limit = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), default=get_utc_now)
     started_at = Column(DateTime(timezone=True), nullable=True)
     finished_at = Column(DateTime(timezone=True), nullable=True)
@@ -37,6 +38,7 @@ class Game(Base):
     status = Column(String(32), default="WAITING", nullable=False)  # WAITING, PLAYING, FINISHED
     current_player_id = Column(String(36), nullable=True)
     turn_number = Column(Integer, default=1, nullable=False)
+    max_turns = Column(Integer, nullable=True)
     consecutive_passes = Column(Integer, default=0, nullable=False)
     # Sparse board state: {"r_c": {"row": r, "col": c, "letter": "A", "value": 1, "player_id": "...", "turn": 1}}
     board_state = Column(JSON, default=dict, nullable=False)
@@ -46,6 +48,7 @@ class Game(Base):
     banned_by_player_id = Column(String(36), nullable=True)
     created_at = Column(DateTime(timezone=True), default=get_utc_now)
     updated_at = Column(DateTime(timezone=True), default=get_utc_now, onupdate=get_utc_now)
+    turn_started_at = Column(DateTime(timezone=True), nullable=True)
 
     room = relationship("GameRoom", back_populates="game")
     players = relationship("GamePlayer", back_populates="game", order_by="GamePlayer.turn_order", cascade="all, delete-orphan")
