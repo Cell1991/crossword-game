@@ -43,7 +43,12 @@ export interface GameState {
   board_state: Record<string, BoardCell>;
   players: Player[];
   tile_bag_count: number;
+  turn_time_limit: TurnTimeLimit;
+  turn_started_at: string | null;
+  max_turns: number | null;
 }
+
+export type TurnTimeLimit = null | 30 | 60 | 90 | 120;
 
 export interface WordFormed {
   word: string;
@@ -76,6 +81,7 @@ export interface CreateRoomResponse {
   host_player_id: string;
   session_token: string;
   display_name: string;
+  turn_time_limit: TurnTimeLimit;
 }
 
 export interface JoinRoomResponse {
@@ -93,6 +99,7 @@ export interface RoomDetailResponse {
   host_player_id: string;
   players: Player[];
   created_at: string;
+  turn_time_limit: TurnTimeLimit;
 }
 
 export type WebSocketEventType =
@@ -111,6 +118,11 @@ export type WebSocketEventType =
 
 export interface WebSocketEvent {
   type: WebSocketEventType;
-  payload: any;
+  payload: {
+    playerId?: string;
+    tiles?: { row: number; col: number }[];
+    words_formed?: WordFormed[];
+    score_earned?: number;
+  };
   timestamp: string;
 }
