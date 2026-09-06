@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { startTransition, useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getRoom, startGame, sessionStore } from '../../../lib/api';
 import { PinDisplay } from '../../../components/lobby/PinDisplay';
@@ -19,6 +19,7 @@ export default function LobbyPage() {
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [turnTimeLimit, setTurnTimeLimit] = useState<number | null>(null);
 
   // Load session
   useEffect(() => {
@@ -27,15 +28,18 @@ export default function LobbyPage() {
       router.replace('/');
       return;
     }
-    setMyPlayerId(session.playerId);
-    setIsHost(session.isHost);
-    setGameId(session.gameId);
+    startTransition(() => {
+      setMyPlayerId(session.playerId);
+      setIsHost(session.isHost);
+      setGameId(session.gameId);
+    });
   }, [router]);
 
   const fetchRoom = useCallback(async () => {
     try {
       const room = await getRoom(pin);
       setPlayers(room.players);
+      setTurnTimeLimit(room.turn_time_limit);
       setLoading(false);
       // If game already started, redirect to game
       if (room.status === 'PLAYING' || room.status === 'ACTIVE') {
@@ -49,9 +53,12 @@ export default function LobbyPage() {
 
   // Poll room state every 2 seconds
   useEffect(() => {
-    fetchRoom();
+    const initialFetch = setTimeout(() => { void fetchRoom(); }, 0);
     const interval = setInterval(fetchRoom, 2000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialFetch);
+      clearInterval(interval);
+    };
   }, [fetchRoom]);
 
   const handleStart = async () => {
@@ -61,8 +68,8 @@ export default function LobbyPage() {
     try {
       await startGame(pin, myPlayerId);
       router.push(`/game/${gameId}`);
-    } catch (e: any) {
-      setError(e.message || 'Failed to start game');
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to start game');
       setStarting(false);
     }
   };
@@ -96,6 +103,10 @@ export default function LobbyPage() {
 
         {/* PIN Display */}
         <PinDisplay pin={pin} />
+
+        <div className="text-sm text-slate-300 bg-slate-900/70 border border-slate-700/50 rounded-xl px-4 py-2">
+          Turn Time: <span className="font-semibold text-amber-300">{turnTimeLimit === null ? 'Unlimited' : `${turnTimeLimit} sec`}</span>
+        </div>
 
         {/* Player List */}
         <div className="w-full bg-slate-900/80 border border-slate-700/50 rounded-3xl p-6 shadow-2xl backdrop-blur-sm">
