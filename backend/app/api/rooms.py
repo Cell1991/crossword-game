@@ -18,14 +18,15 @@ router = APIRouter(prefix="/rooms", tags=["Rooms"])
 
 @router.post("", response_model=CreateRoomResponse)
 async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)):
-    room, game, host = await RoomService.create_room(db, req.host_name)
+    room, game, host = await RoomService.create_room(db, req.host_name, req.turn_time_limit)
     return CreateRoomResponse(
         room_id=room.id,
         game_id=game.id,
         game_pin=room.game_pin,
         host_player_id=host.id,
         session_token=host.session_token,
-        display_name=host.display_name
+        display_name=host.display_name,
+        turn_time_limit=room.turn_time_limit
     )
 
 @router.post("/{game_pin}/join", response_model=JoinRoomResponse)
@@ -72,7 +73,8 @@ async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
         status=room.status,
         host_player_id=room.host_player_id,
         players=player_outs,
-        created_at=room.created_at
+        created_at=room.created_at,
+        turn_time_limit=room.turn_time_limit
     )
 
 @router.post("/{game_pin}/start")
