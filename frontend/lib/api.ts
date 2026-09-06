@@ -6,6 +6,7 @@ import {
   PlacedTile,
   ValidateMoveResponse,
   CommitMoveResponse,
+  TurnTimeLimit,
 } from './types';
 
 function getErrorMessage(error: unknown, fallback: string): string {
@@ -69,16 +70,22 @@ export const sessionStore = {
   }
 };
 
-export async function createRoom(hostName: string): Promise<CreateRoomResponse> {
+export async function createRoom(hostName: string, turnTimeLimit: TurnTimeLimit = null): Promise<CreateRoomResponse> {
   const res = await fetch(`${getApiBase()}/rooms`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ host_name: hostName }),
+    body: JSON.stringify({ host_name: hostName, turn_time_limit: turnTimeLimit }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Failed to create room');
   }
+  return res.json();
+}
+
+export async function expireTurn(gameId: string): Promise<{ expired: boolean }> {
+  const res = await fetch(`${getApiBase()}/games/${gameId}/timeout`, { method: 'POST' });
+  if (!res.ok) throw new Error('Failed to check turn timeout');
   return res.json();
 }
 
@@ -172,7 +179,7 @@ export async function commitMove(
   return res.json();
 }
 
-export async function passTurn(gameId: string, playerId: string): Promise<any> {
+export async function passTurn(gameId: string, playerId: string): Promise<unknown> {
   const res = await fetch(`${getApiBase()}/games/${gameId}/pass`, {
     method: 'POST',
     headers: {
