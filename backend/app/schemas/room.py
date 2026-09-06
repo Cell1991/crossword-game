@@ -1,10 +1,11 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Literal
 from datetime import datetime
 from app.schemas.player import PlayerOut
 
 class CreateRoomRequest(BaseModel):
     host_name: str = Field(..., min_length=1, max_length=32, description="Display name of the room host")
+    turn_time_limit: Literal[None, 30, 60, 90, 120] = None
 
 class CreateRoomResponse(BaseModel):
     room_id: str
@@ -13,6 +14,7 @@ class CreateRoomResponse(BaseModel):
     host_player_id: str
     session_token: str
     display_name: str
+    turn_time_limit: Optional[int] = None
 
 class JoinRoomRequest(BaseModel):
     game_pin: str = Field(..., min_length=6, max_length=6, description="6-digit numeric game PIN")
@@ -32,3 +34,4 @@ class RoomDetailResponse(BaseModel):
     host_player_id: str
     players: list[PlayerOut]
     created_at: datetime
+    turn_time_limit: Optional[int] = None
