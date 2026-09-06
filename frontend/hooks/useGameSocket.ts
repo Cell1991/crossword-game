@@ -17,6 +17,7 @@ export function useGameSocket({ gameId, token, onEvent }: UseGameSocketProps) {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const onEventRef = useRef(onEvent);
+  const connectRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     onEventRef.current = onEvent;
@@ -69,11 +70,15 @@ export function useGameSocket({ gameId, token, onEvent }: UseGameSocketProps) {
       // Auto-reconnect if not closed normally
       if (event.code !== 1000 && event.code !== 4003) {
         reconnectTimeoutRef.current = setTimeout(() => {
-          connect();
+          connectRef.current();
         }, 2500);
       }
     };
   }, [gameId, token]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   const sendMessage = useCallback((message: Record<string, unknown>) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
