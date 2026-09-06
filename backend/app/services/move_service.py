@@ -200,15 +200,23 @@ class MoveService:
         next_idx = (current_idx + 1) % len(all_players)
         next_player_id = all_players[next_idx].id
 
-        game.current_player_id = next_player_id
-        game.turn_number += 1
+        completed_turn = game.turn_number
+        reached_max_turns = bool(game.max_turns and completed_turn >= game.max_turns)
         game.consecutive_passes = 0
+        if reached_max_turns:
+            game.status = "FINISHED"
+            game.current_player_id = None
+            game.turn_started_at = None
+        else:
+            game.current_player_id = next_player_id
+            game.turn_number += 1
+            game.turn_started_at = get_utc_now()
 
         # Check game end
         players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in all_players]
         is_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
 
-        if is_over:
+        if is_over or reached_max_turns:
             game.status = "FINISHED"
             stmt_room = select(GameRoom).where(GameRoom.id == game_id)
             room = (await db.execute(stmt_room)).scalar_one_or_none()
@@ -221,11 +229,11 @@ class MoveService:
         res = CommitMoveResponse(
             success=True,
             move_id=move_id,
-            turn_number=game.turn_number - 1,
+            turn_number=completed_turn,
             words_formed=words_formed,
             score_earned=score,
             next_player_id=next_player_id,
-            game_over=is_over,
+            game_over=is_over or reached_max_turns,
             winner_id=winner
         )
 
