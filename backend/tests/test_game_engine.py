@@ -1,0 +1,130 @@
+import pytest
+from app.game.board import Board
+from app.game.extractor import extract_all_words
+from app.game.dictionary import DictionaryService
+from app.game.scoring import ScoringService
+from app.game.rules import RuleEngine
+from app.game.game_end import GameEndService
+from app.game.tiles import TileService
+
+def test_board_initialization_and_boundaries():
+    board = Board()
+    assert board.is_board_empty()
+    assert Board.is_valid_coord(0, 0)
+    assert Board.is_valid_coord(62, 62)
+    assert not Board.is_valid_coord(63, 63)
+    assert not Board.is_valid_coord(-1, 0)
+    assert Board.is_center(31, 31)
+    assert not Board.is_center(30, 31)
+
+def test_tile_bag_generation():
+    bag = TileService.create_tile_bag()
+    assert len(bag) > 50
+    drawn, remaining = TileService.draw_tiles(bag, 7)
+    assert len(drawn) == 7
+    assert len(remaining) == len(bag) - 7
+
+def test_dictionary_lookup():
+    custom_dict = DictionaryService(custom_words={"CAT", "DOG", "OX"})
+    assert custom_dict.is_valid_word("CAT")
+    assert custom_dict.is_valid_word("cat")
+    assert custom_dict.is_valid_word("DOG")
+    assert not custom_dict.is_valid_word("XYZ123")
+    assert not custom_dict.is_valid_word("A")  # single letter not valid word
+
+def test_first_move_center_requirement():
+    custom_dict = DictionaryService(custom_words={"CAT"})
+    board_cells = {}
+
+    # Placing CAT at (0, 0), (0, 1), (0, 2) without center
+    invalid_placed = [
+        {"row": 0, "col": 0, "letter": "C", "value": 3},
+        {"row": 0, "col": 1, "letter": "A", "value": 1},
+        {"row": 0, "col": 2, "letter": "T", "value": 1},
+    ]
+    valid, err, _, _, _ = RuleEngine.validate_move(board_cells, invalid_placed, custom_dict, is_first_move=True)
+    assert not valid
+    assert "center star" in err
+
+    # Placing CAT covering center (31, 31)
+    valid_placed = [
+        {"row": 31, "col": 30, "letter": "C", "value": 3},
+        {"row": 31, "col": 31, "letter": "A", "value": 1},
+        {"row": 31, "col": 32, "letter": "T", "value": 1},
+    ]
+    valid, err, words, score, _ = RuleEngine.validate_move(board_cells, valid_placed, custom_dict, is_first_move=True)
+    assert valid
+    assert err is None
+    assert len(words) == 1
+    assert words[0].word == "CAT"
+    assert score == 5
+
+def test_word_extraction_and_cross_words():
+    # Setup existing board with "CAT" at row 31, cols 30..32
+    board_cells = {
+        "31_30": {"row": 31, "col": 30, "letter": "C", "value": 3},
+        "31_31": {"row": 31, "col": 31, "letter": "A", "value": 1},
+        "31_32": {"row": 31, "col": 32, "letter": "T", "value": 1},
+    }
+
+    # Now place "AT" vertically intersecting at 'T' (row 31, col 32)
+    # So we place 'O' at (32, 32) to make "TO" vertically!
+    custom_dict = DictionaryService(custom_words={"CAT", "TO"})
+    placed = [
+        {"row": 32, "col": 32, "letter": "O", "value": 1}
+    ]
+
+    valid, err, words, score, _ = RuleEngine.validate_move(board_cells, placed, custom_dict, is_first_move=False)
+    assert valid
+    assert len(words) == 1
+    assert words[0].word == "TO"
+    assert score == 2  # T(1) + O(1)
+
+def test_disconnected_subsequent_move_rejected():
+    board_cells = {
+        "31_31": {"row": 31, "col": 31, "letter": "A", "value": 1},
+        "31_32": {"row": 31, "col": 32, "letter": "T", "value": 1},
+    }
+    custom_dict = DictionaryService(custom_words={"AT", "DOG"})
+    
+    # Place "DOG" far away at (10, 10)
+    disconnected_placed = [
+        {"row": 10, "col": 10, "letter": "D", "value": 2},
+        {"row": 10, "col": 11, "letter": "O", "value": 1},
+        {"row": 10, "col": 12, "letter": "G", "value": 2},
+    ]
+    valid, err, _, _, _ = RuleEngine.validate_move(board_cells, disconnected_placed, custom_dict, is_first_move=False)
+    assert not valid
+    assert "must connect" in err
+
+def test_gap_between_placed_tiles_rejected():
+    board_cells = {}
+    custom_dict = DictionaryService(custom_words={"CAT"})
+    
+    # Place with center star at col 31 and gap at col 32
+    gapped_placed = [
+        {"row": 31, "col": 31, "letter": "C", "value": 3},
+        {"row": 31, "col": 33, "letter": "T", "value": 1},
+    ]
+    valid, err, _, _, _ = RuleEngine.validate_move(board_cells, gapped_placed, custom_dict, is_first_move=True)
+    assert not valid
+    assert "empty gap" in err
+
+
+def test_game_end_conditions():
+    players = [
+        {"id": "p1", "display_name": "Alice", "score": 100, "rack": []},
+        {"id": "p2", "display_name": "Bob", "score": 80, "rack": [{"id": "t1", "letter": "A", "value": 1}]}
+    ]
+    
+    # Tile bag empty and p1 has empty rack
+    is_over, reason, winner = GameEndService.check_game_over(tile_bag=[], players=players, consecutive_passes=0)
+    assert is_over
+    assert winner == "p1"
+    assert "exhausted" in reason
+
+    # Consecutive passes limit reached
+    is_over, reason, winner = GameEndService.check_game_over(tile_bag=[{"id": "t2"}], players=players, consecutive_passes=4, max_passes=4)
+    assert is_over
+    assert winner == "p1"
+    assert "consecutive passes" in reason
