@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, Any
+from datetime import datetime
 from app.schemas.player import PlayerOut
 
 class BoardCellOut(BaseModel):
@@ -19,3 +20,6 @@ class GameStateResponse(BaseModel):
     board_state: dict[str, Any]  # Sparse {"r_c": {...}}
     players: list[PlayerOut]
     tile_bag_count: int
+    turn_time_limit: Optional[int] = None
+    turn_started_at: Optional[datetime] = None
+    max_turns: Optional[int] = None
