@@ -12,7 +12,11 @@ from app.game.tiles import TileService
 class RoomService:
 
     @staticmethod
-    async def create_room(db: AsyncSession, host_name: str) -> tuple[GameRoom, Game, GamePlayer]:
+    def max_turns_for_player_count(player_count: int) -> int:
+        return 21 if player_count == 3 else 20
+
+    @staticmethod
+    async def create_room(db: AsyncSession, host_name: str, turn_time_limit: int | None = None) -> tuple[GameRoom, Game, GamePlayer]:
         # Generate unique 6-digit PIN
         for _ in range(10):
             pin = generate_game_pin()
@@ -33,7 +37,8 @@ class RoomService:
             id=room_id,
             game_pin=pin,
             host_player_id=host_id,
-            status="WAITING"
+            status="WAITING",
+            turn_time_limit=turn_time_limit
         )
         game = Game(
             id=room_id,
@@ -147,8 +152,10 @@ class RoomService:
         game.tile_bag = bag
         game.status = "PLAYING"
         game.current_player_id = players[0].id if players else None
+        game.max_turns = RoomService.max_turns_for_player_count(len(players))
         room.status = "PLAYING"
         room.started_at = get_utc_now()
+        game.turn_started_at = get_utc_now()
 
         await db.flush()
         return game
