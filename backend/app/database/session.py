@@ -41,6 +41,11 @@ def _upgrade_existing_schema(connection):
             "banned_letter": "VARCHAR(1)",
             "banned_until_turn": "INTEGER",
             "banned_by_player_id": "VARCHAR(36)",
+            "turn_started_at": "TIMESTAMP",
+            "max_turns": "INTEGER",
+        },
+        "game_rooms": {
+            "turn_time_limit": "INTEGER",
         },
         "game_players": {
             "hp": "INTEGER DEFAULT 100 NOT NULL",
