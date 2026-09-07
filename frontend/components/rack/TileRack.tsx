@@ -5,14 +5,15 @@ import { Tile } from '../../lib/types';
 import { RotateCcw, Check, SkipForward, Shuffle } from 'lucide-react';
 
 interface TileRackProps {
-  rack: Tile[];
+  /** Fixed seats. `null` means the seat is empty — either the tile is on the board or the bag ran dry. */
+  slots: (Tile | null)[];
   selectedTileId: string | null;
   onSelectTile: (tile: Tile) => void;
   onCancelMove: () => void;
   onConfirmMove: () => void;
   onPassTurn: () => void;
   onShuffleRack: () => void;
-  onReorderRack: (draggedTileId: string, targetTileId: string | null, mode: 'swap' | 'move') => void;
+  onSwapSlots: (fromSlot: number, toSlot: number) => void;
   onStartTileDrag: (tile: Tile, clientX: number, clientY: number) => void;
   onFinishTileDrag: () => void;
   onRackViewportChange: (rect: { left: number; top: number; width: number; height: number }) => void;
@@ -24,14 +25,14 @@ interface TileRackProps {
 }
 
 export const TileRack: React.FC<TileRackProps> = ({
-  rack,
+  slots,
   selectedTileId,
   onSelectTile,
   onCancelMove,
   onConfirmMove,
   onPassTurn,
   onShuffleRack,
-  onReorderRack,
+  onSwapSlots,
   onStartTileDrag,
   onFinishTileDrag,
   onRackViewportChange,
@@ -41,14 +42,15 @@ export const TileRack: React.FC<TileRackProps> = ({
   isSubmitting,
   estimatedScore,
 }) => {
-  const [draggedTileId, setDraggedTileId] = useState<string | null>(null);
-  const [dragOverTileId, setDragOverTileId] = useState<string | null>(null);
+  const [draggedSlot, setDraggedSlot] = useState<number | null>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const didDragRef = useRef(false);
   const externalDragRef = useRef(false);
-  const rackDropModeRef = useRef<'swap' | 'move'>('swap');
   const rackRef = useRef<HTMLDivElement | null>(null);
+
+  const tileCount = slots.reduce((total, tile) => (tile ? total + 1 : total), 0);
 
   useEffect(() => {
     const updateViewport = () => {
@@ -58,23 +60,23 @@ export const TileRack: React.FC<TileRackProps> = ({
     updateViewport();
     window.addEventListener('resize', updateViewport);
     return () => window.removeEventListener('resize', updateViewport);
-  }, [onRackViewportChange]);
+  }, [onRackViewportChange, slots.length]);
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, tileId: string) => {
+  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, slotIndex: number) => {
     if (!isMyTurn) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     pointerStartRef.current = { x: event.clientX, y: event.clientY };
     didDragRef.current = false;
     externalDragRef.current = false;
-    setDraggedTileId(tileId);
-    setDragOverTileId(tileId);
+    setDraggedSlot(slotIndex);
+    setDragOverSlot(null);
     setDragPosition({ x: event.clientX, y: event.clientY });
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>, tile: Tile) => {
     const start = pointerStartRef.current;
-    if (!start || !draggedTileId) return;
+    if (!start || draggedSlot === null) return;
     setDragPosition({ x: event.clientX, y: event.clientY });
     if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 4) {
       didDragRef.current = true;
@@ -91,11 +93,10 @@ export const TileRack: React.FC<TileRackProps> = ({
         onStartTileDrag(tile, event.clientX, event.clientY);
       }
     }
-    if (draggedTileId && !externalDragRef.current) {
-      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLButtonElement>('[data-rack-tile-id]');
-      const targetTileId = target?.dataset.rackTileId ?? null;
-      rackDropModeRef.current = targetTileId && targetTileId !== draggedTileId ? 'swap' : 'move';
-      setDragOverTileId(targetTileId && targetTileId !== draggedTileId ? targetTileId : null);
+    if (!externalDragRef.current) {
+      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-rack-slot]');
+      const targetSlot = target ? Number(target.dataset.rackSlot) : NaN;
+      setDragOverSlot(Number.isInteger(targetSlot) && targetSlot !== draggedSlot ? targetSlot : null);
     }
   };
 
@@ -103,15 +104,14 @@ export const TileRack: React.FC<TileRackProps> = ({
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-    if (!externalDragRef.current && draggedTileId) {
-      onReorderRack(draggedTileId, dragOverTileId, rackDropModeRef.current);
+    if (!externalDragRef.current && draggedSlot !== null && dragOverSlot !== null) {
+      onSwapSlots(draggedSlot, dragOverSlot);
     }
     if (externalDragRef.current) onFinishTileDrag();
     pointerStartRef.current = null;
-    setDraggedTileId(null);
-    setDragOverTileId(null);
+    setDraggedSlot(null);
+    setDragOverSlot(null);
     setDragPosition(null);
-    rackDropModeRef.current = 'swap';
     externalDragRef.current = false;
   };
 
@@ -123,22 +123,20 @@ export const TileRack: React.FC<TileRackProps> = ({
     if (isMyTurn) onSelectTile(tile);
   };
 
+  const draggedTile = draggedSlot !== null ? slots[draggedSlot] : null;
+
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-2xl mx-auto px-4 pointer-events-auto">
-      {draggedTileId && dragPosition && (() => {
-        const draggedTile = rack.find(tile => tile.id === draggedTileId);
-        if (!draggedTile) return null;
-        return (
-          <div
-            className="pointer-events-none fixed z-[100] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-3 scale-105 flex-col items-center justify-center rounded-xl border-2 border-amber-400 bg-amber-100 text-stone-900 shadow-2xl"
-            style={{ left: dragPosition.x, top: dragPosition.y }}
-            aria-hidden="true"
-          >
-            <span className="text-2xl font-black leading-none">{draggedTile.letter}</span>
-            <span className="absolute bottom-1 right-1.5 text-[10px] font-bold text-stone-600">{draggedTile.value}</span>
-          </div>
-        );
-      })()}
+      {draggedTile && dragPosition && (
+        <div
+          className="pointer-events-none fixed z-[100] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-3 scale-105 flex-col items-center justify-center rounded-xl border-2 border-amber-400 bg-amber-100 text-stone-900 shadow-2xl"
+          style={{ left: dragPosition.x, top: dragPosition.y }}
+          aria-hidden="true"
+        >
+          <span className="text-2xl font-black leading-none">{draggedTile.letter}</span>
+          <span className="absolute bottom-1 right-1.5 text-[10px] font-bold text-stone-600">{draggedTile.value}</span>
+        </div>
+      )}
       {/* Action Buttons Toolbar */}
       <div className="flex items-center justify-between w-full bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-700/60 shadow-2xl">
         <div className="flex items-center gap-2">
@@ -170,7 +168,7 @@ export const TileRack: React.FC<TileRackProps> = ({
 
           <button
             onClick={onShuffleRack}
-            disabled={!isMyTurn || rack.length < 2 || isSubmitting}
+            disabled={!isMyTurn || tileCount < 2 || isSubmitting}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm text-slate-300 hover:text-white hover:bg-slate-700 disabled:text-slate-600 disabled:cursor-not-allowed border border-slate-600/60 transition-all"
             title="Shuffle rack"
             aria-label="Shuffle rack"
@@ -203,48 +201,63 @@ export const TileRack: React.FC<TileRackProps> = ({
         </button>
       </div>
 
-      {/* Tiles Rack Stand */}
+      {/* Tiles Rack Stand — seats are fixed, an empty seat stays put instead of closing up */}
       <div ref={rackRef} className={`relative flex items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-b from-amber-950/70 to-amber-900/90 backdrop-blur-md rounded-2xl border-2 shadow-2xl shadow-amber-950/40 min-h-[82px] ${isExternalDragActive ? 'border-sky-400/80 ring-2 ring-sky-400/30' : 'border-amber-700/50'}`}>
-        {rack.length === 0 ? (
-          <div className="text-amber-200/60 text-xs font-mono tracking-wide py-2">
-            No tiles remaining in rack
-          </div>
-        ) : (
-          rack.map((tile) => {
-            const isSelected = selectedTileId === tile.id;
-            const isDragging = draggedTileId === tile.id;
-            const isDropTarget = dragOverTileId === tile.id && draggedTileId !== tile.id;
+        {slots.map((tile, slotIndex) => {
+          if (!tile) {
+            const isDropTarget = dragOverSlot === slotIndex;
             return (
-              <button
-                key={tile.id}
-                data-rack-tile-id={tile.id}
-                onClick={() => handleTileClick(tile)}
-                onPointerDown={(event) => handlePointerDown(event, tile.id)}
-                onPointerMove={(event) => handlePointerMove(event, tile)}
-                onPointerUp={handlePointerUp}
-                disabled={!isMyTurn}
-                className={`group relative flex flex-col items-center justify-center w-11 h-12 sm:w-13 sm:h-14 rounded-xl font-sans transition-all select-none touch-none ${
-                  isDragging
-                    ? 'z-10 scale-105 -translate-y-2 opacity-30 bg-amber-200 border-2 border-amber-400 shadow-xl shadow-amber-500/40 cursor-grabbing'
-                    : isDropTarget
-                    ? 'translate-x-1 ring-2 ring-sky-400/80'
-                    : isSelected
-                    ? '-translate-y-3 bg-amber-200 border-2 border-amber-500 shadow-amber-500/40 ring-4 ring-amber-400/40'
-                    : isMyTurn
-                    ? 'bg-amber-100 hover:bg-amber-50 active:translate-y-0.5 border border-amber-600/40 hover:-translate-y-1 cursor-pointer'
-                    : 'bg-amber-100/50 border border-amber-700/30 opacity-70 cursor-not-allowed'
-                } shadow-md`}
+              <div
+                key={`slot-${slotIndex}`}
+                data-rack-slot={slotIndex}
+                aria-hidden="true"
+                className={`relative w-11 h-12 sm:w-13 sm:h-14 rounded-xl border border-black/40 bg-amber-950/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.65)] transition-all ${
+                  isDropTarget
+                    ? 'ring-2 ring-sky-400/90'
+                    : isExternalDragActive
+                    ? 'ring-1 ring-sky-400/40'
+                    : ''
+                }`}
               >
-                <span className="text-xl sm:text-2xl font-black text-stone-900 leading-none">
-                  {tile.letter}
-                </span>
-                <span className="absolute bottom-1 right-1.5 text-[9px] sm:text-[10px] font-bold text-stone-600">
-                  {tile.value}
-                </span>
-              </button>
+                <span className="absolute inset-[7px] rounded-md border border-dashed border-amber-200/15" />
+              </div>
             );
-          })
-        )}
+          }
+
+          const isSelected = selectedTileId === tile.id;
+          const isDragging = draggedSlot === slotIndex;
+          const isDropTarget = dragOverSlot === slotIndex;
+          return (
+            <button
+              key={tile.id}
+              data-rack-slot={slotIndex}
+              data-rack-tile-id={tile.id}
+              onClick={() => handleTileClick(tile)}
+              onPointerDown={(event) => handlePointerDown(event, slotIndex)}
+              onPointerMove={(event) => handlePointerMove(event, tile)}
+              onPointerUp={handlePointerUp}
+              disabled={!isMyTurn}
+              className={`group relative flex flex-col items-center justify-center w-11 h-12 sm:w-13 sm:h-14 rounded-xl font-sans transition-all select-none touch-none ${
+                isDragging
+                  ? 'z-10 scale-105 -translate-y-2 opacity-30 bg-amber-200 border-2 border-amber-400 shadow-xl shadow-amber-500/40 cursor-grabbing'
+                  : isDropTarget
+                  ? 'translate-x-1 ring-2 ring-sky-400/80'
+                  : isSelected
+                  ? '-translate-y-3 bg-amber-200 border-2 border-amber-500 shadow-amber-500/40 ring-4 ring-amber-400/40'
+                  : isMyTurn
+                  ? 'bg-amber-100 hover:bg-amber-50 active:translate-y-0.5 border border-amber-600/40 hover:-translate-y-1 cursor-pointer'
+                  : 'bg-amber-100/50 border border-amber-700/30 opacity-70 cursor-not-allowed'
+              } shadow-md`}
+            >
+              <span className="text-xl sm:text-2xl font-black text-stone-900 leading-none">
+                {tile.letter}
+              </span>
+              <span className="absolute bottom-1 right-1.5 text-[9px] sm:text-[10px] font-bold text-stone-600">
+                {tile.value}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

@@ -22,6 +22,9 @@ import {
 
 const EMPTY_TILES: Tile[] = [];
 
+/** Seats on the rack stand. The rack always shows this many, even when the bag runs dry. */
+const RACK_SIZE = 7;
+
 interface DragSession {
   tile: Tile;
   source: 'rack' | 'board';
@@ -53,7 +56,7 @@ export default function GamePage() {
   const [remotePlacements, setRemotePlacements] = useState<{ row: number; col: number }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastMoveInfo, setLastMoveInfo] = useState<string | null>(null);
-  const [rackOrder, setRackOrder] = useState<string[]>([]);
+  const [rackOrder, setRackOrder] = useState<(string | null)[]>([]);
   const [dragSession, setDragSession] = useState<DragSession | null>(null);
   const [dragHoverCell, setDragHoverCell] = useState<{ row: number; col: number } | null>(null);
   const [boardViewport, setBoardViewport] = useState({ left: 0, top: 0, width: 0, height: 0 });
@@ -72,51 +75,101 @@ export default function GamePage() {
   const boardState = useMemo(() => gameState?.board_state ?? {}, [gameState?.board_state]);
   const screenToCell = camera.screenToCell;
   const serverRack: Tile[] = myPlayer?.rack ?? EMPTY_TILES;
-  const myRack = useMemo(() => {
-    const pendingIds = new Set(temporaryTiles.map(tile => tile.tile_id));
-    if (rackOrder.length === 0) return serverRack.filter(tile => !pendingIds.has(tile.id));
+  const pendingTileIds = useMemo(
+    () => new Set(temporaryTiles.map(tile => tile.tile_id)),
+    [temporaryTiles]
+  );
+  /**
+   * The rack as fixed seats. A tile keeps its seat while it sits on the board, so the seat
+   * renders as a gap and the neighbouring tiles never slide over to close it. Seats also
+   * stay put once the bag runs dry, which is why the count never drops below RACK_SIZE.
+   */
+  const rackSlots = useMemo<(Tile | null)[]>(() => {
     const tilesById = new Map(serverRack.map(tile => [tile.id, tile]));
-    return rackOrder.filter(tileId => !pendingIds.has(tileId)).flatMap(tileId => {
-      const tile = tilesById.get(tileId);
-      return tile ? [tile] : [];
-    });
-  }, [rackOrder, serverRack, temporaryTiles]);
+    const slotCount = Math.max(RACK_SIZE, rackOrder.length, serverRack.length);
+    const hasSeating = rackOrder.some(tileId => tileId && tilesById.has(tileId));
+    const slots: (Tile | null)[] = [];
+    for (let slotIndex = 0; slotIndex < slotCount; slotIndex += 1) {
+      const tileId = hasSeating ? rackOrder[slotIndex] : serverRack[slotIndex]?.id;
+      const tile = tileId ? tilesById.get(tileId) : undefined;
+      slots.push(tile && !pendingTileIds.has(tile.id) ? tile : null);
+    }
+    return slots;
+  }, [pendingTileIds, rackOrder, serverRack]);
+  const myRack = useMemo(
+    () => rackSlots.filter((tile): tile is Tile => Boolean(tile)),
+    [rackSlots]
+  );
   const secondsRemaining = gameState?.turn_time_limit && gameState.turn_started_at
     ? Math.max(0, gameState.turn_time_limit - Math.floor((timerNow - new Date(gameState.turn_started_at).getTime()) / 1000))
     : null;
 
-  const handleShuffleRack = useCallback(() => {
-    setRackOrder(previousOrder => {
-      const nextOrder = [...previousOrder];
-      for (let index = nextOrder.length - 1; index > 0; index -= 1) {
-        const randomIndex = Math.floor(Math.random() * (index + 1));
-        [nextOrder[index], nextOrder[randomIndex]] = [nextOrder[randomIndex], nextOrder[index]];
-      }
-      return nextOrder;
-    });
+  /** Seats the rack currently knows about, padded so every seat index is addressable. */
+  const seatRackOrder = useCallback((previousOrder: (string | null)[], minimumLength = 0) => {
+    const length = Math.max(RACK_SIZE, previousOrder.length, minimumLength);
+    const nextOrder: (string | null)[] = [];
+    for (let slotIndex = 0; slotIndex < length; slotIndex += 1) {
+      nextOrder.push(previousOrder[slotIndex] ?? null);
+    }
+    return nextOrder;
   }, []);
 
-  const handleReorderRack = useCallback((draggedTileId: string, targetTileId: string | null, mode: 'swap' | 'move') => {
+  /** Shuffles the tiles still on the stand. Gaps left by placed tiles keep their seats. */
+  const handleShuffleRack = useCallback(() => {
     setRackOrder(previousOrder => {
-      const fromIndex = previousOrder.indexOf(draggedTileId);
-      if (fromIndex < 0) return previousOrder;
-      const nextOrder = [...previousOrder];
-      if (!targetTileId) {
-        nextOrder.splice(fromIndex, 1);
-        nextOrder.push(draggedTileId);
-        return nextOrder;
+      const nextOrder = seatRackOrder(previousOrder);
+      const seatIndexes: number[] = [];
+      const tileIds: string[] = [];
+      nextOrder.forEach((tileId, slotIndex) => {
+        if (tileId && !pendingTileIds.has(tileId)) {
+          seatIndexes.push(slotIndex);
+          tileIds.push(tileId);
+        }
+      });
+      if (tileIds.length < 2) return previousOrder;
+      for (let index = tileIds.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [tileIds[index], tileIds[randomIndex]] = [tileIds[randomIndex], tileIds[index]];
       }
-      const targetIndex = nextOrder.indexOf(targetTileId);
-      if (targetIndex < 0 || targetIndex === fromIndex) return previousOrder;
-      if (mode === 'swap') {
-        [nextOrder[fromIndex], nextOrder[targetIndex]] = [nextOrder[targetIndex], nextOrder[fromIndex]];
-        return nextOrder;
-      }
-      nextOrder.splice(fromIndex, 1);
-      nextOrder.splice(nextOrder.indexOf(targetTileId), 0, draggedTileId);
+      seatIndexes.forEach((slotIndex, index) => { nextOrder[slotIndex] = tileIds[index]; });
       return nextOrder;
     });
-  }, []);
+  }, [pendingTileIds, seatRackOrder]);
+
+  /** Dragging inside the rack always swaps two seats, so a gap follows the tile it traded with. */
+  const handleSwapRackSlots = useCallback((fromSlot: number, toSlot: number) => {
+    if (fromSlot === toSlot) return;
+    setRackOrder(previousOrder => {
+      const nextOrder = seatRackOrder(previousOrder, Math.max(fromSlot, toSlot) + 1);
+      [nextOrder[fromSlot], nextOrder[toSlot]] = [nextOrder[toSlot], nextOrder[fromSlot]];
+      return nextOrder;
+    });
+  }, [seatRackOrder]);
+
+  /**
+   * Seats a tile coming back from the board. It lands on the seat it was dropped on; if that
+   * one is taken by a tile still on the stand, it falls back to the nearest free seat.
+   */
+  const seatReturningTile = useCallback((tileId: string, targetSlot: number) => {
+    setRackOrder(previousOrder => {
+      const nextOrder = seatRackOrder(previousOrder, targetSlot + 1);
+      const fromSlot = nextOrder.indexOf(tileId);
+      if (fromSlot < 0) return previousOrder;
+      const isFree = (slotIndex: number) => {
+        if (slotIndex < 0 || slotIndex >= nextOrder.length) return false;
+        const occupant = nextOrder[slotIndex];
+        return !occupant || occupant === tileId || pendingTileIds.has(occupant);
+      };
+      let slot = isFree(targetSlot) ? targetSlot : -1;
+      for (let distance = 1; slot < 0 && distance < nextOrder.length; distance += 1) {
+        if (isFree(targetSlot - distance)) slot = targetSlot - distance;
+        else if (isFree(targetSlot + distance)) slot = targetSlot + distance;
+      }
+      if (slot < 0 || slot === fromSlot) return previousOrder;
+      [nextOrder[fromSlot], nextOrder[slot]] = [nextOrder[slot], nextOrder[fromSlot]];
+      return nextOrder;
+    });
+  }, [pendingTileIds, seatRackOrder]);
 
   const updateDragHover = useCallback((clientX: number, clientY: number) => {
     setDragSession(previous => previous ? { ...previous, position: { x: clientX, y: clientY } } : previous);
@@ -156,6 +209,9 @@ export default function GamePage() {
       y <= rackViewport.top + rackViewport.height;
     if (droppedOnRack) {
       if (session.source === 'board') {
+        const droppedSeat = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-rack-slot]');
+        const targetSlot = droppedSeat ? Number(droppedSeat.dataset.rackSlot) : NaN;
+        seatReturningTile(session.tile.id, Number.isInteger(targetSlot) ? targetSlot : 0);
         setTemporaryTiles(previous => previous.filter(tile => tile.tile_id !== session.tile.id));
         setSelectedTileId(null);
         setSelectedCell(null);
@@ -215,7 +271,7 @@ export default function GamePage() {
     }
     setDragSession(null);
     setDragHoverCell(null);
-  }, [boardState, boardViewport, dragHoverCell, dragSession, isMyTurn, rackViewport, screenToCell, temporaryTiles]);
+  }, [boardState, boardViewport, dragHoverCell, dragSession, isMyTurn, rackViewport, screenToCell, seatReturningTile, temporaryTiles]);
 
   const cancelDrag = useCallback(() => {
     setDragSession(null);
@@ -276,16 +332,29 @@ export default function GamePage() {
     try {
       const state = await getGameState(gameId, myToken);
       setGameState(state);
-      const serverTileIds = (state.players.find(player => player.id === myPlayerId)?.rack ?? EMPTY_TILES).map(tile => tile.id);
-      setRackOrder(previousOrder => {
+      // A sync that arrives before the player id is known carries no rack for us. Reseating from
+      // it would blank every seat, so leave the seating alone until we can see our own tiles.
+      const myServerPlayer = state.players.find(player => player.id === myPlayerId);
+      const serverTileIds = (myServerPlayer?.rack ?? EMPTY_TILES).map(tile => tile.id);
+      if (myServerPlayer) setRackOrder(previousOrder => {
         const serverIds = new Set(serverTileIds);
-        const retained = previousOrder.filter(tileId => serverIds.has(tileId));
-        const retainedIds = new Set(retained);
-        const newTileIds = serverTileIds.filter(tileId => !retainedIds.has(tileId));
-        const nextOrder = [...retained, ...newTileIds];
-        return nextOrder.length === previousOrder.length && nextOrder.every((id, index) => id === previousOrder[index])
-          ? previousOrder
-          : nextOrder;
+        const slotCount = Math.max(RACK_SIZE, previousOrder.length, serverTileIds.length);
+        // Tiles the server no longer knows about (played, stolen, swapped) free their seat.
+        const nextOrder: (string | null)[] = [];
+        for (let slotIndex = 0; slotIndex < slotCount; slotIndex += 1) {
+          const tileId = previousOrder[slotIndex] ?? null;
+          nextOrder.push(tileId && serverIds.has(tileId) ? tileId : null);
+        }
+        // Freshly drawn tiles fill the free seats from the left.
+        const seated = new Set(nextOrder.filter((tileId): tileId is string => Boolean(tileId)));
+        serverTileIds.filter(tileId => !seated.has(tileId)).forEach(tileId => {
+          const freeSlot = nextOrder.indexOf(null);
+          if (freeSlot >= 0) nextOrder[freeSlot] = tileId;
+          else nextOrder.push(tileId);
+        });
+        const unchanged = nextOrder.length === previousOrder.length &&
+          nextOrder.every((tileId, index) => tileId === (previousOrder[index] ?? null));
+        return unchanged ? previousOrder : nextOrder;
       });
       setLoading(false);
     } catch (error: unknown) {
@@ -618,14 +687,14 @@ export default function GamePage() {
       {/* Bottom: Tile rack */}
       <div className="shrink-0 bg-slate-900/90 border-t border-slate-800/60 backdrop-blur-sm p-3 z-10">
         <TileRack
-          rack={myRack}
+          slots={rackSlots}
           selectedTileId={selectedTileId}
           onSelectTile={handleSelectTile}
           onCancelMove={handleCancelMove}
           onConfirmMove={handleConfirmMove}
           onPassTurn={handlePassTurn}
           onShuffleRack={handleShuffleRack}
-          onReorderRack={handleReorderRack}
+          onSwapSlots={handleSwapRackSlots}
           onStartTileDrag={startRackDrag}
           onFinishTileDrag={finishDrag}
           onRackViewportChange={setRackViewport}
