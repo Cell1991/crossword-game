@@ -27,7 +27,8 @@ function getErrorMessage(error: unknown, fallback: string): string {
 export const getApiBase = () => {
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
   if (typeof window !== 'undefined') {
-    return `${window.location.protocol}//${window.location.hostname}:8000/api`;
+    // Use the frontend origin so public tunnels do not expose a private backend port.
+    return '/api';
   }
   return 'http://127.0.0.1:8000/api';
 };

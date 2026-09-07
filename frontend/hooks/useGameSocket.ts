@@ -60,7 +60,7 @@ export function useGameSocket({ gameId, token, onEvent }: UseGameSocketProps) {
     };
 
     ws.onerror = () => {
-      setConnectionError('WebSocket connection error');
+      setConnectionError('WebSocket unavailable. Set NEXT_PUBLIC_WS_URL to the public backend tunnel URL.');
     };
 
     ws.onclose = (event) => {

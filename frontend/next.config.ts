@@ -8,8 +8,17 @@ const nextConfig: NextConfig = {
     "127.0.0.1",
     "*.trycloudflare.com",
     "*.ngrok-free.app",
+    "*.ngrok-free.dev",
     "*.ngrok.io",
   ],
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${process.env.BACKEND_INTERNAL_URL || "http://backend:8000"}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
