@@ -16,6 +16,7 @@ interface TileRackProps {
   onSwapSlots: (fromSlot: number, toSlot: number) => void;
   onStartTileDrag: (tile: Tile, clientX: number, clientY: number) => void;
   onFinishTileDrag: () => void;
+  onCancelTileDrag: () => void;
   onRackViewportChange: (rect: { left: number; top: number; width: number; height: number }) => void;
   isExternalDragActive: boolean;
   isMyTurn: boolean;
@@ -35,6 +36,7 @@ export const TileRack: React.FC<TileRackProps> = ({
   onSwapSlots,
   onStartTileDrag,
   onFinishTileDrag,
+  onCancelTileDrag,
   onRackViewportChange,
   isExternalDragActive,
   isMyTurn,
@@ -78,36 +80,44 @@ export const TileRack: React.FC<TileRackProps> = ({
     const start = pointerStartRef.current;
     if (!start || draggedSlot === null) return;
     setDragPosition({ x: event.clientX, y: event.clientY });
+    const rackRect = rackRef.current?.getBoundingClientRect();
+    const insideRack = Boolean(
+      rackRect &&
+      event.clientX >= rackRect.left &&
+      event.clientX <= rackRect.right &&
+      event.clientY >= rackRect.top &&
+      event.clientY <= rackRect.bottom
+    );
     if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 4) {
       didDragRef.current = true;
-      const rackRect = rackRef.current?.getBoundingClientRect();
-      const insideRack = Boolean(
-        rackRect &&
-        event.clientX >= rackRect.left &&
-        event.clientX <= rackRect.right &&
-        event.clientY >= rackRect.top &&
-        event.clientY <= rackRect.bottom
-      );
+      // Leaving the stand hands the tile over to the board drag, and coming back takes it
+      // over again — so a tile lifted above the rack can still be dropped on another seat.
       if (!insideRack && !externalDragRef.current) {
         externalDragRef.current = true;
         onStartTileDrag(tile, event.clientX, event.clientY);
+      } else if (insideRack && externalDragRef.current) {
+        externalDragRef.current = false;
+        onCancelTileDrag();
       }
     }
-    if (!externalDragRef.current) {
-      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-rack-slot]');
-      const targetSlot = target ? Number(target.dataset.rackSlot) : NaN;
-      setDragOverSlot(Number.isInteger(targetSlot) && targetSlot !== draggedSlot ? targetSlot : null);
+    if (!insideRack) {
+      setDragOverSlot(null);
+      return;
     }
+    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-rack-slot]');
+    const targetSlot = target ? Number(target.dataset.rackSlot) : NaN;
+    setDragOverSlot(Number.isInteger(targetSlot) && targetSlot !== draggedSlot ? targetSlot : null);
   };
 
   const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-    if (!externalDragRef.current && draggedSlot !== null && dragOverSlot !== null) {
+    if (draggedSlot !== null && dragOverSlot !== null) {
       onSwapSlots(draggedSlot, dragOverSlot);
+    } else if (externalDragRef.current) {
+      onFinishTileDrag();
     }
-    if (externalDragRef.current) onFinishTileDrag();
     pointerStartRef.current = null;
     setDraggedSlot(null);
     setDragOverSlot(null);

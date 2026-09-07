@@ -697,6 +697,7 @@ export default function GamePage() {
           onSwapSlots={handleSwapRackSlots}
           onStartTileDrag={startRackDrag}
           onFinishTileDrag={finishDrag}
+          onCancelTileDrag={cancelDrag}
           onRackViewportChange={setRackViewport}
           isExternalDragActive={dragSession?.source === 'board'}
           isMyTurn={isMyTurn}
