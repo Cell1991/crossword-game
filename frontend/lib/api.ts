@@ -37,7 +37,7 @@ export const getWsBase = () => {
   if (process.env.NEXT_PUBLIC_WS_URL) return process.env.NEXT_PUBLIC_WS_URL;
   if (typeof window !== 'undefined') {
     const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${wsProto}//${window.location.hostname}:8000`;
+    return `${wsProto}//${window.location.host}`;
   }
   return 'ws://127.0.0.1:8000';
 };
