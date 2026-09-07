@@ -72,7 +72,7 @@ export default function HomePage() {
         <div className="text-center">
           <div className="text-6xl mb-3">🔤</div>
           <h1 className="text-5xl font-black tracking-tight">
-            <MouseGradientText>WordBattle</MouseGradientText>
+            <MouseGradientText>WordX</MouseGradientText>
           </h1>
           <p className="text-slate-400 mt-2 text-sm">Multiplayer Crossword Game</p>
         </div>

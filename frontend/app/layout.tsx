@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WordBattle – Multiplayer Crossword Game",
+  title: "WordX – Multiplayer Crossword Game",
   description: "Place words, score points, beat your friends in this real-time multiplayer crossword game!",
 };
 
