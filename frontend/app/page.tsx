@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createRoom, joinRoom, sessionStore } from '../lib/api';
 import { TurnTimeLimit } from '../lib/types';
+import ParticleField from '../components/effects/ParticleField';
+import MouseGradientText from '../components/effects/MouseGradientText';
 
 type Mode = 'home' | 'create' | 'join';
 
@@ -62,18 +64,15 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4">
-      {/* Background grid decoration */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none"
-        style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }}
-      />
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4">
+      <ParticleField className="absolute inset-0 h-full w-full" />
 
       <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-8">
         {/* Logo / Title */}
         <div className="text-center">
           <div className="text-6xl mb-3">🔤</div>
-          <h1 className="text-5xl font-black text-white tracking-tight">
-            Word<span className="text-amber-400">Battle</span>
+          <h1 className="text-5xl font-black tracking-tight">
+            <MouseGradientText>WordBattle</MouseGradientText>
           </h1>
           <p className="text-slate-400 mt-2 text-sm">Multiplayer Crossword Game</p>
         </div>
