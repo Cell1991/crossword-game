@@ -66,10 +66,10 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(99,102,241,0.16),transparent_30%),linear-gradient(135deg,#020617_0%,#0f172a_58%,#171942_100%)] px-4 py-10 sm:py-12">
       <ParticleField className="absolute inset-0 h-full w-full" />
 
-      <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-8">
+      <div className="relative z-10 flex w-full max-w-[29rem] flex-col items-center gap-7 sm:gap-8">
         {/* Logo / Title */}
         <div className="text-center">
           <Image
@@ -78,22 +78,30 @@ export default function HomePage() {
             width={112}
             height={112}
             priority
-            className="mx-auto mb-3 h-28 w-28 object-contain drop-shadow-2xl"
+            className="mx-auto mb-2 h-24 w-24 object-contain drop-shadow-[0_18px_28px_rgba(0,0,0,0.42)] sm:h-28 sm:w-28"
           />
-          <h1 className="text-5xl font-black tracking-tight">
+          <p className="mb-2 text-[0.65rem] font-bold uppercase tracking-[0.32em] text-amber-300/75">Real-time word play</p>
+          <h1 className="text-5xl font-black tracking-[-0.04em] sm:text-[3.4rem]">
             <MouseGradientText>WordX</MouseGradientText>
           </h1>
-          <p className="text-slate-400 mt-2 text-sm">Multiplayer Crossword Game</p>
+          <p className="mt-2 text-sm font-medium tracking-wide text-slate-400">Multiplayer Crossword Game</p>
         </div>
 
         {/* Card */}
-        <div className="w-full bg-slate-900/80 border border-slate-700/50 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
+        <div className="w-full rounded-[1.75rem] border border-white/[0.1] bg-slate-900/65 p-4 shadow-[0_28px_90px_rgba(2,6,23,0.38)] backdrop-blur-xl sm:p-5">
 
           {mode === 'home' && (
             <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between px-2 pb-2">
+                <div>
+                  <p className="text-sm font-semibold text-white">Start playing</p>
+                  <p className="mt-0.5 text-xs text-slate-500">Choose how you want to enter</p>
+                </div>
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" aria-label="Online" />
+              </div>
               <button
                 onClick={() => { setMode('create'); setError(''); }}
-                className="group flex w-full items-center justify-between rounded-2xl border border-amber-300/40 bg-amber-400 px-5 py-4 text-left text-slate-950 shadow-[0_12px_30px_rgba(245,158,11,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-amber-300 hover:shadow-[0_16px_36px_rgba(245,158,11,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
+                className="group flex w-full items-center justify-between rounded-2xl border border-amber-200/50 bg-gradient-to-r from-amber-300 to-amber-400 px-5 py-4 text-left text-slate-950 shadow-[0_14px_34px_rgba(245,158,11,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:from-amber-200 hover:to-amber-300 hover:shadow-[0_18px_42px_rgba(245,158,11,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
               >
                 <span className="flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950/10">
@@ -108,7 +116,7 @@ export default function HomePage() {
               </button>
               <button
                 onClick={() => { setMode('join'); setError(''); }}
-                className="group flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[0.07] px-5 py-4 text-left text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
+                className="group flex w-full items-center justify-between rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-5 py-4 text-left text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200/30 hover:from-indigo-300/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
               >
                 <span className="flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-300/15 text-indigo-200">
@@ -125,21 +133,22 @@ export default function HomePage() {
           )}
 
           {mode === 'create' && (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-6">
               <div>
-                <button onClick={() => { setMode('home'); setError(''); }} className="text-slate-400 hover:text-white text-sm flex items-center gap-1 mb-4 transition-colors">
+                <button onClick={() => { setMode('home'); setError(''); }} className="mb-6 flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
                   ← Back
                 </button>
-                <h2 className="text-xl font-bold text-white mb-1">Create a Room</h2>
-                <p className="text-slate-400 text-sm">You&apos;ll be the host and receive a Game PIN to share</p>
+                <p className="mb-2 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-amber-300/80">Host a session</p>
+                <h2 className="mb-2 text-2xl font-bold tracking-tight text-white">Create a Room</h2>
+                <p className="text-sm leading-6 text-slate-400">You&apos;ll be the host and receive a Game PIN to share.</p>
               </div>
               <div>
-                <label htmlFor="turn-time" className="block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Turn Time</label>
+                <label htmlFor="turn-time" className="mb-2 block text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Turn Time</label>
                 <select
                   id="turn-time"
                   value={turnTimeLimit ?? ''}
                   onChange={event => setTurnTimeLimit(event.target.value === '' ? null : Number(event.target.value) as TurnTimeLimit)}
-                  className="w-full bg-slate-800 border border-slate-600 focus:border-amber-400 rounded-xl px-4 py-3 text-white outline-none transition-colors"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3.5 text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
                 >
                   <option value="">Unlimited</option>
                   <option value="30">30 sec</option>
@@ -149,7 +158,7 @@ export default function HomePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Your Name</label>
+                <label className="mb-2 block text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Your Name</label>
                 <input
                   type="text"
                   value={name}
@@ -157,7 +166,7 @@ export default function HomePage() {
                   onKeyDown={e => e.key === 'Enter' && handleCreate()}
                   placeholder="Enter your name..."
                   maxLength={24}
-                  className="w-full bg-slate-800 border border-slate-600 focus:border-amber-400 rounded-xl px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-lg"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3.5 text-lg text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
                 />
               </div>
               {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -172,27 +181,28 @@ export default function HomePage() {
           )}
 
           {mode === 'join' && (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-6">
               <div>
-                <button onClick={() => { setMode('home'); setError(''); }} className="text-slate-400 hover:text-white text-sm flex items-center gap-1 mb-4 transition-colors">
+                <button onClick={() => { setMode('home'); setError(''); }} className="mb-6 flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
                   ← Back
                 </button>
-                <h2 className="text-xl font-bold text-white mb-1">Join a Game</h2>
-                <p className="text-slate-400 text-sm">Enter the Game PIN given by the host</p>
+                <p className="mb-2 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-indigo-300/80">Enter a session</p>
+                <h2 className="mb-2 text-2xl font-bold tracking-tight text-white">Join a Game</h2>
+                <p className="text-sm leading-6 text-slate-400">Enter the Game PIN given by the host.</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Your Name</label>
+                <label className="mb-2 block text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Your Name</label>
                 <input
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="Enter your name..."
                   maxLength={24}
-                  className="w-full bg-slate-800 border border-slate-600 focus:border-indigo-400 rounded-xl px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-lg"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3.5 text-lg text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Game PIN</label>
+                <label className="mb-2 block text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game PIN</label>
                 <input
                   type="text"
                   value={pin}
@@ -200,7 +210,7 @@ export default function HomePage() {
                   onKeyDown={e => e.key === 'Enter' && handleJoin()}
                   placeholder="6-digit PIN"
                   maxLength={6}
-                  className="w-full bg-slate-800 border border-slate-600 focus:border-indigo-400 rounded-xl px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-2xl font-mono tracking-widest text-center"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3.5 text-center font-mono text-2xl tracking-[0.28em] text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
                 />
               </div>
               {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -215,8 +225,8 @@ export default function HomePage() {
           )}
         </div>
 
-        <p className="text-slate-600 text-xs">
-          Place words, score points, beat your friends!
+        <p className="text-center text-[0.68rem] font-medium uppercase tracking-[0.2em] text-slate-600">
+          Think sharp · play together · score big
         </p>
       </div>
     </div>
