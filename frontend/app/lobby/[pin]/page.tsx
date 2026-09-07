@@ -2,6 +2,7 @@
 
 import React, { startTransition, useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Image from 'next/image';
 import { getRoom, startGame, sessionStore } from '../../../lib/api';
 import { PinDisplay } from '../../../components/lobby/PinDisplay';
 import { PlayerList } from '../../../components/lobby/PlayerList';
@@ -92,9 +93,16 @@ export default function LobbyPage() {
       <div className="relative z-10 w-full max-w-lg flex flex-col items-center gap-6">
         {/* Header */}
         <div className="text-center">
-          <div className="text-4xl mb-2">🔤</div>
+          <Image
+            src="/wordx-icon.png"
+            alt="WordX logo"
+            width={72}
+            height={72}
+            priority
+            className="mx-auto mb-2 h-[72px] w-[72px] object-contain drop-shadow-2xl"
+          />
           <h1 className="text-3xl font-black text-white tracking-tight">
-            Word<span className="text-amber-400">Battle</span>
+            Word<span className="text-amber-400">X</span>
           </h1>
           <p className="text-slate-400 text-sm mt-1">
             {isHost ? 'Share the PIN and start when ready!' : 'Waiting for host to start the game...'}

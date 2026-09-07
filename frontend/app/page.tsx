@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { createRoom, joinRoom, sessionStore } from '../lib/api';
 import { TurnTimeLimit } from '../lib/types';
 import ParticleField from '../components/effects/ParticleField';
@@ -70,7 +71,14 @@ export default function HomePage() {
       <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-8">
         {/* Logo / Title */}
         <div className="text-center">
-          <div className="text-6xl mb-3">🔤</div>
+          <Image
+            src="/wordx-icon.png"
+            alt="WordX logo"
+            width={112}
+            height={112}
+            priority
+            className="mx-auto mb-3 h-28 w-28 object-contain drop-shadow-2xl"
+          />
           <h1 className="text-5xl font-black tracking-tight">
             <MouseGradientText>WordX</MouseGradientText>
           </h1>
