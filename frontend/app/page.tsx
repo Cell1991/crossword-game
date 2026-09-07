@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { ArrowRight, LogIn, Plus } from 'lucide-react';
 import { createRoom, joinRoom, sessionStore } from '../lib/api';
 import { TurnTimeLimit } from '../lib/types';
 import ParticleField from '../components/effects/ParticleField';
@@ -89,18 +90,36 @@ export default function HomePage() {
         <div className="w-full bg-slate-900/80 border border-slate-700/50 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
 
           {mode === 'home' && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               <button
                 onClick={() => { setMode('create'); setError(''); }}
-                className="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg transition-all shadow-lg shadow-amber-500/20 active:scale-95"
+                className="group flex w-full items-center justify-between rounded-2xl border border-amber-300/40 bg-amber-400 px-5 py-4 text-left text-slate-950 shadow-[0_12px_30px_rgba(245,158,11,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-amber-300 hover:shadow-[0_16px_36px_rgba(245,158,11,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
               >
-                🎮 Create Game
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950/10">
+                    <Plus className="h-5 w-5" strokeWidth={2.5} />
+                  </span>
+                  <span>
+                    <span className="block text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-800/60">New session</span>
+                    <span className="block text-lg font-bold tracking-tight">Create Game</span>
+                  </span>
+                </span>
+                <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
               </button>
               <button
                 onClick={() => { setMode('join'); setError(''); }}
-                className="w-full py-4 rounded-2xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-lg transition-all border border-slate-600 active:scale-95"
+                className="group flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[0.07] px-5 py-4 text-left text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
               >
-                🚀 Join Game
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-300/15 text-indigo-200">
+                    <LogIn className="h-5 w-5" strokeWidth={2.2} />
+                  </span>
+                  <span>
+                    <span className="block text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Have a PIN?</span>
+                    <span className="block text-lg font-bold tracking-tight">Join Game</span>
+                  </span>
+                </span>
+                <ArrowRight className="h-5 w-5 text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-white" />
               </button>
             </div>
           )}
@@ -145,9 +164,9 @@ export default function HomePage() {
               <button
                 onClick={handleCreate}
                 disabled={loading}
-                className="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-lg transition-all active:scale-95"
+                className="w-full rounded-2xl border border-amber-300/40 bg-amber-400 py-4 text-lg font-bold text-slate-950 shadow-[0_12px_30px_rgba(245,158,11,0.16)] transition-all hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px"
               >
-                {loading ? 'Creating...' : '✨ Create Room'}
+                {loading ? 'Creating...' : 'Create Room'}
               </button>
             </div>
           )}
@@ -188,9 +207,9 @@ export default function HomePage() {
               <button
                 onClick={handleJoin}
                 disabled={loading}
-                className="w-full py-4 rounded-2xl bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-lg transition-all active:scale-95"
+                className="w-full rounded-2xl border border-indigo-300/30 bg-indigo-500 py-4 text-lg font-bold text-white shadow-[0_12px_30px_rgba(99,102,241,0.18)] transition-all hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px"
               >
-                {loading ? 'Joining...' : '🚀 Join Game'}
+                {loading ? 'Joining...' : 'Join Game'}
               </button>
             </div>
           )}

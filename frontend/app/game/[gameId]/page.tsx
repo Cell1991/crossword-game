@@ -591,7 +591,7 @@ export default function GamePage() {
           >
             <span>Exit</span>
           </button>
-          <span className="text-lg font-black text-white">Word<span className="text-amber-400">Battle</span></span>
+          <span className="text-lg font-black text-white">Word<span className="text-amber-400">X</span></span>
           <div className={`flex items-center gap-1.5 text-xs ${isConnected ? 'text-emerald-400' : 'text-red-400'}`}>
             <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
             {isConnected ? 'Live' : 'Reconnecting...'}
