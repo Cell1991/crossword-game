@@ -10,6 +10,7 @@ from app.game.game_end import GameEndService
 from app.game.tiles import TileService
 from app.schemas.move import PlacedTileInput, ValidateMoveResponse, CommitMoveResponse, WordFormed
 from app.game.board import Board
+from app.database.state import bag_tiles, board_state, player_rack, replace_board_state, replace_game_tiles
 import random
 
 class MoveService:
@@ -55,8 +56,10 @@ class MoveService:
         if not player:
             return ValidateMoveResponse(valid=False, reason="Player not found in game")
 
+        normalized_board = await board_state(db, game_id)
+        normalized_rack = await player_rack(db, player.id)
         # Verify tile ownership in rack
-        owns_tiles, err_ownership = cls._verify_tile_ownership(player.rack, placed_tiles)
+        owns_tiles, err_ownership = cls._verify_tile_ownership(normalized_rack, placed_tiles)
         if not owns_tiles:
             return ValidateMoveResponse(valid=False, reason=err_ownership)
         if game.banned_letter and game.banned_until_turn and game.turn_number <= game.banned_until_turn:
@@ -65,10 +68,10 @@ class MoveService:
 
         # Run authoritative rule engine
         placed_dicts = [pt.model_dump() for pt in placed_tiles]
-        is_first = len(game.board_state) == 0
+        is_first = len(normalized_board) == 0
 
         valid, err, words, score, _ = RuleEngine.validate_move(
-            board_cells=game.board_state,
+            board_cells=normalized_board,
             placed_tiles=placed_dicts,
             is_first_move=is_first
         )
@@ -109,8 +112,10 @@ class MoveService:
         if not player:
             raise HTTPException(status_code=404, detail="Player not found")
 
+        normalized_board = await board_state(db, game_id)
+        normalized_rack = await player_rack(db, player.id)
         # Check tile ownership
-        owns_tiles, err_ownership = cls._verify_tile_ownership(player.rack, placed_tiles)
+        owns_tiles, err_ownership = cls._verify_tile_ownership(normalized_rack, placed_tiles)
         if not owns_tiles:
             raise HTTPException(status_code=400, detail=err_ownership)
         if game.banned_letter and game.banned_until_turn and game.turn_number <= game.banned_until_turn:
@@ -118,10 +123,10 @@ class MoveService:
                 raise HTTPException(status_code=400, detail=f"Letter '{game.banned_letter}' is banned this turn")
 
         placed_dicts = [pt.model_dump() for pt in placed_tiles]
-        is_first = len(game.board_state) == 0
+        is_first = len(normalized_board) == 0
 
         valid, err, words, score, _ = RuleEngine.validate_move(
-            board_cells=game.board_state,
+            board_cells=normalized_board,
             placed_tiles=placed_dicts,
             is_first_move=is_first
         )
@@ -142,9 +147,10 @@ class MoveService:
                 "turn_number": game.turn_number
             }
         game.board_state = updated_board
+        await replace_board_state(db, game.id, updated_board)
 
         # Remove placed tiles from player rack
-        remaining_rack = list(player.rack)
+        remaining_rack = list(normalized_rack)
         for pt in placed_tiles:
             for i, r_tile in enumerate(remaining_rack):
                 if r_tile["letter"].upper() == pt.letter.upper():
@@ -153,7 +159,7 @@ class MoveService:
 
         # Draw replacement tiles from tile bag
         tiles_needed = len(placed_tiles)
-        bag = list(game.tile_bag)
+        bag = await bag_tiles(db, game.id)
         drawn_tiles, remaining_bag = TileService.draw_tiles(bag, tiles_needed)
         remaining_rack.extend(drawn_tiles)
         player.rack = remaining_rack
@@ -167,6 +173,8 @@ class MoveService:
             if len(cards) < 3:
                 cards.append(random.choice(cls.CARD_TYPES))
                 player.cards = cards
+                from app.database.state import replace_player_cards
+                await replace_player_cards(db, player.id, cards)
 
         words_formed = [
             WordFormed(word=w.word, score=sum(v for _, v, _ in w.letters_with_vals), cells=w.cells)
@@ -225,6 +233,7 @@ class MoveService:
                 room.finished_at = get_utc_now()
 
         await db.flush()
+        await replace_game_tiles(db, game.id, game.tile_bag, all_players)
 
         res = CommitMoveResponse(
             success=True,

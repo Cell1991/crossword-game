@@ -10,6 +10,7 @@ from app.database.models import Game, GamePlayer
 from app.database.session import get_db
 from app.game.board import Board
 from app.game.tiles import TileService
+from app.database.state import bag_tiles, board_state, player_rack, player_cards, replace_board_state, replace_game_tiles, replace_player_cards
 
 router = APIRouter(prefix="/games/{game_id}/cards", tags=["Cards"])
 
@@ -37,47 +38,60 @@ async def use_card(
         raise HTTPException(status_code=404, detail="Game or player not found")
 
     card = request.card.upper()
-    cards = list(player.cards or [])
+    cards = await player_cards(db, player.id)
     if card not in cards:
         raise HTTPException(status_code=400, detail="Card is not in your hand")
     cards.remove(card)
     player.cards = cards
+    await replace_player_cards(db, player.id, cards)
 
     if card == "DRAW_TILE":
-        drawn, game.tile_bag = TileService.draw_tiles(list(game.tile_bag), 1)
-        player.rack = list(player.rack) + drawn
+        bag = await bag_tiles(db, game.id)
+        drawn, game.tile_bag = TileService.draw_tiles(bag, 1)
+        player.rack = await player_rack(db, player.id) + drawn
+        players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
+        await replace_game_tiles(db, game.id, game.tile_bag, players)
         return {"success": True, "drawn": len(drawn)}
 
     if card == "HEAL":
-        player.hp = min(100, player.hp + sum(int(tile["value"]) for tile in player.rack))
+        player.hp = min(100, player.hp + sum(int(tile["value"]) for tile in await player_rack(db, player.id)))
         return {"success": True, "hp": player.hp}
 
     if card in {"STEAL_TILE", "SPY_SWAP"}:
         target = await _target_player(db, game_id, request.target_player_id, player.id)
         if card == "STEAL_TILE":
-            if not target.rack:
+            target_rack = await player_rack(db, target.id)
+            if not target_rack:
                 return {"success": True, "stolen": False}
-            stolen = random.choice(list(target.rack))
-            target.rack = [tile for tile in target.rack if tile["id"] != stolen["id"]]
-            player.rack = list(player.rack) + [stolen]
+            stolen = random.choice(target_rack)
+            target.rack = [tile for tile in target_rack if tile["id"] != stolen["id"]]
+            player.rack = await player_rack(db, player.id) + [stolen]
+            players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
+            await replace_game_tiles(db, game.id, game.tile_bag, players)
             return {"success": True, "stolen": True}
-        own = next((tile for tile in player.rack if tile["id"] == request.own_tile_id), None)
-        other = next((tile for tile in target.rack if tile["id"] == request.target_tile_id), None)
+        player_rack_items = await player_rack(db, player.id)
+        target_rack_items = await player_rack(db, target.id)
+        own = next((tile for tile in player_rack_items if tile["id"] == request.own_tile_id), None)
+        other = next((tile for tile in target_rack_items if tile["id"] == request.target_tile_id), None)
         if not own or not other:
             raise HTTPException(status_code=400, detail="Both swap tiles are required")
-        player.rack = [other if tile["id"] == own["id"] else tile for tile in player.rack]
-        target.rack = [own if tile["id"] == other["id"] else tile for tile in target.rack]
+        player.rack = [other if tile["id"] == own["id"] else tile for tile in player_rack_items]
+        target.rack = [own if tile["id"] == other["id"] else tile for tile in target_rack_items]
+        players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
+        await replace_game_tiles(db, game.id, game.tile_bag, players)
         return {"success": True}
 
     if card == "DESTROY_TILE":
         if request.row is None or request.col is None or Board.is_center(request.row, request.col):
             raise HTTPException(status_code=400, detail="Choose a non-center board tile")
         key = Board.key(request.row, request.col)
-        if key not in game.board_state:
+        current_board = await board_state(db, game.id)
+        if key not in current_board:
             raise HTTPException(status_code=400, detail="Board tile not found")
-        board = dict(game.board_state)
+        board = dict(current_board)
         del board[key]
         game.board_state = board
+        await replace_board_state(db, game.id, board)
         return {"success": True}
 
     if card == "BAN_LETTER":

@@ -13,6 +13,7 @@ from app.schemas.player import PlayerOut
 from app.schemas.events import WebSocketEvent, EventType
 from app.services.room_service import RoomService
 from app.websocket.connection_manager import manager
+from app.database.state import player_rack
 
 router = APIRouter(prefix="/rooms", tags=["Rooms"])
 
@@ -63,7 +64,7 @@ async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
             score=p.score,
             turn_order=p.turn_order,
             connection_status=p.connection_status,
-            rack_count=len(p.rack)
+            rack_count=len(await player_rack(db, p.id))
         )
         for p in players
     ]

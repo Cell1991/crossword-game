@@ -9,6 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     JSON,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -90,3 +91,49 @@ class Move(Base):
 
     game = relationship("Game", back_populates="moves")
     player = relationship("GamePlayer", back_populates="moves")
+
+
+class BoardCell(Base):
+    """One committed tile on a game's board."""
+    __tablename__ = "board_cells"
+    __table_args__ = (UniqueConstraint("game_id", "row", "col", name="uq_board_cell_coordinate"),)
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    game_id = Column(String(36), ForeignKey("games.id", ondelete="CASCADE"), nullable=False, index=True)
+    row = Column(Integer, nullable=False)
+    col = Column(Integer, nullable=False)
+    letter = Column(String(1), nullable=False)
+    value = Column(Integer, nullable=False)
+    player_id = Column(String(36), ForeignKey("game_players.id"), nullable=False)
+    turn_number = Column(Integer, nullable=False)
+
+
+class GameTile(Base):
+    """A tile currently in a bag or a player's rack."""
+    __tablename__ = "game_tiles"
+
+    id = Column(String(36), primary_key=True)
+    game_id = Column(String(36), ForeignKey("games.id", ondelete="CASCADE"), nullable=False, index=True)
+    player_id = Column(String(36), ForeignKey("game_players.id", ondelete="CASCADE"), nullable=True, index=True)
+    location = Column(String(8), nullable=False)  # BAG or RACK
+    position = Column(Integer, nullable=False)
+    letter = Column(String(1), nullable=False)
+    value = Column(Integer, nullable=False)
+
+
+class PlayerCard(Base):
+    """Cards held by a player; one row represents one card."""
+    __tablename__ = "player_cards"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    player_id = Column(String(36), ForeignKey("game_players.id", ondelete="CASCADE"), nullable=False, index=True)
+    card_type = Column(String(32), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=get_utc_now, nullable=False)
+
+
+class DictionaryWord(Base):
+    """Normalized dictionary entry used by the game rules."""
+    __tablename__ = "dictionary_words"
+
+    word = Column(String(32), primary_key=True)
+    word_length = Column(Integer, nullable=False, index=True)

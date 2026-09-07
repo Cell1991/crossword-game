@@ -2,13 +2,14 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from fastapi import HTTPException
 
-from app.database.models import Game, GamePlayer, Move, GameRoom, get_utc_now
+from app.database.models import Game, GamePlayer, Move, GameRoom, GameTile, get_utc_now
 from app.game.game_end import GameEndService
 from app.schemas.player import PlayerOut, TileSchema
 from app.schemas.game import GameStateResponse
+from app.database.state import board_state, player_rack, player_cards, replace_game_tiles
 
 class GameService:
 
@@ -42,14 +43,17 @@ class GameService:
 
         room = (await db.execute(select(GameRoom).where(GameRoom.id == game_id))).scalar_one_or_none()
 
+        normalized_board = await board_state(db, game_id)
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
         players = (await db.execute(stmt_players)).scalars().all()
 
         player_outs = []
         for p in players:
+            normalized_rack = await player_rack(db, p.id)
+            normalized_cards = await player_cards(db, p.id)
             p_rack = None
             if requesting_player_id and p.id == requesting_player_id:
-                p_rack = [TileSchema(**t) for t in p.rack]
+                p_rack = [TileSchema(**t) for t in normalized_rack]
             player_outs.append(PlayerOut(
                 id=p.id,
                 display_name=p.display_name,
@@ -58,9 +62,9 @@ class GameService:
                 hp=p.hp,
                 turn_order=p.turn_order,
                 connection_status=p.connection_status,
-                rack_count=len(p.rack),
+                rack_count=len(normalized_rack),
                 rack=p_rack
-                ,cards=p.cards if requesting_player_id and p.id == requesting_player_id else None
+                ,cards=normalized_cards if requesting_player_id and p.id == requesting_player_id else None
             ))
 
         return GameStateResponse(
@@ -69,9 +73,9 @@ class GameService:
             current_player_id=game.current_player_id,
             turn_number=game.turn_number,
             consecutive_passes=game.consecutive_passes,
-            board_state=game.board_state,
+            board_state=normalized_board,
             players=player_outs,
-            tile_bag_count=len(game.tile_bag),
+            tile_bag_count=await db.scalar(select(func.count()).select_from(GameTile).where(GameTile.game_id == game_id, GameTile.location == "BAG")) or 0,
             turn_time_limit=room.turn_time_limit if room else None,
             turn_started_at=game.turn_started_at,
             max_turns=game.max_turns
@@ -135,4 +139,5 @@ class GameService:
                 room.finished_at = get_utc_now()
 
         await db.flush()
+        await replace_game_tiles(db, game.id, game.tile_bag, players)
         return game, is_over or reached_max_turns, reason or ("MAX_TURNS" if reached_max_turns else None), winner

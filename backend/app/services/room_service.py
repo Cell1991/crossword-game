@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.core.security import generate_game_pin, generate_session_token
 from app.database.models import GameRoom, Game, GamePlayer, get_utc_now
 from app.game.tiles import TileService
+from app.database.state import replace_game_tiles
 
 class RoomService:
 
@@ -65,6 +66,7 @@ class RoomService:
         db.add(game)
         db.add(host_player)
         await db.flush()
+        await replace_game_tiles(db, room_id, tile_bag, [host_player])
 
         return room, game, host_player
 
@@ -156,6 +158,8 @@ class RoomService:
         room.status = "PLAYING"
         room.started_at = get_utc_now()
         game.turn_started_at = get_utc_now()
+
+        await replace_game_tiles(db, game.id, bag, players)
 
         await db.flush()
         return game
