@@ -56,17 +56,17 @@ export interface StoredSession {
 export const sessionStore = {
   save(session: StoredSession) {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(`crossword_session_${session.gameId}`, JSON.stringify(session));
-    localStorage.setItem('crossword_last_game_id', session.gameId);
+    sessionStorage.setItem(`crossword_session_${session.gameId}`, JSON.stringify(session));
+    sessionStorage.setItem('crossword_last_game_id', session.gameId);
   },
   get(gameId: string): StoredSession | null {
     if (typeof window === 'undefined') return null;
-    const raw = localStorage.getItem(`crossword_session_${gameId}`);
+    const raw = sessionStorage.getItem(`crossword_session_${gameId}`);
     return raw ? JSON.parse(raw) : null;
   },
   getLast(): StoredSession | null {
     if (typeof window === 'undefined') return null;
-    const lastId = localStorage.getItem('crossword_last_game_id');
+    const lastId = sessionStorage.getItem('crossword_last_game_id');
     return lastId ? this.get(lastId) : null;
   }
 };
