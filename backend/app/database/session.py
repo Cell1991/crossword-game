@@ -1,6 +1,6 @@
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy import inspect, text, select, func
+from sqlalchemy import inspect, text, select, func, insert
 from sqlalchemy.pool import NullPool
 from app.core.config import settings
 from app.database.models import Base, Game, GamePlayer, BoardCell, GameTile, PlayerCard, DictionaryWord
@@ -90,11 +90,19 @@ async def _seed_dictionary(session: AsyncSession):
     word_count = await session.scalar(select(func.count()).select_from(DictionaryWord))
     if word_count:
         return
-    words = sorted(dictionary_service._words)
-    session.add_all([
-        DictionaryWord(word=word, word_length=len(word))
-        for word in words if 2 <= len(word) <= 32 and word.isalpha()
-    ])
+
+    # A word list can contain hundreds of thousands of entries.  Creating one
+    # ORM object per word keeps all of them in the session until flush, which
+    # can exhaust the container and prevents the API from starting.  Send
+    # compact batches straight to the database instead.
+    rows = [
+        {"word": word, "word_length": len(word)}
+        for word in sorted(dictionary_service._words)
+        if 2 <= len(word) <= 32 and word.isalpha()
+    ]
+    batch_size = 5_000
+    for start in range(0, len(rows), batch_size):
+        await session.execute(insert(DictionaryWord), rows[start:start + batch_size])
 
 
 async def _load_dictionary_from_database(session: AsyncSession):
