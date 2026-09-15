@@ -20,6 +20,7 @@ interface TileRackProps {
   onRackViewportChange: (rect: { left: number; top: number; width: number; height: number }) => void;
   isExternalDragActive: boolean;
   isMyTurn: boolean;
+  canStageMove: boolean;
   hasTemporaryTiles: boolean;
   isSubmitting: boolean;
   estimatedScore?: number;
@@ -40,6 +41,7 @@ export const TileRack: React.FC<TileRackProps> = ({
   onRackViewportChange,
   isExternalDragActive,
   isMyTurn,
+  canStageMove,
   hasTemporaryTiles,
   isSubmitting,
   estimatedScore,
@@ -65,7 +67,7 @@ export const TileRack: React.FC<TileRackProps> = ({
   }, [onRackViewportChange, slots.length]);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, slotIndex: number) => {
-    if (!isMyTurn) return;
+    if (!canStageMove) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     pointerStartRef.current = { x: event.clientX, y: event.clientY };
@@ -130,7 +132,7 @@ export const TileRack: React.FC<TileRackProps> = ({
       didDragRef.current = false;
       return;
     }
-    if (isMyTurn) onSelectTile(tile);
+    if (canStageMove) onSelectTile(tile);
   };
 
   const draggedTile = draggedSlot !== null ? slots[draggedSlot] : null;
@@ -246,7 +248,7 @@ export const TileRack: React.FC<TileRackProps> = ({
               onPointerDown={(event) => handlePointerDown(event, slotIndex)}
               onPointerMove={(event) => handlePointerMove(event, tile)}
               onPointerUp={handlePointerUp}
-              disabled={!isMyTurn}
+              disabled={!canStageMove}
               className={`group relative flex flex-col items-center justify-center w-11 h-12 sm:w-13 sm:h-14 rounded-xl font-sans transition-all select-none touch-none ${
                 isDragging
                   ? 'z-10 scale-105 -translate-y-2 opacity-30 bg-amber-200 border-2 border-amber-400 shadow-xl shadow-amber-500/40 cursor-grabbing'
@@ -254,7 +256,7 @@ export const TileRack: React.FC<TileRackProps> = ({
                   ? 'translate-x-1 ring-2 ring-sky-400/80'
                   : isSelected
                   ? '-translate-y-3 bg-amber-200 border-2 border-amber-500 shadow-amber-500/40 ring-4 ring-amber-400/40'
-                  : isMyTurn
+                  : canStageMove
                   ? 'bg-amber-100 hover:bg-amber-50 active:translate-y-0.5 border border-amber-600/40 hover:-translate-y-1 cursor-pointer'
                   : 'bg-amber-100/50 border border-amber-700/30 opacity-70 cursor-not-allowed'
               } shadow-md`}
