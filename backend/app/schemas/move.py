@@ -1,9 +1,11 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
+from app.core.config import settings
+
 class PlacedTileInput(BaseModel):
-    row: int = Field(..., ge=0, le=14)
-    col: int = Field(..., ge=0, le=14)
+    row: int = Field(..., ge=0, le=settings.BOARD_ROWS - 1)
+    col: int = Field(..., ge=0, le=settings.BOARD_COLS - 1)
     tile_id: str
     letter: str = Field(..., min_length=1, max_length=1)
     value: int = Field(..., ge=0)
@@ -34,3 +36,7 @@ class CommitMoveResponse(BaseModel):
     next_player_id: Optional[str]
     game_over: bool = False
     winner_id: Optional[str] = None
+
+class ExchangeTilesRequest(BaseModel):
+    # No upper bound: cards such as DRAW_TILE can push a rack past RACK_SIZE.
+    tile_ids: list[str] = Field(..., min_length=1)
