@@ -112,3 +112,25 @@ async def test_full_game_api_flow():
         if not any(t["letter"] == "Z" for t in bob_rack):
             assert not res.json()["valid"]
 
+
+@pytest.mark.asyncio
+async def test_current_player_leaving_advances_turn():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        created = (await client.post("/api/rooms", json={"host_name": "Alice"})).json()
+        joined = (await client.post(f"/api/rooms/{created['game_pin']}/join", json={
+            "game_pin": created["game_pin"], "player_name": "Bob"
+        })).json()
+        await client.post(f"/api/rooms/{created['game_pin']}/start", headers={"X-Player-ID": created["host_player_id"]})
+
+        response = await client.post(
+            f"/api/games/{created['game_id']}/leave",
+            headers={"X-Player-ID": created["host_player_id"]},
+        )
+
+        assert response.status_code == 200
+        assert response.json()["next_player_id"] == joined["player_id"]
+
+        state = (await client.get(f"/api/games/{created['game_id']}?token={joined['session_token']}")).json()
+        assert state["current_player_id"] == joined["player_id"]
+
