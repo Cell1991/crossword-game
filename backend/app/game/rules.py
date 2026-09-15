@@ -32,7 +32,7 @@ class RuleEngine:
         for t in placed_tiles:
             r, c = t.get("row", -1), t.get("col", -1)
             if not Board.is_valid_coord(r, c):
-                return False, f"Tile placement ({r}, {c}) is out of board boundaries (0..62)", [], 0, []
+                return False, f"Tile placement ({r}, {c}) is out of board boundaries ({Board.ROWS} rows x {Board.COLS} columns)", [], 0, []
             
             coord = (r, c)
             if coord in seen_coords:
