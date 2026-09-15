@@ -31,6 +31,8 @@ async def commit_move(
     db: AsyncSession = Depends(get_db)
 ):
     res, game, player = await MoveService.commit_move(db, game_id, x_player_id, req.placed_tiles)
+    # Save before telling anyone: clients reload the game the moment an event arrives.
+    await db.commit()
 
     # Broadcast MOVE_COMMITTED
     await manager.broadcast(game_id, WebSocketEvent(
