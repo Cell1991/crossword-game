@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    localPatterns: [
+      { pathname: "/wordx-icon.png", search: "?v=20260915" },
+    ],
+  },
   allowedDevOrigins: [
     "26.35.255.123",
     "10.58.198.17",
