@@ -17,14 +17,14 @@ export const metadata: Metadata = {
   title: "WordX – Multiplayer Crossword Game",
   description: "Place words, score points, beat your friends in this real-time multiplayer crossword game!",
   icons: {
-    icon: "/wordx-icon.png",
-    shortcut: "/wordx-icon.png",
-    apple: "/wordx-icon.png",
+    icon: "/wordx-icon.png?v=20260915",
+    shortcut: "/wordx-icon.png?v=20260915",
+    apple: "/wordx-icon.png?v=20260915",
   },
   openGraph: {
     title: "WordX – Multiplayer Crossword Game",
     description: "Place words, score points, beat your friends in this real-time multiplayer crossword game!",
-    images: ["/wordx-icon.png"],
+    images: ["/wordx-icon.png?v=20260915"],
   },
 };
 
