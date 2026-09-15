@@ -48,8 +48,7 @@ class MoveService:
         if game.status != "PLAYING":
             return ValidateMoveResponse(valid=False, reason="Game is not currently active")
 
-        if game.current_player_id != player_id:
-            return ValidateMoveResponse(valid=False, reason="It is not your turn")
+        # Players may validate off-turn to practise a word; committing still requires the turn.
 
         stmt_player = select(GamePlayer).where(GamePlayer.id == player_id)
         player = (await db.execute(stmt_player)).scalar_one_or_none()
