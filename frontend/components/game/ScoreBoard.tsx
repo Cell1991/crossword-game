@@ -35,12 +35,15 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
         {sortedPlayers.map((player, idx) => {
           const isCurrent = player.id === currentPlayerId;
           const isMe = player.id === myPlayerId;
+          const isDead = player.hp <= 0;
 
           return (
             <div
               key={player.id}
               className={`relative flex items-center justify-between p-2 pb-3 rounded-xl transition-all ${
-                isCurrent
+                isDead
+                  ? 'bg-slate-950/70 border border-slate-700/40 opacity-55'
+                  : isCurrent
                   ? 'bg-indigo-950/70 border border-indigo-500/50 shadow-sm'
                   : 'bg-slate-800/40 border border-slate-700/30'
               }`}
@@ -50,8 +53,8 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                   {idx + 1}.
                 </span>
                 <div className="flex items-center gap-1.5 truncate">
-                  <span className={`text-sm truncate ${isMe ? 'font-bold text-amber-300' : 'font-medium'}`}>
-                    {player.display_name} {isMe && '(You)'} {player.hp <= 0 && '💀'}
+                  <span className={`text-sm truncate ${isDead ? 'text-slate-500 line-through' : isMe ? 'font-bold text-amber-300' : 'font-medium'}`}>
+                    {player.display_name} {isMe && '(You)'} {isDead && '(Out)'}
                   </span>
                   {player.is_host && (
                     <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
