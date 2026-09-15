@@ -194,3 +194,12 @@ export async function passTurn(gameId: string, playerId: string): Promise<unknow
   }
   return res.json();
 }
+
+export async function leaveGame(gameId: string, playerId: string): Promise<void> {
+  const res = await fetch(`${getApiBase()}/games/${gameId}/leave`, {
+    method: 'POST',
+    headers: { 'X-Player-ID': playerId },
+    keepalive: true,
+  });
+  if (!res.ok) throw new Error('Failed to leave game');
+}
