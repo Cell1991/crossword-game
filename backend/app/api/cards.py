@@ -19,8 +19,8 @@ class CardUseRequest(BaseModel):
     card: str
     target_player_id: Optional[str] = None
     letter: Optional[str] = Field(None, min_length=1, max_length=1)
-    row: Optional[int] = Field(None, ge=0, le=14)
-    col: Optional[int] = Field(None, ge=0, le=14)
+    row: Optional[int] = Field(None, ge=0, le=Board.ROWS - 1)
+    col: Optional[int] = Field(None, ge=0, le=Board.COLS - 1)
     own_tile_id: Optional[str] = None
     target_tile_id: Optional[str] = None
 
