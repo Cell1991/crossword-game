@@ -20,6 +20,10 @@ DEFAULT_LETTER_FREQUENCIES: dict[str, int] = {
     "Z": 1
 }
 
+class NotEnoughTilesInBag(ValueError):
+    """An exchange asked for more tiles than the bag holds."""
+
+
 class TileService:
     """Configurable Tile Bag and Rack Service."""
 
@@ -49,3 +53,33 @@ class TileService:
         drawn = bag[:actual_count]
         remaining = bag[actual_count:]
         return drawn, remaining
+
+    @staticmethod
+    def exchange_tiles(
+        rack: list[dict[str, Any]],
+        bag: list[dict[str, Any]],
+        tile_ids: list[str],
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        """
+        Trade the chosen rack tiles for the same number of tiles from the bag.
+        Replacements are drawn before the old tiles go back in, so a player can never
+        draw back what they just gave up. Each new tile takes the seat of the tile it replaces.
+        Returns: (new_rack, new_bag). Raises ValueError when the exchange is not allowed.
+        """
+        if not tile_ids:
+            raise ValueError("Choose at least one tile to exchange")
+        if len(set(tile_ids)) != len(tile_ids):
+            raise ValueError("Each tile can only be exchanged once")
+        rack_ids = {tile["id"] for tile in rack}
+        if any(tile_id not in rack_ids for tile_id in tile_ids):
+            raise ValueError("You can only exchange tiles from your own rack")
+        if len(bag) < len(tile_ids):
+            raise NotEnoughTilesInBag(f"Not enough tiles in the bag to exchange {len(tile_ids)} (only {len(bag)} left)")
+
+        drawn, remaining_bag = TileService.draw_tiles(bag, len(tile_ids))
+        chosen = set(tile_ids)
+        replacements = iter(drawn)
+        new_rack = [next(replacements) if tile["id"] in chosen else tile for tile in rack]
+        new_bag = remaining_bag + [tile for tile in rack if tile["id"] in chosen]
+        random.shuffle(new_bag)
+        return new_rack, new_bag
