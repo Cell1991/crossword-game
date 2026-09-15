@@ -20,7 +20,7 @@ interface BoardCanvasProps {
   draggingTileId: string | null;
   dragPreviewTile: { letter: string; value: number } | null;
   dragPreviewIsValid: boolean | null;
-  isMyTurn: boolean;
+  canStageMove: boolean;
   camera: ReturnType<typeof useBoardCamera>;
 }
 
@@ -44,7 +44,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   draggingTileId,
   dragPreviewTile,
   dragPreviewIsValid,
-  isMyTurn,
+  canStageMove,
   camera,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -311,7 +311,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     if (!rect) return;
     const cell = screenToCell(e.clientX - rect.left, e.clientY - rect.top);
     const pendingTile = cell && temporaryTiles.find(tile => tile.row === cell.row && tile.col === cell.col);
-    if (pendingTile && isMyTurn) {
+    if (pendingTile && canStageMove) {
       e.preventDefault();
       pendingPointerRef.current = {
         tile: pendingTile,
