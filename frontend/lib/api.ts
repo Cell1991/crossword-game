@@ -6,6 +6,7 @@ import {
   PlacedTile,
   ValidateMoveResponse,
   CommitMoveResponse,
+  ExchangeTilesResponse,
   TurnTimeLimit,
 } from './types';
 
@@ -191,6 +192,27 @@ export async function passTurn(gameId: string, playerId: string): Promise<unknow
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Failed to pass turn');
+  }
+  return res.json();
+}
+
+/** Swaps the given rack tiles for fresh ones from the bag. This uses up the player's turn. */
+export async function exchangeTiles(
+  gameId: string,
+  playerId: string,
+  tileIds: string[]
+): Promise<ExchangeTilesResponse> {
+  const res = await fetch(`${getApiBase()}/games/${gameId}/exchange`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Player-ID': playerId,
+    },
+    body: JSON.stringify({ tile_ids: tileIds }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(getErrorMessage(err, 'Failed to exchange tiles'));
   }
   return res.json();
 }
