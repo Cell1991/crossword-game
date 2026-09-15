@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { BOARD_COLS, BOARD_ROWS } from '../lib/board';
 
 const BASE_CELL_SIZE = 40;
-const BOARD_SIZE = 15;
-const MIN_SCALE = 0.5;
+// Low enough to see the whole 27-column board on a phone.
+const MIN_SCALE = 0.3;
 const MAX_SCALE = 2.0;
 const SCALE_STEP = 0.1;
 const DEFAULT_SCALE = 1;
@@ -20,19 +21,19 @@ export function useBoardCamera() {
   const lastMousePos = useRef({ x: 0, y: 0 });
 
   const centerBoard = useCallback((viewportWidth: number, viewportHeight: number) => {
-    const totalBoardPx = BOARD_SIZE * BASE_CELL_SIZE * scale;
+    const cellSize = BASE_CELL_SIZE * scale;
     setOffset({
-      x: (viewportWidth - totalBoardPx) / 2,
-      y: (viewportHeight - totalBoardPx) / 2,
+      x: (viewportWidth - BOARD_COLS * cellSize) / 2,
+      y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
     });
   }, [scale]);
 
   const resetCamera = useCallback((viewportWidth: number, viewportHeight: number) => {
     setScale(DEFAULT_SCALE);
-    const totalBoardPx = BOARD_SIZE * BASE_CELL_SIZE * DEFAULT_SCALE;
+    const cellSize = BASE_CELL_SIZE * DEFAULT_SCALE;
     setOffset({
-      x: (viewportWidth - totalBoardPx) / 2,
-      y: (viewportHeight - totalBoardPx) / 2,
+      x: (viewportWidth - BOARD_COLS * cellSize) / 2,
+      y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
     });
   }, []);
 
@@ -64,7 +65,7 @@ export function useBoardCamera() {
     const col = Math.floor(boardX / cellSize);
     const row = Math.floor(boardY / cellSize);
 
-    if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+    if (row >= 0 && row < BOARD_ROWS && col >= 0 && col < BOARD_COLS) {
       return { row, col };
     }
     return null;
