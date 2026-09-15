@@ -2,17 +2,23 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Tile } from '../../lib/types';
-import { RotateCcw, Check, SkipForward, Shuffle } from 'lucide-react';
+import { RotateCcw, Check, SkipForward, Shuffle, ArrowLeftRight, X } from 'lucide-react';
 
 interface TileRackProps {
   /** Fixed seats. `null` means the seat is empty — either the tile is on the board or the bag ran dry. */
   slots: (Tile | null)[];
   selectedTileId: string | null;
+  /** Tiles picked to go back to the bag, or `null` when the player is not exchanging. */
+  exchangeTileIds: string[] | null;
+  tileBagCount: number;
   onSelectTile: (tile: Tile) => void;
   onCancelMove: () => void;
   onConfirmMove: () => void;
   onPassTurn: () => void;
   onShuffleRack: () => void;
+  onStartExchange: () => void;
+  onCancelExchange: () => void;
+  onConfirmExchange: () => void;
   onSwapSlots: (fromSlot: number, toSlot: number) => void;
   onStartTileDrag: (tile: Tile, clientX: number, clientY: number) => void;
   onFinishTileDrag: () => void;
@@ -29,11 +35,16 @@ interface TileRackProps {
 export const TileRack: React.FC<TileRackProps> = ({
   slots,
   selectedTileId,
+  exchangeTileIds,
+  tileBagCount,
   onSelectTile,
   onCancelMove,
   onConfirmMove,
   onPassTurn,
   onShuffleRack,
+  onStartExchange,
+  onCancelExchange,
+  onConfirmExchange,
   onSwapSlots,
   onStartTileDrag,
   onFinishTileDrag,
@@ -55,6 +66,11 @@ export const TileRack: React.FC<TileRackProps> = ({
   const rackRef = useRef<HTMLDivElement | null>(null);
 
   const tileCount = slots.reduce((total, tile) => (tile ? total + 1 : total), 0);
+  const isExchanging = exchangeTileIds !== null;
+  const exchangeCount = exchangeTileIds?.length ?? 0;
+  // Rules §5: exchanging is only allowed while the bag still holds at least 7 tiles.
+  const canStartExchange = isMyTurn && canStageMove && !hasTemporaryTiles && !isSubmitting && tileCount > 0 && tileBagCount >= 7;
+  const canConfirmExchange = isMyTurn && !isSubmitting && exchangeCount > 0 && exchangeCount <= tileBagCount;
 
   useEffect(() => {
     const updateViewport = () => {
@@ -67,7 +83,8 @@ export const TileRack: React.FC<TileRackProps> = ({
   }, [onRackViewportChange, slots.length]);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, slotIndex: number) => {
-    if (!canStageMove) return;
+    // While exchanging, a tap marks the tile instead of lifting it.
+    if (!canStageMove || isExchanging) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     pointerStartRef.current = { x: event.clientX, y: event.clientY };
@@ -150,67 +167,116 @@ export const TileRack: React.FC<TileRackProps> = ({
         </div>
       )}
       {/* Action Buttons Toolbar */}
-      <div className="flex items-center justify-between w-full bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-700/60 shadow-2xl">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onCancelMove}
-            disabled={!isMyTurn || !hasTemporaryTiles || isSubmitting}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm transition-all ${
-              isMyTurn && hasTemporaryTiles
-                ? 'bg-rose-950/70 text-rose-300 hover:bg-rose-900 border border-rose-700/50 cursor-pointer shadow-sm'
-                : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
-            }`}
-          >
-            <RotateCcw className="w-4 h-4" />
-            <span>Cancel</span>
-          </button>
+      <div className="flex flex-wrap items-center justify-between gap-2 w-full bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-700/60 shadow-2xl">
+        {isExchanging ? (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={onCancelExchange}
+                disabled={isSubmitting}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm transition-all bg-rose-950/70 text-rose-300 hover:bg-rose-900 border border-rose-700/50 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <X className="w-4 h-4" />
+                <span>Cancel</span>
+              </button>
+              <span className="text-xs text-slate-400">
+                {exchangeCount > tileBagCount
+                  ? `Only ${tileBagCount} left in the bag`
+                  : 'Tap tiles to return to the bag'}
+              </span>
+            </div>
 
-          <button
-            onClick={onPassTurn}
-            disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm transition-all ${
-              isMyTurn && !hasTemporaryTiles
-                ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600/60 cursor-pointer shadow-sm'
-                : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
-            }`}
-          >
-            <SkipForward className="w-4 h-4" />
-            <span>Pass</span>
-          </button>
+            {/* Confirm Exchange */}
+            <button
+              onClick={onConfirmExchange}
+              disabled={!canConfirmExchange}
+              className={`flex items-center gap-2 px-5 py-1.5 rounded-xl font-semibold text-sm transition-all ${
+                canConfirmExchange
+                  ? 'bg-sky-600 text-white hover:bg-sky-500 active:scale-95 shadow-lg shadow-sky-950/50 cursor-pointer border border-sky-400/30'
+                  : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
+              }`}
+            >
+              <ArrowLeftRight className="w-4 h-4" />
+              <span>{isSubmitting ? 'Exchanging...' : `Exchange ${exchangeCount} tile${exchangeCount === 1 ? '' : 's'}`}</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={onCancelMove}
+                disabled={!hasTemporaryTiles || isSubmitting}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm transition-all ${
+                  hasTemporaryTiles
+                    ? 'bg-rose-950/70 text-rose-300 hover:bg-rose-900 border border-rose-700/50 cursor-pointer shadow-sm'
+                    : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
+                }`}
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Cancel</span>
+              </button>
 
-          <button
-            onClick={onShuffleRack}
-            disabled={!isMyTurn || tileCount < 2 || isSubmitting}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm text-slate-300 hover:text-white hover:bg-slate-700 disabled:text-slate-600 disabled:cursor-not-allowed border border-slate-600/60 transition-all"
-            title="Shuffle rack"
-            aria-label="Shuffle rack"
-          >
-            <Shuffle className="w-4 h-4" />
-            <span>Shuffle</span>
-          </button>
-        </div>
+              <button
+                onClick={onPassTurn}
+                disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm transition-all ${
+                  isMyTurn && !hasTemporaryTiles
+                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600/60 cursor-pointer shadow-sm'
+                    : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
+                }`}
+              >
+                <SkipForward className="w-4 h-4" />
+                <span>Pass</span>
+              </button>
 
-        {/* Move preview / Points badge */}
-        {hasTemporaryTiles && estimatedScore !== undefined && (
-          <div className="flex items-center gap-2 px-3 py-1 bg-amber-950/60 border border-amber-500/40 rounded-xl text-amber-300 text-xs font-semibold animate-pulse">
-            <span>PREVIEW:</span>
-            <span className="text-amber-200 font-bold text-sm">+{estimatedScore} pts</span>
-          </div>
+              <button
+                onClick={onShuffleRack}
+                disabled={tileCount < 2 || isSubmitting}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm text-slate-300 hover:text-white hover:bg-slate-700 disabled:text-slate-600 disabled:cursor-not-allowed border border-slate-600/60 transition-all"
+                title="Shuffle rack"
+                aria-label="Shuffle rack"
+              >
+                <Shuffle className="w-4 h-4" />
+                <span>Shuffle</span>
+              </button>
+
+              <button
+                onClick={onStartExchange}
+                disabled={!canStartExchange}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm text-slate-300 hover:text-white hover:bg-slate-700 disabled:text-slate-600 disabled:cursor-not-allowed border border-slate-600/60 transition-all"
+                title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
+              >
+                <ArrowLeftRight className="w-4 h-4" />
+                <span>Exchange</span>
+              </button>
+            </div>
+
+            {/* Move preview / Points badge. Off-turn placements are practice only. */}
+            {hasTemporaryTiles && estimatedScore !== undefined && (
+              <div
+                className="flex items-center gap-2 px-3 py-1 bg-amber-950/60 border border-amber-500/40 rounded-xl text-amber-300 text-xs font-semibold animate-pulse"
+                title={isMyTurn ? undefined : 'Practice only: these tiles go back to your rack when your turn starts'}
+              >
+                <span>{isMyTurn ? 'PREVIEW:' : 'PRACTICE:'}</span>
+                <span className="text-amber-200 font-bold text-sm">+{estimatedScore} pts</span>
+              </div>
+            )}
+
+            {/* Confirm Move */}
+            <button
+              onClick={onConfirmMove}
+              disabled={!isMyTurn || !hasTemporaryTiles || isSubmitting}
+              className={`flex items-center gap-2 px-5 py-1.5 rounded-xl font-semibold text-sm transition-all ${
+                isMyTurn && hasTemporaryTiles
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-950/50 cursor-pointer border border-emerald-400/30'
+                  : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
+              }`}
+            >
+              <Check className="w-4 h-4" />
+              <span>{isSubmitting ? 'Confirming...' : 'Confirm Move'}</span>
+            </button>
+          </>
         )}
-
-        {/* Confirm Move */}
-        <button
-          onClick={onConfirmMove}
-          disabled={!isMyTurn || !hasTemporaryTiles || isSubmitting}
-          className={`flex items-center gap-2 px-5 py-1.5 rounded-xl font-semibold text-sm transition-all ${
-            isMyTurn && hasTemporaryTiles
-              ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-950/50 cursor-pointer border border-emerald-400/30'
-              : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
-          }`}
-        >
-          <Check className="w-4 h-4" />
-          <span>{isSubmitting ? 'Confirming...' : 'Confirm Move'}</span>
-        </button>
       </div>
 
       {/* Tiles Rack Stand — seats are fixed, an empty seat stays put instead of closing up */}
@@ -237,6 +303,7 @@ export const TileRack: React.FC<TileRackProps> = ({
           }
 
           const isSelected = selectedTileId === tile.id;
+          const isMarkedForExchange = exchangeTileIds?.includes(tile.id) ?? false;
           const isDragging = draggedSlot === slotIndex;
           const isDropTarget = dragOverSlot === slotIndex;
           return (
@@ -249,11 +316,14 @@ export const TileRack: React.FC<TileRackProps> = ({
               onPointerMove={(event) => handlePointerMove(event, tile)}
               onPointerUp={handlePointerUp}
               disabled={!canStageMove}
+              aria-pressed={isExchanging ? isMarkedForExchange : undefined}
               className={`group relative flex flex-col items-center justify-center w-11 h-12 sm:w-13 sm:h-14 rounded-xl font-sans transition-all select-none touch-none ${
                 isDragging
                   ? 'z-10 scale-105 -translate-y-2 opacity-30 bg-amber-200 border-2 border-amber-400 shadow-xl shadow-amber-500/40 cursor-grabbing'
                   : isDropTarget
                   ? 'translate-x-1 ring-2 ring-sky-400/80'
+                  : isMarkedForExchange
+                  ? '-translate-y-3 bg-sky-100 border-2 border-sky-500 shadow-sky-500/40 ring-4 ring-sky-400/40 cursor-pointer'
                   : isSelected
                   ? '-translate-y-3 bg-amber-200 border-2 border-amber-500 shadow-amber-500/40 ring-4 ring-amber-400/40'
                   : canStageMove
