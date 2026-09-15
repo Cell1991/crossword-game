@@ -5,6 +5,7 @@ export const dynamicParams = true;
 
 import React, { startTransition, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Image from 'next/image';
 import { sessionStore, getGameState, validateMove, commitMove, passTurn, expireTurn, StoredSession } from '../../../lib/api';
 import { useGameSocket } from '../../../hooks/useGameSocket';
 import { useBoardCamera } from '../../../hooks/useBoardCamera';
@@ -591,6 +592,13 @@ export default function GamePage() {
           >
             <span>Exit</span>
           </button>
+          <Image
+            src="/wordx-icon.png?v=20260915"
+            alt="WordX logo"
+            width={30}
+            height={30}
+            className="h-7 w-7 rounded-md object-contain"
+          />
           <span className="text-lg font-black text-white">Word<span className="text-amber-400">X</span></span>
           <div className={`flex items-center gap-1.5 text-xs ${isConnected ? 'text-emerald-400' : 'text-red-400'}`}>
             <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
