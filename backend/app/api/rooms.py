@@ -33,6 +33,8 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
 @router.post("/{game_pin}/join", response_model=JoinRoomResponse)
 async def join_room(game_pin: str, req: JoinRoomRequest, db: AsyncSession = Depends(get_db)):
     room, game, player = await RoomService.join_room(db, game_pin, req.player_name)
+    # Save before telling anyone: clients reload the room the moment an event arrives.
+    await db.commit()
     
     # Broadcast PLAYER_JOINED to WebSocket subscribers
     await manager.broadcast(room.id, WebSocketEvent(
@@ -86,6 +88,7 @@ async def start_game(
 ):
     room, _ = await RoomService.get_room_details(db, game_pin)
     game = await RoomService.start_game(db, room.id, x_player_id)
+    await db.commit()
 
     # Broadcast GAME_STARTED event
     await manager.broadcast(room.id, WebSocketEvent(
