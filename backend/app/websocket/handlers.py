@@ -23,6 +23,8 @@ async def websocket_endpoint(
 
         player_id = player.id
         player_name = player.display_name
+        player.connection_status = "ONLINE"
+        await db.commit()
 
     await manager.connect(websocket, game_id, player_id)
 
@@ -56,6 +58,15 @@ async def websocket_endpoint(
                 pass
     except WebSocketDisconnect:
         manager.disconnect(game_id, player_id)
+        async with AsyncSessionLocal() as db:
+            try:
+                game, game_over, reason, winner_id = await GameService.leave_game(db, game_id, player_id)
+                await db.commit()
+            except Exception:
+                game = None
+                game_over = False
+                reason = None
+                winner_id = None
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.PLAYER_DISCONNECTED,
             payload={
@@ -63,3 +74,8 @@ async def websocket_endpoint(
                 "displayName": player_name
             }
         ).model_dump())
+        if game and game_over:
+            await manager.broadcast(game_id, WebSocketEvent(
+                type=EventType.GAME_ENDED,
+                payload={"reason": reason or "PLAYER_DISCONNECTED", "winnerId": winner_id},
+            ).model_dump())
