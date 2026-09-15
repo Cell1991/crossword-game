@@ -6,7 +6,7 @@ export const dynamicParams = true;
 import React, { startTransition, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { sessionStore, getGameState, validateMove, commitMove, passTurn, expireTurn, StoredSession } from '../../../lib/api';
+import { sessionStore, getGameState, validateMove, commitMove, passTurn, expireTurn, leaveGame, StoredSession } from '../../../lib/api';
 import { useGameSocket } from '../../../hooks/useGameSocket';
 import { useBoardCamera } from '../../../hooks/useBoardCamera';
 import { BoardCanvas } from '../../../components/board/BoardCanvas';
@@ -64,6 +64,7 @@ export default function GamePage() {
   const [rackViewport, setRackViewport] = useState({ left: 0, top: 0, width: 0, height: 0 });
   const [timerNow, setTimerNow] = useState(() => Date.now());
   const timeoutCheckedTurnRef = useRef<number | null>(null);
+  const turnKeyRef = useRef<string | null>(null);
 
   // Camera
   const camera = useBoardCamera();
@@ -73,6 +74,7 @@ export default function GamePage() {
   const myToken = session?.token ?? '';
   const isMyTurn = gameState?.current_player_id === myPlayerId;
   const myPlayer = gameState?.players.find(p => p.id === myPlayerId);
+  const canStageMove = Boolean(myPlayer && myPlayer.hp > 0 && myPlayer.connection_status !== 'OFFLINE');
   const boardState = useMemo(() => gameState?.board_state ?? {}, [gameState?.board_state]);
   const screenToCell = camera.screenToCell;
   const serverRack: Tile[] = myPlayer?.rack ?? EMPTY_TILES;
@@ -101,8 +103,13 @@ export default function GamePage() {
     () => rackSlots.filter((tile): tile is Tile => Boolean(tile)),
     [rackSlots]
   );
-  const secondsRemaining = gameState?.turn_time_limit && gameState.turn_started_at
-    ? Math.max(0, gameState.turn_time_limit - Math.floor((timerNow - new Date(gameState.turn_started_at).getTime()) / 1000))
+  const turnStartedAtMs = gameState?.turn_started_at
+    ? Date.parse(/[zZ]|[+-]\d{2}:?\d{2}$/.test(gameState.turn_started_at)
+      ? gameState.turn_started_at
+      : `${gameState.turn_started_at}Z`)
+    : NaN;
+  const secondsRemaining = gameState?.turn_time_limit && Number.isFinite(turnStartedAtMs)
+    ? Math.max(0, gameState.turn_time_limit - Math.floor((timerNow - turnStartedAtMs) / 1000))
     : null;
 
   /** Seats the rack currently knows about, padded so every seat index is addressable. */
@@ -198,7 +205,7 @@ export default function GamePage() {
       pointerPosition.y <= boardViewport.top + boardViewport.height
       ? screenToCell(pointerPosition.x - boardViewport.left, pointerPosition.y - boardViewport.top)
       : dragHoverCell;
-    if (!session || !isMyTurn) {
+    if (!session || !canStageMove) {
       setDragSession(null);
       setDragHoverCell(null);
       return;
@@ -272,7 +279,7 @@ export default function GamePage() {
     }
     setDragSession(null);
     setDragHoverCell(null);
-  }, [boardState, boardViewport, dragHoverCell, dragSession, isMyTurn, rackViewport, screenToCell, seatReturningTile, temporaryTiles]);
+  }, [boardState, boardViewport, canStageMove, dragHoverCell, dragSession, rackViewport, screenToCell, seatReturningTile, temporaryTiles]);
 
   const cancelDrag = useCallback(() => {
     setDragSession(null);
@@ -293,14 +300,14 @@ export default function GamePage() {
   }, [boardState, dragHoverCell, dragSession, temporaryTiles]);
 
   const startRackDrag = useCallback((tile: Tile, clientX: number, clientY: number) => {
-    if (!isMyTurn) return;
+    if (!canStageMove) return;
     setSelectedTileId(null);
     setDragSession({ tile, source: 'rack', origin: null, position: { x: clientX, y: clientY } });
     updateDragHover(clientX, clientY);
-  }, [isMyTurn, updateDragHover]);
+  }, [canStageMove, updateDragHover]);
 
   const startPendingDrag = useCallback((tile: PlacedTile, clientX: number, clientY: number) => {
-    if (!isMyTurn) return;
+    if (!canStageMove) return;
     setDragSession({
       tile: { id: tile.tile_id, letter: tile.letter, value: tile.value },
       source: 'board',
@@ -308,7 +315,7 @@ export default function GamePage() {
       position: { x: clientX, y: clientY },
     });
     updateDragHover(clientX, clientY);
-  }, [isMyTurn, updateDragHover]);
+  }, [canStageMove, updateDragHover]);
 
   useEffect(() => {
     if (!dragSession) return;
@@ -333,6 +340,7 @@ export default function GamePage() {
     try {
       const state = await getGameState(gameId, myToken);
       setGameState(state);
+      setTimerNow(Date.now());
       // A sync that arrives before the player id is known carries no rack for us. Reseating from
       // it would blank every seat, so leave the seating alone until we can see our own tiles.
       const myServerPlayer = state.players.find(player => player.id === myPlayerId);
@@ -426,6 +434,20 @@ export default function GamePage() {
   }, [gameState?.status]);
 
   useEffect(() => {
+    if (!gameState) return;
+    const nextTurnKey = `${gameState.turn_number}:${gameState.current_player_id ?? 'none'}`;
+    if (turnKeyRef.current !== null && turnKeyRef.current !== nextTurnKey) {
+      setSelectedTileId(null);
+      setSelectedCell(null);
+      setValidationState(null);
+      setValidationReason('');
+      setEstimatedScore(0);
+      setRemotePlacements([]);
+    }
+    turnKeyRef.current = nextTurnKey;
+  }, [gameState]);
+
+  useEffect(() => {
     if (secondsRemaining !== 0 || !gameState?.turn_time_limit || !gameState.current_player_id) return;
     if (timeoutCheckedTurnRef.current === gameState.turn_number) return;
     timeoutCheckedTurnRef.current = gameState.turn_number;
@@ -435,13 +457,13 @@ export default function GamePage() {
   // Validate move whenever temporary tiles change
   const validateTimeout = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
-    if (temporaryTiles.length === 0) {
+    if (temporaryTiles.length === 0 || !isMyTurn) {
       startTransition(() => {
         setEstimatedScore(0);
         setValidationState(null);
         setValidationReason('');
       });
-      sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: [], valid: null });
+      sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: temporaryTiles, valid: null });
       return;
     }
     sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: temporaryTiles, valid: null });
@@ -456,11 +478,11 @@ export default function GamePage() {
       sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: temporaryTiles, valid: result.valid });
     }, 400);
     return () => { if (validateTimeout.current) clearTimeout(validateTimeout.current); };
-  }, [temporaryTiles, gameId, myPlayerId, sendMessage]);
+  }, [temporaryTiles, gameId, myPlayerId, isMyTurn, sendMessage]);
 
   // Handle cell click on board
   const handleCellClick = useCallback((row: number, col: number) => {
-    if (!isMyTurn) return;
+    if (!canStageMove) return;
     if (Object.values(boardState).some(cell => cell.row === row && cell.col === col)) return;
 
     const alreadyPlaced = temporaryTiles.find(t => t.row === row && t.col === col);
@@ -485,7 +507,7 @@ export default function GamePage() {
     ]);
     setSelectedTileId(null);
     setSelectedCell({ row, col });
-  }, [boardState, isMyTurn, selectedTileId, myRack, temporaryTiles]);
+  }, [boardState, canStageMove, selectedTileId, myRack, temporaryTiles]);
 
   const handleSelectTile = (tile: Tile) => {
     setSelectedTileId(prev => prev === tile.id ? null : tile.id);
@@ -498,13 +520,13 @@ export default function GamePage() {
   };
 
   const handleCollectPendingTile = useCallback((tileId: string) => {
-    if (!isMyTurn) return;
+    if (!canStageMove) return;
     setTemporaryTiles(previous => {
       return previous.filter(tile => tile.tile_id !== tileId);
     });
     setSelectedTileId(null);
     setSelectedCell(null);
-  }, [isMyTurn]);
+  }, [canStageMove]);
 
   const handleConfirmMove = async () => {
     if (!myPlayerId || temporaryTiles.length === 0) return;
@@ -585,7 +607,9 @@ export default function GamePage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => {
-              if (window.confirm('ต้องการออกจากเกมหรือไม่?')) router.push('/');
+              if (window.confirm('ต้องการออกจากเกมหรือไม่?')) {
+                void leaveGame(gameId, myPlayerId ?? '').finally(() => router.push('/'));
+              }
             }}
             className="flex items-center gap-1.5 rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:bg-slate-800 hover:text-white"
             title="Exit game"
@@ -655,7 +679,7 @@ export default function GamePage() {
             draggingTileId={dragSession?.tile.id ?? null}
             dragPreviewTile={dragSession?.tile ?? null}
             dragPreviewIsValid={dragHoverIsValid}
-            isMyTurn={isMyTurn}
+            canStageMove={canStageMove}
             camera={camera}
           />
           {dragSession && (
@@ -709,6 +733,7 @@ export default function GamePage() {
           onRackViewportChange={setRackViewport}
           isExternalDragActive={dragSession?.source === 'board'}
           isMyTurn={isMyTurn}
+          canStageMove={canStageMove}
           hasTemporaryTiles={temporaryTiles.length > 0}
           isSubmitting={isSubmitting}
           estimatedScore={estimatedScore}
