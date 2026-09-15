@@ -73,7 +73,7 @@ export default function HomePage() {
         {/* Logo / Title */}
         <div className="text-center">
           <Image
-            src="/wordx-icon.png"
+            src="/wordx-icon.png?v=20260915"
             alt="WordX logo"
             width={112}
             height={112}
