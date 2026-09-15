@@ -3,6 +3,15 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import { BoardCell, PlacedTile } from '../../lib/types';
 import { useBoardCamera } from '../../hooks/useBoardCamera';
+import {
+  BOARD_COLS,
+  BOARD_ROWS,
+  CENTER_COL,
+  CENTER_ROW,
+  DOUBLE_LETTER,
+  SECRET_POWER,
+  TRIPLE_LETTER,
+} from '../../lib/board';
 
 interface BoardCanvasProps {
   boardState: Record<string, BoardCell>;
@@ -23,10 +32,6 @@ interface BoardCanvasProps {
   canStageMove: boolean;
   camera: ReturnType<typeof useBoardCamera>;
 }
-
-const BOARD_SIZE = 15;
-const CENTER_ROW = 7;
-const CENTER_COL = 7;
 
 export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   boardState,
@@ -178,33 +183,29 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     ctx.fillRect(0, 0, width, height);
 
     // Board bounding rectangle
-    const totalBoardPx = BOARD_SIZE * cellSize;
+    const boardWidthPx = BOARD_COLS * cellSize;
+    const boardHeightPx = BOARD_ROWS * cellSize;
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(offset.x, offset.y, totalBoardPx, totalBoardPx);
+    ctx.fillRect(offset.x, offset.y, boardWidthPx, boardHeightPx);
 
     // Viewport bounds in cell coordinates (culling)
     const minCol = Math.max(0, Math.floor(-offset.x / cellSize));
-    const maxCol = Math.min(BOARD_SIZE - 1, Math.ceil((width - offset.x) / cellSize));
+    const maxCol = Math.min(BOARD_COLS - 1, Math.ceil((width - offset.x) / cellSize));
     const minRow = Math.max(0, Math.floor(-offset.y / cellSize));
-    const maxRow = Math.min(BOARD_SIZE - 1, Math.ceil((height - offset.y) / cellSize));
+    const maxRow = Math.min(BOARD_ROWS - 1, Math.ceil((height - offset.y) / cellSize));
 
     // Draw Grid Lines & Cell Backgrounds
     for (let r = minRow; r <= maxRow; r++) {
       for (let c = minCol; c <= maxCol; c++) {
         const x = offset.x + c * cellSize;
         const y = offset.y + r * cellSize;
+        const cellKey = `${r}_${c}`;
 
         // Is Center cell
         const isCenter = r === CENTER_ROW && c === CENTER_COL;
-        const isTriple = (r === 0 && c === 7) || (r === 1 && (c === 1 || c === 13)) ||
-          (r === 6 && (c === 0 || c === 14)) || (r === 13 && (c === 1 || c === 13)) ||
-          (r === 14 && c === 7);
-        const isDouble = (r === 2 && (c === 5 || c === 9)) || (r === 4 && c === 7) ||
-          (r === 5 && (c === 2 || c === 12)) || (r === 6 && (c === 4 || c === 10)) ||
-          (r === 8 && (c === 2 || c === 12)) || (r === 9 && c === 7) ||
-          (r === 11 && (c === 5 || c === 9));
-        const isPower = (r === 2 && (c === 2 || c === 12)) || (r === 4 && (c === 4 || c === 10)) ||
-          (r === 10 && (c === 4 || c === 10)) || (r === 12 && (c === 2 || c === 12));
+        const isTriple = TRIPLE_LETTER.has(cellKey);
+        const isDouble = DOUBLE_LETTER.has(cellKey);
+        const isPower = SECRET_POWER.has(cellKey);
         if (isTriple) {
           ctx.fillStyle = '#7f1d1d';
           ctx.fillRect(x, y, cellSize, cellSize);
@@ -285,7 +286,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     // Board Outer Border
     ctx.strokeStyle = '#475569';
     ctx.lineWidth = 2;
-    ctx.strokeRect(offset.x, offset.y, totalBoardPx, totalBoardPx);
+    ctx.strokeRect(offset.x, offset.y, boardWidthPx, boardHeightPx);
 
     ctx.restore();
   }, [offset, cellSize, boardState, temporaryTiles, remotePlacements, selectedCell, drawTile, dragPreviewCell, dragPreviewTile, dragPreviewIsValid, draggingTileId]);
