@@ -40,7 +40,7 @@ class MoveService:
         player_id: str,
         placed_tiles: list[PlacedTileInput]
     ) -> ValidateMoveResponse:
-        stmt_game = select(Game).where(Game.id == game_id)
+        stmt_game = select(Game).where(Game.id == game_id).with_for_update()
         game = (await db.execute(stmt_game)).scalar_one_or_none()
         if not game:
             raise HTTPException(status_code=404, detail="Game not found")
@@ -55,6 +55,8 @@ class MoveService:
         player = (await db.execute(stmt_player)).scalar_one_or_none()
         if not player:
             return ValidateMoveResponse(valid=False, reason="Player not found in game")
+        if player.hp <= 0 or player.connection_status == "OFFLINE":
+            return ValidateMoveResponse(valid=False, reason="This player cannot play")
 
         normalized_board = await board_state(db, game_id)
         normalized_rack = await player_rack(db, player.id)
@@ -96,7 +98,7 @@ class MoveService:
         player_id: str,
         placed_tiles: list[PlacedTileInput]
     ) -> tuple[CommitMoveResponse, Game, GamePlayer]:
-        stmt_game = select(Game).where(Game.id == game_id)
+        stmt_game = select(Game).where(Game.id == game_id).with_for_update()
         game = (await db.execute(stmt_game)).scalar_one_or_none()
         if not game:
             raise HTTPException(status_code=404, detail="Game not found")
@@ -111,6 +113,8 @@ class MoveService:
         player = (await db.execute(stmt_player)).scalar_one_or_none()
         if not player:
             raise HTTPException(status_code=404, detail="Player not found")
+        if player.hp <= 0 or player.connection_status == "OFFLINE":
+            raise HTTPException(status_code=403, detail="This player cannot play")
 
         normalized_board = await board_state(db, game_id)
         normalized_rack = await player_rack(db, player.id)
@@ -204,27 +208,26 @@ class MoveService:
             if opponent.id != player.id:
                 opponent.hp = max(0, opponent.hp - score)
 
-        current_idx = next(i for i, p in enumerate(all_players) if p.id == player_id)
-        next_idx = (current_idx + 1) % len(all_players)
-        next_player_id = all_players[next_idx].id
-
         completed_turn = game.turn_number
         reached_max_turns = bool(game.max_turns and completed_turn >= game.max_turns)
         game.consecutive_passes = 0
-        if reached_max_turns:
+        players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in all_players]
+        is_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
+        eligible_players = [p for p in all_players if p.hp > 0 and p.connection_status != "OFFLINE"]
+        game_over = is_over or reached_max_turns or len(eligible_players) <= 1
+        if game_over:
             game.status = "FINISHED"
             game.current_player_id = None
             game.turn_started_at = None
+            next_player_id = None
         else:
+            current_idx = next(i for i, p in enumerate(eligible_players) if p.id == player_id)
+            next_player_id = eligible_players[(current_idx + 1) % len(eligible_players)].id
             game.current_player_id = next_player_id
             game.turn_number += 1
             game.turn_started_at = get_utc_now()
 
-        # Check game end
-        players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in all_players]
-        is_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
-
-        if is_over or reached_max_turns:
+        if game_over:
             game.status = "FINISHED"
             stmt_room = select(GameRoom).where(GameRoom.id == game_id)
             room = (await db.execute(stmt_room)).scalar_one_or_none()
@@ -242,7 +245,7 @@ class MoveService:
             words_formed=words_formed,
             score_earned=score,
             next_player_id=next_player_id,
-            game_over=is_over or reached_max_turns,
+            game_over=game_over,
             winner_id=winner
         )
 
