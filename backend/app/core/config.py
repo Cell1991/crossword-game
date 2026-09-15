@@ -24,14 +24,19 @@ class Settings(BaseModel):
     CORS_ORIGINS: list[str] = ["*"]
     
     # Configurable Game Engine Settings
-    BOARD_SIZE: int = 15
-    CENTER_ROW: int = 7
-    CENTER_COL: int = 7
+    BOARD_ROWS: int = 19
+    BOARD_COLS: int = 27
+    CENTER_ROW: int = 9
+    CENTER_COL: int = 13
     RACK_SIZE: int = 7
     MIN_PLAYERS: int = 1  # Allow solo play / testing
     MAX_PLAYERS: int = 6
     FIRST_MOVE_MUST_COVER_CENTER: bool = True
-    MAX_CONSECUTIVE_PASSES: int = 4  # 2 passes per player in 2-player game
+    MAX_CONSECUTIVE_PASSES: int = 4  # scoreless turns in a row (passes and exchanges) that end the game
+    MIN_BAG_TILES_TO_EXCHANGE: int = 7
+    # A dropped WebSocket (often just a page refresh) only counts as leaving if the player
+    # has not reconnected within this many seconds.
+    DISCONNECT_GRACE_SECONDS: float = 15
     TURN_TIMER_SECONDS: int = 0      # 0 means timer disabled by default
 
 settings = Settings()
