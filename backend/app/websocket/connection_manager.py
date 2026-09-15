@@ -15,11 +15,19 @@ class ConnectionManager:
             self.active_connections[game_id] = {}
         self.active_connections[game_id][player_id] = websocket
 
-    def disconnect(self, game_id: str, player_id: str):
-        if game_id in self.active_connections:
-            self.active_connections[game_id].pop(player_id, None)
-            if not self.active_connections[game_id]:
-                self.active_connections.pop(game_id, None)
+    def disconnect(self, game_id: str, player_id: str, websocket: WebSocket | None = None):
+        """Forget a player's socket. With `websocket`, only remove it if it is still the player's
+        current socket, so an old socket closing after a reconnect does not drop the new one."""
+        connections = self.active_connections.get(game_id)
+        if connections is None:
+            return
+        if websocket is None or connections.get(player_id) is websocket:
+            connections.pop(player_id, None)
+        if not connections:
+            self.active_connections.pop(game_id, None)
+
+    def is_connected(self, game_id: str, player_id: str) -> bool:
+        return player_id in self.active_connections.get(game_id, {})
 
     async def send_personal(self, websocket: WebSocket, message: dict[str, Any]):
         await websocket.send_text(json.dumps(message))
