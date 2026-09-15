@@ -2,22 +2,25 @@ from typing import Any, Optional
 from app.core.config import settings
 
 class Board:
-    """Logical 15x15 game board with sparse cell storage."""
+    """Logical game board (19 rows x 27 columns) with sparse cell storage."""
 
-    SIZE = settings.BOARD_SIZE
+    ROWS = settings.BOARD_ROWS
+    COLS = settings.BOARD_COLS
     CENTER = (settings.CENTER_ROW, settings.CENTER_COL)
+    # Premium squares: the classic 15x15 layout spread proportionally over the larger board.
+    # Keep in sync with frontend/lib/board.ts.
     TRIPLE_LETTER = frozenset({
-        (0, 7), (1, 1), (1, 13), (6, 0),
-        (6, 14), (13, 1), (13, 13), (14, 7),
+        (0, 13), (1, 2), (1, 24), (8, 0),
+        (8, 26), (17, 2), (17, 24), (18, 13),
     })
     DOUBLE_LETTER = frozenset({
-        (2, 5), (2, 9), (4, 7), (5, 2),
-        (5, 12), (6, 4), (6, 10), (8, 2),
-        (8, 12), (9, 7), (11, 5), (11, 9),
+        (3, 9), (3, 17), (5, 13), (6, 4),
+        (6, 22), (8, 7), (8, 19), (10, 4),
+        (10, 22), (12, 13), (14, 9), (14, 17),
     })
     SECRET_POWER = frozenset({
-        (2, 2), (2, 12), (4, 4), (4, 10),
-        (10, 4), (10, 10), (12, 2), (12, 12),
+        (3, 4), (3, 22), (5, 7), (5, 19),
+        (13, 7), (13, 19), (15, 4), (15, 22),
     })
 
     def __init__(self, sparse_state: Optional[dict[str, Any]] = None):
@@ -30,7 +33,7 @@ class Board:
 
     @classmethod
     def is_valid_coord(cls, row: int, col: int) -> bool:
-        return 0 <= row < cls.SIZE and 0 <= col < cls.SIZE
+        return 0 <= row < cls.ROWS and 0 <= col < cls.COLS
 
     @classmethod
     def is_center(cls, row: int, col: int) -> bool:
