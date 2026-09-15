@@ -6,7 +6,7 @@ export const dynamicParams = true;
 import React, { startTransition, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { sessionStore, getGameState, validateMove, commitMove, passTurn, expireTurn, leaveGame, StoredSession } from '../../../lib/api';
+import { sessionStore, getGameState, validateMove, commitMove, passTurn, exchangeTiles, expireTurn, leaveGame, StoredSession } from '../../../lib/api';
 import { useGameSocket } from '../../../hooks/useGameSocket';
 import { useBoardCamera } from '../../../hooks/useBoardCamera';
 import { BoardCanvas } from '../../../components/board/BoardCanvas';
@@ -58,6 +58,8 @@ export default function GamePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastMoveInfo, setLastMoveInfo] = useState<string | null>(null);
   const [rackOrder, setRackOrder] = useState<(string | null)[]>([]);
+  /** Tiles picked to swap with the bag; `null` while the player is not exchanging. */
+  const [exchangeTileIds, setExchangeTileIds] = useState<string[] | null>(null);
   const [dragSession, setDragSession] = useState<DragSession | null>(null);
   const [dragHoverCell, setDragHoverCell] = useState<{ row: number; col: number } | null>(null);
   const [boardViewport, setBoardViewport] = useState({ left: 0, top: 0, width: 0, height: 0 });
@@ -404,6 +406,16 @@ export default function GamePage() {
           setTimeout(() => setLastMoveInfo(null), 4000);
         }
         break;
+      case 'TILES_EXCHANGED': {
+        loadGameState();
+        const exchangedBy = event.payload?.playerId === myPlayerId
+          ? 'You'
+          : gameState?.players.find(player => player.id === event.payload?.playerId)?.display_name ?? 'Opponent';
+        const count = event.payload?.count ?? 0;
+        setLastMoveInfo(`${exchangedBy} exchanged ${count} tile${count === 1 ? '' : 's'}`);
+        setTimeout(() => setLastMoveInfo(null), 4000);
+        break;
+      }
       case 'PLACEMENT_PREVIEW':
         if (event.payload?.playerId !== myPlayerId) {
           setRemotePlacements(event.payload?.tiles ?? []);
@@ -419,7 +431,7 @@ export default function GamePage() {
         loadGameState();
         break;
     }
-  }, [loadGameState, myPlayerId]);
+  }, [gameState?.players, loadGameState, myPlayerId]);
 
   const { isConnected, sendMessage } = useGameSocket({
     gameId,
@@ -433,6 +445,13 @@ export default function GamePage() {
     return () => window.clearInterval(interval);
   }, [gameState?.status]);
 
+  // WebSocket events can be missed (reconnects, sockets blocked by a tunnel), so resync regularly.
+  useEffect(() => {
+    if (gameState?.status !== 'PLAYING') return;
+    const interval = window.setInterval(() => { void loadGameState(); }, 5000);
+    return () => window.clearInterval(interval);
+  }, [gameState?.status, loadGameState]);
+
   useEffect(() => {
     if (!gameState) return;
     const nextTurnKey = `${gameState.turn_number}:${gameState.current_player_id ?? 'none'}`;
@@ -443,9 +462,16 @@ export default function GamePage() {
       setValidationReason('');
       setEstimatedScore(0);
       setRemotePlacements([]);
+      setExchangeTileIds(null);
+      // Tiles staged while waiting were practice only: when your own turn starts they go back to the
+      // rack and you place them for real. Otherwise keep the ones that still sit on free cells.
+      const boardCells = gameState.board_state;
+      setTemporaryTiles(previous => gameState.current_player_id === myPlayerId
+        ? []
+        : previous.filter(tile => !boardCells[`${tile.row}_${tile.col}`]));
     }
     turnKeyRef.current = nextTurnKey;
-  }, [gameState]);
+  }, [gameState, myPlayerId]);
 
   useEffect(() => {
     if (secondsRemaining !== 0 || !gameState?.turn_time_limit || !gameState.current_player_id) return;
@@ -454,19 +480,23 @@ export default function GamePage() {
     void expireTurn(gameId).then(() => loadGameState()).catch(() => undefined);
   }, [gameId, gameState?.current_player_id, gameState?.turn_number, gameState?.turn_time_limit, loadGameState, secondsRemaining]);
 
-  // Validate move whenever temporary tiles change
+  // Validate whenever temporary tiles change. Off-turn this is practice: the player sees whether the
+  // word works, but only the current player's placement is shown to everyone else.
   const validateTimeout = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
-    if (temporaryTiles.length === 0 || !isMyTurn) {
+    const sendPreview = (valid: boolean | null) => {
+      if (isMyTurn) sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: temporaryTiles, valid });
+    };
+    if (temporaryTiles.length === 0) {
       startTransition(() => {
         setEstimatedScore(0);
         setValidationState(null);
         setValidationReason('');
       });
-      sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: temporaryTiles, valid: null });
+      sendPreview(null);
       return;
     }
-    sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: temporaryTiles, valid: null });
+    sendPreview(null);
     if (validateTimeout.current) clearTimeout(validateTimeout.current);
     validateTimeout.current = setTimeout(async () => {
       if (!myPlayerId) return;
@@ -475,7 +505,7 @@ export default function GamePage() {
       setValidationState(result.valid);
       setValidationReason(result.reason ?? '');
       setError(result.valid ? '' : (result.reason ?? 'Invalid move'));
-      sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: temporaryTiles, valid: result.valid });
+      sendPreview(result.valid);
     }, 400);
     return () => { if (validateTimeout.current) clearTimeout(validateTimeout.current); };
   }, [temporaryTiles, gameId, myPlayerId, isMyTurn, sendMessage]);
@@ -510,7 +540,34 @@ export default function GamePage() {
   }, [boardState, canStageMove, selectedTileId, myRack, temporaryTiles]);
 
   const handleSelectTile = (tile: Tile) => {
+    if (exchangeTileIds !== null) {
+      setExchangeTileIds(prev => prev && (
+        prev.includes(tile.id) ? prev.filter(id => id !== tile.id) : [...prev, tile.id]
+      ));
+      return;
+    }
     setSelectedTileId(prev => prev === tile.id ? null : tile.id);
+  };
+
+  const handleStartExchange = () => {
+    setSelectedTileId(null);
+    setSelectedCell(null);
+    setExchangeTileIds([]);
+  };
+
+  const handleConfirmExchange = async () => {
+    if (!myPlayerId || !exchangeTileIds?.length) return;
+    setIsSubmitting(true);
+    try {
+      await exchangeTiles(gameId, myPlayerId, exchangeTileIds);
+      setExchangeTileIds(null);
+      loadGameState();
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to exchange tiles');
+      setTimeout(() => setError(''), 4000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancelMove = () => {
@@ -721,11 +778,16 @@ export default function GamePage() {
         <TileRack
           slots={rackSlots}
           selectedTileId={selectedTileId}
+          exchangeTileIds={exchangeTileIds}
+          tileBagCount={tileBagCount}
           onSelectTile={handleSelectTile}
           onCancelMove={handleCancelMove}
           onConfirmMove={handleConfirmMove}
           onPassTurn={handlePassTurn}
           onShuffleRack={handleShuffleRack}
+          onStartExchange={handleStartExchange}
+          onCancelExchange={() => setExchangeTileIds(null)}
+          onConfirmExchange={handleConfirmExchange}
           onSwapSlots={handleSwapRackSlots}
           onStartTileDrag={startRackDrag}
           onFinishTileDrag={finishDrag}
