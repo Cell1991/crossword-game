@@ -102,6 +102,16 @@ export interface RoomDetailResponse {
   turn_time_limit: TurnTimeLimit;
 }
 
+export interface ExchangeTilesResponse {
+  /** `passed` when more tiles were requested than the bag holds (rules §5). */
+  status: 'exchanged' | 'passed';
+  exchanged_count: number;
+  next_player_id: string | null;
+  turn_number: number;
+  game_over: boolean;
+  winner_id: string | null;
+}
+
 export type WebSocketEventType =
   | 'PLAYER_JOINED'
   | 'PLAYER_LEFT'
@@ -111,6 +121,7 @@ export type WebSocketEventType =
   | 'TURN_STARTED'
   | 'MOVE_COMMITTED'
   | 'TURN_PASSED'
+  | 'TILES_EXCHANGED'
   | 'GAME_STATE_SYNC'
   | 'GAME_ENDED'
   | 'ERROR'
@@ -123,6 +134,8 @@ export interface WebSocketEvent {
     tiles?: { row: number; col: number }[];
     words_formed?: WordFormed[];
     score_earned?: number;
+    /** TILES_EXCHANGED: how many tiles went back to the bag. The letters themselves stay private. */
+    count?: number;
   };
   timestamp: string;
 }
