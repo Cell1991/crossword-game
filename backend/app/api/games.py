@@ -84,3 +84,22 @@ async def timeout_turn(game_id: str, db: AsyncSession = Depends(get_db)):
             payload={"reason": reason or "TIMEOUT", "winnerId": winner_id}
         ).model_dump())
     return {"status": "expired", "expired": True, "turn_number": game.turn_number, "game_over": game.status == "FINISHED"}
+
+
+@router.post("/{game_id}/leave")
+async def leave_game(
+    game_id: str,
+    x_player_id: str = Header(..., alias="X-Player-ID"),
+    db: AsyncSession = Depends(get_db),
+):
+    game, is_over, reason, winner_id = await GameService.leave_game(db, game_id, x_player_id)
+    await manager.broadcast(game_id, WebSocketEvent(
+        type=EventType.PLAYER_LEFT,
+        payload={"playerId": x_player_id, "nextPlayerId": game.current_player_id, "turnNumber": game.turn_number},
+    ).model_dump())
+    if is_over or game.status == "FINISHED":
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.GAME_ENDED,
+            payload={"reason": reason or "PLAYER_LEFT", "winnerId": winner_id},
+        ).model_dump())
+    return {"status": "left", "next_player_id": game.current_player_id, "game_over": game.status == "FINISHED"}
