@@ -5,11 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from fastapi import HTTPException
 
+from app.core.config import settings
 from app.database.models import Game, GamePlayer, Move, GameRoom, GameTile, get_utc_now
 from app.game.game_end import GameEndService
+from app.game.tiles import TileService, NotEnoughTilesInBag
 from app.schemas.player import PlayerOut, TileSchema
 from app.schemas.game import GameStateResponse
-from app.database.state import board_state, player_rack, player_cards, replace_game_tiles
+from app.database.state import bag_tiles, board_state, player_rack, player_cards, replace_game_tiles
 
 class GameService:
 
@@ -20,6 +22,7 @@ class GameService:
 
     @staticmethod
     async def expire_turn_if_needed(db: AsyncSession, game_id: str) -> tuple[Game, bool, str | None, str | None]:
+        """Pass the current turn if its time limit has run out. Returns: (game, expired, reason, winner_id)."""
         stmt_game = select(Game).where(Game.id == game_id).with_for_update()
         game = (await db.execute(stmt_game)).scalar_one_or_none()
         if not game:
@@ -33,7 +36,9 @@ class GameService:
             started_at = started_at.replace(tzinfo=timezone.utc)
         if (datetime.now(timezone.utc) - started_at).total_seconds() < room.turn_time_limit:
             return game, False, None, None
-        return await GameService.pass_turn(db, game_id, game.current_player_id or "")
+        # pass_turn's second value says whether the game ended; callers here need "the turn expired".
+        game, _, reason, winner = await GameService.pass_turn(db, game_id, game.current_player_id or "")
+        return game, True, reason, winner
 
     @staticmethod
     async def get_player_by_token(db: AsyncSession, session_token: str) -> Optional[GamePlayer]:
@@ -203,3 +208,84 @@ class GameService:
             await db.flush()
             return game, False, None, None
         return await GameService.pass_turn(db, game_id, player_id)
+
+    @staticmethod
+    async def exchange_tiles(
+        db: AsyncSession, game_id: str, player_id: str, tile_ids: list[str]
+    ) -> tuple[Game, bool, bool, str | None, str | None]:
+        """
+        Send rack tiles back to the bag for fresh ones (rules §5). An exchange uses up the turn,
+        scores nothing and counts as a scoreless turn (rules §6).
+        Returns: (game, exchanged, game_over, reason, winner_id). `exchanged` is False when more tiles
+        were requested than the bag holds, which the rules treat as a pass.
+        """
+        game = (await db.execute(select(Game).where(Game.id == game_id).with_for_update())).scalar_one_or_none()
+        if not game:
+            raise HTTPException(status_code=404, detail="Game not found")
+        if game.status != "PLAYING":
+            raise HTTPException(status_code=400, detail="Game is not currently active")
+        if game.current_player_id != player_id:
+            raise HTTPException(status_code=403, detail="It is not your turn to exchange tiles")
+
+        stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
+        players = (await db.execute(stmt_players)).scalars().all()
+        player = next((p for p in players if p.id == player_id), None)
+        if not player:
+            raise HTTPException(status_code=404, detail="Player not found")
+        if player.hp <= 0 or player.connection_status == "OFFLINE":
+            raise HTTPException(status_code=403, detail="This player cannot play")
+
+        bag = await bag_tiles(db, game_id)
+        if len(bag) < settings.MIN_BAG_TILES_TO_EXCHANGE:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Exchanging needs at least {settings.MIN_BAG_TILES_TO_EXCHANGE} tiles in the bag (only {len(bag)} left)"
+            )
+        try:
+            new_rack, new_bag = TileService.exchange_tiles(await player_rack(db, player.id), bag, tile_ids)
+        except NotEnoughTilesInBag:
+            # Rules §5: asking for more tiles than the bag holds forfeits the turn as a pass.
+            game, is_over, reason, winner = await GameService.pass_turn(db, game_id, player_id)
+            return game, False, is_over, reason, winner
+        except ValueError as error:
+            raise HTTPException(status_code=400, detail=str(error))
+        player.rack = new_rack
+        game.tile_bag = new_bag
+
+        db.add(Move(
+            id=str(uuid.uuid4()),
+            game_id=game.id,
+            player_id=player.id,
+            turn_number=game.turn_number,
+            move_type="EXCHANGE",
+            placed_tiles=[],
+            words_formed=[],
+            score_earned=0
+        ))
+
+        # Rules §6: an exchange scores nothing, so it counts towards the scoreless turns that end the game.
+        game.consecutive_passes += 1
+        players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in players]
+        scoreless_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
+        eligible_players = GameService.eligible_players(players)
+        reached_max_turns = bool(game.max_turns and game.turn_number >= game.max_turns)
+        game_over = scoreless_over or reached_max_turns or len(eligible_players) <= 1
+        if game_over:
+            game.status = "FINISHED"
+            game.current_player_id = None
+            game.turn_started_at = None
+            room = (await db.execute(select(GameRoom).where(GameRoom.id == game_id))).scalar_one_or_none()
+            if room:
+                room.status = "FINISHED"
+                room.finished_at = get_utc_now()
+            winner = winner or GameEndService.determine_winner(players_dict)
+            reason = reason or ("MAX_TURNS" if reached_max_turns else "PLAYER_LEFT")
+        else:
+            current_idx = next(i for i, p in enumerate(eligible_players) if p.id == player_id)
+            game.current_player_id = eligible_players[(current_idx + 1) % len(eligible_players)].id
+            game.turn_number += 1
+            game.turn_started_at = get_utc_now()
+
+        await db.flush()
+        await replace_game_tiles(db, game.id, game.tile_bag, players)
+        return game, True, game_over, reason, winner
