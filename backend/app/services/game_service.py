@@ -151,6 +151,7 @@ class GameService:
             max_turns=game.max_turns,
             winner_id=game.winner_id,
             server_time=datetime.now(timezone.utc),
+            game_pin=room.game_pin if room else None,
         )
 
     @staticmethod
@@ -234,6 +235,15 @@ class GameService:
         if game.status != "PLAYING" or game.current_player_id != player_id:
             await db.flush()
             return game, False, None, None
+        if status == "DISCONNECTED":
+            players = (await db.execute(
+                select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
+            )).scalars().all()
+            if GameService.next_player_after(players, player_id) is None:
+                # Nobody else is connected to take the turn (a solo game, say): keep it for when they
+                # are back instead of ending the game over a dropped connection.
+                await db.flush()
+                return game, False, None, None
         return await GameService.pass_turn(db, game_id, player_id)
 
     @staticmethod
