@@ -29,7 +29,7 @@ class Settings(BaseModel):
     CENTER_ROW: int = 9
     CENTER_COL: int = 13
     RACK_SIZE: int = 7
-    MIN_PLAYERS: int = 1  # Allow solo play / testing
+    MIN_PLAYERS: int = 1  # Solo play is allowed: the player keeps the turn until the game ends
     MAX_PLAYERS: int = 6
     FIRST_MOVE_MUST_COVER_CENTER: bool = True
     MAX_CONSECUTIVE_PASSES: int = 4  # scoreless turns in a row (passes and exchanges) that end the game
