@@ -8,6 +8,7 @@ import { PinDisplay } from '../../../components/lobby/PinDisplay';
 import { PlayerList } from '../../../components/lobby/PlayerList';
 import ParticleField from '../../../components/effects/ParticleField';
 import { Player } from '../../../lib/types';
+import { useGameSocket } from '../../../hooks/useGameSocket';
 
 /** Matches MIN_PLAYERS on the backend: a host may start alone and play solo. */
 const MIN_PLAYERS = 1;
@@ -31,6 +32,11 @@ export default function LobbyPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [turnTimeLimit, setTurnTimeLimit] = useState<number | null>(null);
+
+  const { isConnected: spectatorConnected, connectionError: spectatorConnectionError } = useGameSocket({
+    gameId: isSpectator ? (gameId ?? '') : '',
+    spectate: isSpectator,
+  });
 
   // Load session
   useEffect(() => {
@@ -180,6 +186,29 @@ export default function LobbyPage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="mb-4 rounded-2xl border border-sky-500/20 bg-sky-950/20 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-sky-200">โหมดผู้ชม</p>
+                <p className="mt-1 text-xs text-slate-400">รับชมเกมได้สูงสุด 2 คน</p>
+              </div>
+              <span className="whitespace-nowrap text-sm font-semibold text-sky-100">
+                {spectatorCount}/2 คน
+              </span>
+            </div>
+            <p className="mt-2 text-xs text-slate-400">
+              ว่างอีก <span className="font-bold text-sky-200">{Math.max(0, 2 - spectatorCount)} ที่</span>
+              {isSpectator && (
+                <span className={spectatorConnected ? 'text-emerald-300' : 'text-amber-300'}>
+                  {' '}· {spectatorConnected ? 'กำลังรับชมอยู่' : 'กำลังเชื่อมต่อ...'}
+                </span>
+              )}
+            </p>
+            {isSpectator && spectatorConnectionError && (
+              <p className="mt-2 text-xs text-red-300">เชื่อมต่อโหมดผู้ชมไม่สำเร็จ กรุณารีเฟรชหน้า</p>
+            )}
           </div>
 
           <PlayerList players={players} myPlayerId={myPlayerId} />
