@@ -477,12 +477,15 @@ export default function GamePage() {
       setEstimatedScore(0);
       setRemotePlacements([]);
       setExchangeTileIds(null);
-      // Tiles staged while waiting were practice only: when your own turn starts they go back to the
-      // rack and you place them for real. Otherwise keep the ones that still sit on free cells.
+      // Tiles staged while waiting stay put, so when your turn comes you can confirm them straight away
+      // (the new array makes the word check run again, now for real). Only tiles whose cell another
+      // player just filled, or that are no longer in your rack (a card took them), go back.
       const boardCells = gameState.board_state;
-      setTemporaryTiles(previous => gameState.current_player_id === myPlayerId
-        ? []
-        : previous.filter(tile => !boardCells[`${tile.row}_${tile.col}`]));
+      const myRack = gameState.players.find(player => player.id === myPlayerId)?.rack;
+      const rackTileIds = myRack ? new Set(myRack.map(tile => tile.id)) : null;
+      setTemporaryTiles(previous => previous.filter(tile =>
+        !boardCells[`${tile.row}_${tile.col}`] && (!rackTileIds || rackTileIds.has(tile.tile_id))
+      ));
     }
     turnKeyRef.current = nextTurnKey;
   }, [gameState, myPlayerId]);
