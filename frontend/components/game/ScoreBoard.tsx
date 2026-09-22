@@ -38,6 +38,8 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
           const isDead = player.hp <= 0;
           // OFFLINE means the player left the game; they no longer get turns.
           const hasLeft = player.connection_status === 'OFFLINE';
+          // DISCONNECTED: their connection dropped. Their turns are skipped until they reconnect.
+          const isAway = player.connection_status === 'DISCONNECTED';
 
           return (
             <div
@@ -56,7 +58,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                 </span>
                 <div className="flex items-center gap-1.5 truncate">
                   <span className={`text-sm truncate ${isDead || hasLeft ? 'text-slate-500 line-through' : isMe ? 'font-bold text-amber-300' : 'font-medium'}`}>
-                    {player.display_name} {isMe && '(You)'} {isDead ? '(Out)' : hasLeft && '(Left)'}
+                    {player.display_name} {isMe && '(You)'} {isDead ? '(Out)' : hasLeft ? '(Left)' : isAway && '(Away)'}
                   </span>
                   {player.is_host && (
                     <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />

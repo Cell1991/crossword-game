@@ -33,5 +33,6 @@ class RoomDetailResponse(BaseModel):
     status: str
     host_player_id: str
     players: list[PlayerOut]
+    spectator_count: int = 0
     created_at: datetime
     turn_time_limit: Optional[int] = None

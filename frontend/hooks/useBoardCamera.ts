@@ -7,55 +7,79 @@ const BASE_CELL_SIZE = 40;
 // Low enough to see the whole 27-column board on a phone.
 const MIN_SCALE = 0.3;
 const MAX_SCALE = 2.0;
-const SCALE_STEP = 0.1;
 const DEFAULT_SCALE = 1;
+/** Zoom follows how far the wheel/trackpad moved (no fixed steps): a mouse-wheel notch (100px) is about 14%. */
+const WHEEL_ZOOM_SPEED = 0.0015;
+/** The zoom buttons change the zoom by 20% per press. */
+export const BUTTON_ZOOM_FACTOR = 1.2;
 
 function clampScale(scale: number) {
-  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, Math.round(scale * 10) / 10));
+  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
 }
 
+type Offset = { x: number; y: number };
+
 export function useBoardCamera() {
-  const [scale, setScale] = useState(DEFAULT_SCALE);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  // Scale and offset change together when zooming, so they live in one state. Zooming used to call
+  // setOffset from inside the setScale updater; React may run an updater twice (Strict Mode), which
+  // shifted the board twice and made the zoom drift away from the mouse cursor.
+  const [view, setView] = useState({ scale: DEFAULT_SCALE, offset: { x: 0, y: 0 } as Offset });
+  const { scale, offset } = view;
   const [isPanning, setIsPanning] = useState(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
 
+  const setOffset = useCallback((update: Offset | ((previous: Offset) => Offset)) => {
+    setView((previous) => ({
+      ...previous,
+      offset: typeof update === 'function' ? update(previous.offset) : update,
+    }));
+  }, []);
+
   const centerBoard = useCallback((viewportWidth: number, viewportHeight: number) => {
-    const cellSize = BASE_CELL_SIZE * scale;
-    setOffset({
-      x: (viewportWidth - BOARD_COLS * cellSize) / 2,
-      y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
+    setView((previous) => {
+      const cellSize = BASE_CELL_SIZE * previous.scale;
+      return {
+        ...previous,
+        offset: {
+          x: (viewportWidth - BOARD_COLS * cellSize) / 2,
+          y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
+        },
+      };
     });
-  }, [scale]);
+  }, []);
 
   const resetCamera = useCallback((viewportWidth: number, viewportHeight: number) => {
-    setScale(DEFAULT_SCALE);
     const cellSize = BASE_CELL_SIZE * DEFAULT_SCALE;
-    setOffset({
-      x: (viewportWidth - BOARD_COLS * cellSize) / 2,
-      y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
+    setView({
+      scale: DEFAULT_SCALE,
+      offset: {
+        x: (viewportWidth - BOARD_COLS * cellSize) / 2,
+        y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
+      },
     });
   }, []);
 
+  /** Multiplies the zoom by `factor`, keeping the board point under (clientX, clientY) under it. */
+  const zoomBy = useCallback((factor: number, clientX: number, clientY: number) => {
+    if (!Number.isFinite(factor) || factor <= 0 || factor === 1) return;
+    setView((previous) => {
+      const newScale = clampScale(previous.scale * factor);
+      const ratio = newScale / previous.scale;
+      if (ratio === 1) return previous;
+      return {
+        scale: newScale,
+        offset: {
+          x: clientX - (clientX - previous.offset.x) * ratio,
+          y: clientY - (clientY - previous.offset.y) * ratio,
+        },
+      };
+    });
+  }, []);
+
+  /** Wheel zoom: scrolling down (positive delta, in pixels) zooms out, in proportion to the distance scrolled. */
   const zoomAtPoint = useCallback((delta: number, clientX: number, clientY: number) => {
-    setScale((prevScale) => {
-      const newScale = clampScale(prevScale + (delta > 0 ? -SCALE_STEP : SCALE_STEP));
-      const ratio = newScale / prevScale;
-      setOffset((prevOffset) => ({
-        x: clientX - (clientX - prevOffset.x) * ratio,
-        y: clientY - (clientY - prevOffset.y) * ratio,
-      }));
-      return newScale;
-    });
-  }, []);
-
-  const zoomIn = useCallback(() => {
-    setScale((s) => clampScale(s + SCALE_STEP));
-  }, []);
-
-  const zoomOut = useCallback(() => {
-    setScale((s) => clampScale(s - SCALE_STEP));
-  }, []);
+    zoomBy(Math.exp(-delta * WHEEL_ZOOM_SPEED), clientX, clientY);
+  }, [zoomBy]);
 
   const screenToCell = useCallback((screenX: number, screenY: number): { row: number; col: number } | null => {
     const cellSize = BASE_CELL_SIZE * scale;
@@ -85,8 +109,7 @@ export function useBoardCamera() {
     centerBoard,
     resetCamera,
     zoomAtPoint,
-    zoomIn,
-    zoomOut,
+    zoomBy,
     screenToCell,
   };
 }

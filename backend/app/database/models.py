@@ -50,6 +50,7 @@ class Game(Base):
     frozen_tile = Column(JSON, nullable=True)  # {"row", "col", "set_by", "expires_turn"}
     pending_effect = Column(JSON, nullable=True)  # {"type": "DAMAGE"|"SWAP", "source_player_id", "expires_at", ...}
     pending_double_target_id = Column(String(36), nullable=True)
+    winner_id = Column(String(36), nullable=True)
     created_at = Column(DateTime(timezone=True), default=get_utc_now)
     updated_at = Column(DateTime(timezone=True), default=get_utc_now, onupdate=get_utc_now)
     turn_started_at = Column(DateTime(timezone=True), nullable=True)

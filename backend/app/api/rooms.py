@@ -55,6 +55,22 @@ async def join_room(game_pin: str, req: JoinRoomRequest, db: AsyncSession = Depe
         is_host=player.is_host
     )
 
+@router.post("/{game_pin}/leave")
+async def leave_room(
+    game_pin: str,
+    x_player_id: str = Header(..., alias="X-Player-ID"),
+    db: AsyncSession = Depends(get_db)
+):
+    room = await RoomService.leave_room(db, game_pin, x_player_id)
+    await db.commit()
+
+    await manager.broadcast(room.id, WebSocketEvent(
+        type=EventType.PLAYER_LEFT,
+        payload={"playerId": x_player_id, "hostPlayerId": room.host_player_id}
+    ).model_dump())
+
+    return {"status": "left", "host_player_id": room.host_player_id}
+
 @router.get("/{game_pin}", response_model=RoomDetailResponse)
 async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
     room, players = await RoomService.get_room_details(db, game_pin)
@@ -76,6 +92,7 @@ async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
         status=room.status,
         host_player_id=room.host_player_id,
         players=player_outs,
+        spectator_count=manager.spectator_count(room.id),
         created_at=room.created_at,
         turn_time_limit=room.turn_time_limit
     )

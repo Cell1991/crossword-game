@@ -3,10 +3,14 @@
 import React, { startTransition, useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { getRoom, startGame, sessionStore } from '../../../lib/api';
+import { getRoom, leaveRoom, startGame, sessionStore } from '../../../lib/api';
 import { PinDisplay } from '../../../components/lobby/PinDisplay';
 import { PlayerList } from '../../../components/lobby/PlayerList';
+import ParticleField from '../../../components/effects/ParticleField';
 import { Player } from '../../../lib/types';
+
+/** Matches MIN_PLAYERS on the backend: a host may start alone and play solo. */
+const MIN_PLAYERS = 1;
 
 export default function LobbyPage() {
   const router = useRouter();
@@ -15,8 +19,11 @@ export default function LobbyPage() {
 
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameId, setGameId] = useState<string | null>(null);
-  const [isHost, setIsHost] = useState(false);
+  // The room says who hosts: the host can leave and hand the room to someone else.
+  const [hostPlayerId, setHostPlayerId] = useState<string | null>(null);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
+  const [isSpectator, setIsSpectator] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -31,15 +38,18 @@ export default function LobbyPage() {
     }
     startTransition(() => {
       setMyPlayerId(session.playerId);
-      setIsHost(session.isHost);
       setGameId(session.gameId);
+      setIsSpectator(Boolean(session.isSpectator));
     });
   }, [router]);
+
+  const isHost = Boolean(myPlayerId && hostPlayerId === myPlayerId);
 
   const fetchRoom = useCallback(async () => {
     try {
       const room = await getRoom(pin);
       setPlayers(room.players);
+      setHostPlayerId(room.host_player_id);
       setTurnTimeLimit(room.turn_time_limit);
       setLoading(false);
       // If game already started, redirect to game
@@ -75,6 +85,13 @@ export default function LobbyPage() {
     }
   };
 
+  /** Gives the seat back so the game does not deal this player in and wait for their turns. */
+  const handleLeave = async () => {
+    setLeaving(true);
+    if (myPlayerId) await leaveRoom(pin, myPlayerId).catch(() => undefined);
+    router.push('/');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center">
@@ -84,7 +101,8 @@ export default function LobbyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4 gap-6">
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4 gap-6 overflow-hidden">
+      <ParticleField className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-80" />
       {/* Background grid */}
       <div className="absolute inset-0 opacity-5 pointer-events-none"
         style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }}
@@ -122,7 +140,7 @@ export default function LobbyPage() {
 
           {players.length < 2 && (
             <p className="text-center text-slate-500 text-sm mt-4">
-              Waiting for at least 2 players to join...
+              Waiting for other players to join... {isHost && '(or start now to play solo)'}
             </p>
           )}
         </div>
@@ -138,7 +156,7 @@ export default function LobbyPage() {
         {isHost && (
           <button
             onClick={handleStart}
-            disabled={starting || players.length < 1}
+            disabled={starting || leaving || players.length < MIN_PLAYERS}
             className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
           >
             {starting ? 'Starting...' : '▶ Start Game'}
@@ -148,16 +166,19 @@ export default function LobbyPage() {
         {!isHost && (
           <div className="flex items-center gap-3 text-slate-400">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-sm">Waiting for host to start...</span>
+            <span className="text-sm">
+              {isSpectator ? '👁 Watching: the board opens when the host starts' : 'Waiting for host to start...'}
+            </span>
           </div>
         )}
 
         {/* Back to home */}
         <button
-          onClick={() => router.push('/')}
-          className="text-slate-500 hover:text-slate-300 text-sm transition-colors"
+          onClick={handleLeave}
+          disabled={leaving || starting}
+          className="text-slate-500 hover:text-slate-300 text-sm transition-colors disabled:opacity-40"
         >
-          ← Leave lobby
+          {leaving ? 'Leaving...' : isSpectator ? '← Stop watching' : '← Leave lobby'}
         </button>
       </div>
     </div>

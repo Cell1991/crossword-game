@@ -52,6 +52,8 @@ export interface StoredSession {
   displayName: string;
   isHost: boolean;
   gamePin?: string;
+  /** Watching only: no seat, no token, no rack. */
+  isSpectator?: boolean;
 }
 
 export const sessionStore = {
@@ -127,6 +129,16 @@ export async function getRoom(gamePin: string): Promise<RoomDetailResponse> {
   return res.json();
 }
 
+/** Gives up a seat in a room that has not started yet. A leaving host hands the room to the next player. */
+export async function leaveRoom(gamePin: string, playerId: string): Promise<void> {
+  const res = await fetch(`${getApiBase()}/rooms/${gamePin}/leave`, {
+    method: 'POST',
+    headers: { 'X-Player-ID': playerId },
+    keepalive: true,
+  });
+  if (!res.ok) throw new Error('Failed to leave room');
+}
+
 export async function startGame(gamePin: string, hostPlayerId: string): Promise<void> {
   const res = await fetch(`${getApiBase()}/rooms/${gamePin}/start`, {
     method: 'POST',
@@ -198,24 +210,33 @@ export async function validateMove(
   playerId: string,
   placedTiles: PlacedTile[]
 ): Promise<ValidateMoveResponse> {
-  const res = await fetch(`${getApiBase()}/games/${gameId}/moves/validate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Player-ID': playerId,
-    },
-    body: JSON.stringify({ placed_tiles: placedTiles }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
+  try {
+    const res = await fetch(`${getApiBase()}/games/${gameId}/moves/validate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Player-ID': playerId,
+      },
+      body: JSON.stringify({ placed_tiles: placedTiles }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return {
+        valid: false,
+        reason: getErrorMessage(err, 'Move validation failed'),
+        words_formed: [],
+        estimated_score: 0,
+      };
+    }
+    return res.json();
+  } catch {
     return {
       valid: false,
-      reason: getErrorMessage(err, 'Move validation failed'),
+      reason: 'Move validation unavailable',
       words_formed: [],
       estimated_score: 0,
     };
   }
-  return res.json();
 }
 
 export async function commitMove(

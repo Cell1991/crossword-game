@@ -126,6 +126,7 @@ def _upgrade_existing_schema(connection):
             "frozen_tile": "JSON",
             "pending_effect": "JSON",
             "pending_double_target_id": "VARCHAR(36)",
+            "winner_id": "VARCHAR(36)",
         },
         "game_rooms": {
             "turn_time_limit": "INTEGER",

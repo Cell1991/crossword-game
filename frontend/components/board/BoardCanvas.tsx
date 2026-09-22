@@ -63,6 +63,12 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   const pendingWheelRef = useRef<{ delta: number; x: number; y: number } | null>(null);
   const pendingPointerRef = useRef<{ tile: PlacedTile; x: number; y: number; pointerId: number } | null>(null);
   const pendingDragRef = useRef(false);
+  /** Where the current pan started, and whether it has moved far enough to stop counting as a click. */
+  const panStartRef = useRef<{ x: number; y: number } | null>(null);
+  const panMovedRef = useRef(false);
+  /** Fingers on the board. Two of them pinch: zoom by how far they spread, pan by how their midpoint moves. */
+  const touchPointsRef = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{ distance: number; x: number; y: number } | null>(null);
 
   const {
     offset,
@@ -74,7 +80,13 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     screenToCell,
     centerBoard,
     zoomAtPoint,
+    zoomBy,
   } = camera;
+
+  const measurePinch = () => {
+    const [a, b] = [...touchPointsRef.current.values()];
+    return { distance: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  };
 
   // Resize canvas to container
   useEffect(() => {
@@ -182,9 +194,8 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     ctx.save();
     ctx.scale(dpr, dpr);
 
-    // Clear background
-    ctx.fillStyle = '#090d16';
-    ctx.fillRect(0, 0, width, height);
+    // Clear background transparently to reveal background ParticleField (floating letters)
+    ctx.clearRect(0, 0, width, height);
 
     // Board bounding rectangle
     const boardWidthPx = BOARD_COLS * cellSize;
@@ -326,15 +337,28 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       animId = requestAnimationFrame(loop);
     };
     loop();
-    return () => {
-      cancelAnimationFrame(animId);
-      if (wheelFrameRef.current !== null) cancelAnimationFrame(wheelFrameRef.current);
-    };
+    // Only the render loop is stopped here: this effect re-runs on every board change, and cancelling a
+    // pending wheel frame from here left wheelFrameRef set, which silently disabled zooming for good.
+    return () => cancelAnimationFrame(animId);
   }, [render]);
 
   // Pending tiles wait for movement before entering drag mode. A click collects
   // immediately; committed tiles never enter this path.
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      touchPointsRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (touchPointsRef.current.size >= 2) {
+        // A second finger turns the gesture into a pinch, unless a tile is already being dragged.
+        if (touchPointsRef.current.size === 2 && !pendingDragRef.current) {
+          pendingPointerRef.current = null;
+          panMovedRef.current = true;
+          setIsPanning(false);
+          pinchRef.current = measurePinch();
+          e.currentTarget.setPointerCapture(e.pointerId);
+        }
+        return;
+      }
+    }
     if (e.button !== 0) return;
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -353,11 +377,27 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       return;
     }
     lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+    panStartRef.current = { x: e.clientX, y: e.clientY };
+    panMovedRef.current = false;
     e.currentTarget.setPointerCapture(e.pointerId);
     setIsPanning(true);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
+    if (e.pointerType === 'touch' && touchPointsRef.current.has(e.pointerId)) {
+      touchPointsRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const pinch = pinchRef.current;
+      if (pinch && touchPointsRef.current.size >= 2) {
+        const next = measurePinch();
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (rect) {
+          setOffset((prev) => ({ x: prev.x + next.x - pinch.x, y: prev.y + next.y - pinch.y }));
+          if (pinch.distance > 0) zoomBy(next.distance / pinch.distance, next.x - rect.left, next.y - rect.top);
+        }
+        pinchRef.current = next;
+        return;
+      }
+    }
     const pendingPointer = pendingPointerRef.current;
     if (pendingPointer && !pendingDragRef.current) {
       const distance = Math.hypot(e.clientX - pendingPointer.x, e.clientY - pendingPointer.y);
@@ -372,10 +412,21 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       const dy = e.clientY - lastMousePosRef.current.y;
       setOffset((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
       lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+      const start = panStartRef.current;
+      if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) >= 5) panMovedRef.current = true;
     }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      touchPointsRef.current.delete(e.pointerId);
+      if (pinchRef.current) {
+        // Lifting a finger ends the pinch; the finger still down does not start a pan or a click.
+        if (touchPointsRef.current.size < 2) pinchRef.current = null;
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+        return;
+      }
+    }
     const pendingPointer = pendingPointerRef.current;
     if (pendingPointer) {
       if (e.currentTarget.hasPointerCapture(pendingPointer.pointerId)) {
@@ -391,11 +442,11 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       return;
     }
     if (isPanning) {
-      const dist = Math.hypot(e.clientX - lastMousePosRef.current.x, e.clientY - lastMousePosRef.current.y);
       setIsPanning(false);
 
-      // If clicked without significant drag, trigger cell click
-      if (dist < 5) {
+      // A press that never moved away from where it started is a cell click; a pan is not.
+      const start = panStartRef.current ?? { x: e.clientX, y: e.clientY };
+      if (!panMovedRef.current && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 5) {
         const rect = canvasRef.current?.getBoundingClientRect();
         if (rect) {
           const clickX = e.clientX - rect.left;
@@ -416,17 +467,19 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     e.preventDefault();
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    // Some mice report lines or pages instead of pixels; convert so every device zooms at the same speed.
+    const deltaPixels = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * rect.height : e.deltaY;
+    // Add up every wheel event in this frame: zoom follows the total distance scrolled, not a fixed step.
     pendingWheelRef.current = {
-      delta: e.deltaY,
-      x: mouseX,
-      y: mouseY,
+      delta: (pendingWheelRef.current?.delta ?? 0) + deltaPixels,
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
     };
     if (wheelFrameRef.current !== null) return;
     wheelFrameRef.current = requestAnimationFrame(() => {
       const pendingWheel = pendingWheelRef.current;
-      if (pendingWheel) zoomAtPoint(pendingWheel.delta, pendingWheel.x, pendingWheel.y);
+      // Cap one frame's zoom so a fast flick of a free-spinning wheel does not jump straight to the limit.
+      if (pendingWheel) zoomAtPoint(Math.max(-300, Math.min(300, pendingWheel.delta)), pendingWheel.x, pendingWheel.y);
       pendingWheelRef.current = null;
       wheelFrameRef.current = null;
     });
@@ -436,17 +489,25 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     const container = containerRef.current;
     if (!container) return;
     container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      if (wheelFrameRef.current !== null) cancelAnimationFrame(wheelFrameRef.current);
+      wheelFrameRef.current = null;
+      pendingWheelRef.current = null;
+    };
   }, [handleWheel]);
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden select-none cursor-grab active:cursor-grabbing bg-zinc-950"
+      // touch-none: the board handles one-finger pan and two-finger pinch itself, instead of the browser.
+      className="relative w-full h-full overflow-hidden select-none touch-none cursor-grab active:cursor-grabbing bg-zinc-950"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerCancel={() => {
+      onPointerCancel={(e) => {
+        touchPointsRef.current.delete(e.pointerId);
+        if (touchPointsRef.current.size < 2) pinchRef.current = null;
         pendingPointerRef.current = null;
         pendingDragRef.current = false;
         setIsPanning(false);

@@ -40,8 +40,14 @@ class GameEndService:
     def determine_winner(cls, players: list[dict[str, Any]]) -> str | None:
         if not players:
             return None
-        sorted_players = sorted(players, key=lambda p: (p.get("hp", 100) > 0, p.get("score", 0)), reverse=True)
-        return sorted_players[0].get("id")
+
+        def rank(player: dict[str, Any]) -> tuple[bool, bool, int]:
+            alive = player.get("hp", 100) > 0
+            # A player who left the game forfeits: anyone still playing ranks above them.
+            still_playing = alive and player.get("connection_status") != "OFFLINE"
+            return still_playing, alive, player.get("score", 0)
+
+        return max(players, key=rank).get("id")
 
     @classmethod
     def get_leaderboard(cls, players: list[dict[str, Any]]) -> list[dict[str, Any]]:

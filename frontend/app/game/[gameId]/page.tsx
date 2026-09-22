@@ -8,11 +8,12 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { sessionStore, debugSessionStore, getGameState, validateMove, commitMove, passTurn, exchangeTiles, expireTurn, leaveGame, playCard, resolvePendingEffect, UseCardPayload, StoredSession } from '../../../lib/api';
 import { useGameSocket } from '../../../hooks/useGameSocket';
-import { useBoardCamera } from '../../../hooks/useBoardCamera';
+import { BUTTON_ZOOM_FACTOR, useBoardCamera } from '../../../hooks/useBoardCamera';
 import { BoardCanvas } from '../../../components/board/BoardCanvas';
 import { BoardControls } from '../../../components/board/BoardControls';
 import { TileRack } from '../../../components/rack/TileRack';
 import { TurnBanner } from '../../../components/game/TurnBanner';
+import ParticleField from '../../../components/effects/ParticleField';
 import { ScoreBoard } from '../../../components/game/ScoreBoard';
 import { PowerCardBar } from '../../../components/game/PowerCardBar';
 import { DebugPanel } from '../../../components/debug/DebugPanel';
@@ -27,6 +28,9 @@ const EMPTY_TILES: Tile[] = [];
 
 /** Seats on the rack stand. The rack always shows this many, even when the bag runs dry. */
 const RACK_SIZE = 7;
+
+/** How long to wait before asking the server again whether a turn that reads 0s has expired. */
+const TIMEOUT_RETRY_MS = 2000;
 
 interface DragSession {
   tile: Tile;
@@ -70,7 +74,10 @@ export default function GamePage() {
   const [boardViewport, setBoardViewport] = useState({ left: 0, top: 0, width: 0, height: 0 });
   const [rackViewport, setRackViewport] = useState({ left: 0, top: 0, width: 0, height: 0 });
   const [timerNow, setTimerNow] = useState(() => Date.now());
-  const timeoutCheckedTurnRef = useRef<number | null>(null);
+  /** Server clock minus this device's clock. The timer runs on server time so every device agrees. */
+  const clockOffsetRef = useRef(0);
+  const timeoutRequestRef = useRef<{ turnNumber: number; at: number } | null>(null);
+  const validationRequestRef = useRef(0);
   const turnKeyRef = useRef<string | null>(null);
 
   // Power cards
@@ -85,6 +92,8 @@ export default function GamePage() {
   // Derived
   const myPlayerId = session?.playerId ?? null;
   const myToken = session?.token ?? '';
+  /** Watching without a seat: no token, no rack, no turns. */
+  const isSpectator = Boolean(session?.isSpectator);
   const isMyTurn = gameState?.current_player_id === myPlayerId;
   const myPlayer = gameState?.players.find(p => p.id === myPlayerId);
   const canStageMove = Boolean(myPlayer && myPlayer.hp > 0 && myPlayer.connection_status !== 'OFFLINE');
@@ -357,11 +366,13 @@ export default function GamePage() {
 
   // Load game state
   const loadGameState = useCallback(async () => {
-    if (!myToken) return;
+    if (!myToken && !isSpectator) return;
     try {
       const state = await getGameState(gameId, myToken, isDebug);
+      const serverNow = Date.parse(state.server_time);
+      if (Number.isFinite(serverNow)) clockOffsetRef.current = serverNow - Date.now();
       setGameState(state);
-      setTimerNow(Date.now());
+      setTimerNow(Date.now() + clockOffsetRef.current);
       // A sync that arrives before the player id is known carries no rack for us. Reseating from
       // it would blank every seat, so leave the seating alone until we can see our own tiles.
       const myServerPlayer = state.players.find(player => player.id === myPlayerId);
@@ -391,7 +402,7 @@ export default function GamePage() {
       setError(error instanceof Error ? error.message : 'Failed to load game state');
       setLoading(false);
     }
-  }, [gameId, myPlayerId, myToken, isDebug]);
+  }, [gameId, isSpectator, myPlayerId, myToken, isDebug]);
 
   useEffect(() => {
     startTransition(() => {
@@ -434,15 +445,16 @@ export default function GamePage() {
       case 'GAME_STATE_SYNC':
       case 'MOVE_COMMITTED':
       case 'TURN_PASSED':
-      case 'TURN_STARTED':
+      case 'TURN_STARTED': {
         loadGameState();
-        const wordsFormed = event.payload?.words_formed ?? [];
+        const wordsFormed = event.payload?.wordsFormed ?? [];
         if (event.type === 'MOVE_COMMITTED' && wordsFormed.length > 0) {
           const words = wordsFormed.map((word) => word.word).join(', ');
-          setLastMoveInfo(`${words} (+${event.payload.score_earned ?? 0} pts)`);
+          setLastMoveInfo(`${words} (+${event.payload.scoreEarned ?? 0} pts)`);
           setTimeout(() => setLastMoveInfo(null), 4000);
         }
         break;
+      }
       case 'TILES_EXCHANGED': {
         loadGameState();
         const exchangedBy = event.payload?.playerId === myPlayerId
@@ -459,7 +471,9 @@ export default function GamePage() {
         }
         break;
       case 'GAME_ENDED':
-        setGameState(prev => prev ? { ...prev, status: 'FINISHED' } : prev);
+        setGameState(prev => prev ? { ...prev, status: 'FINISHED', winner_id: event.payload?.winnerId ?? prev.winner_id } : prev);
+        // Pick up the final scores and HP too.
+        loadGameState();
         break;
       case 'PLAYER_JOINED':
       case 'PLAYER_LEFT':
@@ -475,12 +489,13 @@ export default function GamePage() {
   const { isConnected, sendMessage } = useGameSocket({
     gameId,
     token: myToken,
+    spectate: isSpectator,
     onEvent: handleSocketEvent,
   });
 
   useEffect(() => {
     if (gameState?.status === 'FINISHED') return;
-    const interval = window.setInterval(() => setTimerNow(Date.now()), 250);
+    const interval = window.setInterval(() => setTimerNow(Date.now() + clockOffsetRef.current), 250);
     return () => window.clearInterval(interval);
   }, [gameState?.status]);
 
@@ -502,22 +517,28 @@ export default function GamePage() {
       setEstimatedScore(0);
       setRemotePlacements([]);
       setExchangeTileIds(null);
-      // Tiles staged while waiting were practice only: when your own turn starts they go back to the
-      // rack and you place them for real. Otherwise keep the ones that still sit on free cells.
+      // Tiles staged while waiting stay put, so when your turn comes you can confirm them straight away
+      // (the new array makes the word check run again, now for real). Only tiles whose cell another
+      // player just filled, or that are no longer in your rack (a card took them), go back.
       const boardCells = gameState.board_state;
-      setTemporaryTiles(previous => gameState.current_player_id === myPlayerId
-        ? []
-        : previous.filter(tile => !boardCells[`${tile.row}_${tile.col}`]));
+      const myRack = gameState.players.find(player => player.id === myPlayerId)?.rack;
+      const rackTileIds = myRack ? new Set(myRack.map(tile => tile.id)) : null;
+      setTemporaryTiles(previous => previous.filter(tile =>
+        !boardCells[`${tile.row}_${tile.col}`] && (!rackTileIds || rackTileIds.has(tile.tile_id))
+      ));
     }
     turnKeyRef.current = nextTurnKey;
   }, [gameState, myPlayerId]);
 
   useEffect(() => {
     if (secondsRemaining !== 0 || !gameState?.turn_time_limit || !gameState.current_player_id) return;
-    if (timeoutCheckedTurnRef.current === gameState.turn_number) return;
-    timeoutCheckedTurnRef.current = gameState.turn_number;
+    // The server has the final say. If it answers "not yet" (clocks never match exactly), ask again
+    // shortly instead of leaving the turn stuck at 0s.
+    const lastRequest = timeoutRequestRef.current;
+    if (lastRequest?.turnNumber === gameState.turn_number && timerNow - lastRequest.at < TIMEOUT_RETRY_MS) return;
+    timeoutRequestRef.current = { turnNumber: gameState.turn_number, at: timerNow };
     void expireTurn(gameId).then(() => loadGameState()).catch(() => undefined);
-  }, [gameId, gameState?.current_player_id, gameState?.turn_number, gameState?.turn_time_limit, loadGameState, secondsRemaining]);
+  }, [gameId, gameState?.current_player_id, gameState?.turn_number, gameState?.turn_time_limit, loadGameState, secondsRemaining, timerNow]);
 
   // A pending SHIELD-blockable DAMAGE/SWAP effect resolves itself once its window passes.
   useEffect(() => {
@@ -542,20 +563,27 @@ export default function GamePage() {
     const sendPreview = (valid: boolean | null) => {
       if (isMyTurn) sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: temporaryTiles, valid });
     };
+    // Any result still in flight belongs to the old placement and must not overwrite the new one.
+    const requestId = ++validationRequestRef.current;
     if (temporaryTiles.length === 0) {
       startTransition(() => {
         setEstimatedScore(0);
         setValidationState(null);
         setValidationReason('');
+        // The word check's complaint was about tiles that are no longer on the board.
+        setError('');
       });
       sendPreview(null);
       return;
     }
+    // Until the new placement is checked, Confirm must not rely on the previous verdict.
+    startTransition(() => setValidationState(null));
     sendPreview(null);
     if (validateTimeout.current) clearTimeout(validateTimeout.current);
     validateTimeout.current = setTimeout(async () => {
       if (!myPlayerId) return;
-      const result = await validateMove(gameId, myPlayerId, temporaryTiles);
+      const result = await validateMove(gameId, myPlayerId, temporaryTiles).catch(() => null);
+      if (!result || requestId !== validationRequestRef.current) return;
       setEstimatedScore(result.valid ? result.estimated_score : 0);
       setValidationState(result.valid);
       setValidationReason(result.reason ?? '');
@@ -726,7 +754,9 @@ export default function GamePage() {
   const handleConfirmMove = async () => {
     if (!myPlayerId || temporaryTiles.length === 0) return;
     if (validationState !== true) {
-      setError(validationReason || 'Fix the invalid word before confirming');
+      setError(validationState === null
+        ? 'Still checking the word, try again in a moment'
+        : validationReason || 'Fix the invalid word before confirming');
       return;
     }
     setIsSubmitting(true);
@@ -764,19 +794,21 @@ export default function GamePage() {
 
   if (gameState?.status === 'FINISHED') {
     const sorted = [...(gameState.players ?? [])].sort((a, b) => b.score - a.score);
-    const winner = sorted[0];
+    // The server decides the winner: knocked-out players and players who left cannot win,
+    // so the top score is not necessarily the winner.
+    const winner = gameState.players.find(p => p.id === gameState.winner_id);
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-8 p-6">
         <div className="text-center">
           <div className="text-6xl mb-4">🏆</div>
           <h1 className="text-4xl font-black text-white mb-2">Game Over!</h1>
-          <p className="text-amber-400 text-2xl font-bold">{winner?.display_name} wins!</p>
+          {winner && <p className="text-amber-400 text-2xl font-bold">{winner.display_name} wins!</p>}
         </div>
         <div className="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-3xl p-6">
           <h2 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4">Final Scores</h2>
           {sorted.map((p, i) => (
             <div key={p.id} className={`flex items-center justify-between py-2 border-b border-slate-800/50 last:border-0 ${p.id === myPlayerId ? 'text-amber-300' : 'text-white'}`}>
-              <span className="font-semibold">{i + 1}. {p.display_name} {p.id === myPlayerId && '(You)'}</span>
+              <span className="font-semibold">{i + 1}. {p.display_name} {p.id === myPlayerId && '(You)'} {p.id === winner?.id && '🏆'}</span>
               <span className="font-mono font-bold">{p.score} pts</span>
             </div>
           ))}
@@ -793,21 +825,29 @@ export default function GamePage() {
 
   const tileBagCount = gameState?.tile_bag_count ?? 0;
   const currentPlayer = gameState?.players.find(p => p.id === gameState?.current_player_id);
+  const roomPin = gameState.game_pin ?? session.gamePin ?? null;
+  const spectatorCount = gameState.spectator_count ?? 0;
+
+  const handleExit = () => {
+    if (isSpectator) {
+      router.push('/');
+      return;
+    }
+    if (window.confirm('ต้องการออกจากเกมหรือไม่?')) {
+      void leaveGame(gameId, myPlayerId ?? '').finally(() => router.push('/'));
+    }
+  };
 
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-950 overflow-hidden">
-      {/* Top HUD */}
-      <div className="flex items-center justify-between px-4 py-2 bg-slate-900/90 border-b border-slate-800/60 backdrop-blur-sm shrink-0 z-10">
-        {/* Left: Logo + connection */}
-        <div className="flex items-center gap-3">
+      {/* Top HUD. On a phone it wraps: controls and counters on the first row, the turn banner below. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3 py-2 sm:px-4 bg-slate-900/90 border-b border-slate-800/60 backdrop-blur-sm shrink-0 z-10">
+        {/* Left: Exit, logo, connection, room PIN */}
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <button
-            onClick={() => {
-              if (window.confirm('ต้องการออกจากเกมหรือไม่?')) {
-                void leaveGame(gameId, myPlayerId ?? '').finally(() => router.push('/'));
-              }
-            }}
+            onClick={handleExit}
             className="flex items-center gap-1.5 rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:bg-slate-800 hover:text-white"
-            title="Exit game"
+            title={isSpectator ? 'Stop watching' : 'Exit game'}
           >
             <span>Exit</span>
           </button>
@@ -818,43 +858,51 @@ export default function GamePage() {
             height={30}
             className="h-7 w-7 rounded-md object-contain"
           />
-          <span className="text-lg font-black text-white">Word<span className="text-amber-400">X</span></span>
-          <div className={`flex items-center gap-1.5 text-xs ${isConnected ? 'text-emerald-400' : 'text-red-400'}`}>
+          <span className="hidden text-lg font-black text-white sm:inline">Word<span className="text-amber-400">X</span></span>
+          <div
+            className={`flex items-center gap-1.5 text-xs ${isConnected ? 'text-emerald-400' : 'text-red-400'}`}
+            title={isConnected ? 'Live' : 'Reconnecting...'}
+          >
             <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
-            {isConnected ? 'Live' : 'Reconnecting...'}
+            <span className="hidden sm:inline">{isConnected ? 'Live' : 'Reconnecting...'}</span>
           </div>
+          {roomPin && (
+            <button
+              type="button"
+              onClick={() => { void navigator.clipboard?.writeText(roomPin).catch(() => undefined); }}
+              className="whitespace-nowrap rounded-lg border border-slate-700 px-2 py-1 font-mono text-xs text-slate-400 hover:bg-slate-800 hover:text-white"
+              title="Room PIN (click to copy)"
+            >
+              PIN <span className="font-bold text-amber-300">{roomPin}</span>
+            </button>
+          )}
         </div>
 
-        {/* Center: Turn banner */}
-        <TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} turnNumber={gameState?.turn_number ?? 1} />
-
-        <div className="min-w-[72px] text-center font-mono text-xs text-slate-300">
-          {secondsRemaining === null ? 'Unlimited' : `${secondsRemaining}s`}
+        {/* Turn banner: its own row on a phone */}
+        <div className="order-last flex w-full justify-center sm:order-none sm:w-auto">
+          <TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} turnNumber={gameState?.turn_number ?? 1} />
         </div>
 
-        {/* Right: Tile bag */}
-        <div className="flex items-center gap-2 text-slate-400 text-sm">
-          <span>🎲</span>
-          <span className="font-mono font-bold text-white">{tileBagCount}</span>
-          <span className="text-xs hidden sm:block">tiles left</span>
+        {/* Right: spectators, timer, tile bag */}
+        <div className="flex items-center gap-3 text-xs text-slate-400 sm:text-sm">
+          {spectatorCount > 0 && (
+            <span className="whitespace-nowrap" title="Spectators watching">👁 {spectatorCount}</span>
+          )}
+          <span className="whitespace-nowrap font-mono text-slate-300" title="Time left this turn">
+            {secondsRemaining === null
+              ? <><span className="sm:hidden">∞</span><span className="hidden sm:inline">Unlimited</span></>
+              : `${secondsRemaining}s`}
+          </span>
+          <span className="flex items-center gap-1.5 whitespace-nowrap" title="Tiles left in the bag">
+            <span>🎲</span>
+            <span className="font-mono font-bold text-white">{tileBagCount}</span>
+            <span className="hidden text-xs sm:inline">tiles left</span>
+          </span>
         </div>
       </div>
 
-      {/* Error toast */}
-      {error && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-red-900/90 border border-red-600/50 text-red-200 text-sm px-4 py-2 rounded-xl shadow-xl">
-          {error}
-        </div>
-      )}
-
-      {/* Last move info toast */}
-      {lastMoveInfo && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-emerald-900/90 border border-emerald-600/50 text-emerald-200 text-sm px-4 py-2 rounded-xl shadow-xl">
-          ✨ {lastMoveInfo}
-        </div>
-      )}
-
-      {/* Pending DAMAGE/SWAP effect: a short SHIELD window before it lands */}
+      {/* Pending DAMAGE/SWAP effect: a short SHIELD window before it lands.
+          Error/last-move toasts moved below into the stacked toast container over the board. */}
       {pendingEffect && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-sky-950/90 border border-sky-500/50 text-sky-200 text-sm px-4 py-2 rounded-xl shadow-xl">
           <span>{pendingEffect.type === 'SWAP' ? '🔄 A tile swap is pending…' : '⚔️ Damage is pending…'}</span>
@@ -872,8 +920,25 @@ export default function GamePage() {
 
       {/* Main: Board */}
       <div className="flex flex-1 min-h-0 relative">
+        <ParticleField className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-70" />
         {/* Board canvas takes full space */}
         <div className="flex-1 relative">
+          {/* Toasts stack instead of sitting on top of each other, and stay clear of the zoom controls */}
+          {(lastMoveInfo || error) && (
+            <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex w-max max-w-[calc(100%-9rem)] -translate-x-1/2 flex-col items-center gap-2">
+              {lastMoveInfo && (
+                <div className="rounded-xl border border-emerald-600/50 bg-emerald-900/90 px-4 py-2 text-center text-sm text-emerald-200 shadow-xl">
+                  ✨ {lastMoveInfo}
+                </div>
+              )}
+              {error && (
+                <div className="rounded-xl border border-red-600/50 bg-red-900/90 px-4 py-2 text-center text-sm text-red-200 shadow-xl">
+                  {error}
+                </div>
+              )}
+            </div>
+          )}
+        <div className="flex-1 relative z-10">
           <BoardCanvas
             boardState={boardState}
             temporaryTiles={temporaryTiles}
@@ -906,8 +971,8 @@ export default function GamePage() {
             </div>
           )}
           <BoardControls
-            onZoomIn={() => camera.zoomAtPoint(-1, boardViewport.width / 2, boardViewport.height / 2)}
-            onZoomOut={() => camera.zoomAtPoint(1, boardViewport.width / 2, boardViewport.height / 2)}
+            onZoomIn={() => camera.zoomBy(BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
+            onZoomOut={() => camera.zoomBy(1 / BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
             onReset={() => {
               const el = document.querySelector('canvas');
               camera.resetCamera(el?.clientWidth ?? window.innerWidth, el?.clientHeight ?? window.innerHeight);
@@ -928,9 +993,16 @@ export default function GamePage() {
           />
         </div>
       </div>
+      </div>
 
-      {/* Bottom: Tile rack */}
+      {/* Bottom: Tile rack (spectators have no seat and never see a rack) */}
       <div className="shrink-0 bg-slate-900/90 border-t border-slate-800/60 backdrop-blur-sm p-3 z-10">
+        {isSpectator ? (
+          <p className="py-3 text-center text-sm text-sky-300">
+            👁 You are watching this game. Players&apos; tiles stay hidden.
+          </p>
+        ) : (
+        <>
         <div className="mb-2">
           <PowerCardBar
             cards={myPlayer?.cards ?? []}
@@ -968,9 +1040,12 @@ export default function GamePage() {
           isMyTurn={isMyTurn}
           canStageMove={canStageMove}
           hasTemporaryTiles={temporaryTiles.length > 0}
+          placementValid={validationState}
           isSubmitting={isSubmitting}
           estimatedScore={estimatedScore}
         />
+        </>
+        )}
       </div>
 
       {isDebug && (

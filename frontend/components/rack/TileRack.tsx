@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Tile } from '../../lib/types';
 import { RotateCcw, Check, SkipForward, Shuffle, ArrowLeftRight, X } from 'lucide-react';
 
@@ -28,6 +29,8 @@ interface TileRackProps {
   isMyTurn: boolean;
   canStageMove: boolean;
   hasTemporaryTiles: boolean;
+  /** Server verdict on the tiles placed on the board: `null` while it is being checked. */
+  placementValid: boolean | null;
   isSubmitting: boolean;
   estimatedScore?: number;
 }
@@ -54,12 +57,15 @@ export const TileRack: React.FC<TileRackProps> = ({
   isMyTurn,
   canStageMove,
   hasTemporaryTiles,
+  placementValid,
   isSubmitting,
   estimatedScore,
 }) => {
   const [draggedSlot, setDraggedSlot] = useState<number | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
+  /** The tile left the stand and the board drag (which draws its own floating tile) took over. */
+  const [isHandedToBoard, setIsHandedToBoard] = useState(false);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const didDragRef = useRef(false);
   const externalDragRef = useRef(false);
@@ -113,9 +119,11 @@ export const TileRack: React.FC<TileRackProps> = ({
       // over again — so a tile lifted above the rack can still be dropped on another seat.
       if (!insideRack && !externalDragRef.current) {
         externalDragRef.current = true;
+        setIsHandedToBoard(true);
         onStartTileDrag(tile, event.clientX, event.clientY);
       } else if (insideRack && externalDragRef.current) {
         externalDragRef.current = false;
+        setIsHandedToBoard(false);
         onCancelTileDrag();
       }
     }
@@ -141,6 +149,7 @@ export const TileRack: React.FC<TileRackProps> = ({
     setDraggedSlot(null);
     setDragOverSlot(null);
     setDragPosition(null);
+    setIsHandedToBoard(false);
     externalDragRef.current = false;
   };
 
@@ -156,7 +165,10 @@ export const TileRack: React.FC<TileRackProps> = ({
 
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-2xl mx-auto px-4 pointer-events-auto">
-      {draggedTile && dragPosition && (
+      {/* Portalled to <body>: the rack bar's backdrop-blur makes it the containing block for `fixed`
+          children, which drew this tile a whole bar-height below the pointer (a second tile appeared
+          near the rack when dragging up the board). Once the board drag takes over it draws its own. */}
+      {draggedTile && dragPosition && !isHandedToBoard && createPortal(
         <div
           className="pointer-events-none fixed z-[100] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-3 scale-105 flex-col items-center justify-center rounded-xl border-2 border-amber-400 bg-amber-100 text-stone-900 shadow-2xl"
           style={{ left: dragPosition.x, top: dragPosition.y }}
@@ -164,7 +176,8 @@ export const TileRack: React.FC<TileRackProps> = ({
         >
           <span className="text-2xl font-black leading-none">{draggedTile.letter}</span>
           <span className="absolute bottom-1 right-1.5 text-[10px] font-bold text-stone-600">{draggedTile.value}</span>
-        </div>
+        </div>,
+        document.body
       )}
       {/* Action Buttons Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 w-full bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-700/60 shadow-2xl">
@@ -251,30 +264,38 @@ export const TileRack: React.FC<TileRackProps> = ({
               </button>
             </div>
 
-            {/* Move preview / Points badge. Off-turn placements are practice only. */}
+            {/* Move preview / Points badge. Off-turn placements wait on the board until your turn. */}
             {hasTemporaryTiles && estimatedScore !== undefined && (
               <div
-                className="flex items-center gap-2 px-3 py-1 bg-amber-950/60 border border-amber-500/40 rounded-xl text-amber-300 text-xs font-semibold animate-pulse"
-                title={isMyTurn ? undefined : 'Practice only: these tiles go back to your rack when your turn starts'}
+                className={`flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-semibold border ${
+                  placementValid === false
+                    ? 'bg-rose-950/60 border-rose-500/40 text-rose-300'
+                    : 'bg-amber-950/60 border-amber-500/40 text-amber-300 animate-pulse'
+                }`}
+                title={isMyTurn ? undefined : 'Waiting for your turn: these tiles stay on the board so you can confirm them when it starts'}
               >
                 <span>{isMyTurn ? 'PREVIEW:' : 'PRACTICE:'}</span>
-                <span className="text-amber-200 font-bold text-sm">+{estimatedScore} pts</span>
+                <span className="font-bold text-sm">
+                  {placementValid === false ? 'Invalid word' : placementValid === null ? 'Checking...' : `+${estimatedScore} pts`}
+                </span>
               </div>
             )}
 
-            {/* Confirm Move */}
-            <button
-              onClick={onConfirmMove}
-              disabled={!isMyTurn || !hasTemporaryTiles || isSubmitting}
-              className={`flex items-center gap-2 px-5 py-1.5 rounded-xl font-semibold text-sm transition-all ${
-                isMyTurn && hasTemporaryTiles
-                  ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-950/50 cursor-pointer border border-emerald-400/30'
-                  : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
-              }`}
-            >
-              <Check className="w-4 h-4" />
-              <span>{isSubmitting ? 'Confirming...' : 'Confirm Move'}</span>
-            </button>
+            {/* Confirm Move: only offered once the placed tiles form valid words */}
+            {(!hasTemporaryTiles || placementValid === true) && (
+              <button
+                onClick={onConfirmMove}
+                disabled={!isMyTurn || !hasTemporaryTiles || isSubmitting}
+                className={`flex items-center gap-2 px-5 py-1.5 rounded-xl font-semibold text-sm transition-all ${
+                  isMyTurn && hasTemporaryTiles
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-950/50 cursor-pointer border border-emerald-400/30'
+                    : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
+                }`}
+              >
+                <Check className="w-4 h-4" />
+                <span>{isSubmitting ? 'Confirming...' : 'Confirm Move'}</span>
+              </button>
+            )}
           </>
         )}
       </div>

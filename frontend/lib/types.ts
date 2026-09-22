@@ -48,6 +48,11 @@ export interface GameState {
   max_turns: number | null;
   pending_effect: PendingEffect | null;
   frozen_tile: { row: number; col: number; set_by: string; expires_turn: number } | null;
+  winner_id: string | null;
+  /** The server's clock when this snapshot was taken; the turn timer runs on it. */
+  server_time: string;
+  game_pin: string | null;
+  spectator_count: number;
 }
 
 /** A DAMAGE/SWAP effect waiting out its SHIELD window. SWAP tile letters are only
@@ -118,6 +123,7 @@ export interface RoomDetailResponse {
   status: string;
   host_player_id: string;
   players: Player[];
+  spectator_count: number;
   created_at: string;
   turn_time_limit: TurnTimeLimit;
 }
@@ -154,10 +160,13 @@ export interface WebSocketEvent {
   payload: {
     playerId?: string;
     tiles?: { row: number; col: number }[];
-    words_formed?: WordFormed[];
-    score_earned?: number;
+    /** MOVE_COMMITTED */
+    wordsFormed?: WordFormed[];
+    scoreEarned?: number;
     /** TILES_EXCHANGED: how many tiles went back to the bag. The letters themselves stay private. */
     count?: number;
+    /** GAME_ENDED */
+    winnerId?: string | null;
   };
   timestamp: string;
 }

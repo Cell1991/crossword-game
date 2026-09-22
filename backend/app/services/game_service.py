@@ -17,8 +17,63 @@ class GameService:
 
     @staticmethod
     def eligible_players(players: list[GamePlayer]) -> list[GamePlayer]:
-        """Return players who can receive a turn."""
+        """Return players who can receive a turn: still in the game and connected."""
+        return [
+            player for player in players
+            if player.hp > 0 and player.connection_status not in ("OFFLINE", "DISCONNECTED")
+        ]
+
+    @staticmethod
+    def players_in_game(players: list[GamePlayer]) -> list[GamePlayer]:
+        """Players not knocked out and not gone. A dropped connection (DISCONNECTED) is not leaving:
+        their turns are skipped until they reconnect, but the game does not end without them."""
         return [player for player in players if player.hp > 0 and player.connection_status != "OFFLINE"]
+
+    @staticmethod
+    def too_few_players(players: list[GamePlayer]) -> bool:
+        """A multiplayer game ends once at most one player is still in it; a solo game once its player is out."""
+        in_game = GameService.players_in_game(players)
+        return not in_game if len(players) == 1 else len(in_game) <= 1
+
+    @staticmethod
+    def scoreless_turn_limit(players: list[GamePlayer]) -> int:
+        """Rules §6: the game ends after every player still in it has had two scoreless turns in a row."""
+        return max(settings.MAX_CONSECUTIVE_PASSES, 2 * len(GameService.players_in_game(players)))
+
+    @staticmethod
+    def next_player_after(players: list[GamePlayer], player_id: str) -> GamePlayer | None:
+        """The first player after `player_id` in seat order who can take a turn, even if `player_id` just left.
+        In a solo game, or while everyone else is disconnected, that is `player_id` again."""
+        eligible = GameService.eligible_players(players)
+        seat = next(index for index, player in enumerate(players) if player.id == player_id)
+        for step in range(1, len(players) + 1):
+            candidate = players[(seat + step) % len(players)]
+            if candidate in eligible:
+                return candidate
+        return None
+
+    @staticmethod
+    def players_summary(players: list[GamePlayer]) -> list[dict]:
+        """The player fields GameEndService needs."""
+        return [
+            {"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack,
+             "connection_status": p.connection_status}
+            for p in players
+        ]
+
+    @staticmethod
+    async def finish_game(db: AsyncSession, game: Game, players: list[GamePlayer], winner_id: str | None = None) -> str | None:
+        """End the game, record the winner and close the room. Returns the winner's id."""
+        winner_id = winner_id or GameEndService.determine_winner(GameService.players_summary(players))
+        game.status = "FINISHED"
+        game.current_player_id = None
+        game.turn_started_at = None
+        game.winner_id = winner_id
+        room = (await db.execute(select(GameRoom).where(GameRoom.id == game.id))).scalar_one_or_none()
+        if room:
+            room.status = "FINISHED"
+            room.finished_at = get_utc_now()
+        return winner_id
 
     @staticmethod
     async def expire_turn_if_needed(db: AsyncSession, game_id: str) -> tuple[Game, bool, str | None, str | None]:
@@ -172,7 +227,10 @@ class GameService:
             turn_started_at=turn_started_at,
             max_turns=game.max_turns,
             pending_effect=GameService._visible_pending_effect(game.pending_effect, requesting_player_id),
-            frozen_tile=game.frozen_tile
+            frozen_tile=game.frozen_tile,
+            winner_id=game.winner_id,
+            server_time=datetime.now(timezone.utc),
+            game_pin=room.game_pin if room else None,
         )
 
     @staticmethod
@@ -202,58 +260,25 @@ class GameService:
 
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
         players = (await db.execute(stmt_players)).scalars().all()
-        eligible_players = GameService.eligible_players(players)
-        leaving_player = next((player for player in players if player.id == player_id), None)
-        if leaving_player and leaving_player.id == game.current_player_id and (
-            leaving_player.connection_status == "OFFLINE" or leaving_player.hp <= 0
-        ) and len(eligible_players) == 0:
-            game.status = "FINISHED"
-            game.current_player_id = None
-            game.turn_started_at = None
-            room = (await db.execute(select(GameRoom).where(GameRoom.id == game_id))).scalar_one_or_none()
-            if room:
-                room.status = "FINISHED"
-                room.finished_at = get_utc_now()
-            await db.flush()
-            return game, True, "PLAYER_LEFT", eligible_players[0].id if eligible_players else None
-        if len(eligible_players) <= 1 and not (
-            leaving_player and leaving_player.id == game.current_player_id and (
-                leaving_player.connection_status == "OFFLINE" or leaving_player.hp <= 0
-            )
-        ):
-            game.status = "FINISHED"
-            game.current_player_id = None
-            game.turn_started_at = None
-            room = (await db.execute(select(GameRoom).where(GameRoom.id == game_id))).scalar_one_or_none()
-            if room:
-                room.status = "FINISHED"
-                room.finished_at = get_utc_now()
-            await db.flush()
-            return game, True, "PLAYER_LEFT", eligible_players[0].id if eligible_players else None
-        if leaving_player and leaving_player.id == game.current_player_id and (
-            leaving_player.connection_status == "OFFLINE" or leaving_player.hp <= 0
-        ):
-            turn_players = [leaving_player, *[player for player in eligible_players if player.id != leaving_player.id]]
-        else:
-            turn_players = eligible_players
-        if len(turn_players) <= 1:
-            raise HTTPException(status_code=400, detail="Not enough active players remain")
-        if player_id not in {player.id for player in turn_players}:
+        passing_player = next((player for player in players if player.id == player_id), None)
+        if not passing_player:
             raise HTTPException(status_code=403, detail="This player cannot take a turn")
+        # The current player may be passing because they just left, lost their connection or were knocked out.
+        # Their turn still goes to the next player rather than ending the game on the spot.
+        is_leaving = passing_player not in GameService.eligible_players(players)
+        next_player = GameService.next_player_after(players, player_id)
+        if next_player is None or (not is_leaving and GameService.too_few_players(players)):
+            in_game = GameService.players_in_game(players)
+            winner = await GameService.finish_game(db, game, players, in_game[0].id if len(in_game) == 1 else None)
+            await db.flush()
+            return game, True, "PLAYER_LEFT", winner
 
         game.consecutive_passes += 1
-        
-        # Next turn order
-        current_idx = next(i for i, p in enumerate(turn_players) if p.id == player_id)
-        next_idx = (current_idx + 1) % len(turn_players)
+
         completed_turn = game.turn_number
         reached_max_turns = bool(game.max_turns and completed_turn >= game.max_turns)
-        if reached_max_turns:
-            game.status = "FINISHED"
-            game.current_player_id = None
-            game.turn_started_at = None
-        else:
-            game.current_player_id = turn_players[next_idx].id
+        if not reached_max_turns:
+            game.current_player_id = next_player.id
             game.turn_number += 1
             game.turn_started_at = get_utc_now()
 
@@ -262,7 +287,7 @@ class GameService:
             id=str(uuid.uuid4()),
             game_id=game.id,
             player_id=player_id,
-            turn_number=game.turn_number - 1,
+            turn_number=completed_turn,
             move_type="PASS",
             placed_tiles=[],
             words_formed=[],
@@ -271,33 +296,45 @@ class GameService:
         db.add(pass_move)
 
         # Check end condition
-        players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in players]
-        is_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
-
+        is_over, reason, winner = GameEndService.check_game_over(
+            game.tile_bag, GameService.players_summary(players), game.consecutive_passes,
+            GameService.scoreless_turn_limit(players),
+        )
         if is_over or reached_max_turns:
-            game.status = "FINISHED"
-            stmt_room = select(GameRoom).where(GameRoom.id == game_id)
-            room = (await db.execute(stmt_room)).scalar_one_or_none()
-            if room:
-                room.status = "FINISHED"
-                room.finished_at = get_utc_now()
+            winner = await GameService.finish_game(db, game, players, winner)
 
         await db.flush()
         await replace_game_tiles(db, game.id, game.tile_bag, players)
         return game, is_over or reached_max_turns, reason or ("MAX_TURNS" if reached_max_turns else None), winner
 
     @staticmethod
-    async def leave_game(db: AsyncSession, game_id: str, player_id: str) -> tuple[Game, bool, str | None, str | None]:
+    async def leave_game(
+        db: AsyncSession, game_id: str, player_id: str, status: str = "OFFLINE"
+    ) -> tuple[Game, bool, str | None, str | None]:
+        """
+        Take a player out of the turn order and pass their turn if it is theirs. `OFFLINE` means they left
+        for good; `DISCONNECTED` means their connection dropped, so they rejoin the turn order on reconnecting.
+        """
         game = (await db.execute(select(Game).where(Game.id == game_id).with_for_update())).scalar_one_or_none()
         player = (await db.execute(select(GamePlayer).where(
             GamePlayer.id == player_id, GamePlayer.game_id == game_id
         ))).scalar_one_or_none()
         if not game or not player:
             raise HTTPException(status_code=404, detail="Game or player not found")
-        player.connection_status = "OFFLINE"
+        if player.connection_status != "OFFLINE":
+            player.connection_status = status
         if game.status != "PLAYING" or game.current_player_id != player_id:
             await db.flush()
             return game, False, None, None
+        if status == "DISCONNECTED":
+            players = (await db.execute(
+                select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
+            )).scalars().all()
+            if GameService.next_player_after(players, player_id) is None:
+                # Nobody else is connected to take the turn (a solo game, say): keep it for when they
+                # are back instead of ending the game over a dropped connection.
+                await db.flush()
+                return game, False, None, None
         return await GameService.pass_turn(db, game_id, player_id)
 
     @staticmethod
@@ -358,24 +395,17 @@ class GameService:
 
         # Rules §6: an exchange scores nothing, so it counts towards the scoreless turns that end the game.
         game.consecutive_passes += 1
-        players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in players]
-        scoreless_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
-        eligible_players = GameService.eligible_players(players)
+        scoreless_over, reason, winner = GameEndService.check_game_over(
+            game.tile_bag, GameService.players_summary(players), game.consecutive_passes,
+            GameService.scoreless_turn_limit(players),
+        )
         reached_max_turns = bool(game.max_turns and game.turn_number >= game.max_turns)
-        game_over = scoreless_over or reached_max_turns or len(eligible_players) <= 1
+        game_over = scoreless_over or reached_max_turns or GameService.too_few_players(players)
         if game_over:
-            game.status = "FINISHED"
-            game.current_player_id = None
-            game.turn_started_at = None
-            room = (await db.execute(select(GameRoom).where(GameRoom.id == game_id))).scalar_one_or_none()
-            if room:
-                room.status = "FINISHED"
-                room.finished_at = get_utc_now()
-            winner = winner or GameEndService.determine_winner(players_dict)
+            winner = await GameService.finish_game(db, game, players, winner)
             reason = reason or ("MAX_TURNS" if reached_max_turns else "PLAYER_LEFT")
         else:
-            current_idx = next(i for i, p in enumerate(eligible_players) if p.id == player_id)
-            game.current_player_id = eligible_players[(current_idx + 1) % len(eligible_players)].id
+            game.current_player_id = GameService.next_player_after(players, player_id).id
             game.turn_number += 1
             game.turn_started_at = get_utc_now()
 

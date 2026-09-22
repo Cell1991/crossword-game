@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Any, Optional
 from datetime import datetime, timezone
 
@@ -8,7 +8,8 @@ def get_iso_now():
 class WebSocketEvent(BaseModel):
     type: str
     payload: dict[str, Any]
-    timestamp: str = get_iso_now()
+    # default_factory: stamp each event when it is created, not once when this module loads.
+    timestamp: str = Field(default_factory=get_iso_now)
 
 # Event types constants
 class EventType:

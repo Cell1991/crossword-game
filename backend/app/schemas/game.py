@@ -25,3 +25,8 @@ class GameStateResponse(BaseModel):
     max_turns: Optional[int] = None
     pending_effect: Optional[dict[str, Any]] = None
     frozen_tile: Optional[dict[str, Any]] = None
+    winner_id: Optional[str] = None
+    # Lets clients run the turn timer on the server's clock instead of their own.
+    server_time: datetime
+    game_pin: Optional[str] = None
+    spectator_count: int = 0
