@@ -3,10 +3,13 @@
 import React, { startTransition, useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { getRoom, startGame, sessionStore } from '../../../lib/api';
+import { getRoom, leaveRoom, startGame, sessionStore } from '../../../lib/api';
 import { PinDisplay } from '../../../components/lobby/PinDisplay';
 import { PlayerList } from '../../../components/lobby/PlayerList';
 import { Player } from '../../../lib/types';
+
+/** Matches MIN_PLAYERS on the backend: a host may start alone and play solo. */
+const MIN_PLAYERS = 1;
 
 export default function LobbyPage() {
   const router = useRouter();
@@ -15,8 +18,10 @@ export default function LobbyPage() {
 
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameId, setGameId] = useState<string | null>(null);
-  const [isHost, setIsHost] = useState(false);
+  // The room says who hosts: the host can leave and hand the room to someone else.
+  const [hostPlayerId, setHostPlayerId] = useState<string | null>(null);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -31,15 +36,17 @@ export default function LobbyPage() {
     }
     startTransition(() => {
       setMyPlayerId(session.playerId);
-      setIsHost(session.isHost);
       setGameId(session.gameId);
     });
   }, [router]);
+
+  const isHost = Boolean(myPlayerId && hostPlayerId === myPlayerId);
 
   const fetchRoom = useCallback(async () => {
     try {
       const room = await getRoom(pin);
       setPlayers(room.players);
+      setHostPlayerId(room.host_player_id);
       setTurnTimeLimit(room.turn_time_limit);
       setLoading(false);
       // If game already started, redirect to game
@@ -73,6 +80,13 @@ export default function LobbyPage() {
       setError(error instanceof Error ? error.message : 'Failed to start game');
       setStarting(false);
     }
+  };
+
+  /** Gives the seat back so the game does not deal this player in and wait for their turns. */
+  const handleLeave = async () => {
+    setLeaving(true);
+    if (myPlayerId) await leaveRoom(pin, myPlayerId).catch(() => undefined);
+    router.push('/');
   };
 
   if (loading) {
@@ -122,7 +136,7 @@ export default function LobbyPage() {
 
           {players.length < 2 && (
             <p className="text-center text-slate-500 text-sm mt-4">
-              Waiting for at least 2 players to join...
+              Waiting for other players to join... {isHost && '(or start now to play solo)'}
             </p>
           )}
         </div>
@@ -138,7 +152,7 @@ export default function LobbyPage() {
         {isHost && (
           <button
             onClick={handleStart}
-            disabled={starting || players.length < 1}
+            disabled={starting || leaving || players.length < MIN_PLAYERS}
             className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
           >
             {starting ? 'Starting...' : '▶ Start Game'}
@@ -154,10 +168,11 @@ export default function LobbyPage() {
 
         {/* Back to home */}
         <button
-          onClick={() => router.push('/')}
-          className="text-slate-500 hover:text-slate-300 text-sm transition-colors"
+          onClick={handleLeave}
+          disabled={leaving || starting}
+          className="text-slate-500 hover:text-slate-300 text-sm transition-colors disabled:opacity-40"
         >
-          ← Leave lobby
+          {leaving ? 'Leaving...' : '← Leave lobby'}
         </button>
       </div>
     </div>
