@@ -23,3 +23,6 @@ class GameStateResponse(BaseModel):
     turn_time_limit: Optional[int] = None
     turn_started_at: Optional[datetime] = None
     max_turns: Optional[int] = None
+    winner_id: Optional[str] = None
+    # Lets clients run the turn timer on the server's clock instead of their own.
+    server_time: datetime
