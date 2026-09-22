@@ -60,14 +60,14 @@ async def test_lb03_joining_with_an_unknown_pin_fails(client):
     assert res.status_code == 404
 
 
-async def test_lb04_room_holds_at_most_six_players(open_table, client):
-    table = await open_table("P1", "P2", "P3", "P4", "P5", "P6", start=False)
+async def test_lb04_room_holds_at_most_four_players(open_table, client):
+    table = await open_table("P1", "P2", "P3", "P4", start=False)
 
-    res = await client.post(f"/api/rooms/{table.pin}/join", json={"game_pin": table.pin, "player_name": "P7"})
+    res = await client.post(f"/api/rooms/{table.pin}/join", json={"game_pin": table.pin, "player_name": "P5"})
 
     assert res.status_code == 400
-    assert "full" in res.json()["detail"].lower()
-    assert "spectator" in res.json()["detail"].lower()
+    assert "ผู้เล่น" in res.json()["detail"]
+    assert "ผู้ชม" in res.json()["detail"]
 
 
 async def test_lb05_nobody_can_join_after_the_game_starts(open_table, client):
