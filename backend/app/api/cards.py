@@ -36,6 +36,11 @@ async def use_card(
     player = (await db.execute(select(GamePlayer).where(GamePlayer.id == x_player_id, GamePlayer.game_id == game_id))).scalar_one_or_none()
     if not game or not player:
         raise HTTPException(status_code=404, detail="Game or player not found")
+    if game.status != "PLAYING":
+        raise HTTPException(status_code=400, detail="Game is not currently active")
+    # Knocked-out players and players who left are out of the game; HEAL must not revive them.
+    if player.hp <= 0 or player.connection_status == "OFFLINE":
+        raise HTTPException(status_code=403, detail="This player cannot play")
 
     card = request.card.upper()
     cards = await player_cards(db, player.id)
