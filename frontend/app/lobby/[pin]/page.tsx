@@ -23,6 +23,7 @@ export default function LobbyPage() {
   const [hostPlayerId, setHostPlayerId] = useState<string | null>(null);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [isSpectator, setIsSpectator] = useState(false);
+  const [spectatorCount, setSpectatorCount] = useState(0);
   const [leaving, setLeaving] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
@@ -50,6 +51,7 @@ export default function LobbyPage() {
       const room = await getRoom(pin);
       setPlayers(room.players);
       setHostPlayerId(room.host_player_id);
+      setSpectatorCount(room.spectator_count ?? 0);
       setTurnTimeLimit(room.turn_time_limit);
       setLoading(false);
       // If game already started, redirect to game
@@ -137,6 +139,20 @@ export default function LobbyPage() {
         {/* Player List */}
         <div className="w-full bg-slate-900/80 border border-slate-700/50 rounded-3xl p-6 shadow-2xl backdrop-blur-sm">
           <PlayerList players={players} myPlayerId={myPlayerId} />
+
+          <div className="mt-4 rounded-2xl border border-sky-500/20 bg-sky-500/5 px-3 py-2 text-sm text-sky-100">
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-medium">ผู้ชม</span>
+              <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-2 py-0.5 text-xs text-sky-200">
+                {spectatorCount}/2
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-slate-300">
+              {isSpectator
+                ? 'คุณกำลังเข้าร่วมในโหมดผู้ชม'
+                : 'คนที่เข้ามาหลังจากผู้เล่นเต็ม 4 คน จะถูกส่งไปยังโหมดผู้ชม'}
+            </p>
+          </div>
 
           {players.length < 2 && (
             <p className="text-center text-slate-500 text-sm mt-4">
