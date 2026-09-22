@@ -4,10 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import HTTPException
 
-from app.database.models import Game, GamePlayer, Move, GameRoom, get_utc_now
+from app.database.models import Game, GamePlayer, Move, get_utc_now
 from app.game.rules import RuleEngine
 from app.game.game_end import GameEndService
 from app.game.tiles import TileService
+from app.services.game_service import GameService
 from app.schemas.move import PlacedTileInput, ValidateMoveResponse, CommitMoveResponse, WordFormed
 from app.game.board import Board
 from app.database.state import bag_tiles, board_state, player_rack, replace_board_state, replace_game_tiles
@@ -31,6 +32,20 @@ class MoveService:
             rack_counts[l] -= 1
 
         return True, None
+
+    @staticmethod
+    def _apply_rack_values(player_rack: list[dict[str, Any]], placed_tiles: list[PlacedTileInput]) -> None:
+        """Score tiles by the server's letter values, overwriting whatever `value` the client sent."""
+        values = {tile["letter"].upper(): tile["value"] for tile in player_rack}
+        for tile in placed_tiles:
+            tile.letter = tile.letter.upper()
+            tile.value = values[tile.letter]
+
+    @staticmethod
+    def _words_formed(words: list[Any], breakdown: list[dict[str, Any]]) -> list[WordFormed]:
+        # The breakdown lists the words in the same order (followed by any all-tiles bonus),
+        # with letter multipliers already applied.
+        return [WordFormed(word=w.word, score=b["total"], cells=w.cells) for w, b in zip(words, breakdown)]
 
     @classmethod
     async def validate_move(
@@ -63,6 +78,7 @@ class MoveService:
         owns_tiles, err_ownership = cls._verify_tile_ownership(normalized_rack, placed_tiles)
         if not owns_tiles:
             return ValidateMoveResponse(valid=False, reason=err_ownership)
+        cls._apply_rack_values(normalized_rack, placed_tiles)
         if game.banned_letter and game.banned_until_turn and game.turn_number <= game.banned_until_turn:
             if any(tile.letter.upper() == game.banned_letter and player.id != game.banned_by_player_id for tile in placed_tiles):
                 return ValidateMoveResponse(valid=False, reason=f"Letter '{game.banned_letter}' is banned this turn")
@@ -71,16 +87,13 @@ class MoveService:
         placed_dicts = [pt.model_dump() for pt in placed_tiles]
         is_first = len(normalized_board) == 0
 
-        valid, err, words, score, _ = RuleEngine.validate_move(
+        valid, err, words, score, breakdown = RuleEngine.validate_move(
             board_cells=normalized_board,
             placed_tiles=placed_dicts,
             is_first_move=is_first
         )
 
-        words_formed = [
-            WordFormed(word=w.word, score=sum(v for _, v, _ in w.letters_with_vals), cells=w.cells)
-            for w in words
-        ]
+        words_formed = cls._words_formed(words, breakdown)
 
         return ValidateMoveResponse(
             valid=valid,
@@ -121,6 +134,7 @@ class MoveService:
         owns_tiles, err_ownership = cls._verify_tile_ownership(normalized_rack, placed_tiles)
         if not owns_tiles:
             raise HTTPException(status_code=400, detail=err_ownership)
+        cls._apply_rack_values(normalized_rack, placed_tiles)
         if game.banned_letter and game.banned_until_turn and game.turn_number <= game.banned_until_turn:
             if any(tile.letter.upper() == game.banned_letter and player.id != game.banned_by_player_id for tile in placed_tiles):
                 raise HTTPException(status_code=400, detail=f"Letter '{game.banned_letter}' is banned this turn")
@@ -128,7 +142,7 @@ class MoveService:
         placed_dicts = [pt.model_dump() for pt in placed_tiles]
         is_first = len(normalized_board) == 0
 
-        valid, err, words, score, _ = RuleEngine.validate_move(
+        valid, err, words, score, breakdown = RuleEngine.validate_move(
             board_cells=normalized_board,
             placed_tiles=placed_dicts,
             is_first_move=is_first
@@ -179,10 +193,7 @@ class MoveService:
                 from app.database.state import replace_player_cards
                 await replace_player_cards(db, player.id, cards)
 
-        words_formed = [
-            WordFormed(word=w.word, score=sum(v for _, v, _ in w.letters_with_vals), cells=w.cells)
-            for w in words
-        ]
+        words_formed = cls._words_formed(words, breakdown)
 
         # Record Move
         move_id = str(uuid.uuid4())
@@ -210,29 +221,18 @@ class MoveService:
         completed_turn = game.turn_number
         reached_max_turns = bool(game.max_turns and completed_turn >= game.max_turns)
         game.consecutive_passes = 0
-        players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in all_players]
-        is_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
-        eligible_players = [p for p in all_players if p.hp > 0 and p.connection_status != "OFFLINE"]
-        game_over = is_over or reached_max_turns or len(eligible_players) <= 1
+        is_over, reason, winner = GameEndService.check_game_over(
+            game.tile_bag, GameService.players_summary(all_players), game.consecutive_passes
+        )
+        game_over = is_over or reached_max_turns or GameService.too_few_players(all_players)
         if game_over:
-            game.status = "FINISHED"
-            game.current_player_id = None
-            game.turn_started_at = None
+            winner = await GameService.finish_game(db, game, all_players, winner)
             next_player_id = None
         else:
-            current_idx = next(i for i, p in enumerate(eligible_players) if p.id == player_id)
-            next_player_id = eligible_players[(current_idx + 1) % len(eligible_players)].id
+            next_player_id = GameService.next_player_after(all_players, player_id).id
             game.current_player_id = next_player_id
             game.turn_number += 1
             game.turn_started_at = get_utc_now()
-
-        if game_over:
-            game.status = "FINISHED"
-            stmt_room = select(GameRoom).where(GameRoom.id == game_id)
-            room = (await db.execute(stmt_room)).scalar_one_or_none()
-            if room:
-                room.status = "FINISHED"
-                room.finished_at = get_utc_now()
 
         await db.flush()
         await replace_game_tiles(db, game.id, game.tile_bag, all_players)
