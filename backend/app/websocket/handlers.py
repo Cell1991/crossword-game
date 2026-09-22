@@ -81,6 +81,13 @@ async def spectate_game(websocket: WebSocket, game_id: str) -> None:
         await websocket.close(code=4004, reason="Game not found")
         return
 
+    if manager.spectator_count(game_id) >= settings.MAX_SPECTATORS:
+        await websocket.close(
+            code=4005,
+            reason="โซนผู้ชมเต็มแล้ว และห้องนี้เต็มทั้งผู้เล่นและผู้ชมแล้ว"
+        )
+        return
+
     connection_id = f"{SPECTATOR_PREFIX}{uuid.uuid4()}"
     await manager.connect(websocket, game_id, connection_id)
     try:
