@@ -45,6 +45,8 @@ async def websocket_endpoint(
             data = await websocket.receive_text()
             try:
                 msg = json.loads(data)
+                if not isinstance(msg, dict):
+                    continue
                 # Handle client ping/pong heartbeat
                 if msg.get("type") == "PING":
                     await websocket.send_text(json.dumps({"type": "PONG"}))
@@ -72,7 +74,8 @@ async def handle_disconnect(
 ) -> None:
     """
     A dropped socket is often just a page refresh. Give the player time to reconnect before
-    treating it as leaving the game, which marks them OFFLINE and passes their turn.
+    marking them DISCONNECTED and passing their turn. Unlike leaving (OFFLINE), they stay in the
+    game: a locked phone must not hand the other players a win. Reconnecting marks them ONLINE again.
     """
     manager.disconnect(game_id, player_id, websocket)
     await asyncio.sleep(settings.DISCONNECT_GRACE_SECONDS if grace_seconds is None else grace_seconds)
@@ -81,7 +84,9 @@ async def handle_disconnect(
 
     async with AsyncSessionLocal() as db:
         try:
-            game, game_over, reason, winner_id = await GameService.leave_game(db, game_id, player_id)
+            game, game_over, reason, winner_id = await GameService.leave_game(
+                db, game_id, player_id, status="DISCONNECTED"
+            )
             await db.commit()
         except Exception:
             game = None
