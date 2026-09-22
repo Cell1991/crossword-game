@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowRight, LogIn, Plus } from 'lucide-react';
-import { createRoom, joinRoom, sessionStore } from '../lib/api';
+import { ArrowRight, Eye, LogIn, Plus } from 'lucide-react';
+import { createRoom, getRoom, joinRoom, sessionStore } from '../lib/api';
 import { TurnTimeLimit } from '../lib/types';
 import ParticleField from '../components/effects/ParticleField';
 import MouseGradientText from '../components/effects/MouseGradientText';
@@ -60,6 +60,30 @@ export default function HomePage() {
       router.push(`/lobby/${pin.trim()}`);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Failed to join room');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /** Spectators need only the PIN: they take no seat, so they can come in before or during a game. */
+  const handleWatch = async () => {
+    if (!pin.trim()) { setError('Please enter the game PIN'); return; }
+    setLoading(true);
+    setError('');
+    try {
+      const room = await getRoom(pin.trim());
+      sessionStore.save({
+        gameId: room.id,
+        playerId: '',
+        token: '',
+        displayName: name.trim() || 'Spectator',
+        isHost: false,
+        gamePin: room.game_pin,
+        isSpectator: true,
+      });
+      router.push(room.status === 'WAITING' ? `/lobby/${room.game_pin}` : `/game/${room.id}`);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to find room');
     } finally {
       setLoading(false);
     }
@@ -220,6 +244,15 @@ export default function HomePage() {
                 className="w-full rounded-2xl border border-indigo-300/30 bg-indigo-500 py-4 text-lg font-bold text-white shadow-[0_12px_30px_rgba(99,102,241,0.18)] transition-all hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px"
               >
                 {loading ? 'Joining...' : 'Join Game'}
+              </button>
+              <button
+                onClick={handleWatch}
+                disabled={loading}
+                className="-mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 py-3 text-sm font-semibold text-slate-300 transition-all hover:border-sky-300/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+                title="Watch the game without playing (only the PIN is needed)"
+              >
+                <Eye className="h-4 w-4" />
+                Watch as spectator
               </button>
             </div>
           )}
