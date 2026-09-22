@@ -6,8 +6,7 @@ const next = require('next');
 const hostname = process.env.HOSTNAME || 'localhost';
 const port = parseInt(process.env.PORT || '3000', 10);
 const dev = process.env.NODE_ENV !== 'production';
-// Docker supplies BACKEND_INTERNAL_URL; local runs should use the backend on this machine.
-const backend = new URL(process.env.BACKEND_INTERNAL_URL || 'http://127.0.0.1:8000');
+const backend = new URL(process.env.BACKEND_INTERNAL_URL || 'http://backend:8000');
 
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
