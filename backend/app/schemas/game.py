@@ -26,3 +26,5 @@ class GameStateResponse(BaseModel):
     winner_id: Optional[str] = None
     # Lets clients run the turn timer on the server's clock instead of their own.
     server_time: datetime
+    game_pin: Optional[str] = None
+    spectator_count: int = 0
