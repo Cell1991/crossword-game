@@ -114,6 +114,30 @@ class RoomService:
         return room, game, new_player
 
     @staticmethod
+    async def leave_room(db: AsyncSession, game_pin: str, player_id: str) -> GameRoom:
+        """Take a player out of a room that has not started. A leaving host hands the room to the next player."""
+        room, players = await RoomService.get_room_details(db, game_pin)
+        if room.status != "WAITING":
+            raise HTTPException(status_code=400, detail="Game has already started or finished")
+        player = next((p for p in players if p.id == player_id), None)
+        if not player:
+            raise HTTPException(status_code=404, detail="Player not found in this room")
+
+        await db.delete(player)
+        remaining = [p for p in players if p.id != player_id]
+        # Keep seats contiguous: join_room seats newcomers at len(players).
+        for seat, remaining_player in enumerate(remaining):
+            remaining_player.turn_order = seat
+        if player.is_host:
+            if remaining:
+                remaining[0].is_host = True
+                room.host_player_id = remaining[0].id
+            else:
+                room.status = "ABANDONED"
+        await db.flush()
+        return room
+
+    @staticmethod
     async def get_room_details(db: AsyncSession, game_pin: str) -> tuple[GameRoom, list[GamePlayer]]:
         stmt = select(GameRoom).where(GameRoom.game_pin == game_pin)
         res = await db.execute(stmt)
@@ -141,6 +165,8 @@ class RoomService:
 
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == room.id).order_by(GamePlayer.turn_order)
         players = (await db.execute(stmt_players)).scalars().all()
+        if len(players) < settings.MIN_PLAYERS:
+            raise HTTPException(status_code=400, detail=f"At least {settings.MIN_PLAYERS} players are needed to start")
 
         # Deal starting rack to each player
         stmt_game = select(Game).where(Game.id == room.id)
