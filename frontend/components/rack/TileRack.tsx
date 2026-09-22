@@ -264,7 +264,7 @@ export const TileRack: React.FC<TileRackProps> = ({
               </button>
             </div>
 
-            {/* Move preview / Points badge. Off-turn placements are practice only. */}
+            {/* Move preview / Points badge. Off-turn placements wait on the board until your turn. */}
             {hasTemporaryTiles && estimatedScore !== undefined && (
               <div
                 className={`flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-semibold border ${
@@ -272,7 +272,7 @@ export const TileRack: React.FC<TileRackProps> = ({
                     ? 'bg-rose-950/60 border-rose-500/40 text-rose-300'
                     : 'bg-amber-950/60 border-amber-500/40 text-amber-300 animate-pulse'
                 }`}
-                title={isMyTurn ? undefined : 'Practice only: these tiles go back to your rack when your turn starts'}
+                title={isMyTurn ? undefined : 'Waiting for your turn: these tiles stay on the board so you can confirm them when it starts'}
               >
                 <span>{isMyTurn ? 'PREVIEW:' : 'PRACTICE:'}</span>
                 <span className="font-bold text-sm">
