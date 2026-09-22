@@ -24,6 +24,8 @@ export default function LobbyPage() {
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [isSpectator, setIsSpectator] = useState(false);
   const [spectatorCount, setSpectatorCount] = useState(0);
+  const playerSlots = Array.from({ length: 4 }, (_, index) => players[index] ?? null);
+  const spectatorSlots = Array.from({ length: 2 }, (_, index) => (index < spectatorCount ? { name: `ผู้ชม ${index + 1}` } : null));
   const [leaving, setLeaving] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
@@ -138,21 +140,57 @@ export default function LobbyPage() {
 
         {/* Player List */}
         <div className="w-full bg-slate-900/80 border border-slate-700/50 rounded-3xl p-6 shadow-2xl backdrop-blur-sm">
+          <div className="mb-4 rounded-2xl border border-slate-700/60 bg-slate-950/30 p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-200">ผู้เล่น</span>
+              <span className="text-[10px] text-slate-300">{players.length}/4</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {playerSlots.map((player, index) => (
+                <div
+                  key={`player-slot-${index}`}
+                  className={`flex min-h-[48px] items-center justify-center rounded-xl border px-2 text-center text-xs ${
+                    player
+                      ? 'border-amber-500/40 bg-amber-500/10 text-amber-100'
+                      : 'border-dashed border-slate-600/80 bg-slate-800/30 text-slate-500'
+                  }`}
+                >
+                  {player ? player.display_name : 'ผู้เล่นว่าง'}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-4 rounded-2xl border border-slate-700/60 bg-slate-950/30 p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-sky-200">ผู้ชม</span>
+              <span className="text-[10px] text-slate-300">{spectatorCount}/2</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {spectatorSlots.map((slot, index) => (
+                <div
+                  key={`spectator-slot-${index}`}
+                  className={`flex min-h-[48px] items-center justify-center rounded-xl border px-2 text-center text-xs ${
+                    slot
+                      ? 'border-sky-500/40 bg-sky-500/10 text-sky-100'
+                      : 'border-dashed border-slate-600/80 bg-slate-800/30 text-slate-500'
+                  }`}
+                >
+                  {slot ? slot.name : 'ผู้ชมว่าง'}
+                </div>
+              ))}
+            </div>
+          </div>
+
           <PlayerList players={players} myPlayerId={myPlayerId} />
 
-          <div className="mt-4 rounded-2xl border border-sky-500/20 bg-sky-500/5 px-3 py-2 text-sm text-sky-100">
-            <div className="flex items-center justify-between gap-3">
-              <span className="font-medium">ผู้ชม</span>
-              <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-2 py-0.5 text-xs text-sky-200">
-                {spectatorCount}/2
-              </span>
-            </div>
-            <p className="mt-1 text-xs text-slate-300">
-              {isSpectator
-                ? 'คุณกำลังเข้าร่วมในโหมดผู้ชม'
+          <p className="mt-4 text-xs text-slate-300">
+            {isSpectator
+              ? 'คุณกำลังเข้าร่วมในโหมดผู้ชม'
+              : players.length >= 4
+                ? 'ผู้เล่นเต็มแล้ว สามารถเข้าเป็นผู้ชมได้เท่านั้น'
                 : 'คนที่เข้ามาหลังจากผู้เล่นเต็ม 4 คน จะถูกส่งไปยังโหมดผู้ชม'}
-            </p>
-          </div>
+          </p>
 
           {players.length < 2 && (
             <p className="text-center text-slate-500 text-sm mt-4">
