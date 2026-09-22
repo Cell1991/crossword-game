@@ -123,6 +123,7 @@ def _upgrade_existing_schema(connection):
             "banned_by_player_id": "VARCHAR(36)",
             "turn_started_at": "TIMESTAMP",
             "max_turns": "INTEGER",
+            "winner_id": "VARCHAR(36)",
         },
         "game_rooms": {
             "turn_time_limit": "INTEGER",
