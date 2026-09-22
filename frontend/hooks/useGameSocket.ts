@@ -70,8 +70,8 @@ export function useGameSocket({ gameId, token, spectate = false, onEvent }: UseG
       setIsConnected(false);
       if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
 
-      // Do not retry permanent admission failures (4003-4005).
-      if (event.code !== 1000 && event.code !== 4003 && event.code !== 4004 && event.code !== 4005) {
+      // Auto-reconnect if not closed normally (4003: bad session, 4004: no such game)
+      if (event.code !== 1000 && event.code !== 4003 && event.code !== 4004) {
         reconnectTimeoutRef.current = setTimeout(() => {
           connectRef.current();
         }, 2500);
