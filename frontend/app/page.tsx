@@ -73,7 +73,7 @@ export default function HomePage() {
     try {
       const room = await getRoom(pin.trim());
       const spectatorLimit = 2;
-      const seatsAreFull = room.players.length >= 6;
+      const seatsAreFull = room.players.length >= 4;
       const spectatorGalleryIsFull = room.spectator_count >= spectatorLimit;
       if (seatsAreFull && spectatorGalleryIsFull) {
         setError('ห้องนี้เต็มทั้งผู้เล่นและผู้ชมแล้ว เลือกห้องอื่นเพื่อร่วมสนุกกันต่อไปได้เลย');
