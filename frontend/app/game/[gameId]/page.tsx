@@ -13,6 +13,7 @@ import { BoardCanvas } from '../../../components/board/BoardCanvas';
 import { BoardControls } from '../../../components/board/BoardControls';
 import { TileRack } from '../../../components/rack/TileRack';
 import { TurnBanner } from '../../../components/game/TurnBanner';
+import ParticleField from '../../../components/effects/ParticleField';
 import { ScoreBoard } from '../../../components/game/ScoreBoard';
 import {
   GameState,
@@ -741,8 +742,9 @@ export default function GamePage() {
 
       {/* Main: Board */}
       <div className="flex flex-1 min-h-0 relative">
+        <ParticleField className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-70" />
         {/* Board canvas takes full space */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative z-10">
           <BoardCanvas
             boardState={boardState}
             temporaryTiles={temporaryTiles}
