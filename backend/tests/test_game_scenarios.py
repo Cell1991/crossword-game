@@ -66,7 +66,8 @@ async def test_lb04_room_holds_at_most_six_players(open_table, client):
     res = await client.post(f"/api/rooms/{table.pin}/join", json={"game_pin": table.pin, "player_name": "P7"})
 
     assert res.status_code == 400
-    assert "full" in res.json()["detail"]
+    assert "full" in res.json()["detail"].lower()
+    assert "spectator" in res.json()["detail"].lower()
 
 
 async def test_lb05_nobody_can_join_after_the_game_starts(open_table, client):
@@ -789,6 +790,33 @@ async def test_sp03_the_game_state_shows_the_room_pin(open_table):
 
     assert state["game_pin"] == table.pin
     assert all(p["rack"] is None for p in state["players"])  # spectators never see a rack
+
+
+async def test_sp04_two_spectators_are_allowed_but_a_third_is_rejected(open_table):
+    table = await open_table("Alice", "Bob")
+
+    first_socket = SpectatorSocket()
+    second_socket = SpectatorSocket()
+    third_socket = SpectatorSocket()
+
+    first_task = asyncio.create_task(websocket_endpoint(first_socket, table.game_id, token=None, spectate=True))
+    await asyncio.sleep(0.05)
+    second_task = asyncio.create_task(websocket_endpoint(second_socket, table.game_id, token=None, spectate=True))
+    await asyncio.sleep(0.05)
+
+    assert first_socket.closed_with is None
+    assert second_socket.closed_with is None
+    assert manager.spectator_count(table.game_id) == 2
+
+    await websocket_endpoint(third_socket, table.game_id, token=None, spectate=True)
+
+    assert third_socket.closed_with == 4005
+    assert manager.spectator_count(table.game_id) == 2
+
+    first_socket.leave.set()
+    second_socket.leave.set()
+    await first_task
+    await second_task
 
 
 async def test_rt06_every_event_is_stamped_when_it_is_created():
