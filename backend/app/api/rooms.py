@@ -92,6 +92,7 @@ async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
         status=room.status,
         host_player_id=room.host_player_id,
         players=player_outs,
+        spectator_count=manager.spectator_count(room.id),
         created_at=room.created_at,
         turn_time_limit=room.turn_time_limit
     )
