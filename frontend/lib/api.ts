@@ -113,6 +113,16 @@ export async function getRoom(gamePin: string): Promise<RoomDetailResponse> {
   return res.json();
 }
 
+/** Gives up a seat in a room that has not started yet. A leaving host hands the room to the next player. */
+export async function leaveRoom(gamePin: string, playerId: string): Promise<void> {
+  const res = await fetch(`${getApiBase()}/rooms/${gamePin}/leave`, {
+    method: 'POST',
+    headers: { 'X-Player-ID': playerId },
+    keepalive: true,
+  });
+  if (!res.ok) throw new Error('Failed to leave room');
+}
+
 export async function startGame(gamePin: string, hostPlayerId: string): Promise<void> {
   const res = await fetch(`${getApiBase()}/rooms/${gamePin}/start`, {
     method: 'POST',
