@@ -26,6 +26,9 @@ const EMPTY_TILES: Tile[] = [];
 /** Seats on the rack stand. The rack always shows this many, even when the bag runs dry. */
 const RACK_SIZE = 7;
 
+/** How long to wait before asking the server again whether a turn that reads 0s has expired. */
+const TIMEOUT_RETRY_MS = 2000;
+
 interface DragSession {
   tile: Tile;
   source: 'rack' | 'board';
@@ -65,7 +68,10 @@ export default function GamePage() {
   const [boardViewport, setBoardViewport] = useState({ left: 0, top: 0, width: 0, height: 0 });
   const [rackViewport, setRackViewport] = useState({ left: 0, top: 0, width: 0, height: 0 });
   const [timerNow, setTimerNow] = useState(() => Date.now());
-  const timeoutCheckedTurnRef = useRef<number | null>(null);
+  /** Server clock minus this device's clock. The timer runs on server time so every device agrees. */
+  const clockOffsetRef = useRef(0);
+  const timeoutRequestRef = useRef<{ turnNumber: number; at: number } | null>(null);
+  const validationRequestRef = useRef(0);
   const turnKeyRef = useRef<string | null>(null);
 
   // Camera
@@ -341,8 +347,10 @@ export default function GamePage() {
     if (!myToken) return;
     try {
       const state = await getGameState(gameId, myToken);
+      const serverNow = Date.parse(state.server_time);
+      if (Number.isFinite(serverNow)) clockOffsetRef.current = serverNow - Date.now();
       setGameState(state);
-      setTimerNow(Date.now());
+      setTimerNow(Date.now() + clockOffsetRef.current);
       // A sync that arrives before the player id is known carries no rack for us. Reseating from
       // it would blank every seat, so leave the seating alone until we can see our own tiles.
       const myServerPlayer = state.players.find(player => player.id === myPlayerId);
@@ -397,15 +405,16 @@ export default function GamePage() {
       case 'GAME_STATE_SYNC':
       case 'MOVE_COMMITTED':
       case 'TURN_PASSED':
-      case 'TURN_STARTED':
+      case 'TURN_STARTED': {
         loadGameState();
-        const wordsFormed = event.payload?.words_formed ?? [];
+        const wordsFormed = event.payload?.wordsFormed ?? [];
         if (event.type === 'MOVE_COMMITTED' && wordsFormed.length > 0) {
           const words = wordsFormed.map((word) => word.word).join(', ');
-          setLastMoveInfo(`${words} (+${event.payload.score_earned ?? 0} pts)`);
+          setLastMoveInfo(`${words} (+${event.payload.scoreEarned ?? 0} pts)`);
           setTimeout(() => setLastMoveInfo(null), 4000);
         }
         break;
+      }
       case 'TILES_EXCHANGED': {
         loadGameState();
         const exchangedBy = event.payload?.playerId === myPlayerId
@@ -422,7 +431,9 @@ export default function GamePage() {
         }
         break;
       case 'GAME_ENDED':
-        setGameState(prev => prev ? { ...prev, status: 'FINISHED' } : prev);
+        setGameState(prev => prev ? { ...prev, status: 'FINISHED', winner_id: event.payload?.winnerId ?? prev.winner_id } : prev);
+        // Pick up the final scores and HP too.
+        loadGameState();
         break;
       case 'PLAYER_JOINED':
       case 'PLAYER_LEFT':
@@ -441,7 +452,7 @@ export default function GamePage() {
 
   useEffect(() => {
     if (gameState?.status === 'FINISHED') return;
-    const interval = window.setInterval(() => setTimerNow(Date.now()), 250);
+    const interval = window.setInterval(() => setTimerNow(Date.now() + clockOffsetRef.current), 250);
     return () => window.clearInterval(interval);
   }, [gameState?.status]);
 
@@ -475,10 +486,13 @@ export default function GamePage() {
 
   useEffect(() => {
     if (secondsRemaining !== 0 || !gameState?.turn_time_limit || !gameState.current_player_id) return;
-    if (timeoutCheckedTurnRef.current === gameState.turn_number) return;
-    timeoutCheckedTurnRef.current = gameState.turn_number;
+    // The server has the final say. If it answers "not yet" (clocks never match exactly), ask again
+    // shortly instead of leaving the turn stuck at 0s.
+    const lastRequest = timeoutRequestRef.current;
+    if (lastRequest?.turnNumber === gameState.turn_number && timerNow - lastRequest.at < TIMEOUT_RETRY_MS) return;
+    timeoutRequestRef.current = { turnNumber: gameState.turn_number, at: timerNow };
     void expireTurn(gameId).then(() => loadGameState()).catch(() => undefined);
-  }, [gameId, gameState?.current_player_id, gameState?.turn_number, gameState?.turn_time_limit, loadGameState, secondsRemaining]);
+  }, [gameId, gameState?.current_player_id, gameState?.turn_number, gameState?.turn_time_limit, loadGameState, secondsRemaining, timerNow]);
 
   // Validate whenever temporary tiles change. Off-turn this is practice: the player sees whether the
   // word works, but only the current player's placement is shown to everyone else.
@@ -487,6 +501,8 @@ export default function GamePage() {
     const sendPreview = (valid: boolean | null) => {
       if (isMyTurn) sendMessage({ type: 'PLACEMENT_PREVIEW', tiles: temporaryTiles, valid });
     };
+    // Any result still in flight belongs to the old placement and must not overwrite the new one.
+    const requestId = ++validationRequestRef.current;
     if (temporaryTiles.length === 0) {
       startTransition(() => {
         setEstimatedScore(0);
@@ -496,11 +512,14 @@ export default function GamePage() {
       sendPreview(null);
       return;
     }
+    // Until the new placement is checked, Confirm must not rely on the previous verdict.
+    startTransition(() => setValidationState(null));
     sendPreview(null);
     if (validateTimeout.current) clearTimeout(validateTimeout.current);
     validateTimeout.current = setTimeout(async () => {
       if (!myPlayerId) return;
-      const result = await validateMove(gameId, myPlayerId, temporaryTiles);
+      const result = await validateMove(gameId, myPlayerId, temporaryTiles).catch(() => null);
+      if (!result || requestId !== validationRequestRef.current) return;
       setEstimatedScore(result.valid ? result.estimated_score : 0);
       setValidationState(result.valid);
       setValidationReason(result.reason ?? '');
@@ -588,7 +607,9 @@ export default function GamePage() {
   const handleConfirmMove = async () => {
     if (!myPlayerId || temporaryTiles.length === 0) return;
     if (validationState !== true) {
-      setError(validationReason || 'Fix the invalid word before confirming');
+      setError(validationState === null
+        ? 'Still checking the word, try again in a moment'
+        : validationReason || 'Fix the invalid word before confirming');
       return;
     }
     setIsSubmitting(true);
@@ -626,19 +647,21 @@ export default function GamePage() {
 
   if (gameState?.status === 'FINISHED') {
     const sorted = [...(gameState.players ?? [])].sort((a, b) => b.score - a.score);
-    const winner = sorted[0];
+    // The server decides the winner: knocked-out players and players who left cannot win,
+    // so the top score is not necessarily the winner.
+    const winner = gameState.players.find(p => p.id === gameState.winner_id);
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-8 p-6">
         <div className="text-center">
           <div className="text-6xl mb-4">🏆</div>
           <h1 className="text-4xl font-black text-white mb-2">Game Over!</h1>
-          <p className="text-amber-400 text-2xl font-bold">{winner?.display_name} wins!</p>
+          {winner && <p className="text-amber-400 text-2xl font-bold">{winner.display_name} wins!</p>}
         </div>
         <div className="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-3xl p-6">
           <h2 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4">Final Scores</h2>
           {sorted.map((p, i) => (
             <div key={p.id} className={`flex items-center justify-between py-2 border-b border-slate-800/50 last:border-0 ${p.id === myPlayerId ? 'text-amber-300' : 'text-white'}`}>
-              <span className="font-semibold">{i + 1}. {p.display_name} {p.id === myPlayerId && '(You)'}</span>
+              <span className="font-semibold">{i + 1}. {p.display_name} {p.id === myPlayerId && '(You)'} {p.id === winner?.id && '🏆'}</span>
               <span className="font-mono font-bold">{p.score} pts</span>
             </div>
           ))}
@@ -797,6 +820,7 @@ export default function GamePage() {
           isMyTurn={isMyTurn}
           canStageMove={canStageMove}
           hasTemporaryTiles={temporaryTiles.length > 0}
+          placementValid={validationState}
           isSubmitting={isSubmitting}
           estimatedScore={estimatedScore}
         />
