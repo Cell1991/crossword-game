@@ -153,24 +153,33 @@ export async function validateMove(
   playerId: string,
   placedTiles: PlacedTile[]
 ): Promise<ValidateMoveResponse> {
-  const res = await fetch(`${getApiBase()}/games/${gameId}/moves/validate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Player-ID': playerId,
-    },
-    body: JSON.stringify({ placed_tiles: placedTiles }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
+  try {
+    const res = await fetch(`${getApiBase()}/games/${gameId}/moves/validate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Player-ID': playerId,
+      },
+      body: JSON.stringify({ placed_tiles: placedTiles }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return {
+        valid: false,
+        reason: getErrorMessage(err, 'Move validation failed'),
+        words_formed: [],
+        estimated_score: 0,
+      };
+    }
+    return res.json();
+  } catch {
     return {
       valid: false,
-      reason: getErrorMessage(err, 'Move validation failed'),
+      reason: 'Move validation unavailable',
       words_formed: [],
       estimated_score: 0,
     };
   }
-  return res.json();
 }
 
 export async function commitMove(
