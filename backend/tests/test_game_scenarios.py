@@ -12,8 +12,10 @@ import pytest
 from app.game.board import Board
 from app.schemas.events import EventType, WebSocketEvent
 from app.services.move_service import MoveService
+from fastapi import WebSocketDisconnect
+
 from app.websocket.connection_manager import ConnectionManager, manager
-from app.websocket.handlers import handle_disconnect
+from app.websocket.handlers import handle_disconnect, websocket_endpoint
 
 pytestmark = pytest.mark.asyncio
 
@@ -718,6 +720,75 @@ async def test_rt05_a_malformed_preview_does_not_cut_off_other_players():
 
     assert connections.is_connected("game", "bob") and connections.is_connected("game", "carol")
     assert sockets["bob"].sent[0]["payload"]["tiles"] == [{"row": 9, "col": 13}]
+
+
+async def test_rt08_a_solo_player_losing_connection_keeps_the_game(open_table, broadcasts):
+    """Nobody else can take the turn, so a locked phone must not end a solo game."""
+    table = await open_table("Alice")
+    (alice,) = table.seats
+
+    await handle_disconnect(object(), table.game_id, alice.id, "Alice", grace_seconds=0)
+
+    state = await table.state()
+    assert (state["status"], state["current_player_id"]) == ("PLAYING", alice.id)
+    assert me(state, alice)["connection_status"] == "DISCONNECTED"
+    await table.update_player(alice, connection_status="ONLINE")  # her socket reconnects
+    assert (await table.act(alice, "pass")).json()["next_player_id"] == alice.id
+
+
+class SpectatorSocket(FakeSocket):
+    """A socket that sends a heartbeat, then stays open until `leave` is set."""
+
+    def __init__(self):
+        super().__init__()
+        self.leave = asyncio.Event()
+        self.pinged = False
+        self.closed_with = None
+
+    async def receive_text(self):
+        if not self.pinged:
+            self.pinged = True
+            return json.dumps({"type": "PING"})
+        await self.leave.wait()
+        raise WebSocketDisconnect()
+
+    async def close(self, code=1000, reason=None):
+        self.closed_with = code
+
+
+async def test_sp01_spectators_watch_without_a_seat(open_table):
+    table = await open_table("Alice", "Bob")
+    socket = SpectatorSocket()
+    watching = asyncio.create_task(websocket_endpoint(socket, table.game_id, token=None, spectate=True))
+    await asyncio.sleep(0.05)
+
+    state = await table.state()
+    await manager.broadcast(table.game_id, {"type": "TURN_PASSED"})
+    socket.leave.set()
+    await watching
+
+    assert state["spectator_count"] == 1
+    assert [p["display_name"] for p in state["players"]] == ["Alice", "Bob"]
+    assert socket.sent == [{"type": "PONG"}, {"type": "TURN_PASSED"}]
+    assert manager.spectator_count(table.game_id) == 0
+    assert all(p["connection_status"] == "ONLINE" for p in (await table.state())["players"])
+
+
+async def test_sp02_spectating_an_unknown_game_is_refused(client):
+    socket = SpectatorSocket()
+
+    await websocket_endpoint(socket, "no-such-game", token=None, spectate=True)
+
+    assert socket.closed_with == 4004
+
+
+async def test_sp03_the_game_state_shows_the_room_pin(open_table):
+    table = await open_table("Alice", "Bob")
+
+    state = await table.state()
+
+    assert state["game_pin"] == table.pin
+    assert all(p["rack"] is None for p in state["players"])  # spectators never see a rack
 
 
 async def test_rt06_every_event_is_stamped_when_it_is_created():
