@@ -14,7 +14,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({ players, myPlayerId }) =
     <div className="flex flex-col w-full max-w-md mx-auto">
       <div className="flex items-center justify-between mb-3 px-1">
         <span className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-          ผู้เล่น ({players.length})
+          PLAYERS ({players.length})
         </span>
         <span className="text-xs text-emerald-400 flex items-center gap-1 font-medium">
           <CheckCircle2 className="w-3.5 h-3.5" /> Lobby Ready
@@ -42,16 +42,11 @@ export const PlayerList: React.FC<PlayerListProps> = ({ players, myPlayerId }) =
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <span className="flex items-center gap-1 px-2 py-0.5 bg-sky-500/10 border border-sky-500/25 text-sky-200 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  ผู้เล่น
+              {p.is_host && (
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-300 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                  <Crown className="w-3 h-3" /> Host
                 </span>
-                {p.is_host && (
-                  <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-300 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                    <Crown className="w-3 h-3" /> Host
-                  </span>
-                )}
-              </div>
+              )}
             </div>
           );
         })}
