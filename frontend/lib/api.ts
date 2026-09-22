@@ -52,6 +52,8 @@ export interface StoredSession {
   displayName: string;
   isHost: boolean;
   gamePin?: string;
+  /** Watching only: no seat, no token, no rack. */
+  isSpectator?: boolean;
 }
 
 export const sessionStore = {
