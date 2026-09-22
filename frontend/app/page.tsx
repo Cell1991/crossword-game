@@ -16,6 +16,7 @@ export default function HomePage() {
   const [mode, setMode] = useState<Mode>('home');
   const [name, setName] = useState('');
   const [pin, setPin] = useState('');
+  const [joinMode, setJoinMode] = useState<'player' | 'spectator'>('player');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [turnTimeLimit, setTurnTimeLimit] = useState<TurnTimeLimit>(null);
@@ -45,6 +46,12 @@ export default function HomePage() {
   const handleJoin = async () => {
     if (!name.trim()) { setError('Please enter your name'); return; }
     if (!pin.trim()) { setError('Please enter the game PIN'); return; }
+
+    if (joinMode === 'spectator') {
+      await handleWatch();
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -248,22 +255,29 @@ export default function HomePage() {
                   className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3.5 text-center font-mono text-2xl tracking-[0.28em] text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
                 />
               </div>
+              <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-slate-950/30 p-1">
+                <button
+                  type="button"
+                  onClick={() => setJoinMode('player')}
+                  className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${joinMode === 'player' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-300 hover:text-white'}`}
+                >
+                  ผู้เล่น
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setJoinMode('spectator')}
+                  className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${joinMode === 'spectator' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'text-slate-300 hover:text-white'}`}
+                >
+                  ผู้ชม
+                </button>
+              </div>
               {error && <p className="text-red-400 text-sm">{error}</p>}
               <button
                 onClick={handleJoin}
                 disabled={loading}
                 className="w-full rounded-2xl border border-indigo-300/30 bg-indigo-500 py-4 text-lg font-bold text-white shadow-[0_12px_30px_rgba(99,102,241,0.18)] transition-all hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px"
               >
-                {loading ? 'Joining...' : 'Join Game'}
-              </button>
-              <button
-                onClick={handleWatch}
-                disabled={loading}
-                className="-mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 py-3 text-sm font-semibold text-slate-300 transition-all hover:border-sky-300/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
-                title="Watch the game without playing (only the PIN is needed)"
-              >
-                <Eye className="h-4 w-4" />
-                Watch as spectator
+                {loading ? 'Joining...' : joinMode === 'player' ? 'Join as Player' : 'Join as Spectator'}
               </button>
             </div>
           )}
