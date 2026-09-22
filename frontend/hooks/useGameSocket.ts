@@ -7,10 +7,12 @@ import { WebSocketEvent } from '../lib/types';
 interface UseGameSocketProps {
   gameId: string;
   token?: string;
+  /** Connect as a spectator (no token): events only, no seat. */
+  spectate?: boolean;
   onEvent?: (event: WebSocketEvent) => void;
 }
 
-export function useGameSocket({ gameId, token, onEvent }: UseGameSocketProps) {
+export function useGameSocket({ gameId, token, spectate = false, onEvent }: UseGameSocketProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -24,14 +26,15 @@ export function useGameSocket({ gameId, token, onEvent }: UseGameSocketProps) {
   }, [onEvent]);
 
   const connect = useCallback(() => {
-    if (!gameId || !token) return;
+    if (!gameId || (!token && !spectate)) return;
 
     // Clean previous socket
     if (wsRef.current) {
       wsRef.current.close();
     }
 
-    const wsUrl = `${getWsBase()}/ws/games/${gameId}?token=${encodeURIComponent(token)}`;
+    const query = token ? `token=${encodeURIComponent(token)}` : 'spectate=1';
+    const wsUrl = `${getWsBase()}/ws/games/${gameId}?${query}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
@@ -67,14 +70,14 @@ export function useGameSocket({ gameId, token, onEvent }: UseGameSocketProps) {
       setIsConnected(false);
       if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
 
-      // Auto-reconnect if not closed normally
-      if (event.code !== 1000 && event.code !== 4003) {
+      // Auto-reconnect if not closed normally (4003: bad session, 4004: no such game)
+      if (event.code !== 1000 && event.code !== 4003 && event.code !== 4004) {
         reconnectTimeoutRef.current = setTimeout(() => {
           connectRef.current();
         }, 2500);
       }
     };
-  }, [gameId, token]);
+  }, [gameId, spectate, token]);
 
   useEffect(() => {
     connectRef.current = connect;
