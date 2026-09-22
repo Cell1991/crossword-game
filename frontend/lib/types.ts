@@ -49,6 +49,8 @@ export interface GameState {
   winner_id: string | null;
   /** The server's clock when this snapshot was taken; the turn timer runs on it. */
   server_time: string;
+  game_pin: string | null;
+  spectator_count: number;
 }
 
 export type TurnTimeLimit = null | 30 | 60 | 90 | 120;
