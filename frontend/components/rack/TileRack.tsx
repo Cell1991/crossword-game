@@ -28,6 +28,8 @@ interface TileRackProps {
   isMyTurn: boolean;
   canStageMove: boolean;
   hasTemporaryTiles: boolean;
+  /** Server verdict on the tiles placed on the board: `null` while it is being checked. */
+  placementValid: boolean | null;
   isSubmitting: boolean;
   estimatedScore?: number;
 }
@@ -54,6 +56,7 @@ export const TileRack: React.FC<TileRackProps> = ({
   isMyTurn,
   canStageMove,
   hasTemporaryTiles,
+  placementValid,
   isSubmitting,
   estimatedScore,
 }) => {
@@ -254,27 +257,35 @@ export const TileRack: React.FC<TileRackProps> = ({
             {/* Move preview / Points badge. Off-turn placements are practice only. */}
             {hasTemporaryTiles && estimatedScore !== undefined && (
               <div
-                className="flex items-center gap-2 px-3 py-1 bg-amber-950/60 border border-amber-500/40 rounded-xl text-amber-300 text-xs font-semibold animate-pulse"
+                className={`flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-semibold border ${
+                  placementValid === false
+                    ? 'bg-rose-950/60 border-rose-500/40 text-rose-300'
+                    : 'bg-amber-950/60 border-amber-500/40 text-amber-300 animate-pulse'
+                }`}
                 title={isMyTurn ? undefined : 'Practice only: these tiles go back to your rack when your turn starts'}
               >
                 <span>{isMyTurn ? 'PREVIEW:' : 'PRACTICE:'}</span>
-                <span className="text-amber-200 font-bold text-sm">+{estimatedScore} pts</span>
+                <span className="font-bold text-sm">
+                  {placementValid === false ? 'Invalid word' : placementValid === null ? 'Checking...' : `+${estimatedScore} pts`}
+                </span>
               </div>
             )}
 
-            {/* Confirm Move */}
-            <button
-              onClick={onConfirmMove}
-              disabled={!isMyTurn || !hasTemporaryTiles || isSubmitting}
-              className={`flex items-center gap-2 px-5 py-1.5 rounded-xl font-semibold text-sm transition-all ${
-                isMyTurn && hasTemporaryTiles
-                  ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-950/50 cursor-pointer border border-emerald-400/30'
-                  : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
-              }`}
-            >
-              <Check className="w-4 h-4" />
-              <span>{isSubmitting ? 'Confirming...' : 'Confirm Move'}</span>
-            </button>
+            {/* Confirm Move: only offered once the placed tiles form valid words */}
+            {(!hasTemporaryTiles || placementValid === true) && (
+              <button
+                onClick={onConfirmMove}
+                disabled={!isMyTurn || !hasTemporaryTiles || isSubmitting}
+                className={`flex items-center gap-2 px-5 py-1.5 rounded-xl font-semibold text-sm transition-all ${
+                  isMyTurn && hasTemporaryTiles
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-950/50 cursor-pointer border border-emerald-400/30'
+                    : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
+                }`}
+              >
+                <Check className="w-4 h-4" />
+                <span>{isSubmitting ? 'Confirming...' : 'Confirm Move'}</span>
+              </button>
+            )}
           </>
         )}
       </div>
