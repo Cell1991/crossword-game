@@ -72,6 +72,20 @@ export const sessionStore = {
   }
 };
 
+/** Debug mode controls several clone players from one browser tab, so it keeps the whole
+ * roster (not just one active session) around for the player switcher in DebugPanel. */
+export const debugSessionStore = {
+  save(gameId: string, sessions: StoredSession[]) {
+    if (typeof window === 'undefined') return;
+    sessionStorage.setItem(`crossword_debug_${gameId}`, JSON.stringify(sessions));
+  },
+  get(gameId: string): StoredSession[] {
+    if (typeof window === 'undefined') return [];
+    const raw = sessionStorage.getItem(`crossword_debug_${gameId}`);
+    return raw ? JSON.parse(raw) : [];
+  },
+};
+
 export async function createRoom(hostName: string, turnTimeLimit: TurnTimeLimit = null): Promise<CreateRoomResponse> {
   const res = await fetch(`${getApiBase()}/rooms`, {
     method: 'POST',
@@ -127,11 +141,54 @@ export async function startGame(gamePin: string, hostPlayerId: string): Promise<
   }
 }
 
-export async function getGameState(gameId: string, token: string): Promise<GameState> {
-  const res = await fetch(`${getApiBase()}/games/${gameId}?token=${encodeURIComponent(token)}`);
+export async function getGameState(gameId: string, token: string, debug = false): Promise<GameState> {
+  const debugParam = debug ? '&debug=true' : '';
+  const res = await fetch(`${getApiBase()}/games/${gameId}?token=${encodeURIComponent(token)}${debugParam}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Failed to fetch game state');
+  }
+  return res.json();
+}
+
+/** Debug-only: freely set a player's HP (clamped to >= 0 server-side) to test HP-driven bugs. */
+export async function debugSetHp(gameId: string, playerId: string, hp: number): Promise<GameState> {
+  const res = await fetch(`${getApiBase()}/debug/games/${gameId}/players/${playerId}/hp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hp }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to set HP');
+  }
+  return res.json();
+}
+
+/** Debug-only: overwrite the letter of one rack slot, keeping the tile's id and re-deriving its value. */
+export async function debugSetRackTile(gameId: string, playerId: string, slot: number, letter: string): Promise<GameState> {
+  const res = await fetch(`${getApiBase()}/debug/games/${gameId}/players/${playerId}/rack-tile`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ slot, letter }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to set rack tile');
+  }
+  return res.json();
+}
+
+/** Debug-only: grant a specific power card into a player's hand, bypassing the normal random SECRET_POWER drop. */
+export async function debugGrantCard(gameId: string, playerId: string, card: string): Promise<GameState> {
+  const res = await fetch(`${getApiBase()}/debug/games/${gameId}/players/${playerId}/cards`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ card }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to grant card');
   }
   return res.json();
 }
@@ -214,6 +271,40 @@ export async function exchangeTiles(
     const err = await res.json().catch(() => ({}));
     throw new Error(getErrorMessage(err, 'Failed to exchange tiles'));
   }
+  return res.json();
+}
+
+export interface UseCardPayload {
+  card: string;
+  target_player_id?: string;
+  letter?: string;
+  row?: number;
+  col?: number;
+  own_tile_id?: string;
+  target_tile_id?: string;
+  placed_tiles?: PlacedTile[];
+}
+
+export async function playCard(gameId: string, playerId: string, payload: UseCardPayload): Promise<Record<string, unknown>> {
+  const res = await fetch(`${getApiBase()}/games/${gameId}/cards/use`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Player-ID': playerId,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(getErrorMessage(err, 'Failed to use card'));
+  }
+  return res.json();
+}
+
+/** Applies a pending DAMAGE/SWAP effect once its SHIELD window has passed; a no-op if it's still open. */
+export async function resolvePendingEffect(gameId: string): Promise<{ status: string }> {
+  const res = await fetch(`${getApiBase()}/games/${gameId}/effects/resolve`, { method: 'POST' });
+  if (!res.ok) throw new Error('Failed to resolve pending effect');
   return res.json();
 }
 

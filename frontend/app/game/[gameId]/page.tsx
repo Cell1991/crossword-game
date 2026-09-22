@@ -4,9 +4,9 @@ export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
 import React, { startTransition, useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { sessionStore, getGameState, validateMove, commitMove, passTurn, exchangeTiles, expireTurn, leaveGame, StoredSession } from '../../../lib/api';
+import { sessionStore, debugSessionStore, getGameState, validateMove, commitMove, passTurn, exchangeTiles, expireTurn, leaveGame, playCard, resolvePendingEffect, UseCardPayload, StoredSession } from '../../../lib/api';
 import { useGameSocket } from '../../../hooks/useGameSocket';
 import { useBoardCamera } from '../../../hooks/useBoardCamera';
 import { BoardCanvas } from '../../../components/board/BoardCanvas';
@@ -14,6 +14,8 @@ import { BoardControls } from '../../../components/board/BoardControls';
 import { TileRack } from '../../../components/rack/TileRack';
 import { TurnBanner } from '../../../components/game/TurnBanner';
 import { ScoreBoard } from '../../../components/game/ScoreBoard';
+import { PowerCardBar } from '../../../components/game/PowerCardBar';
+import { DebugPanel } from '../../../components/debug/DebugPanel';
 import {
   GameState,
   Tile,
@@ -36,11 +38,14 @@ interface DragSession {
 export default function GamePage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const gameId = params.gameId as string;
+  const isDebug = searchParams.get('debug') === '1';
 
   // Session
   const [session, setSession] = useState<StoredSession | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [debugSessions, setDebugSessions] = useState<StoredSession[]>([]);
 
   // Game state
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -68,6 +73,12 @@ export default function GamePage() {
   const timeoutCheckedTurnRef = useRef<number | null>(null);
   const turnKeyRef = useRef<string | null>(null);
 
+  // Power cards
+  const [armedCard, setArmedCard] = useState<'FREEZE_TILE' | 'DESTROY_TILE' | null>(null);
+  const [hintCell, setHintCell] = useState<{ row: number; col: number } | null>(null);
+  const [cardBusy, setCardBusy] = useState(false);
+  const resolvedEffectRef = useRef<string | null>(null);
+
   // Camera
   const camera = useBoardCamera();
 
@@ -80,6 +91,14 @@ export default function GamePage() {
   const boardState = useMemo(() => gameState?.board_state ?? {}, [gameState?.board_state]);
   const screenToCell = camera.screenToCell;
   const serverRack: Tile[] = myPlayer?.rack ?? EMPTY_TILES;
+  const opponents = gameState?.players.filter(p => p.id !== myPlayerId) ?? [];
+  const pendingEffect = gameState?.pending_effect ?? null;
+  const pendingTargetsMe = Boolean(pendingEffect && myPlayerId && (
+    pendingEffect.type === 'DAMAGE'
+      ? Boolean(pendingEffect.damage?.[myPlayerId])
+      : pendingEffect.target_player_id === myPlayerId
+  ));
+  const iHaveShield = (myPlayer?.cards ?? []).includes('SHIELD');
   const pendingTileIds = useMemo(
     () => new Set(temporaryTiles.map(tile => tile.tile_id)),
     [temporaryTiles]
@@ -340,7 +359,7 @@ export default function GamePage() {
   const loadGameState = useCallback(async () => {
     if (!myToken) return;
     try {
-      const state = await getGameState(gameId, myToken);
+      const state = await getGameState(gameId, myToken, isDebug);
       setGameState(state);
       setTimerNow(Date.now());
       // A sync that arrives before the player id is known carries no rack for us. Reseating from
@@ -372,11 +391,12 @@ export default function GamePage() {
       setError(error instanceof Error ? error.message : 'Failed to load game state');
       setLoading(false);
     }
-  }, [gameId, myPlayerId, myToken]);
+  }, [gameId, myPlayerId, myToken, isDebug]);
 
   useEffect(() => {
     startTransition(() => {
       setSession(sessionStore.get(gameId));
+      if (isDebug) setDebugSessions(debugSessionStore.get(gameId));
       setHydrated(true);
     });
   }, [gameId]);
@@ -390,6 +410,23 @@ export default function GamePage() {
     const initialLoad = setTimeout(() => { void loadGameState(); }, 0);
     return () => clearTimeout(initialLoad);
   }, [hydrated, session, router, loadGameState]);
+
+  // Debug mode: one browser tab controls every clone, so when the turn hands off to another
+  // clone we auto-switch "acting as" to them instead of leaving the tester stuck on whoever
+  // just passed. Fires once per turn change (not on every render) so a manual "Act as" switch
+  // to inspect an off-turn player isn't immediately overridden.
+  const autoSwitchedTurnRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isDebug || !gameState?.current_player_id) return;
+    const turnPlayerId = gameState.current_player_id;
+    if (turnPlayerId === myPlayerId) return;
+    if (autoSwitchedTurnRef.current === turnPlayerId) return;
+    const next = debugSessions.find(s => s.playerId === turnPlayerId);
+    if (!next) return;
+    autoSwitchedTurnRef.current = turnPlayerId;
+    sessionStore.save(next);
+    setSession(next);
+  }, [isDebug, gameState?.current_player_id, debugSessions, myPlayerId]);
 
   // WebSocket events
   const handleSocketEvent = useCallback((event: WebSocketEvent) => {
@@ -428,6 +465,8 @@ export default function GamePage() {
       case 'PLAYER_LEFT':
       case 'PLAYER_RECONNECTED':
       case 'PLAYER_DISCONNECTED':
+      case 'EFFECT_PENDING':
+      case 'EFFECT_RESOLVED':
         loadGameState();
         break;
     }
@@ -480,6 +519,22 @@ export default function GamePage() {
     void expireTurn(gameId).then(() => loadGameState()).catch(() => undefined);
   }, [gameId, gameState?.current_player_id, gameState?.turn_number, gameState?.turn_time_limit, loadGameState, secondsRemaining]);
 
+  // A pending SHIELD-blockable DAMAGE/SWAP effect resolves itself once its window passes.
+  useEffect(() => {
+    const pending = gameState?.pending_effect;
+    if (!pending) {
+      resolvedEffectRef.current = null;
+      return;
+    }
+    if (resolvedEffectRef.current === pending.expires_at) return;
+    const delayMs = Date.parse(pending.expires_at) - Date.now() + 250;
+    const timer = setTimeout(() => {
+      resolvedEffectRef.current = pending.expires_at;
+      void resolvePendingEffect(gameId).then(() => loadGameState()).catch(() => undefined);
+    }, Math.max(0, delayMs));
+    return () => clearTimeout(timer);
+  }, [gameId, gameState?.pending_effect, loadGameState]);
+
   // Validate whenever temporary tiles change. Off-turn this is practice: the player sees whether the
   // word works, but only the current player's placement is shown to everyone else.
   const validateTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -510,8 +565,91 @@ export default function GamePage() {
     return () => { if (validateTimeout.current) clearTimeout(validateTimeout.current); };
   }, [temporaryTiles, gameId, myPlayerId, isMyTurn, sendMessage]);
 
+  // Power card actions
+  const handleUseSimpleCard = useCallback(async (card: 'HINT' | 'FREE_EXCHANGE' | 'MOVE_HEAL' | 'DRAW_TILE' | 'HEAL') => {
+    if (!myPlayerId || cardBusy) return;
+    setCardBusy(true);
+    try {
+      const payload: UseCardPayload = { card };
+      if (card === 'MOVE_HEAL') payload.placed_tiles = temporaryTiles;
+      const result = await playCard(gameId, myPlayerId, payload);
+      if (card === 'HINT') {
+        if (result.found && typeof result.row === 'number' && typeof result.col === 'number') {
+          setHintCell({ row: result.row, col: result.col });
+          setTimeout(() => setHintCell(null), 5000);
+        } else {
+          // The hint search found nothing this time; the card stays in hand (see cards.py) so it's
+          // worth telling the player explicitly rather than leaving the click looking like a no-op.
+          setLastMoveInfo('No valid move found with your current rack — Hint card kept, try again');
+          setTimeout(() => setLastMoveInfo(null), 4000);
+        }
+      }
+      await loadGameState();
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to use card');
+      setTimeout(() => setError(''), 4000);
+    } finally {
+      setCardBusy(false);
+    }
+  }, [cardBusy, gameId, loadGameState, myPlayerId, temporaryTiles]);
+
+  const handleUseTargetedCard = useCallback(async (card: 'DOUBLE_DAMAGE' | 'STEAL_TILE', targetPlayerId: string) => {
+    if (!myPlayerId || cardBusy) return;
+    setCardBusy(true);
+    try {
+      await playCard(gameId, myPlayerId, { card, target_player_id: targetPlayerId });
+      await loadGameState();
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to use card');
+      setTimeout(() => setError(''), 4000);
+    } finally {
+      setCardBusy(false);
+    }
+  }, [cardBusy, gameId, loadGameState, myPlayerId]);
+
+  const handleUseBanLetter = useCallback(async (letter: string) => {
+    if (!myPlayerId || cardBusy) return;
+    setCardBusy(true);
+    try {
+      await playCard(gameId, myPlayerId, { card: 'BAN_LETTER', letter });
+      await loadGameState();
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to use card');
+      setTimeout(() => setError(''), 4000);
+    } finally {
+      setCardBusy(false);
+    }
+  }, [cardBusy, gameId, loadGameState, myPlayerId]);
+
+  const handleUseShield = useCallback(async () => {
+    if (!myPlayerId || cardBusy) return;
+    setCardBusy(true);
+    try {
+      await playCard(gameId, myPlayerId, { card: 'SHIELD' });
+      await loadGameState();
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to use Shield');
+      setTimeout(() => setError(''), 4000);
+    } finally {
+      setCardBusy(false);
+    }
+  }, [cardBusy, gameId, loadGameState, myPlayerId]);
+
   // Handle cell click on board
   const handleCellClick = useCallback((row: number, col: number) => {
+    if (armedCard) {
+      const isOccupied = Object.values(boardState).some(cell => cell.row === row && cell.col === col);
+      if (!myPlayerId || !isOccupied || cardBusy) return;
+      setCardBusy(true);
+      playCard(gameId, myPlayerId, { card: armedCard, row, col })
+        .then(() => loadGameState())
+        .catch((error: unknown) => {
+          setError(error instanceof Error ? error.message : 'Failed to use card');
+          setTimeout(() => setError(''), 4000);
+        })
+        .finally(() => { setCardBusy(false); setArmedCard(null); });
+      return;
+    }
     if (!canStageMove) return;
     if (Object.values(boardState).some(cell => cell.row === row && cell.col === col)) return;
 
@@ -537,7 +675,7 @@ export default function GamePage() {
     ]);
     setSelectedTileId(null);
     setSelectedCell({ row, col });
-  }, [boardState, canStageMove, selectedTileId, myRack, temporaryTiles]);
+  }, [armedCard, boardState, canStageMove, cardBusy, gameId, loadGameState, myPlayerId, selectedTileId, myRack, temporaryTiles]);
 
   const handleSelectTile = (tile: Tile) => {
     if (exchangeTileIds !== null) {
@@ -716,6 +854,22 @@ export default function GamePage() {
         </div>
       )}
 
+      {/* Pending DAMAGE/SWAP effect: a short SHIELD window before it lands */}
+      {pendingEffect && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-sky-950/90 border border-sky-500/50 text-sky-200 text-sm px-4 py-2 rounded-xl shadow-xl">
+          <span>{pendingEffect.type === 'SWAP' ? '🔄 A tile swap is pending…' : '⚔️ Damage is pending…'}</span>
+          {pendingTargetsMe && iHaveShield && (
+            <button
+              onClick={handleUseShield}
+              disabled={cardBusy}
+              className="rounded-full bg-sky-600 hover:bg-sky-500 px-3 py-1 text-xs font-bold text-white disabled:opacity-50"
+            >
+              🛡️ Shield
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Main: Board */}
       <div className="flex flex-1 min-h-0 relative">
         {/* Board canvas takes full space */}
@@ -738,6 +892,8 @@ export default function GamePage() {
             dragPreviewIsValid={dragHoverIsValid}
             canStageMove={canStageMove}
             camera={camera}
+            frozenTile={gameState.frozen_tile}
+            hintCell={hintCell}
           />
           {dragSession && (
             <div
@@ -775,6 +931,21 @@ export default function GamePage() {
 
       {/* Bottom: Tile rack */}
       <div className="shrink-0 bg-slate-900/90 border-t border-slate-800/60 backdrop-blur-sm p-3 z-10">
+        <div className="mb-2">
+          <PowerCardBar
+            cards={myPlayer?.cards ?? []}
+            opponents={opponents}
+            isMyTurn={isMyTurn}
+            hasStagedMove={temporaryTiles.length > 0}
+            armedCard={armedCard}
+            busy={cardBusy}
+            onUseSimple={handleUseSimpleCard}
+            onUseTargeted={handleUseTargetedCard}
+            onUseBanLetter={handleUseBanLetter}
+            onArmBoardCard={(card) => setArmedCard(card)}
+            onCancelArm={() => setArmedCard(null)}
+          />
+        </div>
         <TileRack
           slots={rackSlots}
           selectedTileId={selectedTileId}
@@ -801,6 +972,17 @@ export default function GamePage() {
           estimatedScore={estimatedScore}
         />
       </div>
+
+      {isDebug && (
+        <DebugPanel
+          gameId={gameId}
+          players={gameState?.players ?? []}
+          sessions={debugSessions}
+          activePlayerId={myPlayerId}
+          onSwitchPlayer={(next) => { sessionStore.save(next); setSession(next); }}
+          onGameState={setGameState}
+        />
+      )}
     </div>
   );
 }

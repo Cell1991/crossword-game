@@ -45,7 +45,8 @@ async def commit_move(
             "scoreEarned": res.score_earned,
             "playerTotalScore": player.score,
             "nextPlayerId": res.next_player_id,
-            "boardState": game.board_state
+            "boardState": game.board_state,
+            "pendingEffect": game.pending_effect
         }
     ).model_dump())
 

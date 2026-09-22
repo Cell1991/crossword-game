@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Header, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.database.session import get_db
 from app.schemas.game import GameStateResponse
 from app.schemas.move import ExchangeTilesRequest
@@ -15,6 +16,7 @@ router = APIRouter(prefix="/games", tags=["Games"])
 async def get_game(
     game_id: str,
     token: Optional[str] = Query(None),
+    debug: bool = Query(False),
     x_session_token: Optional[str] = Header(None, alias="X-Session-Token"),
     db: AsyncSession = Depends(get_db)
 ):
@@ -25,7 +27,9 @@ async def get_game(
         if player:
             requesting_player_id = player.id
 
-    return await GameService.get_game_state(db, game_id, requesting_player_id)
+    return await GameService.get_game_state(
+        db, game_id, requesting_player_id, reveal_all=debug and settings.DEBUG_MODE
+    )
 
 @router.post("/{game_id}/pass")
 async def pass_turn(
@@ -141,6 +145,25 @@ async def timeout_turn(game_id: str, db: AsyncSession = Depends(get_db)):
             payload={"reason": reason or "TIMEOUT", "winnerId": winner_id}
         ).model_dump())
     return {"status": "expired", "expired": True, "turn_number": game.turn_number, "game_over": game.status == "FINISHED"}
+
+
+@router.post("/{game_id}/effects/resolve")
+async def resolve_pending_effect(game_id: str, db: AsyncSession = Depends(get_db)):
+    game, resolved, payload = await GameService.finalize_pending_effect_if_needed(db, game_id)
+    if not resolved:
+        return {"status": "pending" if game.pending_effect else "none"}
+    await db.commit()
+
+    await manager.broadcast(game_id, WebSocketEvent(
+        type=EventType.EFFECT_RESOLVED,
+        payload={**payload, "blocked": False},
+    ).model_dump())
+    if payload.get("game_over"):
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.GAME_ENDED,
+            payload={"reason": payload.get("reason") or "Game completed", "winnerId": payload.get("winner_id")},
+        ).model_dump())
+    return {"status": "resolved", **payload}
 
 
 @router.post("/{game_id}/leave")

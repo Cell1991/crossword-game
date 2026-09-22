@@ -46,9 +46,29 @@ export interface GameState {
   turn_time_limit: TurnTimeLimit;
   turn_started_at: string | null;
   max_turns: number | null;
+  pending_effect: PendingEffect | null;
+  frozen_tile: { row: number; col: number; set_by: string; expires_turn: number } | null;
+}
+
+/** A DAMAGE/SWAP effect waiting out its SHIELD window. SWAP tile letters are only
+ * present for the two players involved (see GameService._visible_pending_effect). */
+export interface PendingEffect {
+  type: 'DAMAGE' | 'SWAP';
+  expires_at: string;
+  source_player_id?: string;
+  target_player_id?: string;
+  damage?: Record<string, number>;
+  own_tile?: Tile;
+  target_tile?: Tile;
 }
 
 export type TurnTimeLimit = null | 30 | 60 | 90 | 120;
+
+/** Mirrors backend MoveService.CARD_TYPES (backend/app/services/move_service.py). */
+export const CARD_TYPES = [
+  'DRAW_TILE', 'HEAL', 'STEAL_TILE', 'SPY_SWAP', 'DESTROY_TILE', 'BAN_LETTER',
+  'HINT', 'FREE_EXCHANGE', 'MOVE_HEAL', 'DOUBLE_DAMAGE', 'SHIELD', 'FREEZE_TILE',
+] as const;
 
 export interface WordFormed {
   word: string;
@@ -125,7 +145,9 @@ export type WebSocketEventType =
   | 'GAME_STATE_SYNC'
   | 'GAME_ENDED'
   | 'ERROR'
-  | 'PLACEMENT_PREVIEW';
+  | 'PLACEMENT_PREVIEW'
+  | 'EFFECT_PENDING'
+  | 'EFFECT_RESOLVED';
 
 export interface WebSocketEvent {
   type: WebSocketEventType;

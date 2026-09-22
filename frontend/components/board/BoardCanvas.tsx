@@ -31,6 +31,8 @@ interface BoardCanvasProps {
   dragPreviewIsValid: boolean | null;
   canStageMove: boolean;
   camera: ReturnType<typeof useBoardCamera>;
+  frozenTile?: { row: number; col: number } | null;
+  hintCell?: { row: number; col: number } | null;
 }
 
 export const BoardCanvas: React.FC<BoardCanvasProps> = ({
@@ -51,6 +53,8 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   dragPreviewIsValid,
   canStageMove,
   camera,
+  frozenTile = null,
+  hintCell = null,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -251,6 +255,30 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       }
     }
 
+    // Freeze/Hint overlays
+    if (frozenTile && frozenTile.row >= minRow && frozenTile.row <= maxRow && frozenTile.col >= minCol && frozenTile.col <= maxCol) {
+      const x = offset.x + frozenTile.col * cellSize;
+      const y = offset.y + frozenTile.row * cellSize;
+      ctx.strokeStyle = '#22d3ee';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x + 1.5, y + 1.5, cellSize - 3, cellSize - 3);
+      if (cellSize >= 16) {
+        ctx.font = `${Math.max(10, cellSize * 0.4)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('❄️', x + cellSize / 2, y + cellSize * 0.24);
+      }
+    }
+    if (hintCell && hintCell.row >= minRow && hintCell.row <= maxRow && hintCell.col >= minCol && hintCell.col <= maxCol) {
+      const x = offset.x + hintCell.col * cellSize;
+      const y = offset.y + hintCell.row * cellSize;
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([6, 4]);
+      ctx.strokeRect(x + 1.5, y + 1.5, cellSize - 3, cellSize - 3);
+      ctx.setLineDash([]);
+    }
+
     // Draw Temporary Placed Tiles
     for (const pt of temporaryTiles) {
       if (pt.tile_id === draggingTileId) continue;
@@ -289,7 +317,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     ctx.strokeRect(offset.x, offset.y, boardWidthPx, boardHeightPx);
 
     ctx.restore();
-  }, [offset, cellSize, boardState, temporaryTiles, remotePlacements, selectedCell, drawTile, dragPreviewCell, dragPreviewTile, dragPreviewIsValid, draggingTileId]);
+  }, [offset, cellSize, boardState, temporaryTiles, remotePlacements, selectedCell, drawTile, dragPreviewCell, dragPreviewTile, dragPreviewIsValid, draggingTileId, frozenTile, hintCell]);
 
   useEffect(() => {
     let animId: number;

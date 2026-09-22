@@ -1,6 +1,6 @@
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import datetime, timedelta, timezone
+from typing import Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from fastapi import HTTPException
@@ -41,12 +41,88 @@ class GameService:
         return game, True, reason, winner
 
     @staticmethod
+    async def queue_pending_effect(db: AsyncSession, game: Game, **effect: Any) -> None:
+        """
+        Stage a DAMAGE/SWAP effect behind a short SHIELD window. Only one effect can be
+        pending at a time; queuing a new one resolves any existing one first with no
+        chance to shield it (collisions are rare given the short window).
+        """
+        if game.pending_effect:
+            await GameService._apply_pending_effect(db, game, game.pending_effect)
+        effect["expires_at"] = (datetime.now(timezone.utc) + timedelta(seconds=settings.SHIELD_WINDOW_SECONDS)).isoformat()
+        game.pending_effect = effect
+
+    @staticmethod
+    async def finalize_pending_effect_if_needed(db: AsyncSession, game_id: str) -> tuple[Game, bool, Optional[dict[str, Any]]]:
+        """Apply a pending DAMAGE/SWAP effect once its SHIELD window has passed."""
+        stmt_game = select(Game).where(Game.id == game_id).with_for_update()
+        game = (await db.execute(stmt_game)).scalar_one_or_none()
+        if not game:
+            raise HTTPException(status_code=404, detail="Game not found")
+        if not game.pending_effect:
+            return game, False, None
+        expires_at = datetime.fromisoformat(game.pending_effect["expires_at"])
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) < expires_at:
+            return game, False, None
+        payload = await GameService._apply_pending_effect(db, game, game.pending_effect)
+        game.pending_effect = None
+        await db.flush()
+        return game, True, payload
+
+    @staticmethod
+    async def _apply_pending_effect(db: AsyncSession, game: Game, effect: dict[str, Any]) -> dict[str, Any]:
+        if effect["type"] == "DAMAGE":
+            stmt_players = select(GamePlayer).where(GamePlayer.game_id == game.id).order_by(GamePlayer.turn_order)
+            players = (await db.execute(stmt_players)).scalars().all()
+            applied: dict[str, int] = {}
+            for player in players:
+                amount = effect["damage"].get(player.id)
+                if amount:
+                    player.hp = max(0, player.hp - amount)
+                    applied[player.id] = amount
+            players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in players]
+            is_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
+            eligible_players = GameService.eligible_players(players)
+            game_over = is_over or len(eligible_players) <= 1
+            if game_over:
+                game.status = "FINISHED"
+                game.current_player_id = None
+                game.turn_started_at = None
+                room = (await db.execute(select(GameRoom).where(GameRoom.id == game.id))).scalar_one_or_none()
+                if room:
+                    room.status = "FINISHED"
+                    room.finished_at = get_utc_now()
+            return {"type": "DAMAGE", "applied": applied, "game_over": game_over, "reason": reason, "winner_id": winner}
+
+        # SWAP
+        own_id = effect["source_player_id"]
+        target_id = effect["target_player_id"]
+        own_rack = await player_rack(db, own_id)
+        target_rack = await player_rack(db, target_id)
+        own_tile = next((t for t in own_rack if t["id"] == effect["own_tile"]["id"]), None)
+        target_tile = next((t for t in target_rack if t["id"] == effect["target_tile"]["id"]), None)
+        performed = False
+        if own_tile and target_tile:
+            players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
+            own_player = next(p for p in players if p.id == own_id)
+            target_player = next(p for p in players if p.id == target_id)
+            own_player.rack = [target_tile if t["id"] == own_tile["id"] else t for t in own_rack]
+            target_player.rack = [own_tile if t["id"] == target_tile["id"] else t for t in target_rack]
+            await replace_game_tiles(db, game.id, await bag_tiles(db, game.id), players)
+            performed = True
+        return {"type": "SWAP", "performed": performed, "source_player_id": own_id, "target_player_id": target_id}
+
+    @staticmethod
     async def get_player_by_token(db: AsyncSession, session_token: str) -> Optional[GamePlayer]:
         stmt = select(GamePlayer).where(GamePlayer.session_token == session_token)
         return (await db.execute(stmt)).scalar_one_or_none()
 
     @staticmethod
-    async def get_game_state(db: AsyncSession, game_id: str, requesting_player_id: Optional[str] = None) -> GameStateResponse:
+    async def get_game_state(
+        db: AsyncSession, game_id: str, requesting_player_id: Optional[str] = None, reveal_all: bool = False
+    ) -> GameStateResponse:
         stmt_game = select(Game).where(Game.id == game_id)
         game = (await db.execute(stmt_game)).scalar_one_or_none()
         if not game:
@@ -66,8 +142,9 @@ class GameService:
         for p in players:
             normalized_rack = await player_rack(db, p.id)
             normalized_cards = await player_cards(db, p.id)
+            is_mine = bool(requesting_player_id and p.id == requesting_player_id)
             p_rack = None
-            if requesting_player_id and p.id == requesting_player_id:
+            if reveal_all or is_mine:
                 p_rack = [TileSchema(**t) for t in normalized_rack]
             player_outs.append(PlayerOut(
                 id=p.id,
@@ -79,7 +156,7 @@ class GameService:
                 connection_status=p.connection_status,
                 rack_count=len(normalized_rack),
                 rack=p_rack
-                ,cards=normalized_cards if requesting_player_id and p.id == requesting_player_id else None
+                ,cards=normalized_cards if reveal_all or is_mine else None
             ))
 
         return GameStateResponse(
@@ -93,8 +170,20 @@ class GameService:
             tile_bag_count=await db.scalar(select(func.count()).select_from(GameTile).where(GameTile.game_id == game_id, GameTile.location == "BAG")) or 0,
             turn_time_limit=room.turn_time_limit if room else None,
             turn_started_at=turn_started_at,
-            max_turns=game.max_turns
+            max_turns=game.max_turns,
+            pending_effect=GameService._visible_pending_effect(game.pending_effect, requesting_player_id),
+            frozen_tile=game.frozen_tile
         )
+
+    @staticmethod
+    def _visible_pending_effect(effect: Optional[dict[str, Any]], requesting_player_id: Optional[str]) -> Optional[dict[str, Any]]:
+        """SWAP tile letters are private to the two players involved; everyone else
+        (and DAMAGE effects, which only carry public score-derived amounts) sees the rest."""
+        if not effect:
+            return None
+        if effect["type"] == "SWAP" and requesting_player_id not in (effect.get("source_player_id"), effect.get("target_player_id")):
+            return {"type": "SWAP", "expires_at": effect["expires_at"]}
+        return effect
 
     @staticmethod
     async def pass_turn(db: AsyncSession, game_id: str, player_id: str) -> tuple[Game, bool, str | None, str | None]:
@@ -108,6 +197,8 @@ class GameService:
 
         if game.current_player_id != player_id:
             raise HTTPException(status_code=403, detail="It is not your turn to pass")
+
+        game.pending_double_target_id = None
 
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
         players = (await db.execute(stmt_players)).scalars().all()
@@ -226,6 +317,8 @@ class GameService:
             raise HTTPException(status_code=400, detail="Game is not currently active")
         if game.current_player_id != player_id:
             raise HTTPException(status_code=403, detail="It is not your turn to exchange tiles")
+
+        game.pending_double_target_id = None
 
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
         players = (await db.execute(stmt_players)).scalars().all()

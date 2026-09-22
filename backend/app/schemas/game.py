@@ -23,3 +23,5 @@ class GameStateResponse(BaseModel):
     turn_time_limit: Optional[int] = None
     turn_started_at: Optional[datetime] = None
     max_turns: Optional[int] = None
+    pending_effect: Optional[dict[str, Any]] = None
+    frozen_tile: Optional[dict[str, Any]] = None

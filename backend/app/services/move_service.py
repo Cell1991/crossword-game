@@ -11,11 +11,15 @@ from app.game.tiles import TileService
 from app.schemas.move import PlacedTileInput, ValidateMoveResponse, CommitMoveResponse, WordFormed
 from app.game.board import Board
 from app.database.state import bag_tiles, board_state, player_rack, replace_board_state, replace_game_tiles
+from app.services.game_service import GameService
 import random
 
 class MoveService:
 
-    CARD_TYPES = ("DRAW_TILE", "HEAL", "STEAL_TILE", "SPY_SWAP", "DESTROY_TILE", "BAN_LETTER")
+    CARD_TYPES = (
+        "DRAW_TILE", "HEAL", "STEAL_TILE", "SPY_SWAP", "DESTROY_TILE", "BAN_LETTER",
+        "HINT", "FREE_EXCHANGE", "MOVE_HEAL", "DOUBLE_DAMAGE", "SHIELD", "FREEZE_TILE",
+    )
 
     @classmethod
     def _verify_tile_ownership(cls, player_rack: list[dict[str, Any]], placed_tiles: list[PlacedTileInput]) -> tuple[bool, str | None]:
@@ -77,6 +81,11 @@ class MoveService:
             is_first_move=is_first
         )
 
+        if valid and game.frozen_tile and game.turn_number <= game.frozen_tile["expires_turn"] and player.id != game.frozen_tile["set_by"]:
+            frozen_cell = (game.frozen_tile["row"], game.frozen_tile["col"])
+            if any(frozen_cell in w.cells for w in words):
+                valid, err, score = False, "That letter is frozen this turn", 0
+
         words_formed = [
             WordFormed(word=w.word, score=sum(v for _, v, _ in w.letters_with_vals), cells=w.cells)
             for w in words
@@ -136,6 +145,11 @@ class MoveService:
 
         if not valid:
             raise HTTPException(status_code=400, detail=f"Invalid move: {err}")
+
+        if game.frozen_tile and game.turn_number <= game.frozen_tile["expires_turn"] and player.id != game.frozen_tile["set_by"]:
+            frozen_cell = (game.frozen_tile["row"], game.frozen_tile["col"])
+            if any(frozen_cell in w.cells for w in words):
+                raise HTTPException(status_code=400, detail="That letter is frozen this turn")
 
         # Commit tiles to board
         updated_board = dict(game.board_state)
@@ -202,10 +216,17 @@ class MoveService:
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
         all_players = (await db.execute(stmt_players)).scalars().all()
 
-        # Score is authoritative damage to every other living player.
-        for opponent in all_players:
-            if opponent.id != player.id:
-                opponent.hp = max(0, opponent.hp - score)
+        # Score is authoritative damage to every other living player, doubled for a
+        # DOUBLE_DAMAGE target. Applied after a short SHIELD window, not immediately.
+        if score > 0:
+            amounts = {
+                opponent.id: score * (2 if opponent.id == game.pending_double_target_id else 1)
+                for opponent in all_players if opponent.id != player.id
+            }
+            game.pending_double_target_id = None
+            await GameService.queue_pending_effect(
+                db, game, type="DAMAGE", source_player_id=player.id, damage=amounts
+            )
 
         completed_turn = game.turn_number
         reached_max_turns = bool(game.max_turns and completed_turn >= game.max_turns)

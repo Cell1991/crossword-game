@@ -22,6 +22,14 @@ def me(state, seat):
     return next(p for p in state["players"] if p["id"] == seat.id)
 
 
+async def resolve_damage(table):
+    """Fast-forward past the SHIELD window and finalize the pending DAMAGE/SWAP effect."""
+    pending = (await table.state())["pending_effect"]
+    expired = {**pending, "expires_at": (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat()}
+    await table.update_game(pending_effect=expired)
+    return await table.client.post(f"/api/games/{table.game_id}/effects/resolve")
+
+
 def letters(tiles):
     return "".join(tile["letter"] for tile in tiles)
 
@@ -141,8 +149,10 @@ async def test_mv03_valid_first_word_scores_damages_refills_and_passes_the_turn(
     assert (res.json()["score_earned"], res.json()["next_player_id"]) == (5, bob.id)
     state = await table.state(alice)
     assert sorted(state["board_state"]) == sorted(f"{ROW}_{col}" for col in (COL - 1, COL, COL + 1))
-    assert (me(state, alice)["score"], me(state, alice)["hp"], me(state, bob)["hp"]) == (5, 100, 95)
+    assert (me(state, alice)["score"], me(state, alice)["hp"]) == (5, 100)
     assert len(me(state, alice)["rack"]) == 7
+    await resolve_damage(table)
+    assert me(await table.state(), bob)["hp"] == 95
     assert state["tile_bag_count"] == 84 - 3
     assert (state["current_player_id"], state["turn_number"]) == (bob.id, 2)
     assert any(m["type"] == "MOVE_COMMITTED" and m["payload"]["scoreEarned"] == 5 for m in broadcasts)
@@ -227,6 +237,7 @@ async def test_mv09_seven_tile_word_gets_letter_bonuses_and_the_all_tiles_bonus(
 
     assert res.status_code == 200, res.text
     assert res.json()["score_earned"] == (1 + 1 + 1 + 1 + 1 + 1 + 1 * 2) + 50
+    await resolve_damage(table)
     assert me(await table.state(), bob)["hp"] == 100 - 58
 
 
@@ -267,6 +278,7 @@ async def test_hp01_score_is_dealt_as_damage_to_every_opponent(open_table):
     await table.set_tiles(racks={alice: "CATSEIO"})
 
     await table.place(alice, ROW, COL - 1, "CAT")
+    await resolve_damage(table)
 
     state = await table.state()
     assert [me(state, seat)["hp"] for seat in (alice, bob, carol)] == [100, 95, 95]
@@ -281,7 +293,10 @@ async def test_hp02_knocking_out_the_last_opponent_wins_the_game(open_table, bro
     res = await table.place(alice, ROW, COL - 1, "CAT")
 
     assert res.status_code == 200, res.text
-    assert (res.json()["game_over"], res.json()["winner_id"]) == (True, alice.id)
+    # The move commits immediately, but the KO only lands once the pending damage resolves.
+    assert res.json()["game_over"] is False
+    resolved = await resolve_damage(table)
+    assert (resolved.json()["status"], resolved.json()["game_over"], resolved.json()["winner_id"]) == ("resolved", True, alice.id)
     state = await table.state()
     assert (state["status"], me(state, bob)["hp"]) == ("FINISHED", 0)
     assert any(m["type"] == "GAME_ENDED" for m in broadcasts)
@@ -438,6 +453,143 @@ async def test_cd03_banned_letter_blocks_the_next_player(open_table):
 
     assert res.status_code == 400
     assert "banned" in res.json()["detail"]
+
+
+async def test_cd04_free_exchange_swaps_the_whole_rack_without_ending_the_turn(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, _ = table.seats
+    await table.set_cards(alice, ["FREE_EXCHANGE"])
+    await table.set_tiles(racks={alice: "CATSEIO"}, bag="RSTLNEDGHIOAUMPFYWB")
+    old_ids = {t["id"] for t in (await table.player(alice))["rack"]}
+
+    res = await table.act(alice, "cards/use", {"card": "FREE_EXCHANGE"})
+
+    assert res.json()["success"] is True
+    state = await table.state(alice)
+    new_ids = {t["id"] for t in me(state, alice)["rack"]}
+    assert old_ids.isdisjoint(new_ids) and len(new_ids) == 7
+    assert (state["current_player_id"], state["turn_number"]) == (alice.id, 1)
+
+
+async def test_cd05_move_heal_heals_by_the_pending_moves_base_score(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, _ = table.seats
+    await table.update_player(alice, hp=50)
+    await table.set_cards(alice, ["MOVE_HEAL"])
+    await table.set_tiles(racks={alice: "CATSEIO"})
+    rack = (await table.player(alice))["rack"]
+    cat = [next(t for t in rack if t["letter"] == letter) for letter in "CAT"]
+    placed = [
+        {"row": ROW, "col": COL - 1 + i, "tile_id": t["id"], "letter": t["letter"], "value": t["value"]}
+        for i, t in enumerate(cat)
+    ]
+
+    invalid = await table.act(alice, "cards/use", {"card": "MOVE_HEAL", "placed_tiles": [
+        {"row": 0, "col": 0, "tile_id": cat[0]["id"], "letter": "C", "value": 3}
+    ]})
+    assert invalid.status_code == 400
+    assert me(await table.state(alice), alice)["cards"] == ["MOVE_HEAL"]  # rejected use doesn't consume the card
+
+    res = await table.act(alice, "cards/use", {"card": "MOVE_HEAL", "placed_tiles": placed})
+
+    assert res.json() == {"success": True, "healed": 5, "hp": 55}
+    assert me(await table.state(alice), alice)["hp"] == 55
+
+
+async def test_cd06_double_damage_doubles_the_next_moves_damage_to_the_target(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.set_cards(alice, ["DOUBLE_DAMAGE"])
+    await table.set_tiles(racks={alice: "CATSEIO"})
+
+    res = await table.act(alice, "cards/use", {"card": "DOUBLE_DAMAGE", "target_player_id": bob.id})
+    assert res.json() == {"success": True, "target_player_id": bob.id}
+
+    await table.place(alice, ROW, COL - 1, "CAT")
+    await resolve_damage(table)
+
+    assert me(await table.state(), bob)["hp"] == 100 - 10  # 5 base score, doubled
+
+
+async def test_cd07_freeze_tile_blocks_a_word_through_it_for_one_turn(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.set_board({(ROW, COL - 1): "C", (ROW, COL): "A", (ROW, COL + 1): "T"})
+    await table.set_cards(alice, ["FREEZE_TILE"])
+
+    assert (await table.act(alice, "cards/use", {"card": "FREEZE_TILE", "row": ROW, "col": COL})).status_code == 200
+    await table.act(alice, "pass")
+    await table.set_tiles(racks={bob: "SEIOURN"})
+
+    blocked = await table.place(bob, ROW, COL + 2, "S")
+    assert blocked.status_code == 400
+    assert "frozen" in blocked.json()["detail"]
+
+    await table.act(bob, "pass")
+    await table.set_tiles(racks={alice: "SEIOURN"})
+    allowed = await table.place(alice, ROW, COL + 2, "S")
+    assert allowed.status_code == 200, allowed.text
+
+
+async def test_cd08_shield_blocks_damage_for_the_blocker_only(open_table):
+    table = await open_table("Alice", "Bob", "Carol")
+    alice, bob, carol = table.seats
+    await table.set_cards(bob, ["SHIELD"])
+    await table.set_tiles(racks={alice: "CATSEIO"})
+
+    await table.place(alice, ROW, COL - 1, "CAT")
+    assert (await table.act(bob, "cards/use", {"card": "SHIELD"})).json() == {"success": True, "blocked": True}
+    await resolve_damage(table)
+
+    state = await table.state()
+    assert [me(state, seat)["hp"] for seat in (alice, bob, carol)] == [100, 100, 95]
+
+
+async def test_cd09_shield_without_an_incoming_effect_is_rejected(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, _ = table.seats
+    await table.set_cards(alice, ["SHIELD"])
+
+    res = await table.act(alice, "cards/use", {"card": "SHIELD"})
+
+    assert res.status_code == 400
+
+
+async def test_cd10_shield_cancels_a_pending_spy_swap(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.set_cards(alice, ["SPY_SWAP"])
+    await table.set_cards(bob, ["SHIELD"])
+    await table.set_tiles(racks={alice: "CATSEIO", bob: "DOGRUNS"})
+    own_id = (await table.player(alice))["rack"][0]["id"]
+    target_id = (await table.player(bob))["rack"][0]["id"]
+    before_alice = letters((await table.player(alice))["rack"])
+    before_bob = letters((await table.player(bob))["rack"])
+
+    swap_res = await table.act(alice, "cards/use", {
+        "card": "SPY_SWAP", "target_player_id": bob.id,
+        "own_tile_id": own_id, "target_tile_id": target_id,
+    })
+    assert swap_res.json() == {"success": True, "pending": True}
+    assert (await table.state())["pending_effect"]["type"] == "SWAP"
+
+    assert (await table.act(bob, "cards/use", {"card": "SHIELD"})).json() == {"success": True, "blocked": True}
+
+    assert letters((await table.player(alice))["rack"]) == before_alice
+    assert letters((await table.player(bob))["rack"]) == before_bob
+
+
+async def test_cd11_hint_returns_a_genuinely_valid_placement(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, _ = table.seats
+    await table.set_cards(alice, ["HINT"])
+    await table.set_tiles(racks={alice: "CATSEIO"})
+
+    res = await table.act(alice, "cards/use", {"card": "HINT"})
+
+    assert res.json()["success"] is True and res.json()["found"] is True
+    placed = await table.place(alice, res.json()["row"], res.json()["col"], "CAT")
+    assert placed.status_code == 200, placed.text
 
 
 # --- Realtime sync (RT) --------------------------------------------------------------------------
