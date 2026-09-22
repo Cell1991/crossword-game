@@ -25,7 +25,9 @@ async def get_game(
         if player:
             requesting_player_id = player.id
 
-    return await GameService.get_game_state(db, game_id, requesting_player_id)
+    state = await GameService.get_game_state(db, game_id, requesting_player_id)
+    state.spectator_count = manager.spectator_count(game_id)
+    return state
 
 @router.post("/{game_id}/pass")
 async def pass_turn(
