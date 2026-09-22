@@ -72,6 +72,17 @@ export default function HomePage() {
     setError('');
     try {
       const room = await getRoom(pin.trim());
+      const spectatorLimit = 2;
+      const seatsAreFull = room.players.length >= 6;
+      const spectatorGalleryIsFull = room.spectator_count >= spectatorLimit;
+      if (seatsAreFull && spectatorGalleryIsFull) {
+        setError('ห้องนี้เต็มทั้งผู้เล่นและผู้ชมแล้ว เลือกห้องอื่นเพื่อร่วมสนุกกันต่อไปได้เลย');
+        return;
+      }
+      if (!seatsAreFull && spectatorGalleryIsFull) {
+        setError('โซนผู้ชมเต็มแล้ว แต่ยังมีที่นั่งสำหรับผู้เล่นอยู่ในห้องนี้');
+        return;
+      }
       sessionStore.save({
         gameId: room.id,
         playerId: '',
