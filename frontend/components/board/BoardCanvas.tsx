@@ -59,6 +59,9 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   const pendingWheelRef = useRef<{ delta: number; x: number; y: number } | null>(null);
   const pendingPointerRef = useRef<{ tile: PlacedTile; x: number; y: number; pointerId: number } | null>(null);
   const pendingDragRef = useRef(false);
+  /** Where the current pan started, and whether it has moved far enough to stop counting as a click. */
+  const panStartRef = useRef<{ x: number; y: number } | null>(null);
+  const panMovedRef = useRef(false);
 
   const {
     offset,
@@ -298,10 +301,9 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       animId = requestAnimationFrame(loop);
     };
     loop();
-    return () => {
-      cancelAnimationFrame(animId);
-      if (wheelFrameRef.current !== null) cancelAnimationFrame(wheelFrameRef.current);
-    };
+    // Only the render loop is stopped here: this effect re-runs on every board change, and cancelling a
+    // pending wheel frame from here left wheelFrameRef set, which silently disabled zooming for good.
+    return () => cancelAnimationFrame(animId);
   }, [render]);
 
   // Pending tiles wait for movement before entering drag mode. A click collects
@@ -325,6 +327,8 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       return;
     }
     lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+    panStartRef.current = { x: e.clientX, y: e.clientY };
+    panMovedRef.current = false;
     e.currentTarget.setPointerCapture(e.pointerId);
     setIsPanning(true);
   };
@@ -344,6 +348,8 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       const dy = e.clientY - lastMousePosRef.current.y;
       setOffset((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
       lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+      const start = panStartRef.current;
+      if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) >= 5) panMovedRef.current = true;
     }
   };
 
@@ -363,11 +369,11 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       return;
     }
     if (isPanning) {
-      const dist = Math.hypot(e.clientX - lastMousePosRef.current.x, e.clientY - lastMousePosRef.current.y);
       setIsPanning(false);
 
-      // If clicked without significant drag, trigger cell click
-      if (dist < 5) {
+      // A press that never moved away from where it started is a cell click; a pan is not.
+      const start = panStartRef.current ?? { x: e.clientX, y: e.clientY };
+      if (!panMovedRef.current && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 5) {
         const rect = canvasRef.current?.getBoundingClientRect();
         if (rect) {
           const clickX = e.clientX - rect.left;
@@ -408,7 +414,12 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     const container = containerRef.current;
     if (!container) return;
     container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      if (wheelFrameRef.current !== null) cancelAnimationFrame(wheelFrameRef.current);
+      wheelFrameRef.current = null;
+      pendingWheelRef.current = null;
+    };
   }, [handleWheel]);
 
   return (
