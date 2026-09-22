@@ -190,9 +190,8 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     ctx.save();
     ctx.scale(dpr, dpr);
 
-    // Clear background
-    ctx.fillStyle = '#090d16';
-    ctx.fillRect(0, 0, width, height);
+    // Clear background transparently to reveal background ParticleField (floating letters)
+    ctx.clearRect(0, 0, width, height);
 
     // Board bounding rectangle
     const boardWidthPx = BOARD_COLS * cellSize;
