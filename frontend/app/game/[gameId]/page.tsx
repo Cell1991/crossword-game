@@ -747,9 +747,9 @@ export default function GamePage() {
 
         {/* Right: spectators, timer, tile bag */}
         <div className="flex items-center gap-3 text-xs text-slate-400 sm:text-sm">
-          {spectatorCount > 0 && (
-            <span className="whitespace-nowrap" title="Spectators watching">👁 {spectatorCount}</span>
-          )}
+          <span className="whitespace-nowrap text-sky-300" title="Spectator seats">
+            👁 ผู้ชม {spectatorCount}/2 · ว่าง {Math.max(0, 2 - spectatorCount)}
+          </span>
           <span className="whitespace-nowrap font-mono text-slate-300" title="Time left this turn">
             {secondsRemaining === null
               ? <><span className="sm:hidden">∞</span><span className="hidden sm:inline">Unlimited</span></>
