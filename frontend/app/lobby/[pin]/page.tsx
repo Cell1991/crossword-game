@@ -21,6 +21,7 @@ export default function LobbyPage() {
   // The room says who hosts: the host can leave and hand the room to someone else.
   const [hostPlayerId, setHostPlayerId] = useState<string | null>(null);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
+  const [isSpectator, setIsSpectator] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
@@ -37,6 +38,7 @@ export default function LobbyPage() {
     startTransition(() => {
       setMyPlayerId(session.playerId);
       setGameId(session.gameId);
+      setIsSpectator(Boolean(session.isSpectator));
     });
   }, [router]);
 
@@ -162,7 +164,9 @@ export default function LobbyPage() {
         {!isHost && (
           <div className="flex items-center gap-3 text-slate-400">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-sm">Waiting for host to start...</span>
+            <span className="text-sm">
+              {isSpectator ? '👁 Watching: the board opens when the host starts' : 'Waiting for host to start...'}
+            </span>
           </div>
         )}
 
@@ -172,7 +176,7 @@ export default function LobbyPage() {
           disabled={leaving || starting}
           className="text-slate-500 hover:text-slate-300 text-sm transition-colors disabled:opacity-40"
         >
-          {leaving ? 'Leaving...' : '← Leave lobby'}
+          {leaving ? 'Leaving...' : isSpectator ? '← Stop watching' : '← Leave lobby'}
         </button>
       </div>
     </div>
