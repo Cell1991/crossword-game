@@ -47,6 +47,7 @@ class Game(Base):
     banned_letter = Column(String(1), nullable=True)
     banned_until_turn = Column(Integer, nullable=True)
     banned_by_player_id = Column(String(36), nullable=True)
+    winner_id = Column(String(36), nullable=True)
     created_at = Column(DateTime(timezone=True), default=get_utc_now)
     updated_at = Column(DateTime(timezone=True), default=get_utc_now, onupdate=get_utc_now)
     turn_started_at = Column(DateTime(timezone=True), nullable=True)
