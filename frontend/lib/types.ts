@@ -46,6 +46,9 @@ export interface GameState {
   turn_time_limit: TurnTimeLimit;
   turn_started_at: string | null;
   max_turns: number | null;
+  winner_id: string | null;
+  /** The server's clock when this snapshot was taken; the turn timer runs on it. */
+  server_time: string;
 }
 
 export type TurnTimeLimit = null | 30 | 60 | 90 | 120;
@@ -132,10 +135,13 @@ export interface WebSocketEvent {
   payload: {
     playerId?: string;
     tiles?: { row: number; col: number }[];
-    words_formed?: WordFormed[];
-    score_earned?: number;
+    /** MOVE_COMMITTED */
+    wordsFormed?: WordFormed[];
+    scoreEarned?: number;
     /** TILES_EXCHANGED: how many tiles went back to the bag. The letters themselves stay private. */
     count?: number;
+    /** GAME_ENDED */
+    winnerId?: string | null;
   };
   timestamp: string;
 }
