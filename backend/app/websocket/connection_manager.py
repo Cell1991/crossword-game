@@ -2,8 +2,11 @@ from typing import Callable, Dict, Set, Any
 from fastapi import WebSocket
 import json
 
+SPECTATOR_PREFIX = "spectator:"
+
+
 class ConnectionManager:
-    """Manages active WebSockets and room broadcasts."""
+    """Manages active WebSockets and room broadcasts. Spectators are keyed by `SPECTATOR_PREFIX` + a random id."""
 
     def __init__(self):
         # game_id -> dict of player_id -> WebSocket
@@ -28,6 +31,9 @@ class ConnectionManager:
 
     def is_connected(self, game_id: str, player_id: str) -> bool:
         return player_id in self.active_connections.get(game_id, {})
+
+    def spectator_count(self, game_id: str) -> int:
+        return sum(1 for key in self.active_connections.get(game_id, {}) if key.startswith(SPECTATOR_PREFIX))
 
     async def send_personal(self, websocket: WebSocket, message: dict[str, Any]):
         await websocket.send_text(json.dumps(message))
