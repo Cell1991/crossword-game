@@ -8,7 +8,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { sessionStore, getGameState, validateMove, commitMove, passTurn, exchangeTiles, expireTurn, leaveGame, StoredSession } from '../../../lib/api';
 import { useGameSocket } from '../../../hooks/useGameSocket';
-import { useBoardCamera } from '../../../hooks/useBoardCamera';
+import { BUTTON_ZOOM_FACTOR, useBoardCamera } from '../../../hooks/useBoardCamera';
 import { BoardCanvas } from '../../../components/board/BoardCanvas';
 import { BoardControls } from '../../../components/board/BoardControls';
 import { TileRack } from '../../../components/rack/TileRack';
@@ -80,6 +80,8 @@ export default function GamePage() {
   // Derived
   const myPlayerId = session?.playerId ?? null;
   const myToken = session?.token ?? '';
+  /** Watching without a seat: no token, no rack, no turns. */
+  const isSpectator = Boolean(session?.isSpectator);
   const isMyTurn = gameState?.current_player_id === myPlayerId;
   const myPlayer = gameState?.players.find(p => p.id === myPlayerId);
   const canStageMove = Boolean(myPlayer && myPlayer.hp > 0 && myPlayer.connection_status !== 'OFFLINE');
@@ -344,7 +346,7 @@ export default function GamePage() {
 
   // Load game state
   const loadGameState = useCallback(async () => {
-    if (!myToken) return;
+    if (!myToken && !isSpectator) return;
     try {
       const state = await getGameState(gameId, myToken);
       const serverNow = Date.parse(state.server_time);
@@ -380,7 +382,7 @@ export default function GamePage() {
       setError(error instanceof Error ? error.message : 'Failed to load game state');
       setLoading(false);
     }
-  }, [gameId, myPlayerId, myToken]);
+  }, [gameId, isSpectator, myPlayerId, myToken]);
 
   useEffect(() => {
     startTransition(() => {
@@ -447,6 +449,7 @@ export default function GamePage() {
   const { isConnected, sendMessage } = useGameSocket({
     gameId,
     token: myToken,
+    spectate: isSpectator,
     onEvent: handleSocketEvent,
   });
 
@@ -508,6 +511,8 @@ export default function GamePage() {
         setEstimatedScore(0);
         setValidationState(null);
         setValidationReason('');
+        // The word check's complaint was about tiles that are no longer on the board.
+        setError('');
       });
       sendPreview(null);
       return;
@@ -678,21 +683,29 @@ export default function GamePage() {
 
   const tileBagCount = gameState?.tile_bag_count ?? 0;
   const currentPlayer = gameState?.players.find(p => p.id === gameState?.current_player_id);
+  const roomPin = gameState.game_pin ?? session.gamePin ?? null;
+  const spectatorCount = gameState.spectator_count ?? 0;
+
+  const handleExit = () => {
+    if (isSpectator) {
+      router.push('/');
+      return;
+    }
+    if (window.confirm('ต้องการออกจากเกมหรือไม่?')) {
+      void leaveGame(gameId, myPlayerId ?? '').finally(() => router.push('/'));
+    }
+  };
 
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-950 overflow-hidden">
-      {/* Top HUD */}
-      <div className="flex items-center justify-between px-4 py-2 bg-slate-900/90 border-b border-slate-800/60 backdrop-blur-sm shrink-0 z-10">
-        {/* Left: Logo + connection */}
-        <div className="flex items-center gap-3">
+      {/* Top HUD. On a phone it wraps: controls and counters on the first row, the turn banner below. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3 py-2 sm:px-4 bg-slate-900/90 border-b border-slate-800/60 backdrop-blur-sm shrink-0 z-10">
+        {/* Left: Exit, logo, connection, room PIN */}
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <button
-            onClick={() => {
-              if (window.confirm('ต้องการออกจากเกมหรือไม่?')) {
-                void leaveGame(gameId, myPlayerId ?? '').finally(() => router.push('/'));
-              }
-            }}
+            onClick={handleExit}
             className="flex items-center gap-1.5 rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:bg-slate-800 hover:text-white"
-            title="Exit game"
+            title={isSpectator ? 'Stop watching' : 'Exit game'}
           >
             <span>Exit</span>
           </button>
@@ -703,46 +716,68 @@ export default function GamePage() {
             height={30}
             className="h-7 w-7 rounded-md object-contain"
           />
-          <span className="text-lg font-black text-white">Word<span className="text-amber-400">X</span></span>
-          <div className={`flex items-center gap-1.5 text-xs ${isConnected ? 'text-emerald-400' : 'text-red-400'}`}>
+          <span className="hidden text-lg font-black text-white sm:inline">Word<span className="text-amber-400">X</span></span>
+          <div
+            className={`flex items-center gap-1.5 text-xs ${isConnected ? 'text-emerald-400' : 'text-red-400'}`}
+            title={isConnected ? 'Live' : 'Reconnecting...'}
+          >
             <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
-            {isConnected ? 'Live' : 'Reconnecting...'}
+            <span className="hidden sm:inline">{isConnected ? 'Live' : 'Reconnecting...'}</span>
           </div>
+          {roomPin && (
+            <button
+              type="button"
+              onClick={() => { void navigator.clipboard?.writeText(roomPin).catch(() => undefined); }}
+              className="whitespace-nowrap rounded-lg border border-slate-700 px-2 py-1 font-mono text-xs text-slate-400 hover:bg-slate-800 hover:text-white"
+              title="Room PIN (click to copy)"
+            >
+              PIN <span className="font-bold text-amber-300">{roomPin}</span>
+            </button>
+          )}
         </div>
 
-        {/* Center: Turn banner */}
-        <TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} turnNumber={gameState?.turn_number ?? 1} />
-
-        <div className="min-w-[72px] text-center font-mono text-xs text-slate-300">
-          {secondsRemaining === null ? 'Unlimited' : `${secondsRemaining}s`}
+        {/* Turn banner: its own row on a phone */}
+        <div className="order-last flex w-full justify-center sm:order-none sm:w-auto">
+          <TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} turnNumber={gameState?.turn_number ?? 1} />
         </div>
 
-        {/* Right: Tile bag */}
-        <div className="flex items-center gap-2 text-slate-400 text-sm">
-          <span>🎲</span>
-          <span className="font-mono font-bold text-white">{tileBagCount}</span>
-          <span className="text-xs hidden sm:block">tiles left</span>
+        {/* Right: spectators, timer, tile bag */}
+        <div className="flex items-center gap-3 text-xs text-slate-400 sm:text-sm">
+          {spectatorCount > 0 && (
+            <span className="whitespace-nowrap" title="Spectators watching">👁 {spectatorCount}</span>
+          )}
+          <span className="whitespace-nowrap font-mono text-slate-300" title="Time left this turn">
+            {secondsRemaining === null
+              ? <><span className="sm:hidden">∞</span><span className="hidden sm:inline">Unlimited</span></>
+              : `${secondsRemaining}s`}
+          </span>
+          <span className="flex items-center gap-1.5 whitespace-nowrap" title="Tiles left in the bag">
+            <span>🎲</span>
+            <span className="font-mono font-bold text-white">{tileBagCount}</span>
+            <span className="hidden text-xs sm:inline">tiles left</span>
+          </span>
         </div>
       </div>
-
-      {/* Error toast */}
-      {error && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-red-900/90 border border-red-600/50 text-red-200 text-sm px-4 py-2 rounded-xl shadow-xl">
-          {error}
-        </div>
-      )}
-
-      {/* Last move info toast */}
-      {lastMoveInfo && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-emerald-900/90 border border-emerald-600/50 text-emerald-200 text-sm px-4 py-2 rounded-xl shadow-xl">
-          ✨ {lastMoveInfo}
-        </div>
-      )}
 
       {/* Main: Board */}
       <div className="flex flex-1 min-h-0 relative">
         {/* Board canvas takes full space */}
         <div className="flex-1 relative">
+          {/* Toasts stack instead of sitting on top of each other, and stay clear of the zoom controls */}
+          {(lastMoveInfo || error) && (
+            <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex w-max max-w-[calc(100%-9rem)] -translate-x-1/2 flex-col items-center gap-2">
+              {lastMoveInfo && (
+                <div className="rounded-xl border border-emerald-600/50 bg-emerald-900/90 px-4 py-2 text-center text-sm text-emerald-200 shadow-xl">
+                  ✨ {lastMoveInfo}
+                </div>
+              )}
+              {error && (
+                <div className="rounded-xl border border-red-600/50 bg-red-900/90 px-4 py-2 text-center text-sm text-red-200 shadow-xl">
+                  {error}
+                </div>
+              )}
+            </div>
+          )}
           <BoardCanvas
             boardState={boardState}
             temporaryTiles={temporaryTiles}
@@ -773,8 +808,8 @@ export default function GamePage() {
             </div>
           )}
           <BoardControls
-            onZoomIn={() => camera.zoomAtPoint(-1, boardViewport.width / 2, boardViewport.height / 2)}
-            onZoomOut={() => camera.zoomAtPoint(1, boardViewport.width / 2, boardViewport.height / 2)}
+            onZoomIn={() => camera.zoomBy(BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
+            onZoomOut={() => camera.zoomBy(1 / BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
             onReset={() => {
               const el = document.querySelector('canvas');
               camera.resetCamera(el?.clientWidth ?? window.innerWidth, el?.clientHeight ?? window.innerHeight);
@@ -796,8 +831,13 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* Bottom: Tile rack */}
+      {/* Bottom: Tile rack (spectators have no seat and never see a rack) */}
       <div className="shrink-0 bg-slate-900/90 border-t border-slate-800/60 backdrop-blur-sm p-3 z-10">
+        {isSpectator ? (
+          <p className="py-3 text-center text-sm text-sky-300">
+            👁 You are watching this game. Players&apos; tiles stay hidden.
+          </p>
+        ) : (
         <TileRack
           slots={rackSlots}
           selectedTileId={selectedTileId}
@@ -824,6 +864,7 @@ export default function GamePage() {
           isSubmitting={isSubmitting}
           estimatedScore={estimatedScore}
         />
+        )}
       </div>
     </div>
   );
