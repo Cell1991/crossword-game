@@ -9,6 +9,7 @@ from app.core.security import generate_game_pin, generate_session_token
 from app.database.models import GameRoom, Game, GamePlayer, get_utc_now
 from app.game.tiles import TileService
 from app.database.state import replace_game_tiles
+from app.websocket.connection_manager import manager
 
 class RoomService:
 
@@ -88,7 +89,16 @@ class RoomService:
         existing_players = res_players.scalars().all()
 
         if len(existing_players) >= settings.MAX_PLAYERS:
-            raise HTTPException(status_code=400, detail="Room is full (max players reached)")
+            spectator_count = manager.spectator_count(room.id)
+            if spectator_count < settings.MAX_SPECTATORS:
+                raise HTTPException(
+                    status_code=400,
+                    detail="ห้องนี้เต็มสำหรับผู้เล่นแล้ว แต่ยังมีพื้นที่สำหรับผู้ชมอยู่ คุณสามารถเข้าร่วมในโหมดผู้ชมได้เลย"
+                )
+            raise HTTPException(
+                status_code=400,
+                detail="ห้องนี้เต็มทั้งผู้เล่นและผู้ชมแล้ว คราวนี้เลือกห้องอื่นเพื่อร่วมสนุกกันต่อไปนะ"
+            )
 
         player_id = str(uuid.uuid4())
         session_token = generate_session_token()
