@@ -103,6 +103,7 @@ export interface RoomDetailResponse {
   status: string;
   host_player_id: string;
   players: Player[];
+  spectator_count: number;
   created_at: string;
   turn_time_limit: TurnTimeLimit;
 }
