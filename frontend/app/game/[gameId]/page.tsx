@@ -839,9 +839,15 @@ export default function GamePage() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-slate-950 overflow-hidden">
+    <div
+      className="relative flex h-screen w-screen flex-col overflow-hidden"
+      style={{
+        background: 'radial-gradient(circle at 50% 18%, rgba(99, 102, 241, 0.16), transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 58%, #171942 100%)',
+      }}
+    >
+      <ParticleField className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
       {/* Top HUD. On a phone it wraps: controls and counters on the first row, the turn banner below. */}
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3 py-2 sm:px-4 bg-slate-900/90 border-b border-slate-800/60 backdrop-blur-sm shrink-0 z-10">
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3 py-2 sm:px-4 bg-slate-900/75 border-b border-slate-800/60 backdrop-blur-sm shrink-0">
         {/* Left: Exit, logo, connection, room PIN */}
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <button
@@ -919,8 +925,7 @@ export default function GamePage() {
       )}
 
       {/* Main: Board */}
-      <div className="flex flex-1 min-h-0 relative">
-        <ParticleField className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-70" />
+      <div className="relative z-10 flex flex-1 min-h-0">
         {/* Board canvas takes full space */}
         <div className="flex-1 relative">
           {/* Toasts stack instead of sitting on top of each other, and stay clear of the zoom controls */}
@@ -985,7 +990,7 @@ export default function GamePage() {
         </div>
 
         {/* Right sidebar: scoreboard (desktop) */}
-        <div className="hidden lg:flex flex-col w-64 shrink-0 bg-slate-900/80 border-l border-slate-800/60 backdrop-blur-sm">
+        <div className="hidden lg:flex flex-col w-64 shrink-0">
           <ScoreBoard
             players={gameState?.players ?? []}
             myPlayerId={myPlayerId}
@@ -996,7 +1001,7 @@ export default function GamePage() {
       </div>
 
       {/* Bottom: Tile rack (spectators have no seat and never see a rack) */}
-      <div className="shrink-0 bg-slate-900/90 border-t border-slate-800/60 backdrop-blur-sm p-3 z-10">
+      <div className="relative z-10 shrink-0 p-3">
         {isSpectator ? (
           <p className="py-3 text-center text-sm text-sky-300">
             👁 You are watching this game. Players&apos; tiles stay hidden.

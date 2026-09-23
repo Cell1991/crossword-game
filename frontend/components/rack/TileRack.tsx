@@ -180,7 +180,7 @@ export const TileRack: React.FC<TileRackProps> = ({
         document.body
       )}
       {/* Action Buttons Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 w-full bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-700/60 shadow-2xl">
+      <div className="flex flex-wrap items-center justify-between gap-2 w-full px-4 py-2">
         {isExchanging ? (
           <>
             <div className="flex flex-wrap items-center gap-2">

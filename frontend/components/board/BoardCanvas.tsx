@@ -13,6 +13,18 @@ import {
   TRIPLE_LETTER,
 } from '../../lib/board';
 
+const POWER_CELLS = [...SECRET_POWER].map((key) => key.split('_').map(Number) as [number, number]);
+const DOUBLE_CELLS = [...DOUBLE_LETTER].map((key) => key.split('_').map(Number) as [number, number]);
+const TRIPLE_CELLS = [...TRIPLE_LETTER].map((key) => key.split('_').map(Number) as [number, number]);
+
+const getCellAlpha = (row: number, col: number): number => {
+  const dist = Math.hypot(row - CENTER_ROW, col - CENTER_COL);
+  const norm = dist / 7.0;
+  if (norm <= 0.15) return 1.0;
+  const t = (norm - 0.15) / 0.65;
+  return Math.max(0, Math.min(1, 1 - Math.pow(Math.max(0, t), 1.4)));
+};
+
 interface BoardCanvasProps {
   boardState: Record<string, BoardCell>;
   temporaryTiles: PlacedTile[];
@@ -197,11 +209,9 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     // Clear background transparently to reveal background ParticleField (floating letters)
     ctx.clearRect(0, 0, width, height);
 
-    // Board bounding rectangle
+    // Board bounding rectangle. The surface texture lives in a DOM layer below this canvas.
     const boardWidthPx = BOARD_COLS * cellSize;
     const boardHeightPx = BOARD_ROWS * cellSize;
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(offset.x, offset.y, boardWidthPx, boardHeightPx);
 
     // Viewport bounds in cell coordinates (culling)
     const minCol = Math.max(0, Math.floor(-offset.x / cellSize));
@@ -215,31 +225,51 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         const x = offset.x + c * cellSize;
         const y = offset.y + r * cellSize;
         const cellKey = `${r}_${c}`;
+        const cellAlpha = getCellAlpha(r, c);
+
+        if (cellAlpha <= 0.005) continue;
+
+        ctx.save();
+        ctx.globalAlpha = cellAlpha;
 
         // Is Center cell
         const isCenter = r === CENTER_ROW && c === CENTER_COL;
         const isTriple = TRIPLE_LETTER.has(cellKey);
         const isDouble = DOUBLE_LETTER.has(cellKey);
         const isPower = SECRET_POWER.has(cellKey);
+        const specialRadius = Math.max(3, cellSize * 0.12);
         if (isTriple) {
           ctx.fillStyle = '#7f1d1d';
-          ctx.fillRect(x, y, cellSize, cellSize);
+          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+          ctx.fill();
         } else if (isDouble) {
           ctx.fillStyle = '#854d0e';
-          ctx.fillRect(x, y, cellSize, cellSize);
+          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+          ctx.fill();
         } else if (isPower) {
           ctx.fillStyle = '#075985';
-          ctx.fillRect(x, y, cellSize, cellSize);
+          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+          ctx.fill();
         }
         if (isCenter) {
           ctx.fillStyle = '#1e1b4b'; // Soft indigo center
-          ctx.fillRect(x, y, cellSize, cellSize);
+          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+          ctx.fill();
         }
 
-        // Cell borders
-        ctx.strokeStyle = '#1e293b';
+        // Cell borders (inner grid lines only; no outer border lines on extreme edges)
+        ctx.strokeStyle = 'rgba(245, 190, 72, 0.22)';
         ctx.lineWidth = 1;
-        ctx.strokeRect(x, y, cellSize, cellSize);
+        ctx.beginPath();
+        if (r > 0) {
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + cellSize, y);
+        }
+        if (c > 0) {
+          ctx.moveTo(x, y);
+          ctx.lineTo(x, y + cellSize);
+        }
+        ctx.stroke();
 
         // Center Star / Symbol
         if (isCenter && cellSize >= 16) {
@@ -248,13 +278,9 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);
-        } else if ((isTriple || isDouble || isPower) && cellSize >= 16) {
-          ctx.fillStyle = '#f8fafc';
-          ctx.font = `${Math.max(8, cellSize * 0.28)}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(isPower ? '⚡' : isTriple ? '3L' : '2L', x + cellSize / 2, y + cellSize / 2);
         }
+
+        ctx.restore();
       }
     }
 
@@ -321,11 +347,6 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       ctx.lineWidth = 2.5;
       ctx.strokeRect(sx + 1, sy + 1, cellSize - 2, cellSize - 2);
     }
-
-    // Board Outer Border
-    ctx.strokeStyle = '#475569';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(offset.x, offset.y, boardWidthPx, boardHeightPx);
 
     ctx.restore();
   }, [offset, cellSize, boardState, temporaryTiles, remotePlacements, selectedCell, drawTile, dragPreviewCell, dragPreviewTile, dragPreviewIsValid, draggingTileId, frozenTile, hintCell]);
@@ -497,11 +518,32 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     };
   }, [handleWheel]);
 
+  const isCellOccupied = (row: number, col: number) => (
+    Object.values(boardState).some((cell) => cell.row === row && cell.col === col) ||
+    temporaryTiles.some((tile) => tile.row === row && tile.col === col) ||
+    remotePlacements.some((placement) => placement.row === row && placement.col === col)
+  );
+
+  const boardWidth = BOARD_COLS * cellSize;
+  const boardHeight = BOARD_ROWS * cellSize;
+  const boardEdgeFadeMask = 'radial-gradient(ellipse at center, black 10%, rgba(0, 0, 0, 0.65) 30%, rgba(0, 0, 0, 0.22) 50%, rgba(0, 0, 0, 0.03) 68%, transparent 82%)';
+
+  const boardEdgeFade = {
+    maskImage: boardEdgeFadeMask,
+    WebkitMaskImage: boardEdgeFadeMask,
+    maskSize: `${boardWidth}px ${boardHeight}px`,
+    WebkitMaskSize: `${boardWidth}px ${boardHeight}px`,
+    maskPosition: `${offset.x}px ${offset.y}px`,
+    WebkitMaskPosition: `${offset.x}px ${offset.y}px`,
+    maskRepeat: 'no-repeat',
+    WebkitMaskRepeat: 'no-repeat',
+  } as React.CSSProperties;
+
   return (
     <div
       ref={containerRef}
       // touch-none: the board handles one-finger pan and two-finger pinch itself, instead of the browser.
-      className="relative w-full h-full overflow-hidden select-none touch-none cursor-grab active:cursor-grabbing bg-zinc-950"
+      className="relative w-full h-full overflow-hidden select-none touch-none cursor-grab active:cursor-grabbing bg-transparent"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -513,7 +555,112 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         setIsPanning(false);
       }}
     >
-      <canvas ref={canvasRef} className="absolute inset-0 block w-full h-full" />
+      <div
+        className="pointer-events-none absolute z-0 rounded-full"
+        style={{
+          left: offset.x - cellSize,
+          top: offset.y - cellSize,
+          width: (BOARD_COLS + 2) * cellSize,
+          height: (BOARD_ROWS + 2) * cellSize,
+          background: 'radial-gradient(ellipse at center, rgba(11, 18, 36, 0.85) 10%, rgba(15, 23, 42, 0.45) 40%, rgba(15, 23, 42, 0.1) 65%, transparent 80%)',
+        }}
+      />
+      <canvas ref={canvasRef} className="absolute inset-0 z-10 block h-full w-full" />
+      <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+        {POWER_CELLS.filter(([row, col]) => !isCellOccupied(row, col)).map(([row, col]) => {
+          const alpha = getCellAlpha(row, col);
+          if (alpha <= 0.01) return null;
+          return (
+            <span
+              key={`power-${row}-${col}`}
+              className="absolute rounded-sm border border-amber-300/35 bg-amber-400/10 shadow-[0_0_16px_rgba(251,191,36,0.3)] board-power-pulse"
+              style={{
+                left: offset.x + col * cellSize + 1,
+                top: offset.y + row * cellSize + 1,
+                width: cellSize - 2,
+                height: cellSize - 2,
+                borderRadius: `${Math.max(3, cellSize * 0.12)}px`,
+                animationDelay: `${-((row * 5 + col * 3) % 13) / 10}s`,
+                opacity: alpha,
+              }}
+            >
+              <span className="board-lightning-halo absolute left-1/2 top-1/2 h-[64%] w-[64%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+              <span className="absolute inset-0 flex items-center justify-center">
+                <img
+                  src="/light.png"
+                  alt=""
+                  className="board-lightning-logo h-[76%] w-[76%] object-contain"
+                  style={{ animationDelay: `${-((row * 7 + col * 2) % 11) / 10}s` }}
+                />
+              </span>
+              <i className="board-lightning-spark absolute left-[20%] top-[24%] h-1 w-1 rounded-full bg-amber-100" style={{ animationDelay: `${-((row + col) % 7) / 10}s` }} />
+              <i className="board-lightning-spark absolute bottom-[20%] right-[20%] h-1 w-1 rounded-full bg-orange-100" style={{ animationDelay: `${-((row * 2 + col) % 9) / 10}s` }} />
+            </span>
+          );
+        })}
+        {TRIPLE_CELLS.filter(([row, col]) => !isCellOccupied(row, col)).map(([row, col]) => {
+          const alpha = getCellAlpha(row, col);
+          if (alpha <= 0.01) return null;
+          return (
+            <span
+              key={`triple-${row}-${col}`}
+              className="board-triple-aura absolute rounded-sm border border-red-300/60 bg-red-950/20"
+              style={{
+                left: offset.x + col * cellSize + 1,
+                top: offset.y + row * cellSize + 1,
+                width: cellSize - 2,
+                height: cellSize - 2,
+                borderRadius: `${Math.max(3, cellSize * 0.12)}px`,
+                opacity: alpha,
+              }}
+            >
+              <span className="board-fire-core absolute inset-[18%] rounded-full bg-red-400/40" />
+              <span
+                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white"
+                style={{ fontSize: `${Math.max(10, Math.min(20, cellSize * 0.32))}px` }}
+              >
+                3<span className="board-premium-letter">L</span>
+              </span>
+            </span>
+          );
+        })}
+        {DOUBLE_CELLS.filter(([row, col]) => !isCellOccupied(row, col)).map(([row, col]) => {
+          const alpha = getCellAlpha(row, col);
+          if (alpha <= 0.01) return null;
+          return (
+            <span
+              key={`double-${row}-${col}`}
+              className="board-double-aura absolute rounded-sm border border-orange-300/45 bg-orange-400/10"
+              style={{
+                left: offset.x + col * cellSize + 1,
+                top: offset.y + row * cellSize + 1,
+                width: cellSize - 2,
+                height: cellSize - 2,
+                borderRadius: `${Math.max(3, cellSize * 0.12)}px`,
+                opacity: alpha,
+              }}
+            >
+              <span className="board-earth-glow absolute inset-[12%] rounded-full" />
+              <span className="board-earth-mountain board-earth-mountain-back absolute inset-x-0 bottom-0 h-[70%]" />
+              <span className="board-earth-mountain board-earth-mountain-front absolute inset-x-0 bottom-0 h-[62%]" />
+              <i className="board-earth-speck absolute left-[22%] top-[27%] h-1 w-1 rounded-full" />
+              <i className="board-earth-speck absolute right-[20%] top-[38%] h-1 w-1 rounded-full [animation-delay:0.7s]" />
+              <span
+                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white"
+                style={{ fontSize: `${Math.max(10, Math.min(20, cellSize * 0.32))}px` }}
+              >
+                2<span className="board-premium-letter">L</span>
+              </span>
+            </span>
+          );
+        })}
+        {!isCellOccupied(CENTER_ROW, CENTER_COL) && (
+          <span
+            className="absolute rounded-sm border border-amber-300/35 shadow-[0_0_18px_rgba(251,191,36,0.25)] board-center-pulse"
+            style={{ left: offset.x + CENTER_COL * cellSize + 1, top: offset.y + CENTER_ROW * cellSize + 1, width: cellSize - 2, height: cellSize - 2, borderRadius: `${Math.max(3, cellSize * 0.12)}px` }}
+          />
+        )}
+      </div>
     </div>
   );
 };

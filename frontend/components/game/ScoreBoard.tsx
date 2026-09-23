@@ -20,7 +20,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
 
   return (
-    <div className="flex flex-col bg-slate-900/85 backdrop-blur-md rounded-2xl border border-slate-700/60 p-3 sm:p-4 shadow-xl text-slate-200">
+    <div className="flex flex-col p-3 sm:p-4 text-slate-200">
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-700/50">
         <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
           <Trophy className="w-3.5 h-3.5 text-amber-400" />
