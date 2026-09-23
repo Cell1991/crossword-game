@@ -139,8 +139,12 @@ class GameService:
                     applied[player.id] = amount
             players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in players]
             is_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
-            eligible_players = GameService.eligible_players(players)
-            game_over = is_over or len(eligible_players) <= 1
+            # A DISCONNECTED player is recoverable (they rejoin on reconnect) and must not end the
+            # game on their own — only players truly OFFLINE (left for good) count here, same as
+            # too_few_players. Debug mode's "Acting as" switch drops and reopens the socket, which
+            # briefly marks the other debug player DISCONNECTED; that must not end the game either.
+            in_game_players = GameService.players_in_game(players)
+            game_over = is_over or (len(players) > 1 and len(in_game_players) <= 1)
             if game_over:
                 game.status = "FINISHED"
                 game.current_player_id = None

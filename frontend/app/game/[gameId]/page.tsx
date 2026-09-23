@@ -938,7 +938,7 @@ export default function GamePage() {
               )}
             </div>
           )}
-        <div className="flex-1 relative z-10">
+        <div className="absolute inset-0 z-10">
           <BoardCanvas
             boardState={boardState}
             temporaryTiles={temporaryTiles}
@@ -982,6 +982,7 @@ export default function GamePage() {
             maxScale={camera.maxScale}
           />
         </div>
+        </div>
 
         {/* Right sidebar: scoreboard (desktop) */}
         <div className="hidden lg:flex flex-col w-64 shrink-0 bg-slate-900/80 border-l border-slate-800/60 backdrop-blur-sm">
@@ -992,7 +993,6 @@ export default function GamePage() {
             tileBagCount={tileBagCount}
           />
         </div>
-      </div>
       </div>
 
       {/* Bottom: Tile rack (spectators have no seat and never see a rack) */}
