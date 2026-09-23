@@ -14,7 +14,7 @@ import { BoardControls } from '../../../components/board/BoardControls';
 import { TileRack } from '../../../components/rack/TileRack';
 import { TurnBanner } from '../../../components/game/TurnBanner';
 import ParticleField from '../../../components/effects/ParticleField';
-import { ScoreBoard } from '../../../components/game/ScoreBoard';
+import { RightSidebar, MoveHistoryEntry } from '../../../components/game/RightSidebar';
 import { PowerCardBar } from '../../../components/game/PowerCardBar';
 import { DebugPanel } from '../../../components/debug/DebugPanel';
 import {
@@ -66,6 +66,7 @@ export default function GamePage() {
   const [remotePlacements, setRemotePlacements] = useState<{ row: number; col: number }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastMoveInfo, setLastMoveInfo] = useState<string | null>(null);
+  const [moveHistory, setMoveHistory] = useState<MoveHistoryEntry[]>([]);
   const [rackOrder, setRackOrder] = useState<(string | null)[]>([]);
   /** Tiles picked to swap with the bag; `null` while the player is not exchanging. */
   const [exchangeTileIds, setExchangeTileIds] = useState<string[] | null>(null);
@@ -450,8 +451,31 @@ export default function GamePage() {
         const wordsFormed = event.payload?.wordsFormed ?? [];
         if (event.type === 'MOVE_COMMITTED' && wordsFormed.length > 0) {
           const words = wordsFormed.map((word) => word.word).join(', ');
-          setLastMoveInfo(`${words} (+${event.payload.scoreEarned ?? 0} pts)`);
+          const score = event.payload.scoreEarned ?? 0;
+          const player = gameState?.players.find(p => p.id === event.payload?.playerId);
+          const name = event.payload?.playerId === myPlayerId ? 'You' : player?.display_name ?? 'Player';
+          setLastMoveInfo(`${words} (+${score} pts)`);
+          setMoveHistory(prev => [
+            ...prev,
+            {
+              id: `${Date.now()}-${Math.random()}`,
+              text: `${name}: ${words}`,
+              score,
+              type: 'move',
+            }
+          ]);
           setTimeout(() => setLastMoveInfo(null), 4000);
+        } else if (event.type === 'TURN_PASSED') {
+          const player = gameState?.players.find(p => p.id === event.payload?.playerId);
+          const name = event.payload?.playerId === myPlayerId ? 'You' : player?.display_name ?? 'Player';
+          setMoveHistory(prev => [
+            ...prev,
+            {
+              id: `${Date.now()}-${Math.random()}`,
+              text: `${name} passed turn`,
+              type: 'pass',
+            }
+          ]);
         }
         break;
       }
@@ -462,6 +486,14 @@ export default function GamePage() {
           : gameState?.players.find(player => player.id === event.payload?.playerId)?.display_name ?? 'Opponent';
         const count = event.payload?.count ?? 0;
         setLastMoveInfo(`${exchangedBy} exchanged ${count} tile${count === 1 ? '' : 's'}`);
+        setMoveHistory(prev => [
+          ...prev,
+          {
+            id: `${Date.now()}-${Math.random()}`,
+            text: `${exchangedBy} swapped ${count} tiles`,
+            type: 'exchange',
+          }
+        ]);
         setTimeout(() => setLastMoveInfo(null), 4000);
         break;
       }
@@ -884,26 +916,17 @@ export default function GamePage() {
           )}
         </div>
 
-        {/* Turn banner: its own row on a phone */}
-        <div className="order-last flex w-full justify-center sm:order-none sm:w-auto">
-          <TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} turnNumber={gameState?.turn_number ?? 1} />
-        </div>
-
-        {/* Right: spectators, timer, tile bag */}
-        <div className="flex items-center gap-3 text-xs text-slate-400 sm:text-sm">
+        {/* Right: spectators, timer, and TurnBanner */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
           {spectatorCount > 0 && (
-            <span className="whitespace-nowrap" title="Spectators watching">👁 {spectatorCount}</span>
+            <span className="whitespace-nowrap text-xs text-slate-400" title="Spectators watching">👁 {spectatorCount}</span>
           )}
-          <span className="whitespace-nowrap font-mono text-slate-300" title="Time left this turn">
-            {secondsRemaining === null
-              ? <><span className="sm:hidden">∞</span><span className="hidden sm:inline">Unlimited</span></>
-              : `${secondsRemaining}s`}
-          </span>
-          <span className="flex items-center gap-1.5 whitespace-nowrap" title="Tiles left in the bag">
-            <span>🎲</span>
-            <span className="font-mono font-bold text-white">{tileBagCount}</span>
-            <span className="hidden text-xs sm:inline">tiles left</span>
-          </span>
+          {secondsRemaining !== null && (
+            <span className="whitespace-nowrap font-mono text-xs text-amber-300 font-semibold px-2 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60" title="Time left this turn">
+              ⏳ {secondsRemaining}s
+            </span>
+          )}
+          <TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} turnNumber={gameState?.turn_number ?? 1} />
         </div>
       </div>
 
@@ -967,15 +990,43 @@ export default function GamePage() {
           />
           {dragSession && (
             <div
-              className="pointer-events-none fixed z-[100] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-3 scale-105 flex-col items-center justify-center rounded-xl border-2 border-amber-400 bg-amber-100 text-stone-900 shadow-2xl"
+              className="pointer-events-none fixed z-[100] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-2 scale-105 flex-col items-center justify-center rounded-xl border border-sky-400/40 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_14px_28px_rgba(0,0,0,0.7)]"
               style={{ left: dragSession.position.x, top: dragSession.position.y }}
               aria-hidden="true"
             >
-              <span className="text-2xl font-black leading-none">{dragSession.tile.letter}</span>
-              <span className="absolute bottom-1 right-1.5 text-[10px] font-bold text-stone-600">{dragSession.tile.value}</span>
+              <span className="text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+                {dragSession.tile.letter}
+              </span>
+              <span className="absolute bottom-1 right-1.5 text-[10px] font-semibold text-slate-300 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                {dragSession.tile.value}
+              </span>
             </div>
           )}
-          <BoardControls
+          {/* Floating board controls on mobile only (desktop has them in the RightSidebar) */}
+          <div className="lg:hidden">
+            <BoardControls
+              onZoomIn={() => camera.zoomBy(BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
+              onZoomOut={() => camera.zoomBy(1 / BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
+              onReset={() => {
+                const el = document.querySelector('canvas');
+                camera.resetCamera(el?.clientWidth ?? window.innerWidth, el?.clientHeight ?? window.innerHeight);
+              }}
+              scale={camera.scale}
+              minScale={camera.minScale}
+              maxScale={camera.maxScale}
+            />
+          </div>
+        </div>
+        </div>
+
+        {/* Right sidebar: Unified Glassmorphism Control & Scoreboard Panel (desktop) */}
+        <div className="hidden lg:flex flex-col shrink-0">
+          <RightSidebar
+            players={gameState?.players ?? []}
+            myPlayerId={myPlayerId}
+            currentPlayerId={gameState?.current_player_id ?? null}
+            tileBagCount={tileBagCount}
+            moveHistory={moveHistory}
             onZoomIn={() => camera.zoomBy(BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
             onZoomOut={() => camera.zoomBy(1 / BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
             onReset={() => {
@@ -985,17 +1036,6 @@ export default function GamePage() {
             scale={camera.scale}
             minScale={camera.minScale}
             maxScale={camera.maxScale}
-          />
-        </div>
-        </div>
-
-        {/* Right sidebar: scoreboard (desktop) */}
-        <div className="hidden lg:flex flex-col w-64 shrink-0">
-          <ScoreBoard
-            players={gameState?.players ?? []}
-            myPlayerId={myPlayerId}
-            currentPlayerId={gameState?.current_player_id ?? null}
-            tileBagCount={tileBagCount}
           />
         </div>
       </div>

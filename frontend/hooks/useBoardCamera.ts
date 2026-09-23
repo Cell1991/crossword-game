@@ -4,9 +4,9 @@ import { useState, useCallback, useRef } from 'react';
 import { BOARD_COLS, BOARD_ROWS } from '../lib/board';
 
 const BASE_CELL_SIZE = 40;
-// Low enough to see the whole 27-column board on a phone.
-const MIN_SCALE = 0.3;
-const MAX_SCALE = 2.0;
+// Balanced zoom limit to prevent zooming out too far away
+const MIN_SCALE = 0.52;
+const MAX_SCALE = 1.8;
 const DEFAULT_SCALE = 1;
 /** Zoom follows how far the wheel/trackpad moved (no fixed steps): a mouse-wheel notch (100px) is about 14%. */
 const WHEEL_ZOOM_SPEED = 0.0015;
@@ -17,45 +17,85 @@ function clampScale(scale: number) {
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
 }
 
-type Offset = { x: number; y: number };
+function clampOffset(
+  offset: Offset,
+  scale: number,
+  viewportWidth: number,
+  viewportHeight: number
+): Offset {
+  const boardWidth = BOARD_COLS * BASE_CELL_SIZE * scale;
+  const boardHeight = BOARD_ROWS * BASE_CELL_SIZE * scale;
+
+  // Minimum pixels of board that must remain visible on screen
+  const marginX = Math.min(viewportWidth * 0.35, boardWidth * 0.5);
+  const marginY = Math.min(viewportHeight * 0.35, boardHeight * 0.5);
+
+  // board left edge (offset.x) can go as far right as (viewport - margin)
+  // board right edge (offset.x + boardWidth) must stay at least marginX from left
+  const minX = marginX - boardWidth;
+  const maxX = viewportWidth - marginX;
+  const minY = marginY - boardHeight;
+  const maxY = viewportHeight - marginY;
+
+  return {
+    x: Math.min(maxX, Math.max(minX, offset.x)),
+    y: Math.min(maxY, Math.max(minY, offset.y)),
+  };
+}
 
 export function useBoardCamera() {
-  // Scale and offset change together when zooming, so they live in one state. Zooming used to call
-  // setOffset from inside the setScale updater; React may run an updater twice (Strict Mode), which
-  // shifted the board twice and made the zoom drift away from the mouse cursor.
+  const viewportRef = useRef({ width: 1200, height: 800 });
   const [view, setView] = useState({ scale: DEFAULT_SCALE, offset: { x: 0, y: 0 } as Offset });
   const { scale, offset } = view;
   const [isPanning, setIsPanning] = useState(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
 
+  const setViewport = useCallback((width: number, height: number) => {
+    if (width > 0 && height > 0) {
+      viewportRef.current = { width, height };
+    }
+  }, []);
+
   const setOffset = useCallback((update: Offset | ((previous: Offset) => Offset)) => {
-    setView((previous) => ({
-      ...previous,
-      offset: typeof update === 'function' ? update(previous.offset) : update,
-    }));
+    setView((previous) => {
+      const nextRaw = typeof update === 'function' ? update(previous.offset) : update;
+      const clamped = clampOffset(nextRaw, previous.scale, viewportRef.current.width, viewportRef.current.height);
+      return {
+        ...previous,
+        offset: clamped,
+      };
+    });
   }, []);
 
   const centerBoard = useCallback((viewportWidth: number, viewportHeight: number) => {
+    if (viewportWidth > 0 && viewportHeight > 0) {
+      viewportRef.current = { width: viewportWidth, height: viewportHeight };
+    }
     setView((previous) => {
       const cellSize = BASE_CELL_SIZE * previous.scale;
+      const rawOffset = {
+        x: (viewportWidth - BOARD_COLS * cellSize) / 2,
+        y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
+      };
       return {
         ...previous,
-        offset: {
-          x: (viewportWidth - BOARD_COLS * cellSize) / 2,
-          y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
-        },
+        offset: clampOffset(rawOffset, previous.scale, viewportWidth, viewportHeight),
       };
     });
   }, []);
 
   const resetCamera = useCallback((viewportWidth: number, viewportHeight: number) => {
+    if (viewportWidth > 0 && viewportHeight > 0) {
+      viewportRef.current = { width: viewportWidth, height: viewportHeight };
+    }
     const cellSize = BASE_CELL_SIZE * DEFAULT_SCALE;
+    const rawOffset = {
+      x: (viewportWidth - BOARD_COLS * cellSize) / 2,
+      y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
+    };
     setView({
       scale: DEFAULT_SCALE,
-      offset: {
-        x: (viewportWidth - BOARD_COLS * cellSize) / 2,
-        y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
-      },
+      offset: clampOffset(rawOffset, DEFAULT_SCALE, viewportWidth, viewportHeight),
     });
   }, []);
 
@@ -66,12 +106,14 @@ export function useBoardCamera() {
       const newScale = clampScale(previous.scale * factor);
       const ratio = newScale / previous.scale;
       if (ratio === 1) return previous;
+      const rawOffset = {
+        x: clientX - (clientX - previous.offset.x) * ratio,
+        y: clientY - (clientY - previous.offset.y) * ratio,
+      };
+      const clamped = clampOffset(rawOffset, newScale, viewportRef.current.width, viewportRef.current.height);
       return {
         scale: newScale,
-        offset: {
-          x: clientX - (clientX - previous.offset.x) * ratio,
-          y: clientY - (clientY - previous.offset.y) * ratio,
-        },
+        offset: clamped,
       };
     });
   }, []);
@@ -101,6 +143,7 @@ export function useBoardCamera() {
     maxScale: MAX_SCALE,
     offset,
     setOffset,
+    setViewport,
     isPanning,
     setIsPanning,
     lastMousePos,

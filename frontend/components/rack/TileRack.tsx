@@ -164,144 +164,104 @@ export const TileRack: React.FC<TileRackProps> = ({
   const draggedTile = draggedSlot !== null ? slots[draggedSlot] : null;
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full max-w-2xl mx-auto px-4 pointer-events-auto">
+    <div className="flex flex-col items-center gap-2 w-full max-w-5xl mx-auto px-2 pointer-events-auto">
       {/* Portalled to <body>: the rack bar's backdrop-blur makes it the containing block for `fixed`
-          children, which drew this tile a whole bar-height below the pointer (a second tile appeared
-          near the rack when dragging up the board). Once the board drag takes over it draws its own. */}
+          children, which drew this tile a whole bar-height below the pointer. */}
       {draggedTile && dragPosition && !isHandedToBoard && createPortal(
         <div
-          className="pointer-events-none fixed z-[100] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-3 scale-105 flex-col items-center justify-center rounded-xl border-2 border-amber-400 bg-amber-100 text-stone-900 shadow-2xl"
+          className="pointer-events-none fixed z-[100] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-2 scale-105 flex-col items-center justify-center rounded-xl border border-sky-400/40 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_14px_28px_rgba(0,0,0,0.7)]"
           style={{ left: dragPosition.x, top: dragPosition.y }}
           aria-hidden="true"
         >
-          <span className="text-2xl font-black leading-none">{draggedTile.letter}</span>
-          <span className="absolute bottom-1 right-1.5 text-[10px] font-bold text-stone-600">{draggedTile.value}</span>
+          <span className="text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">{draggedTile.letter}</span>
+          <span className="absolute bottom-1 right-1.5 text-[10px] font-semibold text-slate-300">{draggedTile.value}</span>
         </div>,
         document.body
       )}
-      {/* Action Buttons Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 w-full px-4 py-2">
-        {isExchanging ? (
-          <>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={onCancelExchange}
-                disabled={isSubmitting}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm transition-all bg-rose-950/70 text-rose-300 hover:bg-rose-900 border border-rose-700/50 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <X className="w-4 h-4" />
-                <span>Cancel</span>
-              </button>
-              <span className="text-xs text-slate-400">
-                {exchangeCount > tileBagCount
-                  ? `Only ${tileBagCount} left in the bag`
-                  : 'Tap tiles to return to the bag'}
-              </span>
-            </div>
 
-            {/* Confirm Exchange */}
-            <button
-              onClick={onConfirmExchange}
-              disabled={!canConfirmExchange}
-              className={`flex items-center gap-2 px-5 py-1.5 rounded-xl font-semibold text-sm transition-all ${
-                canConfirmExchange
-                  ? 'bg-sky-600 text-white hover:bg-sky-500 active:scale-95 shadow-lg shadow-sky-950/50 cursor-pointer border border-sky-400/30'
-                  : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
-              }`}
-            >
-              <ArrowLeftRight className="w-4 h-4" />
-              <span>{isSubmitting ? 'Exchanging...' : `Exchange ${exchangeCount} tile${exchangeCount === 1 ? '' : 's'}`}</span>
-            </button>
-          </>
-        ) : (
-          <>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={onCancelMove}
-                disabled={!hasTemporaryTiles || isSubmitting}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm transition-all ${
-                  hasTemporaryTiles
-                    ? 'bg-rose-950/70 text-rose-300 hover:bg-rose-900 border border-rose-700/50 cursor-pointer shadow-sm'
-                    : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
-                }`}
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>Cancel</span>
-              </button>
+      {/* Premium Player Control Hub: 3-column layout (Left Pod, Center Tray, Right Pod) */}
+      <div className="flex flex-col md:flex-row items-center md:items-end justify-center gap-3 lg:gap-4 w-full">
+        {/* LEFT POD: GAME MANAGEMENT */}
+        <div className="flex flex-col items-center md:items-start shrink-0">
+          <div className="flex items-center gap-1.5 px-2 mb-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8]" />
+            <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+              {isExchanging ? 'Exchange Mode' : 'Game Management'}
+            </span>
+          </div>
 
-              <button
-                onClick={onPassTurn}
-                disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm transition-all ${
-                  isMyTurn && !hasTemporaryTiles
-                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600/60 cursor-pointer shadow-sm'
-                    : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
-                }`}
-              >
-                <SkipForward className="w-4 h-4" />
-                <span>Pass</span>
-              </button>
-
-              <button
-                onClick={onShuffleRack}
-                disabled={tileCount < 2 || isSubmitting}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm text-slate-300 hover:text-white hover:bg-slate-700 disabled:text-slate-600 disabled:cursor-not-allowed border border-slate-600/60 transition-all"
-                title="Shuffle rack"
-                aria-label="Shuffle rack"
-              >
-                <Shuffle className="w-4 h-4" />
-                <span>Shuffle</span>
-              </button>
-
-              <button
-                onClick={onStartExchange}
-                disabled={!canStartExchange}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-sm text-slate-300 hover:text-white hover:bg-slate-700 disabled:text-slate-600 disabled:cursor-not-allowed border border-slate-600/60 transition-all"
-                title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
-              >
-                <ArrowLeftRight className="w-4 h-4" />
-                <span>Exchange</span>
-              </button>
-            </div>
-
-            {/* Move preview / Points badge. Off-turn placements wait on the board until your turn. */}
-            {hasTemporaryTiles && estimatedScore !== undefined && (
-              <div
-                className={`flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-semibold border ${
-                  placementValid === false
-                    ? 'bg-rose-950/60 border-rose-500/40 text-rose-300'
-                    : 'bg-amber-950/60 border-amber-500/40 text-amber-300 animate-pulse'
-                }`}
-                title={isMyTurn ? undefined : 'Waiting for your turn: these tiles stay on the board so you can confirm them when it starts'}
-              >
-                <span>{isMyTurn ? 'PREVIEW:' : 'PRACTICE:'}</span>
-                <span className="font-bold text-sm">
-                  {placementValid === false ? 'Invalid word' : placementValid === null ? 'Checking...' : `+${estimatedScore} pts`}
+          <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 bg-slate-900/85 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-cyan-500/15 min-h-[58px]">
+            {isExchanging ? (
+              <div className="flex items-center gap-2 px-1">
+                <button
+                  onClick={onCancelExchange}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all bg-rose-950/80 text-rose-300 hover:bg-rose-900 border border-rose-700/60 cursor-pointer shadow-md shadow-rose-950/50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <X className="w-4 h-4 text-rose-400" />
+                  <span>Cancel</span>
+                </button>
+                <span className="text-xs text-slate-400 max-w-[150px] leading-tight">
+                  {exchangeCount > tileBagCount
+                    ? `Only ${tileBagCount} left`
+                    : 'Tap tiles to return'}
                 </span>
               </div>
-            )}
+            ) : (
+              <>
+                {/* Cancel Move */}
+                <button
+                  onClick={onCancelMove}
+                  disabled={!hasTemporaryTiles || isSubmitting}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
+                    hasTemporaryTiles
+                      ? 'bg-rose-950/70 text-rose-300 hover:bg-rose-900/90 border border-rose-600/60 cursor-pointer shadow-md shadow-rose-950/40 active:scale-95'
+                      : 'bg-slate-800/40 text-slate-600 border border-slate-800/60 cursor-not-allowed'
+                  }`}
+                  title="Recall placed tiles to rack"
+                >
+                  <RotateCcw className={`w-4 h-4 ${hasTemporaryTiles ? 'text-rose-400' : 'text-slate-600'}`} />
+                  <span>Cancel</span>
+                </button>
 
-            {/* Confirm Move: only offered once the placed tiles form valid words */}
-            {(!hasTemporaryTiles || placementValid === true) && (
-              <button
-                onClick={onConfirmMove}
-                disabled={!isMyTurn || !hasTemporaryTiles || isSubmitting}
-                className={`flex items-center gap-2 px-5 py-1.5 rounded-xl font-semibold text-sm transition-all ${
-                  isMyTurn && hasTemporaryTiles
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-950/50 cursor-pointer border border-emerald-400/30'
-                    : 'bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed'
-                }`}
-              >
-                <Check className="w-4 h-4" />
-                <span>{isSubmitting ? 'Confirming...' : 'Confirm Move'}</span>
-              </button>
-            )}
-          </>
-        )}
-      </div>
+                {/* Shuffle */}
+                <button
+                  onClick={onShuffleRack}
+                  disabled={tileCount < 2 || isSubmitting}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
+                  title="Shuffle rack tiles"
+                >
+                  <Shuffle className="w-4 h-4 text-amber-400" />
+                  <span>Shuffle</span>
+                </button>
 
-      {/* Tiles Rack Stand — seats are fixed, an empty seat stays put instead of closing up */}
-      <div ref={rackRef} className={`relative flex items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-b from-amber-950/70 to-amber-900/90 backdrop-blur-md rounded-2xl border-2 shadow-2xl shadow-amber-950/40 min-h-[82px] ${isExternalDragActive ? 'border-sky-400/80 ring-2 ring-sky-400/30' : 'border-amber-700/50'}`}>
+                {/* Exchange */}
+                <button
+                  onClick={onStartExchange}
+                  disabled={!canStartExchange}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
+                  title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
+                >
+                  <ArrowLeftRight className="w-4 h-4 text-sky-400" />
+                  <span>Exchange</span>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* CENTER POD: COSMIC BLUE TILE TRAY WITH NEON LED UNDER-LIGHTING */}
+        <div className="relative flex flex-col items-center shrink-0">
+          {/* LED under-lighting glow (Blue/Cyan Neon) */}
+          <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-blue-600/30 via-cyan-500/40 to-blue-600/30 blur-md pointer-events-none opacity-90" />
+
+          {/* Tray Stand (Blue Theme) */}
+          <div
+            ref={rackRef}
+            className={`relative flex items-center justify-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 bg-gradient-to-b from-[#0e1d3d] via-[#081226] to-[#040814] backdrop-blur-md rounded-2xl border-2 shadow-[inset_0_1px_2px_rgba(255,255,255,0.22),0_12px_28px_rgba(0,0,0,0.7),0_0_22px_rgba(37,99,235,0.35)] min-h-[72px] sm:min-h-[78px] ${
+              isExternalDragActive ? 'border-cyan-300 ring-2 ring-cyan-400/60 shadow-[0_0_25px_rgba(6,182,212,0.5)]' : 'border-blue-500/70 hover:border-blue-400/90'
+            } transition-all`}
+          >
         {slots.map((tile, slotIndex) => {
           if (!tile) {
             const isDropTarget = dragOverSlot === slotIndex;
@@ -310,7 +270,7 @@ export const TileRack: React.FC<TileRackProps> = ({
                 key={`slot-${slotIndex}`}
                 data-rack-slot={slotIndex}
                 aria-hidden="true"
-                className={`relative w-11 h-12 sm:w-13 sm:h-14 rounded-xl border border-black/40 bg-amber-950/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.65)] transition-all ${
+                className={`relative w-11 h-12 sm:w-13 sm:h-14 rounded-xl border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all ${
                   isDropTarget
                     ? 'ring-2 ring-sky-400/90'
                     : isExternalDragActive
@@ -318,7 +278,7 @@ export const TileRack: React.FC<TileRackProps> = ({
                     : ''
                 }`}
               >
-                <span className="absolute inset-[7px] rounded-md border border-dashed border-amber-200/15" />
+                <span className="absolute inset-[7px] rounded-md border border-dashed border-sky-400/20" />
               </div>
             );
           }
@@ -340,27 +300,101 @@ export const TileRack: React.FC<TileRackProps> = ({
               aria-pressed={isExchanging ? isMarkedForExchange : undefined}
               className={`group relative flex flex-col items-center justify-center w-11 h-12 sm:w-13 sm:h-14 rounded-xl font-sans transition-all select-none touch-none ${
                 isDragging
-                  ? 'z-10 scale-105 -translate-y-2 opacity-30 bg-amber-200 border-2 border-amber-400 shadow-xl shadow-amber-500/40 cursor-grabbing'
+                  ? 'z-10 scale-105 -translate-y-2 opacity-40 bg-[#16274e] border border-blue-400/50 shadow-2xl cursor-grabbing'
                   : isDropTarget
                   ? 'translate-x-1 ring-2 ring-sky-400/80'
                   : isMarkedForExchange
-                  ? '-translate-y-3 bg-sky-100 border-2 border-sky-500 shadow-sky-500/40 ring-4 ring-sky-400/40 cursor-pointer'
+                  ? '-translate-y-3 bg-amber-600 border-2 border-amber-300 shadow-amber-500/40 ring-4 ring-amber-400/50 cursor-pointer'
                   : isSelected
-                  ? '-translate-y-3 bg-amber-200 border-2 border-amber-500 shadow-amber-500/40 ring-4 ring-amber-400/40'
+                  ? '-translate-y-3 bg-gradient-to-b from-[#2563eb] to-[#1d4ed8] border-2 border-cyan-300 shadow-[0_0_18px_rgba(59,130,246,0.7)] ring-4 ring-cyan-400/60'
                   : canStageMove
-                  ? 'bg-amber-100 hover:bg-amber-50 active:translate-y-0.5 border border-amber-600/40 hover:-translate-y-1 cursor-pointer'
-                  : 'bg-amber-100/50 border border-amber-700/30 opacity-70 cursor-not-allowed'
-              } shadow-md`}
+                  ? 'bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] border border-blue-400/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_8px_rgba(0,0,0,0.5),0_1px_2px_rgba(0,0,0,0.4)] hover:brightness-110 hover:-translate-y-1 active:translate-y-0.5 cursor-pointer'
+                  : 'bg-[#16274e]/60 border border-blue-900/30 opacity-60 cursor-not-allowed shadow-md'
+              }`}
             >
-              <span className="text-xl sm:text-2xl font-black text-stone-900 leading-none">
+              <span className="text-[30px] sm:text-[36px] font-normal text-white leading-none font-quakduck drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
                 {tile.letter}
               </span>
-              <span className="absolute bottom-1 right-1.5 text-[9px] sm:text-[10px] font-bold text-stone-600">
+              <span className="absolute bottom-1 right-1.5 text-[9px] sm:text-[10px] font-semibold text-slate-300 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
                 {tile.value}
               </span>
             </button>
           );
         })}
+          </div>
+        </div>
+
+        {/* RIGHT POD: TURN ACTIONS */}
+        <div className="flex flex-col items-center md:items-end shrink-0">
+          <div className="flex items-center justify-between w-full px-2 mb-1.5 gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+              <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                {isExchanging ? 'Confirm Action' : 'Turn Actions'}
+              </span>
+            </div>
+            {/* Points / Validity preview badge */}
+            {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-md border tracking-wider ${
+                  placementValid === false
+                    ? 'bg-rose-950/70 border-rose-500/50 text-rose-300'
+                    : 'bg-emerald-950/70 border-emerald-500/50 text-emerald-300 animate-pulse'
+                }`}
+              >
+                {placementValid === false ? 'INVALID' : `+${estimatedScore} PTS`}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 bg-slate-900/85 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-emerald-500/15 min-h-[58px]">
+            {isExchanging ? (
+              <button
+                onClick={onConfirmExchange}
+                disabled={!canConfirmExchange}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+                  canConfirmExchange
+                    ? 'bg-sky-600 text-white hover:bg-sky-500 active:scale-95 shadow-[0_0_20px_rgba(14,165,233,0.5)] cursor-pointer border-2 border-sky-400/50 ring-2 ring-sky-400/30'
+                    : 'bg-slate-800/40 text-slate-600 border border-slate-800/60 cursor-not-allowed'
+                }`}
+              >
+                <ArrowLeftRight className="w-4 h-4" />
+                <span>{isSubmitting ? 'Exchanging...' : `Exchange ${exchangeCount} Tile${exchangeCount === 1 ? '' : 's'}`}</span>
+              </button>
+            ) : (
+              <>
+                {/* Smaller Pass Button */}
+                <button
+                  onClick={onPassTurn}
+                  disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
+                    isMyTurn && !hasTemporaryTiles
+                      ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/60 cursor-pointer shadow-sm active:scale-95'
+                      : 'bg-slate-800/30 text-slate-600 border border-slate-800/60 cursor-not-allowed'
+                  }`}
+                  title="Pass your turn"
+                >
+                  <SkipForward className="w-4 h-4" />
+                  <span>Pass</span>
+                </button>
+
+                {/* Confirm Move: Largest, prominent, glowing button */}
+                <button
+                  onClick={onConfirmMove}
+                  disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
+                  className={`flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all ${
+                    isMyTurn && hasTemporaryTiles && placementValid === true
+                      ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.65)] border-2 border-emerald-300 ring-2 ring-emerald-400/40 animate-pulse hover:brightness-110 active:scale-95 cursor-pointer'
+                      : 'bg-slate-800/40 text-slate-600 border border-slate-700/30 cursor-not-allowed'
+                  }`}
+                >
+                  <Check className={`w-5 h-5 ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]' : 'text-slate-600'}`} />
+                  <span>{isSubmitting ? 'Confirming...' : 'Confirm Move'}</span>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

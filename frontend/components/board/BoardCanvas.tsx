@@ -17,17 +17,17 @@ const POWER_CELLS = [...SECRET_POWER].map((key) => key.split('_').map(Number) as
 const DOUBLE_CELLS = [...DOUBLE_LETTER].map((key) => key.split('_').map(Number) as [number, number]);
 const TRIPLE_CELLS = [...TRIPLE_LETTER].map((key) => key.split('_').map(Number) as [number, number]);
 
-const getCellAlpha = (row: number, col: number, scale?: number): number => {
+const getCellAlpha = (row: number, col: number): number => {
   const dx = (col - CENTER_COL) / 13.0;
   const dy = (row - CENTER_ROW) / 9.0;
-  const norm = Math.hypot(dx, dy); // Elliptical distance: 0 at center, 1.0 at edge midpoints
+  const norm = Math.hypot(dx, dy); // 0 at center (9,13), 1.0 at 27x19 board edge midpoints
 
-  // Main board area is 100% solid visible
-  if (norm <= 0.82) return 1.0;
+  // Playable 27x19 board area is 100% solid visible
+  if (norm <= 0.95) return 1.0;
 
-  // Soft rounded edge fade for the outer edges
-  const t = (norm - 0.82) / 0.33;
-  return Math.max(0, Math.min(1, 1 - Math.pow(Math.max(0, t), 1.8)));
+  // Extended grid lines beyond 27x19 fade out smoothly into space
+  const t = (norm - 0.95) / 1.15;
+  return Math.max(0, Math.min(1, 1 - Math.pow(Math.max(0, t), 1.4)));
 };
 
 interface BoardCanvasProps {
@@ -90,6 +90,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   const {
     offset,
     setOffset,
+    setViewport,
     isPanning,
     setIsPanning,
     lastMousePos: lastMousePosRef,
@@ -110,6 +111,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     const handleResize = () => {
       if (!canvasRef.current || !containerRef.current) return;
       const { clientWidth, clientHeight } = containerRef.current;
+      setViewport(clientWidth, clientHeight);
       canvasRef.current.width = clientWidth * window.devicePixelRatio;
       canvasRef.current.height = clientHeight * window.devicePixelRatio;
       canvasRef.current.style.width = `${clientWidth}px`;
@@ -164,31 +166,61 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     const tileW = cellSize - pad * 2;
     const radius = Math.max(2, cellSize * 0.12);
 
-    ctx.fillStyle = isTemporary ? 'rgba(245, 158, 11, 0.35)' : 'rgba(0, 0, 0, 0.4)';
+    // Shadow layer
+    ctx.fillStyle = isRemote ? 'rgba(0,0,0,0.3)' : 'rgba(0, 0, 0, 0.4)';
     drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
     ctx.fill();
 
-    ctx.fillStyle = isRemote
-      ? '#cbd5e1'
-      : isTemporary
-      ? (temporaryTilesValid === false ? '#fecaca' : temporaryTilesValid === true ? '#bbf7d0' : '#fef08a')
-      : '#fef3c7';
+    // Is this tile in a golden state? (Both confirmed/committed tiles AND valid temporary tiles)
+    const isGolden = !isRemote && (!isTemporary || temporaryTilesValid === true);
+
+    // Tile face fill
+    if (isRemote) {
+      ctx.fillStyle = '#cbd5e1';
+    } else if (isGolden) {
+      // Confirmed on board OR Valid temporary move → radiant golden amber gradient
+      const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
+      grad.addColorStop(0, '#fde68a');
+      grad.addColorStop(0.4, '#f1b824');
+      grad.addColorStop(1, '#d97706');
+      ctx.fillStyle = grad;
+    } else {
+      // In-progress / unverified placement on board → natural navy gradient
+      const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
+      grad.addColorStop(0, '#23407a');
+      grad.addColorStop(0.5, '#1a305e');
+      grad.addColorStop(1, '#122244');
+      ctx.fillStyle = grad;
+    }
     drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
     ctx.fill();
 
-    ctx.strokeStyle = isTemporary ? '#d97706' : '#b45309';
-    ctx.lineWidth = isTemporary ? 2 : 1;
+    // Stroke
+    if (isRemote) {
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1;
+    } else if (isGolden) {
+      ctx.strokeStyle = '#b45309';
+      ctx.lineWidth = isTemporary ? 1.8 : 1.2;
+    } else {
+      ctx.strokeStyle = 'rgba(96, 165, 250, 0.45)';
+      ctx.lineWidth = 1.5;
+    }
     ctx.stroke();
 
     if (showLetter && cellSize >= 12) {
-      ctx.fillStyle = '#1c1917';
-      ctx.font = `bold ${Math.max(10, cellSize * 0.52)}px 'Geist', 'Segoe UI', sans-serif`;
+      // Dark text on golden & remote tiles, white text on navy in-progress tiles
+      ctx.fillStyle = isGolden || isRemote ? '#0f172a' : '#ffffff';
+      const fontSize = Math.max(12, Math.round(cellSize * 0.70));
+      ctx.font = `${fontSize}px 'QuakDuck', sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(letter, x + cellSize / 2, y + cellSize / 2 - (cellSize >= 20 ? 1 : 0));
+      const textX = Math.round(x + cellSize / 2);
+      const textY = Math.round(y + cellSize / 2 - (cellSize >= 20 ? 1 : 0));
+      ctx.fillText(letter, textX, textY);
 
       if (cellSize >= 24) {
-        ctx.fillStyle = '#78716c';
+        ctx.fillStyle = isGolden || isRemote ? '#334155' : 'rgba(226, 232, 240, 0.85)';
         ctx.font = `bold ${Math.max(8, cellSize * 0.22)}px 'Geist', sans-serif`;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
@@ -218,72 +250,72 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     const boardWidthPx = BOARD_COLS * cellSize;
     const boardHeightPx = BOARD_ROWS * cellSize;
 
-    // Viewport bounds in cell coordinates (culling)
-    const minCol = Math.max(0, Math.floor(-offset.x / cellSize));
-    const maxCol = Math.min(BOARD_COLS - 1, Math.ceil((width - offset.x) / cellSize));
-    const minRow = Math.max(0, Math.floor(-offset.y / cellSize));
-    const maxRow = Math.min(BOARD_ROWS - 1, Math.ceil((height - offset.y) / cellSize));
+    // Viewport bounds in cell coordinates (extending grid lines far beyond 27x19 board)
+    const EXTEND_MARGIN_COLS = 16;
+    const EXTEND_MARGIN_ROWS = 12;
+    const minCol = Math.max(-EXTEND_MARGIN_COLS, Math.floor(-offset.x / cellSize));
+    const maxCol = Math.min(BOARD_COLS + EXTEND_MARGIN_COLS, Math.ceil((width - offset.x) / cellSize));
+    const minRow = Math.max(-EXTEND_MARGIN_ROWS, Math.floor(-offset.y / cellSize));
+    const maxRow = Math.min(BOARD_ROWS + EXTEND_MARGIN_ROWS, Math.ceil((height - offset.y) / cellSize));
 
-    // Draw Grid Lines & Cell Backgrounds
+    // Draw Extended Grid Lines & Cell Backgrounds
     for (let r = minRow; r <= maxRow; r++) {
       for (let c = minCol; c <= maxCol; c++) {
         const x = offset.x + c * cellSize;
         const y = offset.y + r * cellSize;
-        const cellKey = `${r}_${c}`;
-        const cellAlpha = getCellAlpha(r, c, camera.scale);
+        const lineAlpha = getCellAlpha(r, c);
 
-        if (cellAlpha <= 0.005) continue;
+        if (lineAlpha <= 0.005) continue;
 
         ctx.save();
-        ctx.globalAlpha = cellAlpha;
+        ctx.globalAlpha = lineAlpha;
 
-        // Is Center cell
-        const isCenter = r === CENTER_ROW && c === CENTER_COL;
-        const isTriple = TRIPLE_LETTER.has(cellKey);
-        const isDouble = DOUBLE_LETTER.has(cellKey);
-        const isPower = SECRET_POWER.has(cellKey);
-        const specialRadius = Math.max(3, cellSize * 0.12);
-        if (isTriple) {
-          ctx.fillStyle = '#7f1d1d';
-          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-          ctx.fill();
-        } else if (isDouble) {
-          ctx.fillStyle = '#854d0e';
-          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-          ctx.fill();
-        } else if (isPower) {
-          ctx.fillStyle = '#075985';
-          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-          ctx.fill();
-        }
-        if (isCenter) {
-          ctx.fillStyle = '#1e1b4b'; // Soft indigo center
-          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-          ctx.fill();
+        // Special cell fills and Center Star (only for 27x19 playable board cells)
+        if (r >= 0 && r < BOARD_ROWS && c >= 0 && c < BOARD_COLS) {
+          const cellKey = `${r}_${c}`;
+          const isCenter = r === CENTER_ROW && c === CENTER_COL;
+          const isTriple = TRIPLE_LETTER.has(cellKey);
+          const isDouble = DOUBLE_LETTER.has(cellKey);
+          const isPower = SECRET_POWER.has(cellKey);
+          const specialRadius = Math.max(3, cellSize * 0.12);
+
+          if (isTriple) {
+            ctx.fillStyle = '#7f1d1d';
+            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+            ctx.fill();
+          } else if (isDouble) {
+            ctx.fillStyle = '#854d0e';
+            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+            ctx.fill();
+          } else if (isPower) {
+            ctx.fillStyle = '#075985';
+            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+            ctx.fill();
+          }
+          if (isCenter) {
+            ctx.fillStyle = '#1e1b4b'; // Soft indigo center
+            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+            ctx.fill();
+          }
+
+          if (isCenter && cellSize >= 16) {
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = `${Math.max(10, cellSize * 0.45)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);
+          }
         }
 
-        // Cell borders (inner grid lines only; no outer border lines on extreme edges)
-        ctx.strokeStyle = 'rgba(245, 190, 72, 0.22)';
+        // Extended Grid lines
+        ctx.strokeStyle = 'rgba(245, 190, 72, 0.24)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        if (r > 0) {
-          ctx.moveTo(x, y);
-          ctx.lineTo(x + cellSize, y);
-        }
-        if (c > 0) {
-          ctx.moveTo(x, y);
-          ctx.lineTo(x, y + cellSize);
-        }
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + cellSize, y);
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + cellSize);
         ctx.stroke();
-
-        // Center Star / Symbol
-        if (isCenter && cellSize >= 16) {
-          ctx.fillStyle = '#fbbf24';
-          ctx.font = `${Math.max(10, cellSize * 0.45)}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);
-        }
 
         ctx.restore();
       }

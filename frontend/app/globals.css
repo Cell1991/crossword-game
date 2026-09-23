@@ -8,6 +8,36 @@
   font-weight: 400;
 }
 
+@font-face {
+  font-family: "Cyberform Demo";
+  src: url("/fonts/CyberformDemo.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Cyberform Demo";
+  src: url("/fonts/CyberformDemo-Oblique.otf") format("opentype");
+  font-display: swap;
+  font-style: oblique;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "QuakDuck";
+  src: url("/fonts/QuakDuck.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.font-quakduck,
+.font-tile,
+.font-cyberform {
+  font-family: "QuakDuck", sans-serif;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
