@@ -166,23 +166,26 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     const tileW = cellSize - pad * 2;
     const radius = Math.max(2, cellSize * 0.12);
 
-    // Shadow layer
-    ctx.fillStyle = isRemote ? 'rgba(0,0,0,0.3)' : 'rgba(0, 0, 0, 0.4)';
-    drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
-    ctx.fill();
-
     // Is this tile in a golden state? (Both confirmed/committed tiles AND valid temporary tiles)
     const isGolden = !isRemote && (!isTemporary || temporaryTilesValid === true);
+
+    // Shadow layer
+    const shadowFill = isGolden
+      ? 'rgba(120, 53, 15, 0.4)'
+      : (isRemote ? 'rgba(0,0,0,0.3)' : 'rgba(0, 0, 0, 0.4)');
+    ctx.fillStyle = shadowFill;
+    drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
+    ctx.fill();
 
     // Tile face fill
     if (isRemote) {
       ctx.fillStyle = '#cbd5e1';
     } else if (isGolden) {
-      // Confirmed on board OR Valid temporary move → radiant golden amber gradient
+      // Confirmed on board OR Valid temporary move → Deep Royal Amber Gold crystal gradient
       const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-      grad.addColorStop(0, '#fde68a');
-      grad.addColorStop(0.4, '#f1b824');
-      grad.addColorStop(1, '#d97706');
+      grad.addColorStop(0, '#d97706');
+      grad.addColorStop(0.45, '#854d0e');
+      grad.addColorStop(1, '#3f1a04');
       ctx.fillStyle = grad;
     } else {
       // In-progress / unverified placement on board → natural navy gradient
@@ -200,7 +203,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 1;
     } else if (isGolden) {
-      ctx.strokeStyle = '#b45309';
+      ctx.strokeStyle = isTemporary ? 'rgba(251, 191, 36, 0.85)' : 'rgba(245, 158, 11, 0.6)';
       ctx.lineWidth = isTemporary ? 1.8 : 1.2;
     } else {
       ctx.strokeStyle = 'rgba(96, 165, 250, 0.45)';
@@ -208,9 +211,15 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     }
     ctx.stroke();
 
+    const cellKey = `${row}_${col}`;
+    const multiplier = (!isRemote && isGolden)
+      ? (DOUBLE_LETTER.has(cellKey) ? 2 : TRIPLE_LETTER.has(cellKey) ? 3 : 1)
+      : 1;
+    const effectiveValue = value * multiplier;
+
     if (showLetter && cellSize >= 12) {
-      // Dark text on golden & remote tiles, white text on navy in-progress tiles
-      ctx.fillStyle = isGolden || isRemote ? '#0f172a' : '#ffffff';
+      // White text on both navy and royal gold tiles for max clarity and texture
+      ctx.fillStyle = isRemote ? '#0f172a' : '#ffffff';
       const fontSize = Math.max(12, Math.round(cellSize * 0.70));
       ctx.font = `${fontSize}px 'QuakDuck', sans-serif`;
       ctx.textAlign = 'center';
@@ -219,12 +228,64 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       const textY = Math.round(y + cellSize / 2 - (cellSize >= 20 ? 1 : 0));
       ctx.fillText(letter, textX, textY);
 
-      if (cellSize >= 24) {
-        ctx.fillStyle = isGolden || isRemote ? '#334155' : 'rgba(226, 232, 240, 0.85)';
-        ctx.font = `bold ${Math.max(8, cellSize * 0.22)}px 'Geist', sans-serif`;
+      if (cellSize >= 20) {
+        const numFontSize = Math.max(9, Math.round(cellSize * 0.28));
+        ctx.font = `bold ${numFontSize}px 'Geist', sans-serif`;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
-        ctx.fillText(`${value}`, x + cellSize - pad * 2 - 1, y + cellSize - pad * 2);
+        const numX = x + cellSize - pad * 1.5;
+        const numY = y + cellSize - pad * 1.5;
+
+        if (multiplier > 1) {
+          // Multiplier Bonus (2L / 3L): Vibrant Glowing Badge
+          ctx.save();
+          const numStr = `${effectiveValue}`;
+          const metrics = ctx.measureText(numStr);
+          const badgeW = Math.max(numFontSize * 1.25, metrics.width + 6);
+          const badgeH = numFontSize + 4;
+          const badgeX = numX - badgeW + 2;
+          const badgeY = numY - badgeH + 2;
+          const badgeRadius = 4;
+
+          // Outer Glow
+          ctx.shadowColor = multiplier === 3 ? 'rgba(239, 68, 68, 0.8)' : 'rgba(245, 158, 11, 0.85)';
+          ctx.shadowBlur = 8;
+          ctx.fillStyle = multiplier === 3 ? 'rgba(220, 38, 38, 0.95)' : 'rgba(217, 119, 6, 0.95)';
+          drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeRadius);
+          ctx.fill();
+
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Reset shadow for crisp text
+          ctx.shadowColor = 'transparent';
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(numStr, badgeX + badgeW / 2, badgeY + badgeH / 2 + 0.5);
+          ctx.restore();
+        } else {
+          // Standard Score Number with clear contrast and aura
+          ctx.save();
+          if (isGolden) {
+            // Golden Tile: Radiant Golden Amber Glow
+            ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
+            ctx.shadowBlur = 6;
+            ctx.fillStyle = '#fef08a';
+            ctx.fillText(`${effectiveValue}`, numX, numY);
+          } else if (isRemote) {
+            ctx.fillStyle = '#334155';
+            ctx.fillText(`${effectiveValue}`, numX, numY);
+          } else {
+            // Navy Tile: Glowing Sky Cyan Neon Aura
+            ctx.shadowColor = 'rgba(56, 189, 248, 0.8)';
+            ctx.shadowBlur = 6;
+            ctx.fillStyle = '#7dd3fc';
+            ctx.fillText(`${effectiveValue}`, numX, numY);
+          }
+          ctx.restore();
+        }
       }
     }
   }, [offset, cellSize, temporaryTilesValid]);
@@ -296,14 +357,22 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
             ctx.fillStyle = '#1e1b4b'; // Soft indigo center
             drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
             ctx.fill();
-          }
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
 
-          if (isCenter && cellSize >= 16) {
-            ctx.fillStyle = '#fbbf24';
-            ctx.font = `${Math.max(10, cellSize * 0.45)}px sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);
+            if (cellSize >= 12) {
+              ctx.save();
+              ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
+              ctx.shadowBlur = Math.max(4, cellSize * 0.2);
+              ctx.fillStyle = '#fbbf24';
+              const starSize = Math.max(12, Math.round(cellSize * 0.72));
+              ctx.font = `${starSize}px sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);
+              ctx.restore();
+            }
           }
         }
 

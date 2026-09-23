@@ -29,7 +29,7 @@ class ScoringService:
             word_base_score = 0
             for index, (_, val, _) in enumerate(w.letters_with_vals):
                 row, col = w.cells[index]
-                multiplier = Board.multiplier_at(row, col) if placed_coords is None or (row, col) in placed_coords else 1
+                multiplier = Board.multiplier_at(row, col)
                 word_base_score += val * multiplier
             breakdown.append({
                 "word": w.word,

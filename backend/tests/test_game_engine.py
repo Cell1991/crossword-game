@@ -74,7 +74,7 @@ def test_new_tiles_receive_letter_multipliers_only():
     )
     assert score == (1 * 3) + 3
 
-def test_committed_multiplier_cell_is_not_multiplied_again():
+def test_committed_multiplier_cell_retains_letter_multiplier():
     word = ExtractedWord(
         "AB",
         [(6, 4), (6, 5)],
@@ -83,7 +83,7 @@ def test_committed_multiplier_cell_is_not_multiplied_again():
     score, _ = ScoringService.calculate_move_score(
         [word], placed_tiles_count=1, placed_coords={(6, 5)}, apply_bingo=False
     )
-    assert score == 1 + 3
+    assert score == (1 * 2) + 3
 
 def test_tile_bag_generation():
     bag = TileService.create_tile_bag()

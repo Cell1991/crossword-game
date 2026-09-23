@@ -998,7 +998,7 @@ export default function GamePage() {
               <span className="text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
                 {dragSession.tile.letter}
               </span>
-              <span className="absolute bottom-1 right-1.5 text-[10px] font-semibold text-slate-300 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+              <span className="absolute bottom-1 right-1.5 text-[12px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">
                 {dragSession.tile.value}
               </span>
             </div>,

@@ -66,6 +66,8 @@ export const TileRack: React.FC<TileRackProps> = ({
   const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
   /** The tile left the stand and the board drag (which draws its own floating tile) took over. */
   const [isHandedToBoard, setIsHandedToBoard] = useState(false);
+  /** True when the user has clicked Pass once and we're waiting for confirm/cancel. */
+  const [passConfirming, setPassConfirming] = useState(false);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const didDragRef = useRef(false);
   const externalDragRef = useRef(false);
@@ -174,7 +176,7 @@ export const TileRack: React.FC<TileRackProps> = ({
           aria-hidden="true"
         >
           <span className="text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">{draggedTile.letter}</span>
-          <span className="absolute bottom-1 right-1.5 text-[10px] font-semibold text-slate-300">{draggedTile.value}</span>
+          <span className="absolute bottom-1 right-1.5 text-[12px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">{draggedTile.value}</span>
         </div>,
         document.body
       )}
@@ -315,7 +317,7 @@ export const TileRack: React.FC<TileRackProps> = ({
               <span className="text-[30px] sm:text-[36px] font-normal text-white leading-none font-quakduck drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
                 {tile.letter}
               </span>
-              <span className="absolute bottom-1 right-1.5 text-[9px] sm:text-[10px] font-semibold text-slate-300 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+              <span className="absolute bottom-1 right-1.5 text-[11px] sm:text-[13px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">
                 {tile.value}
               </span>
             </button>
@@ -363,20 +365,45 @@ export const TileRack: React.FC<TileRackProps> = ({
               </button>
             ) : (
               <>
-                {/* Smaller Pass Button */}
-                <button
-                  onClick={onPassTurn}
-                  disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
-                    isMyTurn && !hasTemporaryTiles
-                      ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/60 cursor-pointer shadow-sm active:scale-95'
-                      : 'bg-slate-800/30 text-slate-600 border border-slate-800/60 cursor-not-allowed'
-                  }`}
-                  title="Pass your turn"
-                >
-                  <SkipForward className="w-4 h-4" />
-                  <span>Pass</span>
-                </button>
+                {/* Pass Button — with inline confirm step */}
+                {passConfirming ? (
+                  <>
+                    <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap tracking-wide">
+                      Skip turn?
+                    </span>
+                    <button
+                      onClick={() => { setPassConfirming(false); onPassTurn(); }}
+                      disabled={isSubmitting}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all bg-slate-700 hover:bg-slate-600 text-white border border-slate-500/70 cursor-pointer shadow-sm active:scale-95"
+                      title="Confirm pass"
+                    >
+                      <Check className="w-4 h-4 text-sky-400" />
+                      <span>Confirm</span>
+                    </button>
+                    <button
+                      onClick={() => setPassConfirming(false)}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all bg-slate-800/60 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 border border-slate-700/50 cursor-pointer active:scale-95"
+                      title="Cancel"
+                    >
+                      <X className="w-4 h-4" />
+                      <span>Cancel</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setPassConfirming(true)}
+                    disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
+                      isMyTurn && !hasTemporaryTiles
+                        ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/60 cursor-pointer shadow-sm active:scale-95'
+                        : 'bg-slate-800/30 text-slate-600 border border-slate-800/60 cursor-not-allowed'
+                    }`}
+                    title="Pass your turn"
+                  >
+                    <SkipForward className="w-4 h-4" />
+                    <span>Pass</span>
+                  </button>
+                )}
 
                 {/* Confirm Move: Largest, prominent, glowing button */}
                 <button
