@@ -17,12 +17,17 @@ const POWER_CELLS = [...SECRET_POWER].map((key) => key.split('_').map(Number) as
 const DOUBLE_CELLS = [...DOUBLE_LETTER].map((key) => key.split('_').map(Number) as [number, number]);
 const TRIPLE_CELLS = [...TRIPLE_LETTER].map((key) => key.split('_').map(Number) as [number, number]);
 
-const getCellAlpha = (row: number, col: number): number => {
-  const dist = Math.hypot(row - CENTER_ROW, col - CENTER_COL);
-  const norm = dist / 7.0;
-  if (norm <= 0.15) return 1.0;
-  const t = (norm - 0.15) / 0.65;
-  return Math.max(0, Math.min(1, 1 - Math.pow(Math.max(0, t), 1.4)));
+const getCellAlpha = (row: number, col: number, scale?: number): number => {
+  const dx = (col - CENTER_COL) / 13.0;
+  const dy = (row - CENTER_ROW) / 9.0;
+  const norm = Math.hypot(dx, dy); // Elliptical distance: 0 at center, 1.0 at edge midpoints
+
+  // Main board area is 100% solid visible
+  if (norm <= 0.82) return 1.0;
+
+  // Soft rounded edge fade for the outer edges
+  const t = (norm - 0.82) / 0.33;
+  return Math.max(0, Math.min(1, 1 - Math.pow(Math.max(0, t), 1.8)));
 };
 
 interface BoardCanvasProps {
@@ -225,7 +230,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         const x = offset.x + c * cellSize;
         const y = offset.y + r * cellSize;
         const cellKey = `${r}_${c}`;
-        const cellAlpha = getCellAlpha(r, c);
+        const cellAlpha = getCellAlpha(r, c, camera.scale);
 
         if (cellAlpha <= 0.005) continue;
 
@@ -555,20 +560,10 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         setIsPanning(false);
       }}
     >
-      <div
-        className="pointer-events-none absolute z-0 rounded-full"
-        style={{
-          left: offset.x - cellSize,
-          top: offset.y - cellSize,
-          width: (BOARD_COLS + 2) * cellSize,
-          height: (BOARD_ROWS + 2) * cellSize,
-          background: 'radial-gradient(ellipse at center, rgba(11, 18, 36, 0.85) 10%, rgba(15, 23, 42, 0.45) 40%, rgba(15, 23, 42, 0.1) 65%, transparent 80%)',
-        }}
-      />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 block h-full w-full" />
       <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
         {POWER_CELLS.filter(([row, col]) => !isCellOccupied(row, col)).map(([row, col]) => {
-          const alpha = getCellAlpha(row, col);
+          const alpha = getCellAlpha(row, col, camera.scale);
           if (alpha <= 0.01) return null;
           return (
             <span
@@ -599,7 +594,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
           );
         })}
         {TRIPLE_CELLS.filter(([row, col]) => !isCellOccupied(row, col)).map(([row, col]) => {
-          const alpha = getCellAlpha(row, col);
+          const alpha = getCellAlpha(row, col, camera.scale);
           if (alpha <= 0.01) return null;
           return (
             <span
@@ -625,7 +620,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
           );
         })}
         {DOUBLE_CELLS.filter(([row, col]) => !isCellOccupied(row, col)).map(([row, col]) => {
-          const alpha = getCellAlpha(row, col);
+          const alpha = getCellAlpha(row, col, camera.scale);
           if (alpha <= 0.01) return null;
           return (
             <span
