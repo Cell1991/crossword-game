@@ -22,6 +22,7 @@ export default function LobbyPage() {
   // The room says who hosts: the host can leave and hand the room to someone else.
   const [hostPlayerId, setHostPlayerId] = useState<string | null>(null);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
+  const [sessionIsHost, setSessionIsHost] = useState(false);
   const [isSpectator, setIsSpectator] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -39,11 +40,14 @@ export default function LobbyPage() {
     startTransition(() => {
       setMyPlayerId(session.playerId);
       setGameId(session.gameId);
+      setSessionIsHost(session.isHost);
       setIsSpectator(Boolean(session.isSpectator));
     });
   }, [router]);
 
-  const isHost = Boolean(myPlayerId && hostPlayerId === myPlayerId);
+  const isHost = Boolean(
+    myPlayerId && !isSpectator && (sessionIsHost || hostPlayerId === myPlayerId)
+  );
 
   const fetchRoom = useCallback(async () => {
     try {
@@ -57,8 +61,9 @@ export default function LobbyPage() {
         const session = sessionStore.getLast();
         if (session) router.replace(`/game/${session.gameId}`);
       }
-    } catch {
+    } catch (error: unknown) {
       setLoading(false);
+      setError(error instanceof Error ? error.message : 'Failed to fetch room');
     }
   }, [pin, router]);
 
