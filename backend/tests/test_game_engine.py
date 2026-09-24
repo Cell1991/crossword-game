@@ -24,16 +24,22 @@ def test_board_special_cells_match_the_rendered_19x27_grid():
     assert (Board.ROWS, Board.COLS, Board.CENTER) == (19, 27, (9, 13))
     assert Board.TRIPLE_LETTER == frozenset({
         (0, 13), (1, 2), (1, 24), (8, 0),
-        (8, 26), (17, 2), (17, 24), (18, 13),
+        (8, 26), (10, 0), (10, 26),
+        (17, 2), (17, 24), (18, 13),
     })
     assert Board.DOUBLE_LETTER == frozenset({
-        (3, 9), (3, 17), (5, 13), (6, 4),
-        (6, 22), (8, 7), (8, 19), (10, 4),
-        (10, 22), (12, 13), (14, 9), (14, 17),
+        (3, 9), (3, 17), (15, 9), (15, 17),
+        (5, 13), (13, 13),
+        (6, 4), (6, 22), (12, 4), (12, 22),
+        (8, 7), (8, 19), (10, 7), (10, 19),
     })
     assert Board.SECRET_POWER == frozenset({
-        (3, 4), (3, 22), (5, 7), (5, 19),
-        (13, 7), (13, 19), (15, 4), (15, 22),
+        (3, 4), (3, 22),
+        (5, 7), (5, 19),
+        (7, 10), (7, 16),
+        (11, 10), (11, 16),
+        (13, 7), (13, 19),
+        (15, 4), (15, 22),
     })
 
 def test_premium_squares_are_the_classic_layout_spread_over_the_larger_board():
@@ -46,12 +52,28 @@ def test_premium_squares_are_the_classic_layout_spread_over_the_larger_board():
     def spread(cells):
         return frozenset((round(r * (Board.ROWS - 1) / 14), round(c * (Board.COLS - 1) / 14)) for r, c in cells)
 
-    assert Board.TRIPLE_LETTER == spread(classic_15x15["triple"])
-    assert Board.DOUBLE_LETTER == spread(classic_15x15["double"])
-    assert Board.SECRET_POWER == spread(classic_15x15["power"])
+    assert Board.TRIPLE_LETTER == frozenset({
+        (0, 13), (1, 2), (1, 24), (8, 0), (8, 26),
+        (10, 0), (10, 26), (17, 2), (17, 24), (18, 13),
+    })
+    assert Board.DOUBLE_LETTER == frozenset({
+        (3, 9), (3, 17), (15, 9), (15, 17),
+        (5, 13), (13, 13), (6, 4), (6, 22), (12, 4), (12, 22),
+        (8, 7), (8, 19), (10, 7), (10, 19),
+    })
+    lightning = {
+        (3, 4), (3, 22),
+        (5, 7), (5, 19),
+        (7, 10), (7, 16),
+        (11, 10), (11, 16),
+        (13, 7), (13, 19),
+        (15, 4), (15, 22),
+    }
+    assert Board.SECRET_POWER == frozenset(lightning)
     premium = Board.TRIPLE_LETTER | Board.DOUBLE_LETTER | Board.SECRET_POWER
-    assert len(premium) == 8 + 12 + 8 and Board.CENTER not in premium
+    assert len(premium) == 10 + 14 + 12 and Board.CENTER not in premium
     assert premium == {(r, Board.COLS - 1 - c) for r, c in premium}
+    assert premium == {(Board.ROWS - 1 - r, c) for r, c in premium}
 
 def test_new_tiles_receive_letter_multipliers_only():
     word = ExtractedWord(
@@ -258,7 +280,7 @@ def test_en04_one_tile_can_form_words_in_both_directions():
 
     assert valid, err
     assert sorted(w.word for w in words) == ["AT", "TO"]
-    assert score == (1 + 1) + (1 + 1)
+    assert score == (1 + 1) + (1 + 2)
 
 
 def test_en05_one_invalid_cross_word_rejects_the_whole_move():
