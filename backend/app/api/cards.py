@@ -69,11 +69,52 @@ async def use_card(
         cards.remove(card)
         player.cards = cards
         await replace_player_cards(db, player.id, cards)
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.CARD_USED,
+            payload={"playerId": player.id, "card": card},
+        ).model_dump())
         return {"success": True, "found": True, "row": row, "col": col}
+
+    if card == "SHIELD":
+        effect = game.pending_effect
+        if effect:
+            expires_at = datetime.fromisoformat(effect["expires_at"])
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) >= expires_at:
+                effect = None
+        targets_me = effect and (
+            (effect["type"] == "DAMAGE" and player.id in effect.get("damage", {}))
+            or (effect["type"] == "SWAP" and player.id == effect.get("target_player_id"))
+        )
+        if not targets_me:
+            raise HTTPException(status_code=400, detail="No incoming effect to block")
+
+        cards.remove(card)
+        await replace_player_cards(db, player.id, cards)
+        if effect["type"] == "DAMAGE":
+            remaining_damage = {pid: amount for pid, amount in effect["damage"].items() if pid != player.id}
+            game.pending_effect = {**effect, "damage": remaining_damage} if remaining_damage else None
+        else:
+            game.pending_effect = None
+        await db.commit()
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.CARD_USED,
+            payload={"playerId": player.id, "card": card},
+        ).model_dump())
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.EFFECT_RESOLVED,
+            payload={"type": effect["type"], "blocked": True, "blockedBy": player.id},
+        ).model_dump())
+        return {"success": True, "blocked": True}
 
     cards.remove(card)
     player.cards = cards
     await replace_player_cards(db, player.id, cards)
+    await manager.broadcast(game_id, WebSocketEvent(
+        type=EventType.CARD_USED,
+        payload={"playerId": player.id, "card": card},
+    ).model_dump())
 
     if card == "DRAW_TILE":
         bag = await bag_tiles(db, game.id)
@@ -170,34 +211,6 @@ async def use_card(
             "set_by": player.id, "expires_turn": game.turn_number + 1,
         }
         return {"success": True}
-
-    if card == "SHIELD":
-        effect = game.pending_effect
-        if effect:
-            expires_at = datetime.fromisoformat(effect["expires_at"])
-            if expires_at.tzinfo is None:
-                expires_at = expires_at.replace(tzinfo=timezone.utc)
-            if datetime.now(timezone.utc) >= expires_at:
-                effect = None
-        targets_me = effect and (
-            (effect["type"] == "DAMAGE" and player.id in effect.get("damage", {}))
-            or (effect["type"] == "SWAP" and player.id == effect.get("target_player_id"))
-        )
-        if not targets_me:
-            raise HTTPException(status_code=400, detail="No incoming effect to block")
-        if effect["type"] == "DAMAGE":
-            # A fresh dict, not an in-place mutation: SQLAlchemy only flushes a JSON
-            # column when the new value differs from the object it already holds.
-            remaining_damage = {pid: amount for pid, amount in effect["damage"].items() if pid != player.id}
-            game.pending_effect = {**effect, "damage": remaining_damage} if remaining_damage else None
-        else:
-            game.pending_effect = None
-        await db.commit()
-        await manager.broadcast(game_id, WebSocketEvent(
-            type=EventType.EFFECT_RESOLVED,
-            payload={"type": effect["type"], "blocked": True, "blockedBy": player.id},
-        ).model_dump())
-        return {"success": True, "blocked": True}
 
     if card == "DESTROY_TILE":
         if request.row is None or request.col is None or Board.is_center(request.row, request.col):
