@@ -11,16 +11,25 @@ class Board:
     # Keep in sync with frontend/lib/board.ts.
     TRIPLE_LETTER = frozenset({
         (0, 13), (1, 2), (1, 24), (8, 0),
-        (8, 26), (17, 2), (17, 24), (18, 13),
+        (8, 26), (10, 0), (10, 26),
+        (17, 2), (17, 24), (18, 13),
     })
     DOUBLE_LETTER = frozenset({
-        (3, 9), (3, 17), (5, 13), (6, 4),
-        (6, 22), (8, 7), (8, 19), (10, 4),
-        (10, 22), (12, 13), (14, 9), (14, 17),
+        (3, 9), (3, 17), (15, 9), (15, 17),
+        (5, 13), (13, 13),
+        (6, 4), (6, 22), (12, 4), (12, 22),
+        (8, 7), (8, 19), (10, 7), (10, 19),
     })
+    # Lightning tiles replace word multipliers in this build: the pattern is mirrored
+    # by row/column around the center star, so the vertical and horizontal center-cross
+    # remain visually balanced on both halves of the board.
     SECRET_POWER = frozenset({
-        (3, 4), (3, 22), (5, 7), (5, 19),
-        (13, 7), (13, 19), (15, 4), (15, 22),
+        (3, 4), (3, 22),
+        (5, 7), (5, 19),
+        (7, 10), (7, 16),
+        (11, 10), (11, 16),
+        (13, 7), (13, 19),
+        (15, 4), (15, 22),
     })
 
     def __init__(self, sparse_state: Optional[dict[str, Any]] = None):
