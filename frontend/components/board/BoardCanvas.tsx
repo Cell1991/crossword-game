@@ -12,6 +12,7 @@ import {
   SECRET_POWER,
   TRIPLE_LETTER,
 } from '../../lib/board';
+import { getConstellation } from '../../lib/constellations';
 
 const POWER_CELLS = [...SECRET_POWER].map((key) => key.split('_').map(Number) as [number, number]);
 const DOUBLE_CELLS = [...DOUBLE_LETTER].map((key) => key.split('_').map(Number) as [number, number]);
@@ -198,6 +199,77 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
     ctx.fill();
 
+    // 3D Glass Specular Highlight (Top Rim)
+    if (!isRemote && cellSize >= 16) {
+      ctx.save();
+      const glossGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW * 0.38);
+      glossGrad.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
+      glossGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+      ctx.fillStyle = glossGrad;
+      drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW * 0.38, Math.max(1.5, radius - 1));
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Celestial Star Constellation Background (Unique pattern for every letter A-Z)
+    if (!isRemote && letter && cellSize >= 18) {
+      ctx.save();
+      const constellation = getConstellation(letter);
+      const lineColor = isGolden ? 'rgba(254, 240, 138, 0.30)' : 'rgba(125, 211, 252, 0.28)';
+      const starGlow = isGolden ? 'rgba(251, 191, 36, 0.85)' : 'rgba(56, 189, 248, 0.85)';
+      const starFill = isGolden ? '#fef08a' : '#e0f2fe';
+
+      // Constellation Lines
+      ctx.strokeStyle = lineColor;
+      ctx.lineWidth = Math.max(0.75, cellSize * 0.018);
+      ctx.setLineDash([2, 1.5]);
+      for (const [i, j] of constellation.lines) {
+        const s1 = constellation.stars[i];
+        const s2 = constellation.stars[j];
+        if (!s1 || !s2) continue;
+        ctx.beginPath();
+        ctx.moveTo(x + pad + s1.x * tileW, y + pad + s1.y * tileW);
+        ctx.lineTo(x + pad + s2.x * tileW, y + pad + s2.y * tileW);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // Constellation Stars
+      for (const star of constellation.stars) {
+        const sx = x + pad + star.x * tileW;
+        const sy = y + pad + star.y * tileW;
+        const starRad = Math.max(0.8, (cellSize * 0.03) * (star.size / 2));
+
+        if (star.isMajor && cellSize >= 22) {
+          // Major Star with Diamond Flare
+          const arm = starRad * 2.2;
+          ctx.save();
+          ctx.shadowColor = starGlow;
+          ctx.shadowBlur = Math.max(3, cellSize * 0.08);
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.moveTo(sx, sy - arm);
+          ctx.quadraticCurveTo(sx, sy, sx + arm, sy);
+          ctx.quadraticCurveTo(sx, sy, sx, sy + arm);
+          ctx.quadraticCurveTo(sx, sy, sx - arm, sy);
+          ctx.quadraticCurveTo(sx, sy, sx, sy - arm);
+          ctx.fill();
+          ctx.restore();
+        } else {
+          // Normal Glowing Star Dot
+          ctx.save();
+          ctx.shadowColor = starGlow;
+          ctx.shadowBlur = Math.max(2, cellSize * 0.06);
+          ctx.fillStyle = starFill;
+          ctx.beginPath();
+          ctx.arc(sx, sy, starRad, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+      ctx.restore();
+    }
+
     // Stroke
     if (isRemote) {
       ctx.strokeStyle = '#94a3b8';
@@ -218,7 +290,11 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     const effectiveValue = value * multiplier;
 
     if (showLetter && cellSize >= 12) {
-      // White text on both navy and royal gold tiles for max clarity and texture
+      // White text on both navy and royal gold tiles for max clarity and texture with drop shadow
+      ctx.save();
+      ctx.shadowColor = isRemote ? 'transparent' : 'rgba(0, 0, 0, 0.85)';
+      ctx.shadowBlur = Math.max(2, cellSize * 0.08);
+      ctx.shadowOffsetY = 1;
       ctx.fillStyle = isRemote ? '#0f172a' : '#ffffff';
       const fontSize = Math.max(12, Math.round(cellSize * 0.70));
       ctx.font = `${fontSize}px 'QuakDuck', sans-serif`;
@@ -227,6 +303,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       const textX = Math.round(x + cellSize / 2);
       const textY = Math.round(y + cellSize / 2 - (cellSize >= 20 ? 1 : 0));
       ctx.fillText(letter, textX, textY);
+      ctx.restore();
 
       if (cellSize >= 20) {
         const numFontSize = Math.max(9, Math.round(cellSize * 0.28));

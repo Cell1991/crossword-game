@@ -15,6 +15,7 @@ import { BoardControls } from '../../../components/board/BoardControls';
 import { TileRack } from '../../../components/rack/TileRack';
 import { TurnBanner } from '../../../components/game/TurnBanner';
 import ParticleField from '../../../components/effects/ParticleField';
+import { ConstellationGraphic } from '../../../components/effects/ConstellationGraphic';
 import { RightSidebar, MoveHistoryEntry } from '../../../components/game/RightSidebar';
 import { PowerCardBar } from '../../../components/game/PowerCardBar';
 import { DebugPanel } from '../../../components/debug/DebugPanel';
@@ -991,14 +992,18 @@ export default function GamePage() {
           />
           {dragSession && typeof document !== 'undefined' && createPortal(
             <div
-              className="pointer-events-none fixed z-[9999] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-2 scale-105 flex-col items-center justify-center rounded-xl border border-sky-400/40 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_14px_28px_rgba(0,0,0,0.7)]"
+              className="pointer-events-none fixed z-[9999] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-2 scale-105 flex-col items-center justify-center rounded-xl border border-sky-400/50 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_14px_28px_rgba(0,0,0,0.7)] overflow-hidden"
               style={{ left: dragSession.position.x, top: dragSession.position.y }}
               aria-hidden="true"
             >
-              <span className="text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+              {/* Top Glass Specular Highlight */}
+              <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
+              {/* Unique Letter Constellation Star Cluster */}
+              <ConstellationGraphic letter={dragSession.tile.letter} />
+              <span className="relative z-20 text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
                 {dragSession.tile.letter}
               </span>
-              <span className="absolute bottom-1 right-1.5 text-[12px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">
+              <span className="absolute z-20 bottom-1 right-1.5 text-[12px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">
                 {dragSession.tile.value}
               </span>
             </div>,

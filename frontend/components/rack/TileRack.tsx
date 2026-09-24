@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Tile } from '../../lib/types';
 import { RotateCcw, Check, SkipForward, Shuffle, ArrowLeftRight, X } from 'lucide-react';
+import { ConstellationGraphic } from '../effects/ConstellationGraphic';
 
 interface TileRackProps {
   /** Fixed seats. `null` means the seat is empty — either the tile is on the board or the bag ran dry. */
@@ -171,12 +172,16 @@ export const TileRack: React.FC<TileRackProps> = ({
           children, which drew this tile a whole bar-height below the pointer. */}
       {draggedTile && dragPosition && !isHandedToBoard && createPortal(
         <div
-          className="pointer-events-none fixed z-[9999] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-2 scale-105 flex-col items-center justify-center rounded-xl border border-sky-400/40 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_14px_28px_rgba(0,0,0,0.7)]"
+          className="pointer-events-none fixed z-[9999] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-2 scale-105 flex-col items-center justify-center rounded-xl border border-sky-400/50 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_14px_28px_rgba(0,0,0,0.7)] overflow-hidden"
           style={{ left: dragPosition.x, top: dragPosition.y }}
           aria-hidden="true"
         >
-          <span className="text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">{draggedTile.letter}</span>
-          <span className="absolute bottom-1 right-1.5 text-[12px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">{draggedTile.value}</span>
+          {/* Top Glass Highlight */}
+          <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
+          {/* Letter Celestial Constellation */}
+          <ConstellationGraphic letter={draggedTile.letter} />
+          <span className="relative z-20 text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{draggedTile.letter}</span>
+          <span className="absolute z-20 bottom-1 right-1.5 text-[12px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">{draggedTile.value}</span>
         </div>,
         document.body
       )}
@@ -300,24 +305,37 @@ export const TileRack: React.FC<TileRackProps> = ({
               onPointerUp={handlePointerUp}
               disabled={!canStageMove}
               aria-pressed={isExchanging ? isMarkedForExchange : undefined}
-              className={`group relative flex flex-col items-center justify-center w-11 h-12 sm:w-13 sm:h-14 rounded-xl font-sans transition-all select-none touch-none ${
+              className={`group relative flex flex-col items-center justify-center w-11 h-12 sm:w-13 sm:h-14 rounded-xl font-sans transition-all select-none touch-none overflow-hidden ${
                 isDragging
                   ? 'z-10 scale-105 -translate-y-2 opacity-40 bg-[#16274e] border border-blue-400/50 shadow-2xl cursor-grabbing'
                   : isDropTarget
                   ? 'translate-x-1 ring-2 ring-sky-400/80'
                   : isMarkedForExchange
-                  ? '-translate-y-3 bg-amber-600 border-2 border-amber-300 shadow-amber-500/40 ring-4 ring-amber-400/50 cursor-pointer'
+                  ? '-translate-y-3 bg-gradient-to-b from-amber-600 via-amber-700 to-amber-900 border-2 border-amber-300 shadow-amber-500/40 ring-4 ring-amber-400/50 cursor-pointer'
                   : isSelected
                   ? '-translate-y-3 bg-gradient-to-b from-[#2563eb] to-[#1d4ed8] border-2 border-cyan-300 shadow-[0_0_18px_rgba(59,130,246,0.7)] ring-4 ring-cyan-400/60'
                   : canStageMove
-                  ? 'bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] border border-blue-400/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_8px_rgba(0,0,0,0.5),0_1px_2px_rgba(0,0,0,0.4)] hover:brightness-110 hover:-translate-y-1 active:translate-y-0.5 cursor-pointer'
+                  ? 'bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] border border-blue-400/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_6px_12px_rgba(0,0,0,0.55),0_2px_4px_rgba(0,0,0,0.4)] hover:brightness-110 hover:-translate-y-1 active:translate-y-0.5 cursor-pointer'
                   : 'bg-[#16274e]/60 border border-blue-900/30 opacity-60 cursor-not-allowed shadow-md'
               }`}
             >
-              <span className="text-[30px] sm:text-[36px] font-normal text-white leading-none font-quakduck drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
+              {/* 3D Specular Top Bevel Glass Highlight */}
+              <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
+
+              {/* Unique Letter Constellation Star Cluster */}
+              <ConstellationGraphic
+                letter={tile.letter}
+                isGolden={isMarkedForExchange}
+                className="opacity-75 group-hover:opacity-95 transition-opacity"
+              />
+
+              {/* High-Contrast Prominent Letter */}
+              <span className="relative z-20 text-[30px] sm:text-[36px] font-normal text-white leading-none font-quakduck drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
                 {tile.letter}
               </span>
-              <span className="absolute bottom-1 right-1.5 text-[11px] sm:text-[13px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">
+
+              {/* Glowing Value Badge */}
+              <span className="absolute z-20 bottom-1 right-1.5 text-[11px] sm:text-[13px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">
                 {tile.value}
               </span>
             </button>
