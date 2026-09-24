@@ -3,6 +3,11 @@
 import { useState, useCallback, useRef } from 'react';
 import { BOARD_COLS, BOARD_ROWS } from '../lib/board';
 
+export interface Offset {
+  x: number;
+  y: number;
+}
+
 const BASE_CELL_SIZE = 40;
 // Balanced zoom limit to prevent zooming out too far away
 const MIN_SCALE = 0.52;

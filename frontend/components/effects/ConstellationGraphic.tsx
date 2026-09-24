@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { getConstellation } from '../../lib/constellations';
+import { getConstellationData } from '../../lib/constellations';
 
 interface ConstellationGraphicProps {
   letter: string;
@@ -9,147 +9,162 @@ interface ConstellationGraphicProps {
   className?: string;
 }
 
+// Build 8-pointed starburst path centred at (cx, cy)
+function starburstPath(cx: number, cy: number, outerR: number, innerR: number): string {
+  const points = 8;
+  let d = '';
+  for (let i = 0; i < points * 2; i++) {
+    const angle = (Math.PI / points) * i - Math.PI / 2;
+    const r = i % 2 === 0 ? outerR : innerR;
+    const px = cx + Math.cos(angle) * r;
+    const py = cy + Math.sin(angle) * r;
+    d += (i === 0 ? 'M' : 'L') + `${px.toFixed(2)},${py.toFixed(2)}`;
+  }
+  return d + 'Z';
+}
+
 export const ConstellationGraphic: React.FC<ConstellationGraphicProps> = ({
   letter,
   isGolden = false,
   className = '',
 }) => {
-  const constellation = useMemo(() => getConstellation(letter), [letter]);
+  const data = useMemo(() => getConstellationData(letter), [letter]);
 
-  const lineColor = isGolden ? 'rgba(254, 240, 138, 0.22)' : 'rgba(186, 230, 253, 0.20)';
-  const starGlowColor = isGolden ? 'rgba(245, 158, 11, 0.75)' : 'rgba(56, 189, 248, 0.75)';
-  const starCoreColor = isGolden ? '#fef08a' : '#e0f2fe';
-  const nebulaGlow = isGolden ? 'rgba(245, 158, 11, 0.14)' : 'rgba(56, 189, 248, 0.12)';
+  // Colour palette — gold for confirmed tiles, cyan for temporary/rack tiles
+  const lineColor  = isGolden ? 'rgba(253, 224, 100, 0.28)' : 'rgba(147, 220, 252, 0.24)';
+  const glowColor  = isGolden ? 'rgba(251, 191, 36, 0.80)'  : 'rgba(56,  189, 248, 0.80)';
+  const coreColor  = isGolden ? '#fef3c7'                    : '#e0f2fe';
+  const burstColor = isGolden ? '#fde68a'                    : '#bae6fd';
+  const filterId   = `cg-glow-${isGolden ? 'g' : 'b'}`;
 
   return (
-    <div className={`absolute inset-0 pointer-events-none overflow-hidden rounded-xl ${className}`}>
-      {/* Soft Ethereal Nebula Stardust Glow in Background */}
-      <div
-        className="absolute inset-2 rounded-full blur-md transition-opacity"
-        style={{
-          background: `radial-gradient(circle, ${nebulaGlow} 0%, transparent 70%)`,
-        }}
-      />
-
+    <div
+      className={`absolute inset-0 pointer-events-none overflow-hidden rounded-xl ${className}`}
+    >
       <svg
         viewBox="0 0 100 100"
-        className="absolute inset-0 w-full h-full overflow-visible"
-        preserveAspectRatio="none"
+        className="absolute inset-0 w-full h-full"
+        preserveAspectRatio="xMidYMid meet"
         aria-hidden="true"
       >
         <defs>
-          <filter id={`celestial-glow-${isGolden ? 'gold' : 'blue'}`} x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation="1.8" result="blur" />
+          {/* Soft glow filter for star halos */}
+          <filter id={filterId} x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="2.2" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+
+          <style>{`
+            @keyframes cg-twinkle-a {
+              0%, 100% { opacity: 0.30; transform: scale(0.88); }
+              48%       { opacity: 1.00; transform: scale(1.18); }
+            }
+            @keyframes cg-twinkle-b {
+              0%, 100% { opacity: 0.90; transform: scale(1.12); }
+              52%       { opacity: 0.22; transform: scale(0.82); }
+            }
+            @keyframes cg-twinkle-c {
+              0%, 100% { opacity: 0.40; transform: scale(0.92); }
+              44%       { opacity: 1.00; transform: scale(1.22); }
+            }
+            @keyframes cg-line-pulse {
+              0%, 100% { opacity: 0.55; }
+              50%       { opacity: 1.00; }
+            }
+            .cg-tw-a { animation: cg-twinkle-a 3.1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+            .cg-tw-b { animation: cg-twinkle-b 2.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+            .cg-tw-c { animation: cg-twinkle-c 3.7s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+            .cg-line  { animation: cg-line-pulse 5.0s ease-in-out infinite; }
+          `}</style>
         </defs>
 
-        <style>{`
-          @keyframes celestial-twinkle-1 {
-            0%, 100% { opacity: 0.25; transform: scale(0.85); }
-            50% { opacity: 0.95; transform: scale(1.2); }
-          }
-          @keyframes celestial-twinkle-2 {
-            0%, 100% { opacity: 0.85; transform: scale(1.15); }
-            50% { opacity: 0.2; transform: scale(0.8); }
-          }
-          @keyframes celestial-twinkle-3 {
-            0%, 100% { opacity: 0.35; transform: scale(0.9); }
-            50% { opacity: 1; transform: scale(1.25); }
-          }
-          @keyframes celestial-line-flow {
-            0%, 100% { opacity: 0.16; stroke-dashoffset: 0; }
-            50% { opacity: 0.32; stroke-dashoffset: 4; }
-          }
-          .animate-twinkle-0 { animation: celestial-twinkle-1 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-          .animate-twinkle-1 { animation: celestial-twinkle-2 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-          .animate-twinkle-2 { animation: celestial-twinkle-3 3.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-          .animate-const-line { animation: celestial-line-flow 4.5s ease-in-out infinite; }
-        `}</style>
+        {/* ── Background stardust specks ── */}
+        {data.dust.map((speck, i) => (
+          <circle
+            key={`d${i}`}
+            cx={speck.x * 100}
+            cy={speck.y * 100}
+            r={speck.r}
+            fill={coreColor}
+            opacity={speck.opacity * 0.7}
+          />
+        ))}
 
-        {/* Faint, Soft Starlight Constellation Lines */}
-        {constellation.lines.map(([i, j], idx) => {
-          const s1 = constellation.stars[i];
-          const s2 = constellation.stars[j];
+        {/* ── Constellation lines — thin, straight, solid ── */}
+        {data.lines.map(([i, j], idx) => {
+          const s1 = data.stars[i];
+          const s2 = data.stars[j];
           if (!s1 || !s2) return null;
           return (
             <line
-              key={`line-${idx}`}
+              key={`l${idx}`}
               x1={s1.x * 100}
               y1={s1.y * 100}
               x2={s2.x * 100}
               y2={s2.y * 100}
               stroke={lineColor}
-              strokeWidth="0.9"
-              strokeDasharray="2.5 2"
+              strokeWidth="0.85"
               strokeLinecap="round"
-              className="animate-const-line"
-              style={{ animationDelay: `${(idx * 0.4) % 3}s` }}
+              className="cg-line"
+              style={{ animationDelay: `${(idx * 0.55) % 4.5}s` }}
             />
           );
         })}
 
-        {/* Soft, Animated Twinkling Constellation Stars */}
-        {constellation.stars.map((star, idx) => {
+        {/* ── Stars ── */}
+        {data.stars.map((star, idx) => {
           const cx = star.x * 100;
           const cy = star.y * 100;
-          const animClass = `animate-twinkle-${idx % 3}`;
+          const sizeScale = star.size ?? 1.0;
+          const twClass = ['cg-tw-a', 'cg-tw-b', 'cg-tw-c'][idx % 3];
+          const delay = `${(idx * 0.65) % 3.5}s`;
 
-          if (star.isMajor) {
-            // Major Star: 4-Point Diamond Flare Sparkle + Glowing Halo
-            const arm = star.size * 2.0;
+          if (star.isStarburst) {
+            // 8-pointed starburst for major stars
+            const outer = sizeScale * 4.0;
+            const inner = sizeScale * 1.6;
             return (
-              <g
-                key={`star-${idx}`}
-                className={animClass}
-                style={{ animationDelay: `${(idx * 0.6) % 3}s` }}
-              >
-                {/* Soft Star Halo */}
+              <g key={`s${idx}`} className={twClass} style={{ animationDelay: delay }}>
+                {/* Soft outer glow halo */}
                 <circle
                   cx={cx}
                   cy={cy}
-                  r={star.size * 2.2}
-                  fill={starGlowColor}
-                  opacity={0.5}
-                  filter={`url(#celestial-glow-${isGolden ? 'gold' : 'blue'})`}
+                  r={outer * 1.6}
+                  fill={glowColor}
+                  opacity={0.28}
+                  filter={`url(#${filterId})`}
                 />
-                {/* Diamond 4-Point Sparkle Cross */}
+                {/* 8-pointed starburst */}
                 <path
-                  d={`M ${cx} ${cy - arm} Q ${cx} ${cy} ${cx + arm} ${cy} Q ${cx} ${cy} ${cx} ${cy + arm} Q ${cx} ${cy} ${cx - arm} ${cy} Z`}
-                  fill="#ffffff"
-                  opacity={0.9}
+                  d={starburstPath(cx, cy, outer, inner)}
+                  fill={burstColor}
+                  opacity={0.92}
+                  filter={`url(#${filterId})`}
                 />
-                {/* Core White Sparkle Center */}
-                <circle cx={cx} cy={cy} r={star.size * 0.75} fill="#ffffff" />
+                {/* Bright core dot */}
+                <circle cx={cx} cy={cy} r={sizeScale * 1.1} fill="#ffffff" opacity={0.95} />
               </g>
             );
           }
 
+          // Regular star — round dot + soft halo
+          const r = Math.max(1.1, sizeScale * 1.5);
           return (
-            <g
-              key={`star-${idx}`}
-              className={animClass}
-              style={{ animationDelay: `${(idx * 0.7) % 3}s` }}
-            >
-              {/* Soft Star Halo */}
+            <g key={`s${idx}`} className={twClass} style={{ animationDelay: delay }}>
+              {/* Soft halo */}
               <circle
                 cx={cx}
                 cy={cy}
-                r={star.size * 1.5}
-                fill={starGlowColor}
-                opacity={0.38}
+                r={r * 2.2}
+                fill={glowColor}
+                opacity={0.22}
+                filter={`url(#${filterId})`}
               />
-              {/* Crisp Star Point */}
-              <circle
-                cx={cx}
-                cy={cy}
-                r={star.size * 0.75}
-                fill={starCoreColor}
-                opacity={0.85}
-              />
+              {/* Core dot */}
+              <circle cx={cx} cy={cy} r={r} fill={coreColor} opacity={0.88} />
             </g>
           );
         })}

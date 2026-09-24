@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useCallback } from 'react';
 import { BoardCell, PlacedTile } from '../../lib/types';
-import { useBoardCamera } from '../../hooks/useBoardCamera';
+import { useBoardCamera, Offset } from '../../hooks/useBoardCamera';
 import {
   BOARD_COLS,
   BOARD_ROWS,
@@ -12,7 +12,7 @@ import {
   SECRET_POWER,
   TRIPLE_LETTER,
 } from '../../lib/board';
-import { getConstellation } from '../../lib/constellations';
+import { getConstellationData } from '../../lib/constellations';
 
 const POWER_CELLS = [...SECRET_POWER].map((key) => key.split('_').map(Number) as [number, number]);
 const DOUBLE_CELLS = [...DOUBLE_LETTER].map((key) => key.split('_').map(Number) as [number, number]);
@@ -151,6 +151,26 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     ctx.closePath();
   }
 
+  function drawStarburst(
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    outerR: number,
+    innerR: number
+  ) {
+    const points = 8;
+    ctx.beginPath();
+    for (let i = 0; i < points * 2; i++) {
+      const angle = (Math.PI / points) * i - Math.PI / 2;
+      const r = i % 2 === 0 ? outerR : innerR;
+      const px = cx + Math.cos(angle) * r;
+      const py = cy + Math.sin(angle) * r;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+  }
+
   const drawTile = useCallback((
     ctx: CanvasRenderingContext2D,
     row: number,
@@ -211,29 +231,31 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       ctx.restore();
     }
 
-    // Celestial Star Constellation Background (Subtle ethereal stardust pattern for each letter)
+    // Celestial Star Constellation Background (Authentic star chart matching letter)
     if (!isRemote && letter && cellSize >= 18) {
       ctx.save();
-      const constellation = getConstellation(letter);
-      const lineColor = isGolden ? 'rgba(254, 240, 138, 0.20)' : 'rgba(186, 230, 253, 0.18)';
-      const starGlow = isGolden ? 'rgba(251, 191, 36, 0.70)' : 'rgba(56, 189, 248, 0.70)';
-      const starFill = isGolden ? '#fef08a' : '#e0f2fe';
+      const constellation = getConstellationData(letter);
+      const lineColor = isGolden ? 'rgba(253, 224, 100, 0.28)' : 'rgba(147, 220, 252, 0.24)';
+      const starGlow = isGolden ? 'rgba(251, 191, 36, 0.80)' : 'rgba(56, 189, 248, 0.80)';
+      const starFill = isGolden ? '#fef3c7' : '#e0f2fe';
+      const burstFill = isGolden ? '#fde68a' : '#bae6fd';
 
-      // Soft Central Nebula Glow
-      const cx = x + cellSize / 2;
-      const cy = y + cellSize / 2;
-      const nebGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, tileW * 0.45);
-      nebGrad.addColorStop(0, isGolden ? 'rgba(245, 158, 11, 0.14)' : 'rgba(56, 189, 248, 0.12)');
-      nebGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = nebGrad;
-      ctx.beginPath();
-      ctx.arc(cx, cy, tileW * 0.45, 0, Math.PI * 2);
-      ctx.fill();
+      // 1. Background stardust specks
+      for (const speck of constellation.dust) {
+        const dx = x + pad + speck.x * tileW;
+        const dy = y + pad + speck.y * tileW;
+        const rad = Math.max(0.4, speck.r * (cellSize / 38));
+        ctx.fillStyle = starFill;
+        ctx.globalAlpha = speck.opacity * 0.65;
+        ctx.beginPath();
+        ctx.arc(dx, dy, rad, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1.0;
 
-      // Faint Starlight Constellation Lines
+      // 2. Faint Starlight Constellation Lines (thin, solid)
       ctx.strokeStyle = lineColor;
-      ctx.lineWidth = Math.max(0.6, cellSize * 0.014);
-      ctx.setLineDash([2.5, 2]);
+      ctx.lineWidth = Math.max(0.7, cellSize * 0.016);
       for (const [i, j] of constellation.lines) {
         const s1 = constellation.stars[i];
         const s2 = constellation.stars[j];
@@ -243,37 +265,38 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         ctx.lineTo(x + pad + s2.x * tileW, y + pad + s2.y * tileW);
         ctx.stroke();
       }
-      ctx.setLineDash([]);
 
-      // Constellation Stars
+      // 3. Constellation Stars
       for (const star of constellation.stars) {
         const sx = x + pad + star.x * tileW;
         const sy = y + pad + star.y * tileW;
-        const starRad = Math.max(0.7, (cellSize * 0.025) * (star.size / 2));
+        const scale = star.size ?? 1.0;
+        const baseRad = Math.max(0.9, (cellSize * 0.028) * scale);
 
-        if (star.isMajor && cellSize >= 22) {
-          // Major Star with Soft Diamond Flare
-          const arm = starRad * 1.9;
+        if (star.isStarburst && cellSize >= 20) {
+          // 8-Pointed Celestial Starburst
+          const outer = baseRad * 2.2;
+          const inner = baseRad * 0.85;
           ctx.save();
           ctx.shadowColor = starGlow;
-          ctx.shadowBlur = Math.max(2.5, cellSize * 0.07);
+          ctx.shadowBlur = Math.max(3, cellSize * 0.08);
+          ctx.fillStyle = burstFill;
+          drawStarburst(ctx, sx, sy, outer, inner);
+          ctx.fill();
+          // Bright center
           ctx.fillStyle = '#ffffff';
           ctx.beginPath();
-          ctx.moveTo(sx, sy - arm);
-          ctx.quadraticCurveTo(sx, sy, sx + arm, sy);
-          ctx.quadraticCurveTo(sx, sy, sx, sy + arm);
-          ctx.quadraticCurveTo(sx, sy, sx - arm, sy);
-          ctx.quadraticCurveTo(sx, sy, sx, sy - arm);
+          ctx.arc(sx, sy, Math.max(0.6, baseRad * 0.5), 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         } else {
-          // Normal Soft Star Dot
+          // Regular Star (Round Dot + Halo)
           ctx.save();
           ctx.shadowColor = starGlow;
-          ctx.shadowBlur = Math.max(1.8, cellSize * 0.05);
+          ctx.shadowBlur = Math.max(2, cellSize * 0.05);
           ctx.fillStyle = starFill;
           ctx.beginPath();
-          ctx.arc(sx, sy, starRad, 0, Math.PI * 2);
+          ctx.arc(sx, sy, baseRad, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         }
@@ -606,7 +629,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         const next = measurePinch();
         const rect = canvasRef.current?.getBoundingClientRect();
         if (rect) {
-          setOffset((prev) => ({ x: prev.x + next.x - pinch.x, y: prev.y + next.y - pinch.y }));
+          setOffset((prev: Offset) => ({ x: prev.x + next.x - pinch.x, y: prev.y + next.y - pinch.y }));
           if (pinch.distance > 0) zoomBy(next.distance / pinch.distance, next.x - rect.left, next.y - rect.top);
         }
         pinchRef.current = next;
@@ -625,7 +648,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     if (isPanning) {
       const dx = e.clientX - lastMousePosRef.current.x;
       const dy = e.clientY - lastMousePosRef.current.y;
-      setOffset((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+      setOffset((prev: Offset) => ({ x: prev.x + dx, y: prev.y + dy }));
       lastMousePosRef.current = { x: e.clientX, y: e.clientY };
       const start = panStartRef.current;
       if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) >= 5) panMovedRef.current = true;
@@ -752,7 +775,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       <canvas ref={canvasRef} className="absolute inset-0 z-10 block h-full w-full" />
       <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
         {POWER_CELLS.filter(([row, col]) => !isCellOccupied(row, col)).map(([row, col]) => {
-          const alpha = getCellAlpha(row, col, camera.scale);
+          const alpha = getCellAlpha(row, col);
           if (alpha <= 0.01) return null;
           return (
             <span
@@ -783,7 +806,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
           );
         })}
         {TRIPLE_CELLS.filter(([row, col]) => !isCellOccupied(row, col)).map(([row, col]) => {
-          const alpha = getCellAlpha(row, col, camera.scale);
+          const alpha = getCellAlpha(row, col);
           if (alpha <= 0.01) return null;
           return (
             <span
@@ -809,7 +832,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
           );
         })}
         {DOUBLE_CELLS.filter(([row, col]) => !isCellOccupied(row, col)).map(([row, col]) => {
-          const alpha = getCellAlpha(row, col, camera.scale);
+          const alpha = getCellAlpha(row, col);
           if (alpha <= 0.01) return null;
           return (
             <span
