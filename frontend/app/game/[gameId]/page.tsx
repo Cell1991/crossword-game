@@ -20,6 +20,7 @@ import { RightSidebar, MoveHistoryEntry } from '../../../components/game/RightSi
 import { PowerCardBar } from '../../../components/game/PowerCardBar';
 import { DebugPanel } from '../../../components/debug/DebugPanel';
 import { BlankTilePickerModal } from '../../../components/game/BlankTilePickerModal';
+import { Eye, Heart, Repeat2, RotateCcw, Shield, Snowflake, Zap } from 'lucide-react';
 import {
   GameState,
   Tile,
@@ -34,6 +35,12 @@ const RACK_SIZE = 7;
 
 /** How long to wait before asking the server again whether a turn that reads 0s has expired. */
 const TIMEOUT_RETRY_MS = 2000;
+const CARD_ICONS: Record<string, React.ReactNode> = {
+  HINT: <Eye className="h-20 w-20 text-yellow-300" />, SPY_SWAP: <Repeat2 className="h-20 w-20 text-cyan-300" />,
+  DESTROY_TILE: <RotateCcw className="h-20 w-20 text-rose-300" />, HEAL: <Heart className="h-20 w-20 fill-rose-400 text-rose-200" />,
+  DOUBLE_DAMAGE: <span className="text-6xl font-black text-amber-300">×2</span>,
+  SHIELD: <Shield className="h-20 w-20 text-sky-200" />, FREEZE_TILE: <Snowflake className="h-20 w-20 text-sky-300" />,
+};
 
 interface DragSession {
   tile: Tile;
@@ -70,6 +77,8 @@ export default function GamePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastMoveInfo, setLastMoveInfo] = useState<string | null>(null);
   const [moveHistory, setMoveHistory] = useState<MoveHistoryEntry[]>([]);
+  const [cardUseEffects, setCardUseEffects] = useState<Record<string, string>>({});
+  const [cardReveal, setCardReveal] = useState<{ card: string; playerId: string; phase: 'lightning' | 'reveal' } | null>(null);
   const [rackOrder, setRackOrder] = useState<(string | null)[]>([]);
   /** Tiles picked to swap with the bag; `null` while the player is not exchanging. */
   const [exchangeTileIds, setExchangeTileIds] = useState<string[] | null>(null);
@@ -476,6 +485,12 @@ export default function GamePage() {
         loadGameState();
         const wordsFormed = event.payload?.wordsFormed ?? [];
         if (event.type === 'MOVE_COMMITTED' && wordsFormed.length > 0) {
+          if (event.payload.cardAwarded && event.payload.playerId) {
+            const reveal = { card: event.payload.cardAwarded, playerId: event.payload.playerId };
+            setCardReveal({ ...reveal, phase: 'lightning' });
+            window.setTimeout(() => setCardReveal({ ...reveal, phase: 'reveal' }), 1000);
+            window.setTimeout(() => setCardReveal(null), 2600);
+          }
           const words = wordsFormed.map((word) => word.word).join(', ');
           const score = event.payload.scoreEarned ?? 0;
           const player = gameState?.players.find(p => p.id === event.payload?.playerId);
@@ -521,6 +536,21 @@ export default function GamePage() {
           }
         ]);
         setTimeout(() => setLastMoveInfo(null), 4000);
+        break;
+      }
+      case 'CARD_USED': {
+        const playerId = event.payload?.playerId;
+        const card = event.payload?.card;
+        if (!playerId || !card) break;
+        setCardUseEffects(previous => ({ ...previous, [playerId]: card }));
+        window.setTimeout(() => {
+          setCardUseEffects(previous => {
+            if (previous[playerId] !== card) return previous;
+            const next = { ...previous };
+            delete next[playerId];
+            return next;
+          });
+        }, 2200);
         break;
       }
       case 'PLACEMENT_PREVIEW':
@@ -652,12 +682,11 @@ export default function GamePage() {
   }, [temporaryTiles, gameId, myPlayerId, isMyTurn, sendMessage]);
 
   // Power card actions
-  const handleUseSimpleCard = useCallback(async (card: 'HINT' | 'FREE_EXCHANGE' | 'MOVE_HEAL' | 'DRAW_TILE' | 'HEAL') => {
+  const handleUseSimpleCard = useCallback(async (card: 'HINT' | 'HEAL' | 'SHIELD') => {
     if (!myPlayerId || cardBusy) return;
     setCardBusy(true);
     try {
       const payload: UseCardPayload = { card };
-      if (card === 'MOVE_HEAL') payload.placed_tiles = temporaryTiles;
       const result = await playCard(gameId, myPlayerId, payload);
       if (card === 'HINT') {
         if (result.found && typeof result.row === 'number' && typeof result.col === 'number') {
@@ -679,7 +708,7 @@ export default function GamePage() {
     }
   }, [cardBusy, gameId, loadGameState, myPlayerId, temporaryTiles]);
 
-  const handleUseTargetedCard = useCallback(async (card: 'DOUBLE_DAMAGE' | 'STEAL_TILE', targetPlayerId: string) => {
+  const handleUseTargetedCard = useCallback(async (card: 'DOUBLE_DAMAGE' | 'SPY_SWAP', targetPlayerId: string) => {
     if (!myPlayerId || cardBusy) return;
     setCardBusy(true);
     try {
@@ -1013,11 +1042,35 @@ export default function GamePage() {
             <button
               onClick={handleUseShield}
               disabled={cardBusy}
-              className="rounded-full bg-sky-600 hover:bg-sky-500 px-3 py-1 text-xs font-bold text-white disabled:opacity-50"
+              title="Block this incoming effect"
+              className="flex items-center gap-1.5 rounded-full border border-red-400/80 bg-red-950/80 px-3 py-1 text-xs font-bold text-red-100 shadow-[0_0_16px_rgba(248,113,113,0.65)] transition hover:bg-red-800 disabled:opacity-50"
             >
-              🛡️ Shield
+              <span className="text-base leading-none">🛡️</span>
+              <span>Shield</span>
             </button>
           )}
+        </div>
+      )}
+
+      {cardReveal && (
+        <div className="pointer-events-none absolute inset-0 z-[60] flex items-center justify-center">
+          <div className={`flex h-56 w-40 flex-col items-center justify-center rounded-2xl border-4 border-red-500/90 bg-slate-950/90 shadow-[0_0_35px_rgba(14,165,233,0.75),inset_0_0_28px_rgba(14,165,233,0.24)] transition-all duration-300 ${cardReveal.phase === 'lightning' ? 'scale-100' : 'scale-110'}`}>
+            {cardReveal.phase === 'lightning' ? (
+              <>
+                <div className="flex items-center justify-center gap-1 text-yellow-300 drop-shadow-[0_0_16px_rgba(250,204,21,0.95)]">
+                  <Zap className="h-9 w-9 fill-yellow-300 text-yellow-100 animate-pulse" />
+                  <Zap className="h-24 w-24 fill-yellow-300 text-yellow-100 animate-pulse" />
+                  <Zap className="h-9 w-9 fill-yellow-300 text-yellow-100 animate-pulse" />
+                </div>
+                <span className="mt-3 text-xs font-bold uppercase tracking-[0.35em] text-cyan-200">Power</span>
+              </>
+            ) : (
+              <>
+                <span className="text-7xl leading-none drop-shadow-[0_0_20px_rgba(125,211,252,1)]">{CARD_ICONS[cardReveal.card] ?? '✨'}</span>
+                <span className="mt-3 text-xs font-bold uppercase tracking-[0.25em] text-cyan-200">Card found</span>
+              </>
+            )}
+          </div>
         </div>
       )}
 
@@ -1115,6 +1168,7 @@ export default function GamePage() {
             tileBagCount={tileBagCount}
             tileBagCounts={gameState?.tile_bag_counts ?? {}}
             moveHistory={moveHistory}
+            cardUseEffects={cardUseEffects}
             onZoomIn={() => camera.zoomBy(BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
             onZoomOut={() => camera.zoomBy(1 / BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
             onReset={() => {
