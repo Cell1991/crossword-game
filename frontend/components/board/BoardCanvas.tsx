@@ -237,11 +237,11 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       const constellation = getConstellationData(letter);
       const time = performance.now() / 1000;
 
-      // On golden tiles: stars/filaments are soft, translucent, delicate white/champagne
-      const lineColor = isGolden ? 'rgba(255, 255, 255, 0.12)' : 'rgba(147, 220, 252, 0.20)';
-      const starGlow = isGolden ? 'rgba(254, 240, 138, 0.18)' : 'rgba(56, 189, 248, 0.55)';
-      const starFill = isGolden ? 'rgba(255, 255, 255, 0.38)' : 'rgba(224, 242, 254, 0.80)';
-      const burstFill = isGolden ? 'rgba(255, 255, 255, 0.42)' : 'rgba(186, 230, 253, 0.85)';
+      // Color scheme: warm celestial gold/champagne for gold tiles, crisp starlight cyan for blue tiles
+      const lineColor = isGolden ? 'rgba(254, 240, 138, 0.26)' : 'rgba(147, 220, 252, 0.20)';
+      const starGlow = isGolden ? 'rgba(251, 191, 36, 0.60)' : 'rgba(56, 189, 248, 0.55)';
+      const starFill = isGolden ? '#fef3c7' : 'rgba(224, 242, 254, 0.80)';
+      const burstFill = isGolden ? '#fde68a' : 'rgba(186, 230, 253, 0.85)';
 
       // 1. Background stardust specks with gentle shimmer
       for (let i = 0; i < constellation.dust.length; i++) {
@@ -251,7 +251,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         const rad = Math.max(0.35, speck.r * (cellSize / 40));
         const shimmer = 0.5 + 0.5 * Math.sin(time * 2.2 + speck.x * 7 + i * 1.7);
         ctx.fillStyle = starFill;
-        ctx.globalAlpha = speck.opacity * (isGolden ? 0.15 : 0.45) * (0.6 + 0.4 * shimmer);
+        ctx.globalAlpha = speck.opacity * 0.45 * (0.6 + 0.4 * shimmer);
         ctx.beginPath();
         ctx.arc(dx, dy, rad, 0, Math.PI * 2);
         ctx.fill();
@@ -262,7 +262,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       const linePulse = 0.75 + 0.25 * Math.sin(time * 1.6 + row * 0.7 + col * 0.5);
       ctx.strokeStyle = lineColor;
       ctx.globalAlpha = linePulse;
-      ctx.lineWidth = Math.max(0.6, cellSize * (isGolden ? 0.012 : 0.015));
+      ctx.lineWidth = Math.max(0.65, cellSize * 0.015);
       for (const [i, j] of constellation.lines) {
         const s1 = constellation.stars[i];
         const s2 = constellation.stars[j];
@@ -280,7 +280,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         const sx = x + pad + star.x * tileW;
         const sy = y + pad + star.y * tileW;
         const scale = star.size ?? 1.0;
-        const baseRad = Math.max(0.75, (cellSize * (isGolden ? 0.020 : 0.024)) * scale);
+        const baseRad = Math.max(0.8, (cellSize * 0.024) * scale);
 
         // Dynamic twinkle factor per individual star
         const twinklePhase = time * (2.0 + (idx % 3) * 0.7) + star.x * 6.28 + (idx * 1.35);
@@ -288,30 +288,30 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         const curScale = 0.72 + 0.45 * twinkle;
 
         if (star.isStarburst && cellSize >= 20) {
-          // 8-Pointed Celestial Starburst (delicate on gold)
-          const outer = baseRad * (isGolden ? 1.5 : 2.0) * curScale;
-          const inner = baseRad * (isGolden ? 0.6 : 0.8) * curScale;
+          // 8-Pointed Celestial Starburst (equal scale for gold and blue)
+          const outer = baseRad * 2.0 * curScale;
+          const inner = baseRad * 0.8 * curScale;
           ctx.save();
           ctx.shadowColor = starGlow;
-          ctx.shadowBlur = Math.max(1.5, cellSize * (isGolden ? 0.025 : 0.05) * curScale);
+          ctx.shadowBlur = Math.max(2, cellSize * 0.05 * curScale);
           ctx.fillStyle = burstFill;
-          ctx.globalAlpha = (isGolden ? 0.40 : 0.85) * curScale;
+          ctx.globalAlpha = 0.85 * curScale;
           drawStarburst(ctx, sx, sy, outer, inner);
           ctx.fill();
           // Bright core point
           ctx.fillStyle = '#ffffff';
-          ctx.globalAlpha = (isGolden ? 0.55 : 0.90) * curScale;
+          ctx.globalAlpha = 0.90 * curScale;
           ctx.beginPath();
-          ctx.arc(sx, sy, Math.max(0.4, baseRad * 0.35 * curScale), 0, Math.PI * 2);
+          ctx.arc(sx, sy, Math.max(0.45, baseRad * 0.4 * curScale), 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         } else {
           // Regular Star (Round Dot + Soft Halo with twinkle)
           ctx.save();
           ctx.shadowColor = starGlow;
-          ctx.shadowBlur = Math.max(1.2, cellSize * (isGolden ? 0.02 : 0.035) * curScale);
+          ctx.shadowBlur = Math.max(1.5, cellSize * 0.035 * curScale);
           ctx.fillStyle = starFill;
-          ctx.globalAlpha = (isGolden ? 0.38 : 0.80) * curScale;
+          ctx.globalAlpha = 0.80 * curScale;
           ctx.beginPath();
           ctx.arc(sx, sy, baseRad * curScale, 0, Math.PI * 2);
           ctx.fill();
