@@ -13,12 +13,16 @@ class Board:
         (0, 13), (1, 2), (1, 24), (8, 0),
         (8, 26), (10, 0), (10, 26),
         (17, 2), (17, 24), (18, 13),
+        # Requested side 3L anchors, one more cell away from the center star.
+        (9, 10), (9, 16),
     })
     DOUBLE_LETTER = frozenset({
         (3, 9), (3, 17), (15, 9), (15, 17),
         (5, 13), (13, 13),
         (6, 4), (6, 22), (12, 4), (12, 22),
         (8, 7), (8, 19), (10, 7), (10, 19),
+        # Center cluster from the reference layout: four diagonal 2L cells around the star.
+        (8, 12), (8, 14), (10, 12), (10, 14),
     })
     # Lightning tiles replace word multipliers in this build: the pattern is mirrored
     # by row/column around the center star, so the vertical and horizontal center-cross
