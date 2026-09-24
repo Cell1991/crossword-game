@@ -1033,6 +1033,7 @@ export default function GamePage() {
             myPlayerId={myPlayerId}
             currentPlayerId={gameState?.current_player_id ?? null}
             tileBagCount={tileBagCount}
+            tileBagCounts={gameState?.tile_bag_counts ?? {}}
             moveHistory={moveHistory}
             onZoomIn={() => camera.zoomBy(BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
             onZoomOut={() => camera.zoomBy(1 / BUTTON_ZOOM_FACTOR, boardViewport.width / 2, boardViewport.height / 2)}
