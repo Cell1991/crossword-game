@@ -36,6 +36,7 @@ class CommitMoveResponse(BaseModel):
     next_player_id: Optional[str]
     game_over: bool = False
     winner_id: Optional[str] = None
+    card_awarded: Optional[str] = None
 
 class ExchangeTilesRequest(BaseModel):
     # No upper bound: cards such as DRAW_TILE can push a rack past RACK_SIZE.
