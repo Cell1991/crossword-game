@@ -203,7 +203,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     if (!isRemote && cellSize >= 16) {
       ctx.save();
       const glossGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW * 0.38);
-      glossGrad.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
+      glossGrad.addColorStop(0, 'rgba(255, 255, 255, 0.18)');
       glossGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
       ctx.fillStyle = glossGrad;
       drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW * 0.38, Math.max(1.5, radius - 1));
@@ -211,18 +211,29 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       ctx.restore();
     }
 
-    // Celestial Star Constellation Background (Unique pattern for every letter A-Z)
+    // Celestial Star Constellation Background (Subtle ethereal stardust pattern for each letter)
     if (!isRemote && letter && cellSize >= 18) {
       ctx.save();
       const constellation = getConstellation(letter);
-      const lineColor = isGolden ? 'rgba(254, 240, 138, 0.30)' : 'rgba(125, 211, 252, 0.28)';
-      const starGlow = isGolden ? 'rgba(251, 191, 36, 0.85)' : 'rgba(56, 189, 248, 0.85)';
+      const lineColor = isGolden ? 'rgba(254, 240, 138, 0.20)' : 'rgba(186, 230, 253, 0.18)';
+      const starGlow = isGolden ? 'rgba(251, 191, 36, 0.70)' : 'rgba(56, 189, 248, 0.70)';
       const starFill = isGolden ? '#fef08a' : '#e0f2fe';
 
-      // Constellation Lines
+      // Soft Central Nebula Glow
+      const cx = x + cellSize / 2;
+      const cy = y + cellSize / 2;
+      const nebGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, tileW * 0.45);
+      nebGrad.addColorStop(0, isGolden ? 'rgba(245, 158, 11, 0.14)' : 'rgba(56, 189, 248, 0.12)');
+      nebGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = nebGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, tileW * 0.45, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Faint Starlight Constellation Lines
       ctx.strokeStyle = lineColor;
-      ctx.lineWidth = Math.max(0.75, cellSize * 0.018);
-      ctx.setLineDash([2, 1.5]);
+      ctx.lineWidth = Math.max(0.6, cellSize * 0.014);
+      ctx.setLineDash([2.5, 2]);
       for (const [i, j] of constellation.lines) {
         const s1 = constellation.stars[i];
         const s2 = constellation.stars[j];
@@ -238,14 +249,14 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       for (const star of constellation.stars) {
         const sx = x + pad + star.x * tileW;
         const sy = y + pad + star.y * tileW;
-        const starRad = Math.max(0.8, (cellSize * 0.03) * (star.size / 2));
+        const starRad = Math.max(0.7, (cellSize * 0.025) * (star.size / 2));
 
         if (star.isMajor && cellSize >= 22) {
-          // Major Star with Diamond Flare
-          const arm = starRad * 2.2;
+          // Major Star with Soft Diamond Flare
+          const arm = starRad * 1.9;
           ctx.save();
           ctx.shadowColor = starGlow;
-          ctx.shadowBlur = Math.max(3, cellSize * 0.08);
+          ctx.shadowBlur = Math.max(2.5, cellSize * 0.07);
           ctx.fillStyle = '#ffffff';
           ctx.beginPath();
           ctx.moveTo(sx, sy - arm);
@@ -256,10 +267,10 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
           ctx.fill();
           ctx.restore();
         } else {
-          // Normal Glowing Star Dot
+          // Normal Soft Star Dot
           ctx.save();
           ctx.shadowColor = starGlow;
-          ctx.shadowBlur = Math.max(2, cellSize * 0.06);
+          ctx.shadowBlur = Math.max(1.8, cellSize * 0.05);
           ctx.fillStyle = starFill;
           ctx.beginPath();
           ctx.arc(sx, sy, starRad, 0, Math.PI * 2);
