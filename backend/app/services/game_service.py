@@ -218,6 +218,12 @@ class GameService:
                 ,cards=normalized_cards if reveal_all or is_mine else None
             ))
 
+        bag = await bag_tiles(db, game_id)
+        tile_bag_counts: dict[str, int] = {}
+        for tile in bag:
+            letter = tile["letter"].upper()
+            tile_bag_counts[letter] = tile_bag_counts.get(letter, 0) + 1
+
         return GameStateResponse(
             game_id=game.id,
             status=game.status,
@@ -226,7 +232,8 @@ class GameService:
             consecutive_passes=game.consecutive_passes,
             board_state=normalized_board,
             players=player_outs,
-            tile_bag_count=await db.scalar(select(func.count()).select_from(GameTile).where(GameTile.game_id == game_id, GameTile.location == "BAG")) or 0,
+            tile_bag_count=len(bag),
+            tile_bag_counts=tile_bag_counts,
             turn_time_limit=room.turn_time_limit if room else None,
             turn_started_at=turn_started_at,
             max_turns=game.max_turns,
