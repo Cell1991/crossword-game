@@ -8,7 +8,7 @@ DEFAULT_LETTER_VALUES: dict[str, int] = {
     "K": 5, "L": 1, "M": 3, "N": 1, "O": 1,
     "P": 3, "Q": 10, "R": 1, "S": 1, "T": 1,
     "U": 1, "V": 4, "W": 4, "X": 8, "Y": 4,
-    "Z": 10
+    "Z": 10, "BLANK": 0
 }
 
 DEFAULT_LETTER_FREQUENCIES: dict[str, int] = {
@@ -17,7 +17,7 @@ DEFAULT_LETTER_FREQUENCIES: dict[str, int] = {
     "K": 1, "L": 4, "M": 2, "N": 6, "O": 8,
     "P": 2, "Q": 1, "R": 6, "S": 4, "T": 6,
     "U": 4, "V": 2, "W": 2, "X": 1, "Y": 2,
-    "Z": 1
+    "Z": 1, "BLANK": 2
 }
 
 class NotEnoughTilesInBag(ValueError):
