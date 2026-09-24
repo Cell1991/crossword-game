@@ -30,11 +30,11 @@ export const ConstellationGraphic: React.FC<ConstellationGraphicProps> = ({
 }) => {
   const data = useMemo(() => getConstellationData(letter), [letter]);
 
-  // Colour palette — refined gold for confirmed/exchange tiles, cyan for temporary/rack tiles
-  const lineColor  = isGolden ? 'rgba(254, 240, 138, 0.18)' : 'rgba(147, 220, 252, 0.22)';
-  const glowColor  = isGolden ? 'rgba(245, 158, 11, 0.45)'  : 'rgba(56,  189, 248, 0.65)';
-  const coreColor  = isGolden ? 'rgba(254, 243, 199, 0.75)' : '#e0f2fe';
-  const burstColor = isGolden ? 'rgba(253, 230, 138, 0.75)' : '#bae6fd';
+  // Colour palette — faint translucent starlight for golden tiles, crisp celestial cyan for blue tiles
+  const lineColor  = isGolden ? 'rgba(255, 255, 255, 0.12)' : 'rgba(147, 220, 252, 0.22)';
+  const glowColor  = isGolden ? 'rgba(254, 240, 138, 0.20)' : 'rgba(56,  189, 248, 0.65)';
+  const coreColor  = isGolden ? 'rgba(255, 255, 255, 0.45)' : '#e0f2fe';
+  const burstColor = isGolden ? 'rgba(255, 255, 255, 0.50)' : '#bae6fd';
   const filterId   = `cg-glow-${isGolden ? 'g' : 'b'}`;
 
   return (
@@ -89,7 +89,7 @@ export const ConstellationGraphic: React.FC<ConstellationGraphicProps> = ({
             cy={speck.y * 100}
             r={speck.r}
             fill={coreColor}
-            opacity={speck.opacity * (isGolden ? 0.35 : 0.55)}
+            opacity={speck.opacity * (isGolden ? 0.16 : 0.55)}
           />
         ))}
 
