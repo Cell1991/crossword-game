@@ -20,6 +20,7 @@ class GameStateResponse(BaseModel):
     board_state: dict[str, Any]  # Sparse {"r_c": {...}}
     players: list[PlayerOut]
     tile_bag_count: int
+    tile_bag_counts: dict[str, int]
     turn_time_limit: Optional[int] = None
     turn_started_at: Optional[datetime] = None
     max_turns: Optional[int] = None
