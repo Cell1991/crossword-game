@@ -284,13 +284,13 @@ async def test_mv09_seven_tile_word_gets_letter_bonuses_and_the_all_tiles_bonus(
     alice, bob = table.seats
     await table.set_tiles(racks={alice: "RETAINS"})
 
-    # Down from (6, 13): A covers the centre (9, 13) and S lands on the double-letter square (12, 13).
+    # Down from (6, 13): A covers the centre (9, 13); the center column is neutral.
     res = await table.place(alice, ROW - 3, COL, "RETAINS", down=True)
 
     assert res.status_code == 200, res.text
-    assert res.json()["score_earned"] == (1 + 1 + 1 + 1 + 1 + 1 + 1 * 2) + 50
+    assert res.json()["score_earned"] == (1 + 1 + 1 + 1 + 1 + 1 + 1) + 50
     await resolve_damage(table)
-    assert me(await table.state(), bob)["hp"] == 100 - 58
+    assert me(await table.state(), bob)["hp"] == 100 - 57
 
 
 async def test_mv10_playing_on_a_secret_power_square_awards_a_card(open_table):
@@ -334,8 +334,8 @@ async def test_mv12_each_word_score_includes_letter_bonuses(open_table):
 
     res = await table.place(alice, ROW - 3, COL, "RETAINS", down=True)
 
-    # S sits on the double-letter square (12, 13); the 50-point bonus is not part of the word.
-    assert [(w["word"], w["score"]) for w in res.json()["words_formed"]] == [("RETAINS", 8)]
+    # The center column is neutral; the 50-point bonus is not part of the word.
+    assert [(w["word"], w["score"]) for w in res.json()["words_formed"]] == [("RETAINS", 7)]
 
 
 # --- HP & knock-outs (HP) ------------------------------------------------------------------------
