@@ -202,11 +202,11 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     if (isRemote) {
       ctx.fillStyle = '#cbd5e1';
     } else if (isGolden) {
-      // Confirmed on board OR Valid temporary move → Deep Royal Amber Gold crystal gradient
+      // Confirmed on board OR Valid temporary move → Refined Celestial Astral Gold crystal gradient
       const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-      grad.addColorStop(0, '#d97706');
-      grad.addColorStop(0.45, '#854d0e');
-      grad.addColorStop(1, '#3f1a04');
+      grad.addColorStop(0, '#6b370e');
+      grad.addColorStop(0.45, '#331a06');
+      grad.addColorStop(1, '#170c03');
       ctx.fillStyle = grad;
     } else {
       // In-progress / unverified placement on board → natural navy gradient
@@ -231,31 +231,37 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       ctx.restore();
     }
 
-    // Celestial Star Constellation Background (Authentic star chart matching letter)
+    // Celestial Star Constellation Background (Authentic star chart matching letter with dynamic twinkling)
     if (!isRemote && letter && cellSize >= 18) {
       ctx.save();
       const constellation = getConstellationData(letter);
-      const lineColor = isGolden ? 'rgba(253, 224, 100, 0.28)' : 'rgba(147, 220, 252, 0.24)';
-      const starGlow = isGolden ? 'rgba(251, 191, 36, 0.80)' : 'rgba(56, 189, 248, 0.80)';
-      const starFill = isGolden ? '#fef3c7' : '#e0f2fe';
-      const burstFill = isGolden ? '#fde68a' : '#bae6fd';
+      const time = performance.now() / 1000;
 
-      // 1. Background stardust specks
-      for (const speck of constellation.dust) {
+      const lineColor = isGolden ? 'rgba(254, 240, 138, 0.18)' : 'rgba(147, 220, 252, 0.20)';
+      const starGlow = isGolden ? 'rgba(245, 158, 11, 0.40)' : 'rgba(56, 189, 248, 0.55)';
+      const starFill = isGolden ? 'rgba(254, 243, 199, 0.65)' : 'rgba(224, 242, 254, 0.80)';
+      const burstFill = isGolden ? 'rgba(253, 230, 138, 0.70)' : 'rgba(186, 230, 253, 0.85)';
+
+      // 1. Background stardust specks with gentle shimmer
+      for (let i = 0; i < constellation.dust.length; i++) {
+        const speck = constellation.dust[i];
         const dx = x + pad + speck.x * tileW;
         const dy = y + pad + speck.y * tileW;
-        const rad = Math.max(0.4, speck.r * (cellSize / 38));
+        const rad = Math.max(0.35, speck.r * (cellSize / 40));
+        const shimmer = 0.5 + 0.5 * Math.sin(time * 2.2 + speck.x * 7 + i * 1.7);
         ctx.fillStyle = starFill;
-        ctx.globalAlpha = speck.opacity * 0.65;
+        ctx.globalAlpha = speck.opacity * (isGolden ? 0.35 : 0.45) * (0.6 + 0.4 * shimmer);
         ctx.beginPath();
         ctx.arc(dx, dy, rad, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1.0;
 
-      // 2. Faint Starlight Constellation Lines (thin, solid)
+      // 2. Faint Starlight Constellation Lines (thin, solid, subtle breath)
+      const linePulse = 0.75 + 0.25 * Math.sin(time * 1.6 + row * 0.7 + col * 0.5);
       ctx.strokeStyle = lineColor;
-      ctx.lineWidth = Math.max(0.7, cellSize * 0.016);
+      ctx.globalAlpha = linePulse;
+      ctx.lineWidth = Math.max(0.65, cellSize * 0.015);
       for (const [i, j] of constellation.lines) {
         const s1 = constellation.stars[i];
         const s2 = constellation.stars[j];
@@ -265,38 +271,48 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         ctx.lineTo(x + pad + s2.x * tileW, y + pad + s2.y * tileW);
         ctx.stroke();
       }
+      ctx.globalAlpha = 1.0;
 
-      // 3. Constellation Stars
-      for (const star of constellation.stars) {
+      // 3. Constellation Stars with dynamic twinkle and breathing starburst
+      for (let idx = 0; idx < constellation.stars.length; idx++) {
+        const star = constellation.stars[idx];
         const sx = x + pad + star.x * tileW;
         const sy = y + pad + star.y * tileW;
         const scale = star.size ?? 1.0;
-        const baseRad = Math.max(0.9, (cellSize * 0.028) * scale);
+        const baseRad = Math.max(0.8, (cellSize * 0.024) * scale);
+
+        // Dynamic twinkle factor per individual star
+        const twinklePhase = time * (2.0 + (idx % 3) * 0.7) + star.x * 6.28 + (idx * 1.35);
+        const twinkle = 0.5 + 0.5 * Math.sin(twinklePhase);
+        const curScale = 0.72 + 0.45 * twinkle;
 
         if (star.isStarburst && cellSize >= 20) {
-          // 8-Pointed Celestial Starburst
-          const outer = baseRad * 2.2;
-          const inner = baseRad * 0.85;
+          // 8-Pointed Celestial Starburst (gentle breathing & twinkle)
+          const outer = baseRad * 2.0 * curScale;
+          const inner = baseRad * 0.8 * curScale;
           ctx.save();
           ctx.shadowColor = starGlow;
-          ctx.shadowBlur = Math.max(3, cellSize * 0.08);
+          ctx.shadowBlur = Math.max(2, cellSize * 0.05 * curScale);
           ctx.fillStyle = burstFill;
+          ctx.globalAlpha = (isGolden ? 0.70 : 0.85) * curScale;
           drawStarburst(ctx, sx, sy, outer, inner);
           ctx.fill();
-          // Bright center
+          // Bright core point
           ctx.fillStyle = '#ffffff';
+          ctx.globalAlpha = 0.90 * curScale;
           ctx.beginPath();
-          ctx.arc(sx, sy, Math.max(0.6, baseRad * 0.5), 0, Math.PI * 2);
+          ctx.arc(sx, sy, Math.max(0.45, baseRad * 0.4 * curScale), 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         } else {
-          // Regular Star (Round Dot + Halo)
+          // Regular Star (Round Dot + Soft Halo with twinkle)
           ctx.save();
           ctx.shadowColor = starGlow;
-          ctx.shadowBlur = Math.max(2, cellSize * 0.05);
+          ctx.shadowBlur = Math.max(1.5, cellSize * 0.035 * curScale);
           ctx.fillStyle = starFill;
+          ctx.globalAlpha = (isGolden ? 0.65 : 0.80) * curScale;
           ctx.beginPath();
-          ctx.arc(sx, sy, baseRad, 0, Math.PI * 2);
+          ctx.arc(sx, sy, baseRad * curScale, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         }
@@ -309,7 +325,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 1;
     } else if (isGolden) {
-      ctx.strokeStyle = isTemporary ? 'rgba(251, 191, 36, 0.85)' : 'rgba(245, 158, 11, 0.6)';
+      ctx.strokeStyle = isTemporary ? 'rgba(251, 191, 36, 0.85)' : 'rgba(217, 119, 6, 0.55)';
       ctx.lineWidth = isTemporary ? 1.8 : 1.2;
     } else {
       ctx.strokeStyle = 'rgba(96, 165, 250, 0.45)';
