@@ -43,6 +43,7 @@ export interface GameState {
   board_state: Record<string, BoardCell>;
   players: Player[];
   tile_bag_count: number;
+  tile_bag_counts: Record<string, number>;
   turn_time_limit: TurnTimeLimit;
   turn_started_at: string | null;
   max_turns: number | null;
