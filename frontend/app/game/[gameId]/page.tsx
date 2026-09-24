@@ -19,6 +19,7 @@ import { ConstellationGraphic } from '../../../components/effects/ConstellationG
 import { RightSidebar, MoveHistoryEntry } from '../../../components/game/RightSidebar';
 import { PowerCardBar } from '../../../components/game/PowerCardBar';
 import { DebugPanel } from '../../../components/debug/DebugPanel';
+import { BlankTilePickerModal } from '../../../components/game/BlankTilePickerModal';
 import {
   GameState,
   Tile,
@@ -76,6 +77,8 @@ export default function GamePage() {
   const [dragHoverCell, setDragHoverCell] = useState<{ row: number; col: number } | null>(null);
   const [boardViewport, setBoardViewport] = useState({ left: 0, top: 0, width: 0, height: 0 });
   const [rackViewport, setRackViewport] = useState({ left: 0, top: 0, width: 0, height: 0 });
+  const [blankPickerTarget, setBlankPickerTarget] = useState<{ tileId: string; row?: number; col?: number } | null>(null);
+  const [designatedBlankLetters, setDesignatedBlankLetters] = useState<Record<string, string>>({});
   const [timerNow, setTimerNow] = useState(() => Date.now());
   /** Server clock minus this device's clock. The timer runs on server time so every device agrees. */
   const clockOffsetRef = useRef(0);
@@ -297,22 +300,43 @@ export default function GamePage() {
       setSelectedTileId(null);
       setSelectedCell(targetCell);
     } else if (!occupiedByCommitted && !occupiedByPending) {
-      setTemporaryTiles(previous => [
-        ...previous.filter(tile => tile.tile_id !== session.tile.id),
-        {
-          row: targetCell.row,
-          col: targetCell.col,
-          tile_id: session.tile.id,
-          letter: session.tile.letter,
-          value: session.tile.value,
-        },
-      ]);
-      setSelectedTileId(null);
-      setSelectedCell(targetCell);
+      const isBlank = session.tile.letter.toUpperCase() === 'BLANK' || session.tile.letter === '?';
+      if (isBlank) {
+        const letter = designatedBlankLetters[session.tile.id];
+        if (!letter) {
+          setBlankPickerTarget({ tileId: session.tile.id, row: targetCell.row, col: targetCell.col });
+        } else {
+          setTemporaryTiles(previous => [
+            ...previous.filter(tile => tile.tile_id !== session.tile.id),
+            {
+              row: targetCell.row,
+              col: targetCell.col,
+              tile_id: session.tile.id,
+              letter,
+              value: 0,
+            },
+          ]);
+          setSelectedTileId(null);
+          setSelectedCell(targetCell);
+        }
+      } else {
+        setTemporaryTiles(previous => [
+          ...previous.filter(tile => tile.tile_id !== session.tile.id),
+          {
+            row: targetCell.row,
+            col: targetCell.col,
+            tile_id: session.tile.id,
+            letter: session.tile.letter,
+            value: session.tile.value,
+          },
+        ]);
+        setSelectedTileId(null);
+        setSelectedCell(targetCell);
+      }
     }
     setDragSession(null);
     setDragHoverCell(null);
-  }, [boardState, boardViewport, canStageMove, dragHoverCell, dragSession, rackViewport, screenToCell, seatReturningTile, temporaryTiles]);
+  }, [boardState, boardViewport, canStageMove, designatedBlankLetters, dragHoverCell, dragSession, rackViewport, screenToCell, seatReturningTile, temporaryTiles]);
 
   const cancelDrag = useCallback(() => {
     setDragSession(null);
@@ -697,6 +721,30 @@ export default function GamePage() {
     }
   }, [cardBusy, gameId, loadGameState, myPlayerId]);
 
+  const handleBlankTileSelect = useCallback((chosenLetter: string) => {
+    if (!blankPickerTarget) return;
+    const { tileId, row, col } = blankPickerTarget;
+    const upper = chosenLetter.toUpperCase();
+    setDesignatedBlankLetters(prev => ({ ...prev, [tileId]: upper }));
+    if (row !== undefined && col !== undefined) {
+      setTemporaryTiles(previous => [
+        ...previous.filter(tile => tile.tile_id !== tileId && !(tile.row === row && tile.col === col)),
+        {
+          row,
+          col,
+          tile_id: tileId,
+          letter: upper,
+          value: 0,
+        },
+      ]);
+      setSelectedTileId(null);
+      setSelectedCell({ row, col });
+    } else {
+      setSelectedTileId(tileId);
+    }
+    setBlankPickerTarget(null);
+  }, [blankPickerTarget]);
+
   // Handle cell click on board
   const handleCellClick = useCallback((row: number, col: number) => {
     if (armedCard) {
@@ -731,19 +779,41 @@ export default function GamePage() {
     const alreadyUsed = temporaryTiles.find(t => t.tile_id === selectedTileId);
     if (alreadyUsed) return;
 
-    setTemporaryTiles(prev => [
-      ...prev,
-      { row, col, tile_id: tile.id, letter: tile.letter, value: tile.value },
-    ]);
+    const isBlank = tile.letter.toUpperCase() === 'BLANK' || tile.letter === '?';
+    if (isBlank) {
+      const designatedLetter = designatedBlankLetters[tile.id];
+      if (!designatedLetter) {
+        setBlankPickerTarget({ tileId: tile.id, row, col });
+        return;
+      }
+      setTemporaryTiles(prev => [
+        ...prev,
+        { row, col, tile_id: tile.id, letter: designatedLetter, value: 0 },
+      ]);
+    } else {
+      setTemporaryTiles(prev => [
+        ...prev,
+        { row, col, tile_id: tile.id, letter: tile.letter, value: tile.value },
+      ]);
+    }
     setSelectedTileId(null);
     setSelectedCell({ row, col });
-  }, [armedCard, boardState, canStageMove, cardBusy, gameId, loadGameState, myPlayerId, selectedTileId, myRack, temporaryTiles]);
+  }, [armedCard, boardState, canStageMove, cardBusy, designatedBlankLetters, gameId, loadGameState, myPlayerId, selectedTileId, myRack, temporaryTiles]);
 
   const handleSelectTile = (tile: Tile) => {
     if (exchangeTileIds !== null) {
       setExchangeTileIds(prev => prev && (
         prev.includes(tile.id) ? prev.filter(id => id !== tile.id) : [...prev, tile.id]
       ));
+      return;
+    }
+    const isBlank = tile.letter.toUpperCase() === 'BLANK' || tile.letter === '?';
+    if (isBlank) {
+      if (selectedTileId === tile.id) {
+        setSelectedTileId(null);
+      } else {
+        setBlankPickerTarget({ tileId: tile.id });
+      }
       return;
     }
     setSelectedTileId(prev => prev === tile.id ? null : tile.id);
@@ -774,6 +844,7 @@ export default function GamePage() {
     setTemporaryTiles([]);
     setSelectedTileId(null);
     setSelectedCell(null);
+    setDesignatedBlankLetters({});
   };
 
   const handleCollectPendingTile = useCallback((tileId: string) => {
@@ -799,6 +870,7 @@ export default function GamePage() {
       setTemporaryTiles([]);
       setSelectedTileId(null);
       setSelectedCell(null);
+      setDesignatedBlankLetters({});
       loadGameState();
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Failed to commit move');
@@ -1000,9 +1072,17 @@ export default function GamePage() {
               <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
               {/* Unique Letter Constellation Star Cluster */}
               <ConstellationGraphic letter={dragSession.tile.letter} />
-              <span className="relative z-20 text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                {dragSession.tile.letter}
-              </span>
+              {dragSession.tile.letter.toUpperCase() === 'BLANK' || dragSession.tile.letter === '?' ? (
+                <div className="relative z-20 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-8 h-8 text-cyan-300 drop-shadow-[0_0_14px_rgba(56,189,248,0.95)] animate-pulse" fill="currentColor">
+                    <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+                  </svg>
+                </div>
+              ) : (
+                <span className="relative z-20 text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                  {dragSession.tile.letter}
+                </span>
+              )}
               <span className="absolute z-20 bottom-1 right-1.5 text-[12px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">
                 {dragSession.tile.value}
               </span>
@@ -1100,6 +1180,13 @@ export default function GamePage() {
         </>
         )}
       </div>
+
+      {/* Wildcard Blank Tile Letter Picker Modal */}
+      <BlankTilePickerModal
+        isOpen={blankPickerTarget !== null}
+        onSelect={handleBlankTileSelect}
+        onClose={() => setBlankPickerTarget(null)}
+      />
 
       {isDebug && (
         <DebugPanel

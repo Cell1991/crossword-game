@@ -341,19 +341,36 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     const effectiveValue = value * multiplier;
 
     if (showLetter && cellSize >= 12) {
-      // White text on both navy and royal gold tiles for max clarity and texture with drop shadow
+      const isBlank = letter.toUpperCase() === 'BLANK' || letter === '?';
       ctx.save();
-      ctx.shadowColor = isRemote ? 'transparent' : 'rgba(0, 0, 0, 0.85)';
-      ctx.shadowBlur = Math.max(2, cellSize * 0.08);
-      ctx.shadowOffsetY = 1;
-      ctx.fillStyle = isRemote ? '#0f172a' : '#ffffff';
-      const fontSize = Math.max(12, Math.round(cellSize * 0.70));
-      ctx.font = `${fontSize}px 'QuakDuck', sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const textX = Math.round(x + cellSize / 2);
-      const textY = Math.round(y + cellSize / 2 - (cellSize >= 20 ? 1 : 0));
-      ctx.fillText(letter, textX, textY);
+      if (isBlank) {
+        // Draw centered glowing wildcard star
+        const cx = x + cellSize / 2;
+        const cy = y + cellSize / 2;
+        const starSize = Math.max(6, cellSize * 0.28);
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = Math.max(4, cellSize * 0.12);
+        ctx.fillStyle = '#bae6fd';
+        drawStarburst(ctx, cx, cy, starSize, starSize * 0.4);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(cx, cy, starSize * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // White text on both navy and royal gold tiles for max clarity and texture with drop shadow
+        ctx.shadowColor = isRemote ? 'transparent' : 'rgba(0, 0, 0, 0.85)';
+        ctx.shadowBlur = Math.max(2, cellSize * 0.08);
+        ctx.shadowOffsetY = 1;
+        ctx.fillStyle = isRemote ? '#0f172a' : '#ffffff';
+        const fontSize = Math.max(12, Math.round(cellSize * 0.70));
+        ctx.font = `${fontSize}px 'QuakDuck', sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const textX = Math.round(x + cellSize / 2);
+        const textY = Math.round(y + cellSize / 2 - (cellSize >= 20 ? 1 : 0));
+        ctx.fillText(letter, textX, textY);
+      }
       ctx.restore();
 
       if (cellSize >= 20) {

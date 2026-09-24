@@ -24,26 +24,70 @@ class MoveService:
 
     @classmethod
     def _verify_tile_ownership(cls, player_rack: list[dict[str, Any]], placed_tiles: list[PlacedTileInput]) -> tuple[bool, str | None]:
-        rack_counts: dict[str, int] = {}
-        for t in player_rack:
-            l = t["letter"].upper()
-            rack_counts[l] = rack_counts.get(l, 0) + 1
-
+        available = list(player_rack)
         for pt in placed_tiles:
-            l = pt.letter.upper()
-            if rack_counts.get(l, 0) <= 0:
-                return False, f"Tile '{l}' is not in your rack or has already been placed"
-            rack_counts[l] -= 1
+            matched_idx = None
+            # 1. Match by tile_id if given
+            if pt.tile_id:
+                for idx, t in enumerate(available):
+                    t_id = t.get("id") or t.get("tile_id")
+                    if t_id == pt.tile_id:
+                        if t.get("letter", "").upper() == "BLANK" or t.get("letter", "").upper() == pt.letter.upper():
+                            matched_idx = idx
+                            break
+
+            # 2. Match exact letter if tile_id didn't match
+            if matched_idx is None:
+                l = pt.letter.upper()
+                for idx, t in enumerate(available):
+                    if t.get("letter", "").upper() == l:
+                        matched_idx = idx
+                        break
+
+            # 3. Match any available BLANK tile as wildcard fallback
+            if matched_idx is None:
+                for idx, t in enumerate(available):
+                    if t.get("letter", "").upper() == "BLANK":
+                        matched_idx = idx
+                        break
+
+            if matched_idx is None:
+                return False, f"Tile '{pt.letter}' is not in your rack or has already been placed"
+
+            available.pop(matched_idx)
 
         return True, None
 
     @staticmethod
     def _apply_rack_values(player_rack: list[dict[str, Any]], placed_tiles: list[PlacedTileInput]) -> None:
         """Score tiles by the server's letter values, overwriting whatever `value` the client sent."""
-        values = {tile["letter"].upper(): tile["value"] for tile in player_rack}
+        rack_copy = list(player_rack)
         for tile in placed_tiles:
             tile.letter = tile.letter.upper()
-            tile.value = values[tile.letter]
+            matched = None
+            if tile.tile_id:
+                for i, r in enumerate(rack_copy):
+                    r_id = r.get("id") or r.get("tile_id")
+                    if r_id == tile.tile_id:
+                        matched = rack_copy.pop(i)
+                        break
+            if not matched:
+                for i, r in enumerate(rack_copy):
+                    if r.get("letter", "").upper() == tile.letter:
+                        matched = rack_copy.pop(i)
+                        break
+            if not matched:
+                for i, r in enumerate(rack_copy):
+                    if r.get("letter", "").upper() == "BLANK":
+                        matched = rack_copy.pop(i)
+                        break
+
+            if matched and matched.get("letter", "").upper() == "BLANK":
+                tile.value = 0
+            elif matched:
+                tile.value = matched.get("value", 1)
+            else:
+                tile.value = 0
 
     @staticmethod
     def _words_formed(words: list[Any], breakdown: list[dict[str, Any]]) -> list[WordFormed]:
@@ -183,10 +227,26 @@ class MoveService:
         # Remove placed tiles from player rack
         remaining_rack = list(normalized_rack)
         for pt in placed_tiles:
-            for i, r_tile in enumerate(remaining_rack):
-                if r_tile["letter"].upper() == pt.letter.upper():
-                    remaining_rack.pop(i)
-                    break
+            removed = False
+            if pt.tile_id:
+                for i, r_tile in enumerate(remaining_rack):
+                    r_id = r_tile.get("id") or r_tile.get("tile_id")
+                    if r_id == pt.tile_id:
+                        remaining_rack.pop(i)
+                        removed = True
+                        break
+            if not removed:
+                for i, r_tile in enumerate(remaining_rack):
+                    if r_tile.get("letter", "").upper() == pt.letter.upper():
+                        remaining_rack.pop(i)
+                        removed = True
+                        break
+            if not removed:
+                for i, r_tile in enumerate(remaining_rack):
+                    if r_tile.get("letter", "").upper() == "BLANK":
+                        remaining_rack.pop(i)
+                        removed = True
+                        break
 
         # Draw replacement tiles from tile bag
         tiles_needed = len(placed_tiles)

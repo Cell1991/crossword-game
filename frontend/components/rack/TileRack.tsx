@@ -180,7 +180,15 @@ export const TileRack: React.FC<TileRackProps> = ({
           <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
           {/* Letter Celestial Constellation */}
           <ConstellationGraphic letter={draggedTile.letter} />
-          <span className="relative z-20 text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{draggedTile.letter}</span>
+          {draggedTile.letter.toUpperCase() === 'BLANK' || draggedTile.letter === '?' ? (
+            <div className="relative z-20 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-8 h-8 text-cyan-300 drop-shadow-[0_0_14px_rgba(56,189,248,0.95)] animate-pulse" fill="currentColor">
+                <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+              </svg>
+            </div>
+          ) : (
+            <span className="relative z-20 text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{draggedTile.letter}</span>
+          )}
           <span className="absolute z-20 bottom-1 right-1.5 text-[12px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">{draggedTile.value}</span>
         </div>,
         document.body
@@ -329,10 +337,18 @@ export const TileRack: React.FC<TileRackProps> = ({
                 className="opacity-75 group-hover:opacity-95 transition-opacity"
               />
 
-              {/* High-Contrast Prominent Letter */}
-              <span className="relative z-20 text-[30px] sm:text-[36px] font-normal text-white leading-none font-quakduck drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                {tile.letter}
-              </span>
+              {/* High-Contrast Prominent Letter OR Cosmic Wildcard Star */}
+              {tile.letter.toUpperCase() === 'BLANK' || tile.letter === '?' ? (
+                <div className="relative z-20 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-300 drop-shadow-[0_0_12px_rgba(56,189,248,0.95)] animate-pulse" fill="currentColor">
+                    <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+                  </svg>
+                </div>
+              ) : (
+                <span className="relative z-20 text-[30px] sm:text-[36px] font-normal text-white leading-none font-quakduck drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                  {tile.letter}
+                </span>
+              )}
 
               {/* Glowing Value Badge */}
               <span className="absolute z-20 bottom-1 right-1.5 text-[11px] sm:text-[13px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">
