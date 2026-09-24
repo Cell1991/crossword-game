@@ -44,7 +44,7 @@ class Game(Base):
     # Sparse board state: {"r_c": {"row": r, "col": c, "letter": "A", "value": 1, "player_id": "...", "turn": 1}}
     board_state = Column(JSON, default=dict, nullable=False)
     tile_bag = Column(JSON, default=list, nullable=False)
-    banned_letter = Column(String(1), nullable=True)
+    banned_letter = Column(String(10), nullable=True)
     banned_until_turn = Column(Integer, nullable=True)
     banned_by_player_id = Column(String(36), nullable=True)
     frozen_tile = Column(JSON, nullable=True)  # {"row", "col", "set_by", "expires_turn"}
@@ -70,7 +70,7 @@ class GamePlayer(Base):
     hp = Column(Integer, default=100, nullable=False)
     rack = Column(JSON, default=list, nullable=False)  # [{"id": "...", "letter": "A", "value": 1}]
     cards = Column(JSON, default=list, nullable=False)
-    banned_letter = Column(String(1), nullable=True)
+    banned_letter = Column(String(10), nullable=True)
     banned_until_turn = Column(Integer, nullable=True)
     turn_order = Column(Integer, default=0, nullable=False)
     connection_status = Column(String(32), default="ONLINE", nullable=False)  # ONLINE, DISCONNECTED, OFFLINE
@@ -106,7 +106,7 @@ class BoardCell(Base):
     game_id = Column(String(36), ForeignKey("games.id", ondelete="CASCADE"), nullable=False, index=True)
     row = Column(Integer, nullable=False)
     col = Column(Integer, nullable=False)
-    letter = Column(String(1), nullable=False)
+    letter = Column(String(10), nullable=False)
     value = Column(Integer, nullable=False)
     player_id = Column(String(36), ForeignKey("game_players.id"), nullable=False)
     turn_number = Column(Integer, nullable=False)
@@ -121,7 +121,7 @@ class GameTile(Base):
     player_id = Column(String(36), ForeignKey("game_players.id", ondelete="CASCADE"), nullable=True, index=True)
     location = Column(String(8), nullable=False)  # BAG or RACK
     position = Column(Integer, nullable=False)
-    letter = Column(String(1), nullable=False)
+    letter = Column(String(10), nullable=False)
     value = Column(Integer, nullable=False)
 
 

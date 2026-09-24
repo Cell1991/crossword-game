@@ -118,7 +118,7 @@ def _upgrade_existing_schema(connection):
     inspector = inspect(connection)
     upgrades = {
         "games": {
-            "banned_letter": "VARCHAR(1)",
+            "banned_letter": "VARCHAR(10)",
             "banned_until_turn": "INTEGER",
             "banned_by_player_id": "VARCHAR(36)",
             "turn_started_at": "TIMESTAMP",
@@ -134,7 +134,7 @@ def _upgrade_existing_schema(connection):
         "game_players": {
             "hp": "INTEGER DEFAULT 100 NOT NULL",
             "cards": "JSON",
-            "banned_letter": "VARCHAR(1)",
+            "banned_letter": "VARCHAR(10)",
             "banned_until_turn": "INTEGER",
         },
     }
@@ -146,6 +146,18 @@ def _upgrade_existing_schema(connection):
                 connection.execute(text(
                     f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_definition}"
                 ))
+
+    # Expand letter column widths to support BLANK / multi-character values
+    for stmt in [
+        "ALTER TABLE game_tiles ALTER COLUMN letter TYPE VARCHAR(10)",
+        "ALTER TABLE board_cells ALTER COLUMN letter TYPE VARCHAR(10)",
+        "ALTER TABLE games ALTER COLUMN banned_letter TYPE VARCHAR(10)",
+        "ALTER TABLE game_players ALTER COLUMN banned_letter TYPE VARCHAR(10)",
+    ]:
+        try:
+            connection.execute(text(stmt))
+        except Exception:
+            pass
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Dependency for obtaining async DB session."""
