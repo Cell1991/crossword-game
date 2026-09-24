@@ -132,7 +132,7 @@ async def test_ex11_player_can_exchange_the_whole_rack(open_table):
     new_rack = (await table.player(alice))["rack"]
     assert len(new_rack) == 7
     assert not set(old_ids) & {tile["id"] for tile in new_rack}
-    assert (await table.state())["tile_bag_count"] == 98 - 2 * 7
+    assert (await table.state())["tile_bag_count"] == 100 - 2 * 7
 
 
 @pytest.mark.asyncio
