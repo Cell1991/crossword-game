@@ -72,8 +72,7 @@ export type TurnTimeLimit = null | 30 | 60 | 90 | 120;
 
 /** Mirrors backend MoveService.CARD_TYPES (backend/app/services/move_service.py). */
 export const CARD_TYPES = [
-  'DRAW_TILE', 'HEAL', 'STEAL_TILE', 'SPY_SWAP', 'DESTROY_TILE', 'BAN_LETTER',
-  'HINT', 'FREE_EXCHANGE', 'MOVE_HEAL', 'DOUBLE_DAMAGE', 'SHIELD', 'FREEZE_TILE',
+  'HINT', 'SPY_SWAP', 'DESTROY_TILE', 'HEAL', 'DOUBLE_DAMAGE', 'SHIELD', 'FREEZE_TILE',
 ] as const;
 
 export interface WordFormed {
@@ -98,6 +97,7 @@ export interface CommitMoveResponse {
   next_player_id?: string | null;
   game_over: boolean;
   winner_id?: string | null;
+  card_awarded?: string | null;
 }
 
 export interface CreateRoomResponse {
@@ -154,7 +154,8 @@ export type WebSocketEventType =
   | 'ERROR'
   | 'PLACEMENT_PREVIEW'
   | 'EFFECT_PENDING'
-  | 'EFFECT_RESOLVED';
+  | 'EFFECT_RESOLVED'
+  | 'CARD_USED';
 
 export interface WebSocketEvent {
   type: WebSocketEventType;
@@ -168,6 +169,8 @@ export interface WebSocketEvent {
     count?: number;
     /** GAME_ENDED */
     winnerId?: string | null;
+    /** MOVE_COMMITTED: the private-card reveal animation follows this event. */
+    cardAwarded?: string | null;
   };
   timestamp: string;
 }
