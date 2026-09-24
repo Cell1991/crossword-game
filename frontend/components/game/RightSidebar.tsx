@@ -15,9 +15,21 @@ import {
   ChevronUp, 
   Layers,
   X,
+  Eye,
+  Heart,
+  Repeat2,
+  RotateCcw,
+  Shield,
+  Snowflake,
 } from 'lucide-react';
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const CARD_USE_ICONS: Record<string, React.ReactNode> = {
+  HINT: <Eye className="h-3.5 w-3.5 text-yellow-300" />, SPY_SWAP: <Repeat2 className="h-3.5 w-3.5 text-cyan-300" />,
+  DESTROY_TILE: <RotateCcw className="h-3.5 w-3.5 text-rose-300" />, HEAL: <Heart className="h-3.5 w-3.5 fill-rose-400 text-rose-200" />,
+  DOUBLE_DAMAGE: <span className="text-xs font-black text-amber-300">×2</span>,
+  SHIELD: <Shield className="h-3.5 w-3.5 text-sky-200" />, FREEZE_TILE: <Snowflake className="h-3.5 w-3.5 text-sky-300" />,
+};
 
 export interface MoveHistoryEntry {
   id: string;
@@ -34,6 +46,7 @@ interface RightSidebarProps {
   tileBagCount: number;
   tileBagCounts: Record<string, number>;
   moveHistory?: MoveHistoryEntry[];
+  cardUseEffects?: Record<string, string>;
   // Zoom & Map Controls
   onZoomIn: () => void;
   onZoomOut: () => void;
@@ -50,6 +63,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   tileBagCount,
   tileBagCounts,
   moveHistory = [],
+  cardUseEffects = {},
   onZoomIn,
   onZoomOut,
   onReset,
@@ -221,6 +235,14 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                         </span>
                         {player.is_host && (
                           <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0 drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]" />
+                        )}
+                        {cardUseEffects[player.id] && (
+                          <span
+                            className="animate-pulse rounded-full border border-cyan-300/80 bg-cyan-400/20 px-1.5 py-0.5 text-sm leading-none shadow-[0_0_14px_rgba(34,211,238,0.85)]"
+                            title={`${cardUseEffects[player.id]} used`}
+                          >
+                            {CARD_USE_ICONS[cardUseEffects[player.id]] ?? '✨'}
+                          </span>
                         )}
                         {isCurrent && !isDead && (
                           <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#38bdf8] animate-pulse" />
