@@ -9,17 +9,21 @@ export const CENTER_COL = 13;
 
 const cellKeys = (cells: [number, number][]) => new Set(cells.map(([row, col]) => `${row}_${col}`));
 
-export const TRIPLE_LETTER = cellKeys([
-  [0, 13], [1, 2], [1, 24], [8, 0],
-  [8, 26], [10, 0], [10, 26],
-  [17, 2], [17, 24], [18, 13],
-]);
-
 export const DOUBLE_LETTER = cellKeys([
   [3, 9], [3, 17], [15, 9], [15, 17],
   [5, 13], [13, 13], [6, 4], [6, 22],
   [12, 4], [12, 22], [8, 7], [8, 19],
   [10, 7], [10, 19],
+  // Center cluster from the reference layout: four diagonal 2L cells around the star.
+  [8, 12], [8, 14], [10, 12], [10, 14],
+]);
+
+export const TRIPLE_LETTER = cellKeys([
+  [0, 13], [1, 2], [1, 24], [8, 0],
+  [8, 26], [10, 0], [10, 26],
+  [17, 2], [17, 24], [18, 13],
+  // Requested side 3L anchors, one more cell away from the center star.
+  [9, 10], [9, 16],
 ]);
 
 // Lightning tiles replace word multipliers in this build and stay symmetric around the center star.
