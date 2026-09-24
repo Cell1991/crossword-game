@@ -218,9 +218,10 @@ def only_words(*words: str) -> DictionaryService:
 def test_en01_tile_bag_matches_the_letter_distribution():
     bag = TileService.create_tile_bag()
 
-    assert len(bag) == 98
+    assert len(bag) == 100
     assert Counter(tile["letter"] for tile in bag) == Counter(DEFAULT_LETTER_FREQUENCIES)
     assert all(tile["value"] == DEFAULT_LETTER_VALUES[tile["letter"]] for tile in bag)
+    assert Counter(tile["letter"] for tile in bag)["BLANK"] == 2
     assert len({tile["id"] for tile in bag}) == len(bag)
 
 
