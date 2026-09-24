@@ -2,22 +2,20 @@
 
 import React, { useState } from 'react';
 import { Player } from '../../lib/types';
+import { Eye, Heart, Repeat2, RotateCcw, Shield, Snowflake } from 'lucide-react';
 
-type SimpleCard = 'HINT' | 'FREE_EXCHANGE' | 'MOVE_HEAL' | 'DRAW_TILE' | 'HEAL';
-type TargetedCard = 'DOUBLE_DAMAGE' | 'STEAL_TILE';
+type SimpleCard = 'HINT' | 'HEAL' | 'SHIELD';
+type TargetedCard = 'DOUBLE_DAMAGE' | 'SPY_SWAP';
 type BoardCard = 'FREEZE_TILE' | 'DESTROY_TILE';
 
-const CARD_META: Record<string, { icon: string; label: string; ownTurnOnly: boolean }> = {
-  HINT: { icon: '💡', label: 'Hint', ownTurnOnly: true },
-  FREE_EXCHANGE: { icon: '♻️', label: 'Free Exchange', ownTurnOnly: false },
-  MOVE_HEAL: { icon: '❤️‍🩹', label: 'Heal', ownTurnOnly: true },
-  DOUBLE_DAMAGE: { icon: '⚔️', label: 'Double Damage', ownTurnOnly: true },
-  FREEZE_TILE: { icon: '❄️', label: 'Freeze', ownTurnOnly: true },
-  DRAW_TILE: { icon: '🎴', label: 'Draw Tile', ownTurnOnly: false },
-  HEAL: { icon: '💗', label: 'Heal (Rack)', ownTurnOnly: false },
-  STEAL_TILE: { icon: '🕵️', label: 'Steal Tile', ownTurnOnly: false },
-  DESTROY_TILE: { icon: '💥', label: 'Destroy Tile', ownTurnOnly: false },
-  BAN_LETTER: { icon: '🚫', label: 'Ban Letter', ownTurnOnly: false },
+const CARD_META: Record<string, { icon: React.ReactNode; label: string; ownTurnOnly: boolean }> = {
+  HINT: { icon: <Eye className="h-4 w-4 text-yellow-300" />, label: 'Spell Word', ownTurnOnly: true },
+  SPY_SWAP: { icon: <Repeat2 className="h-4 w-4 text-cyan-300" />, label: 'Swap Word', ownTurnOnly: false },
+  DESTROY_TILE: { icon: <RotateCcw className="h-4 w-4 text-rose-300" />, label: 'Clear Word', ownTurnOnly: false },
+  HEAL: { icon: <Heart className="h-4 w-4 fill-rose-400 text-rose-200" />, label: 'Heal', ownTurnOnly: false },
+  DOUBLE_DAMAGE: { icon: '×2', label: 'Word x2', ownTurnOnly: true },
+  SHIELD: { icon: <Shield className="h-4 w-4 text-sky-200" />, label: 'Shield', ownTurnOnly: false },
+  FREEZE_TILE: { icon: <Snowflake className="h-4 w-4 text-sky-300" />, label: 'Freeze Word', ownTurnOnly: true },
 };
 
 interface PowerCardBarProps {
@@ -50,6 +48,7 @@ export const PowerCardBar: React.FC<PowerCardBarProps> = ({
   const [pickingTargetFor, setPickingTargetFor] = useState<TargetedCard | null>(null);
   const [pickingLetter, setPickingLetter] = useState(false);
   const [letterDraft, setLetterDraft] = useState('');
+  const [confirmingCard, setConfirmingCard] = useState<string | null>(null);
 
   const counts = new Map<string, number>();
   for (const card of cards) {
@@ -61,7 +60,7 @@ export const PowerCardBar: React.FC<PowerCardBarProps> = ({
     const meta = CARD_META[armedCard];
     return (
       <div className="flex items-center gap-2 rounded-xl border border-cyan-400/50 bg-cyan-950/60 px-3 py-1.5 text-xs text-cyan-200">
-        <span>{meta.icon} Pick a board tile{armedCard === 'DESTROY_TILE' ? ' to destroy' : ' to freeze'}</span>
+        <span className="flex items-center gap-1.5">{meta.icon} Pick a board tile{armedCard === 'DESTROY_TILE' ? ' to destroy' : ' to freeze'}</span>
         <button
           onClick={onCancelArm}
           className="rounded-full border border-cyan-300/40 px-2 py-0.5 text-[11px] hover:bg-cyan-900"
@@ -76,7 +75,7 @@ export const PowerCardBar: React.FC<PowerCardBarProps> = ({
     const meta = CARD_META[pickingTargetFor];
     return (
       <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-amber-400/50 bg-amber-950/60 px-3 py-1.5 text-xs text-amber-200">
-        <span>{meta.icon} Target:</span>
+        <span className="flex items-center gap-1.5">{meta.icon} Target:</span>
         {opponents.map(opponent => (
           <button
             key={opponent.id}
@@ -130,6 +129,36 @@ export const PowerCardBar: React.FC<PowerCardBarProps> = ({
     );
   }
 
+  if (confirmingCard) {
+    const meta = CARD_META[confirmingCard];
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-cyan-400/60 bg-slate-950/90 px-3 py-1.5 text-xs text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.2)]">
+        <span className="flex items-center">{meta.icon}</span>
+        <span>Use {meta.label}?</span>
+        <button
+          disabled={busy}
+          onClick={() => {
+            const card = confirmingCard;
+            setConfirmingCard(null);
+            if (card === 'FREEZE_TILE' || card === 'DESTROY_TILE') onArmBoardCard(card as BoardCard);
+              else if (card === 'DOUBLE_DAMAGE' || card === 'SPY_SWAP') setPickingTargetFor(card as TargetedCard);
+            else if (card === 'BAN_LETTER') setPickingLetter(true);
+            else onUseSimple(card as SimpleCard);
+          }}
+          className="rounded-full bg-cyan-500 px-3 py-1 font-bold text-slate-950 hover:bg-cyan-300 disabled:opacity-50"
+        >
+          Use
+        </button>
+        <button
+          onClick={() => setConfirmingCard(null)}
+          className="rounded-full border border-slate-500/60 px-3 py-1 text-slate-300 hover:bg-slate-800"
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {[...counts.entries()].map(([card, count]) => {
@@ -141,14 +170,11 @@ export const PowerCardBar: React.FC<PowerCardBarProps> = ({
             disabled={disabled}
             title={meta.ownTurnOnly ? 'Use on your turn' : undefined}
             onClick={() => {
-              if (card === 'FREEZE_TILE' || card === 'DESTROY_TILE') onArmBoardCard(card);
-              else if (card === 'DOUBLE_DAMAGE' || card === 'STEAL_TILE') setPickingTargetFor(card);
-              else if (card === 'BAN_LETTER') setPickingLetter(true);
-              else onUseSimple(card as SimpleCard);
+              setConfirmingCard(card);
             }}
             className="flex items-center gap-1 rounded-full border border-indigo-400/40 bg-indigo-950/60 px-2.5 py-1 text-xs font-semibold text-indigo-100 hover:bg-indigo-900 disabled:opacity-40 disabled:hover:bg-indigo-950/60"
           >
-            <span>{meta.icon}</span>
+            <span className="flex items-center">{meta.icon}</span>
             <span>{meta.label}</span>
             {count > 1 && <span className="text-indigo-300/70">×{count}</span>}
           </button>
