@@ -108,7 +108,7 @@ async def test_lb07_start_deals_seven_tiles_and_hides_other_racks(open_table, na
 
     assert (state["status"], state["current_player_id"], state["turn_number"]) == ("PLAYING", host.id, 1)
     assert state["max_turns"] == max_turns
-    assert state["tile_bag_count"] == 98 - 7 * len(names)
+    assert state["tile_bag_count"] == 100 - 7 * len(names)
     assert all(p["rack_count"] == 7 for p in state["players"])
     assert len(me(state, host)["rack"]) == 7
     assert all(p["rack"] is None for p in state["players"] if p["id"] != host.id)
@@ -205,7 +205,7 @@ async def test_mv03_valid_first_word_scores_damages_refills_and_passes_the_turn(
     assert len(me(state, alice)["rack"]) == 7
     await resolve_damage(table)
     assert me(await table.state(), bob)["hp"] == 95
-    assert state["tile_bag_count"] == 84 - 3
+    assert state["tile_bag_count"] == 86 - 3
     assert (state["current_player_id"], state["turn_number"]) == (bob.id, 2)
     assert any(m["type"] == "MOVE_COMMITTED" and m["payload"]["scoreEarned"] == 5 for m in broadcasts)
 
@@ -574,7 +574,7 @@ async def test_cd02_draw_tile_card_adds_a_tile_from_the_bag(open_table):
 
     assert res.json() == {"success": True, "drawn": 1}
     state = await table.state(alice)
-    assert (len(me(state, alice)["rack"]), state["tile_bag_count"], me(state, alice)["cards"]) == (8, 83, [])
+    assert (len(me(state, alice)["rack"]), state["tile_bag_count"], me(state, alice)["cards"]) == (8, 85, [])
 
 
 async def test_cd03_banned_letter_blocks_the_next_player(open_table):
