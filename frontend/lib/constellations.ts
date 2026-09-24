@@ -376,10 +376,28 @@ const ASTRONOMICAL_CONSTELLATIONS: Record<string, Omit<ConstellationData, 'dust'
     ],
     lines: [[0, 1], [1, 2], [2, 3], [3, 0], [0, 4], [1, 4]],
   },
+  BLANK: {
+    // Cosmic Supernova Pulsar Wildcard
+    name: 'Cosmic Supernova',
+    stars: [
+      { x: 0.50, y: 0.50, isStarburst: true, size: 1.8 },
+      { x: 0.20, y: 0.20, isStarburst: true, size: 1.1 },
+      { x: 0.80, y: 0.20, isStarburst: true, size: 1.1 },
+      { x: 0.20, y: 0.80, isStarburst: true, size: 1.1 },
+      { x: 0.80, y: 0.80, isStarburst: true, size: 1.1 },
+    ],
+    lines: [[0, 1], [0, 2], [0, 3], [0, 4]],
+  },
 };
 
 export function getConstellationData(letter: string): ConstellationData {
   const upper = (letter || 'A').toUpperCase();
+  if (upper === 'BLANK' || upper === '?' || upper === 'WILDCARD') {
+    return {
+      ...ASTRONOMICAL_CONSTELLATIONS['BLANK'],
+      dust: generateStardust(777),
+    };
+  }
   const base = ASTRONOMICAL_CONSTELLATIONS[upper] || ASTRONOMICAL_CONSTELLATIONS['A'];
   const code = upper.charCodeAt(0) || 65;
   const dust = generateStardust(code);
