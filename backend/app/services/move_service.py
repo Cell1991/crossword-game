@@ -18,8 +18,7 @@ import random
 class MoveService:
 
     CARD_TYPES = (
-        "DRAW_TILE", "HEAL", "STEAL_TILE", "SPY_SWAP", "DESTROY_TILE", "BAN_LETTER",
-        "HINT", "FREE_EXCHANGE", "MOVE_HEAL", "DOUBLE_DAMAGE", "SHIELD", "FREEZE_TILE",
+        "HINT", "SPY_SWAP", "DESTROY_TILE", "HEAL", "DOUBLE_DAMAGE", "SHIELD", "FREEZE_TILE",
     )
 
     @classmethod
@@ -259,10 +258,12 @@ class MoveService:
         # Award score
         player.score += score
 
+        card_awarded = None
         if any((pt.row, pt.col) in Board.SECRET_POWER for pt in placed_tiles):
             cards = list(player.cards or [])
             if len(cards) < 3:
-                cards.append(random.choice(cls.CARD_TYPES))
+                card_awarded = random.choice(cls.CARD_TYPES)
+                cards.append(card_awarded)
                 player.cards = cards
                 from app.database.state import replace_player_cards
                 await replace_player_cards(db, player.id, cards)
@@ -326,7 +327,8 @@ class MoveService:
             score_earned=score,
             next_player_id=next_player_id,
             game_over=game_over,
-            winner_id=winner
+            winner_id=winner,
+            card_awarded=card_awarded,
         )
 
         return res, game, player
