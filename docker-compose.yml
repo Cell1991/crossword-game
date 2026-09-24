@@ -1,5 +1,26 @@
 services:
 
+  ngrok:
+    image: ngrok/ngrok:alpine
+    container_name: crossword-ngrok
+    restart: unless-stopped
+    entrypoint:
+      - "sh"
+      - "-c"
+      - |
+        if [ -n "$$NGROK_DOMAIN" ]; then
+          exec ngrok http gateway:8080 --url="$$NGROK_DOMAIN" --pooling-enabled --log=stdout
+        else
+          exec ngrok http gateway:8080 --pooling-enabled --log=stdout
+        fi
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN:-}
+      - NGROK_DOMAIN=${NGROK_DOMAIN:-}
+    ports:
+      - "4040:4040"
+    depends_on:
+      - gateway
+
   gateway:
     image: nginx:1.27-alpine
     container_name: crossword-gateway
