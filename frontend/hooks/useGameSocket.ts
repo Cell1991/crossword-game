@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { getWsBase } from '../lib/api';
-import { WebSocketEvent } from '../lib/types';
+import { getWsBase } from '@/lib/api';
+import { WebSocketEvent } from '@/lib/types';
 
 interface UseGameSocketProps {
   gameId: string;
