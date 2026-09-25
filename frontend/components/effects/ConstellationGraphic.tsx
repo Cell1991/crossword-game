@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import { getConstellationData } from '../../lib/constellations';
+import React, { memo, useMemo } from 'react';
+import { getConstellationData } from '@/lib/constellations';
 
 interface ConstellationGraphicProps {
   letter: string;
@@ -23,11 +23,12 @@ function starburstPath(cx: number, cy: number, outerR: number, innerR: number): 
   return d + 'Z';
 }
 
-export const ConstellationGraphic: React.FC<ConstellationGraphicProps> = ({
+/** Memoised: rack tiles re-render on selection and drag changes, but their star charts only depend on the letter. */
+export const ConstellationGraphic = memo(function ConstellationGraphic({
   letter,
   isGolden = false,
   className = '',
-}) => {
+}: ConstellationGraphicProps) {
   const data = useMemo(() => getConstellationData(letter), [letter]);
 
   // Colour palette — warm celestial gold for gold tiles, crisp starlight cyan for blue tiles
@@ -57,28 +58,6 @@ export const ConstellationGraphic: React.FC<ConstellationGraphicProps> = ({
             </feMerge>
           </filter>
 
-          <style>{`
-            @keyframes cg-twinkle-a {
-              0%, 100% { opacity: 0.30; transform: scale(0.88); }
-              48%       { opacity: 1.00; transform: scale(1.18); }
-            }
-            @keyframes cg-twinkle-b {
-              0%, 100% { opacity: 0.90; transform: scale(1.12); }
-              52%       { opacity: 0.22; transform: scale(0.82); }
-            }
-            @keyframes cg-twinkle-c {
-              0%, 100% { opacity: 0.40; transform: scale(0.92); }
-              44%       { opacity: 1.00; transform: scale(1.22); }
-            }
-            @keyframes cg-line-pulse {
-              0%, 100% { opacity: 0.55; }
-              50%       { opacity: 1.00; }
-            }
-            .cg-tw-a { animation: cg-twinkle-a 3.1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-            .cg-tw-b { animation: cg-twinkle-b 2.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-            .cg-tw-c { animation: cg-twinkle-c 3.7s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-            .cg-line  { animation: cg-line-pulse 5.0s ease-in-out infinite; }
-          `}</style>
         </defs>
 
         {/* ── Background stardust specks ── */}
@@ -171,4 +150,4 @@ export const ConstellationGraphic: React.FC<ConstellationGraphicProps> = ({
       </svg>
     </div>
   );
-};
+});
