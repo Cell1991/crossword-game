@@ -15,14 +15,25 @@ export default function MouseGradientText({ children, className = '' }: MouseGra
     const el = ref.current;
     if (!el) return;
 
+    // Pointer events can outnumber frames; measure and restyle once per frame with the latest one.
+    let frame: number | null = null;
+    let latest = { x: 0, y: 0 };
     const onPointerMove = (e: PointerEvent) => {
-      const rect = el.getBoundingClientRect();
-      el.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`);
-      el.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`);
+      latest = { x: e.clientX, y: e.clientY };
+      if (frame !== null) return;
+      frame = requestAnimationFrame(() => {
+        frame = null;
+        const rect = el.getBoundingClientRect();
+        el.style.setProperty('--mx', `${((latest.x - rect.left) / rect.width) * 100}%`);
+        el.style.setProperty('--my', `${((latest.y - rect.top) / rect.height) * 100}%`);
+      });
     };
 
     window.addEventListener('pointermove', onPointerMove);
-    return () => window.removeEventListener('pointermove', onPointerMove);
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
   }, []);
 
   return (
