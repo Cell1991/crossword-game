@@ -70,6 +70,36 @@ export interface PendingEffect {
 
 export type TurnTimeLimit = null | 30 | 60 | 90 | 120;
 
+/** One line of the sidebar's move history, built on this device from socket events. */
+export interface MoveHistoryEntry {
+  id: string;
+  text: string;
+  timestamp?: string;
+  score?: number;
+  type?: 'move' | 'exchange' | 'pass' | 'card';
+}
+
+export type BoardCard = 'FREEZE_TILE' | 'DESTROY_TILE';
+
+/** The earned-card animation: a lightning flash, then the card face. */
+export interface CardReveal {
+  card: string;
+  playerId: string;
+  phase: 'lightning' | 'reveal';
+}
+
+export interface CellPosition {
+  row: number;
+  col: number;
+}
+
+export interface ViewportRect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
 /** Mirrors backend MoveService.CARD_TYPES (backend/app/services/move_service.py). */
 export const CARD_TYPES = [
   'HINT', 'SPY_SWAP', 'DESTROY_TILE', 'HEAL', 'DOUBLE_DAMAGE', 'SHIELD', 'FREEZE_TILE',
