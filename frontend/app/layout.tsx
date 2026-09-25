@@ -16,10 +16,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "WordX – Multiplayer Crossword Game",
   description: "Place words, score points, beat your friends in this real-time multiplayer crossword game!",
+  // Tab and home-screen icons use a 256px copy: the full logo is 1.9 MB and browsers
+  // fetched all of it just to draw a 16–32px favicon.
   icons: {
-    icon: "/wordx-icon.png?v=20260915",
-    shortcut: "/wordx-icon.png?v=20260915",
-    apple: "/wordx-icon.png?v=20260915",
+    icon: "/wordx-icon-256.png?v=20260915",
+    shortcut: "/wordx-icon-256.png?v=20260915",
+    apple: "/wordx-icon-256.png?v=20260915",
   },
   openGraph: {
     title: "WordX – Multiplayer Crossword Game",
