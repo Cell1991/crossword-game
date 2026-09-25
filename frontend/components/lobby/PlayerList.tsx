@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Player } from '../../lib/types';
+import { Player } from '@/lib/types';
 import { Crown, User, CheckCircle2 } from 'lucide-react';
 
 interface PlayerListProps {
