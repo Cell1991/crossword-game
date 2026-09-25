@@ -3,11 +3,11 @@
 import React, { startTransition, useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { getRoom, leaveRoom, startGame, sessionStore } from '../../../lib/api';
-import { PinDisplay } from '../../../components/lobby/PinDisplay';
-import { PlayerList } from '../../../components/lobby/PlayerList';
-import ParticleField from '../../../components/effects/ParticleField';
-import { Player } from '../../../lib/types';
+import { getRoom, leaveRoom, startGame, sessionStore } from '@/lib/api';
+import { PinDisplay } from '@/components/lobby/PinDisplay';
+import { PlayerList } from '@/components/lobby/PlayerList';
+import ParticleField from '@/components/effects/ParticleField';
+import { Player } from '@/lib/types';
 
 /** Matches MIN_PLAYERS on the backend: a host may start alone and play solo. */
 const MIN_PLAYERS = 1;
