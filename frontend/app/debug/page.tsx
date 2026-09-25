@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createRoom, joinRoom, startGame, sessionStore, debugSessionStore, StoredSession } from '../../lib/api';
+import { createRoom, joinRoom, startGame, sessionStore, debugSessionStore, StoredSession } from '@/lib/api';
 
 export default function DebugSetupPage() {
   const router = useRouter();
