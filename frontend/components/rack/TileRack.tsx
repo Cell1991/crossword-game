@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { Tile } from '../../lib/types';
+import React, { memo, useRef, useState } from 'react';
+import { Tile } from '@/lib/types';
+import { isBlankLetter } from '@/lib/tiles';
+import { moveFixedElement } from '@/lib/dom';
 import { RotateCcw, Check, SkipForward, Shuffle, ArrowLeftRight, X } from 'lucide-react';
-import { ConstellationGraphic } from '../effects/ConstellationGraphic';
+import { ConstellationGraphic } from '@/components/effects/ConstellationGraphic';
+import { FloatingTile } from './FloatingTile';
 
 interface TileRackProps {
   /** Fixed seats. `null` means the seat is empty — either the tile is on the board or the bag ran dry. */
@@ -25,7 +27,8 @@ interface TileRackProps {
   onStartTileDrag: (tile: Tile, clientX: number, clientY: number) => void;
   onFinishTileDrag: () => void;
   onCancelTileDrag: () => void;
-  onRackViewportChange: (rect: { left: number; top: number; width: number; height: number }) => void;
+  /** The tray element; the page's board drag hit-tests drops against it. */
+  rackRef: React.RefObject<HTMLDivElement | null>;
   isExternalDragActive: boolean;
   isMyTurn: boolean;
   canStageMove: boolean;
@@ -36,7 +39,7 @@ interface TileRackProps {
   estimatedScore?: number;
 }
 
-export const TileRack: React.FC<TileRackProps> = ({
+export const TileRack = memo(function TileRack({
   slots,
   selectedTileId,
   exchangeTileIds,
@@ -53,7 +56,7 @@ export const TileRack: React.FC<TileRackProps> = ({
   onStartTileDrag,
   onFinishTileDrag,
   onCancelTileDrag,
-  onRackViewportChange,
+  rackRef,
   isExternalDragActive,
   isMyTurn,
   canStageMove,
@@ -61,9 +64,10 @@ export const TileRack: React.FC<TileRackProps> = ({
   placementValid,
   isSubmitting,
   estimatedScore,
-}) => {
+}: TileRackProps) {
   const [draggedSlot, setDraggedSlot] = useState<number | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
+  /** Where the floating tile appears; after that it follows the pointer without re-rendering. */
   const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
   /** The tile left the stand and the board drag (which draws its own floating tile) took over. */
   const [isHandedToBoard, setIsHandedToBoard] = useState(false);
@@ -72,7 +76,9 @@ export const TileRack: React.FC<TileRackProps> = ({
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const didDragRef = useRef(false);
   const externalDragRef = useRef(false);
-  const rackRef = useRef<HTMLDivElement | null>(null);
+  const ghostRef = useRef<HTMLDivElement>(null);
+  /** The tray's box, measured when a drag starts (the tray does not move while a tile is dragged). */
+  const rackRectRef = useRef<DOMRect | null>(null);
   const dragPositionFrameRef = useRef<number | null>(null);
   const pendingDragPositionRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -83,16 +89,6 @@ export const TileRack: React.FC<TileRackProps> = ({
   const canStartExchange = isMyTurn && canStageMove && !hasTemporaryTiles && !isSubmitting && tileCount > 0 && tileBagCount >= 7;
   const canConfirmExchange = isMyTurn && !isSubmitting && exchangeCount > 0 && exchangeCount <= tileBagCount;
 
-  useEffect(() => {
-    const updateViewport = () => {
-      const rect = rackRef.current?.getBoundingClientRect();
-      if (rect) onRackViewportChange({ left: rect.left, top: rect.top, width: rect.width, height: rect.height });
-    };
-    updateViewport();
-    window.addEventListener('resize', updateViewport);
-    return () => window.removeEventListener('resize', updateViewport);
-  }, [onRackViewportChange, slots.length]);
-
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, slotIndex: number) => {
     // While exchanging, a tap marks the tile instead of lifting it.
     if (!canStageMove || isExchanging) return;
@@ -101,6 +97,7 @@ export const TileRack: React.FC<TileRackProps> = ({
     pointerStartRef.current = { x: event.clientX, y: event.clientY };
     didDragRef.current = false;
     externalDragRef.current = false;
+    rackRectRef.current = rackRef.current?.getBoundingClientRect() ?? null;
     setDraggedSlot(slotIndex);
     setDragOverSlot(null);
     setDragPosition({ x: event.clientX, y: event.clientY });
@@ -113,10 +110,11 @@ export const TileRack: React.FC<TileRackProps> = ({
     if (dragPositionFrameRef.current === null) {
       dragPositionFrameRef.current = window.requestAnimationFrame(() => {
         dragPositionFrameRef.current = null;
-        if (pendingDragPositionRef.current) setDragPosition(pendingDragPositionRef.current);
+        const position = pendingDragPositionRef.current;
+        if (position) moveFixedElement(ghostRef.current, position.x, position.y);
       });
     }
-    const rackRect = rackRef.current?.getBoundingClientRect();
+    const rackRect = rackRectRef.current;
     const insideRack = Boolean(
       rackRect &&
       event.clientX >= rackRect.left &&
@@ -134,6 +132,8 @@ export const TileRack: React.FC<TileRackProps> = ({
         onStartTileDrag(tile, event.clientX, event.clientY);
       } else if (insideRack && externalDragRef.current) {
         externalDragRef.current = false;
+        // The floating tile mounts again here, so it starts where the pointer is now.
+        setDragPosition({ x: event.clientX, y: event.clientY });
         setIsHandedToBoard(false);
         onCancelTileDrag();
       }
@@ -181,30 +181,8 @@ export const TileRack: React.FC<TileRackProps> = ({
 
   return (
     <div className="flex flex-col items-center gap-2 w-full max-w-5xl mx-auto px-2 pointer-events-auto">
-      {/* Portalled to <body>: the rack bar's backdrop-blur makes it the containing block for `fixed`
-          children, which drew this tile a whole bar-height below the pointer. */}
-      {draggedTile && dragPosition && !isHandedToBoard && createPortal(
-        <div
-          className="pointer-events-none fixed z-[9999] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-2 scale-105 flex-col items-center justify-center rounded-xl border border-sky-400/50 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_14px_28px_rgba(0,0,0,0.7)] overflow-hidden"
-          style={{ left: dragPosition.x, top: dragPosition.y }}
-          aria-hidden="true"
-        >
-          {/* Top Glass Highlight */}
-          <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
-          {/* Letter Celestial Constellation */}
-          <ConstellationGraphic letter={draggedTile.letter} />
-          {draggedTile.letter.toUpperCase() === 'BLANK' || draggedTile.letter === '?' ? (
-            <div className="relative z-20 flex items-center justify-center">
-              <svg viewBox="0 0 24 24" className="w-8 h-8 text-cyan-300 drop-shadow-[0_0_14px_rgba(56,189,248,0.95)] animate-pulse" fill="currentColor">
-                <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
-              </svg>
-            </div>
-          ) : (
-            <span className="relative z-20 text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{draggedTile.letter}</span>
-          )}
-          <span className="absolute z-20 bottom-1 right-1.5 text-[12px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">{draggedTile.value}</span>
-        </div>,
-        document.body
+      {draggedTile && dragPosition && !isHandedToBoard && (
+        <FloatingTile ref={ghostRef} letter={draggedTile.letter} value={draggedTile.value} position={dragPosition} />
       )}
 
       {/* Premium Player Control Hub: 3-column layout (Left Pod, Center Tray, Right Pod) */}
@@ -351,7 +329,7 @@ export const TileRack: React.FC<TileRackProps> = ({
               />
 
               {/* High-Contrast Prominent Letter OR Cosmic Wildcard Star */}
-              {tile.letter.toUpperCase() === 'BLANK' || tile.letter === '?' ? (
+              {isBlankLetter(tile.letter) ? (
                 <div className="relative z-20 flex items-center justify-center">
                   <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-300 drop-shadow-[0_0_12px_rgba(56,189,248,0.95)] animate-pulse" fill="currentColor">
                     <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
@@ -472,4 +450,4 @@ export const TileRack: React.FC<TileRackProps> = ({
       </div>
     </div>
   );
-};
+});
