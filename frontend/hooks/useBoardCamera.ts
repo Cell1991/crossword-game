@@ -1,11 +1,16 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
-import { BOARD_COLS, BOARD_ROWS } from '../lib/board';
+import { useMemo, useRef, useSyncExternalStore } from 'react';
+import { BOARD_COLS, BOARD_ROWS } from '@/lib/board';
 
 export interface Offset {
   x: number;
   y: number;
+}
+
+export interface CameraView {
+  scale: number;
+  offset: Offset;
 }
 
 const BASE_CELL_SIZE = 40;
@@ -48,116 +53,125 @@ function clampOffset(
   };
 }
 
+/**
+ * The board camera (zoom + pan). It changes every frame while the player pans or zooms, so it
+ * lives outside React state: the canvas and the premium-square overlay subscribe and redraw
+ * themselves, and nothing else re-renders. Components that show the zoom level read it with
+ * `useCameraScale`, which only updates them when the scale actually changes.
+ */
 export function useBoardCamera() {
+  const viewRef = useRef<CameraView>({ scale: DEFAULT_SCALE, offset: { x: 0, y: 0 } });
   const viewportRef = useRef({ width: 1200, height: 800 });
-  const [view, setView] = useState({ scale: DEFAULT_SCALE, offset: { x: 0, y: 0 } as Offset });
-  const { scale, offset } = view;
-  const [isPanning, setIsPanning] = useState(false);
-  const lastMousePos = useRef({ x: 0, y: 0 });
+  const listenersRef = useRef(new Set<() => void>());
 
-  const setViewport = useCallback((width: number, height: number) => {
-    if (width > 0 && height > 0) {
-      viewportRef.current = { width, height };
-    }
-  }, []);
+  return useMemo(() => {
+    const setView = (next: CameraView) => {
+      const previous = viewRef.current;
+      if (previous.scale === next.scale && previous.offset.x === next.offset.x && previous.offset.y === next.offset.y) return;
+      viewRef.current = next;
+      listenersRef.current.forEach(listener => listener());
+    };
 
-  const setOffset = useCallback((update: Offset | ((previous: Offset) => Offset)) => {
-    setView((previous) => {
+    const getView = () => viewRef.current;
+
+    const subscribe = (listener: () => void) => {
+      listenersRef.current.add(listener);
+      return () => { listenersRef.current.delete(listener); };
+    };
+
+    const setViewport = (width: number, height: number) => {
+      if (width > 0 && height > 0) {
+        viewportRef.current = { width, height };
+      }
+    };
+
+    const setOffset = (update: Offset | ((previous: Offset) => Offset)) => {
+      const previous = viewRef.current;
       const nextRaw = typeof update === 'function' ? update(previous.offset) : update;
-      const clamped = clampOffset(nextRaw, previous.scale, viewportRef.current.width, viewportRef.current.height);
-      return {
-        ...previous,
-        offset: clamped,
-      };
-    });
-  }, []);
+      const { width, height } = viewportRef.current;
+      setView({ ...previous, offset: clampOffset(nextRaw, previous.scale, width, height) });
+    };
 
-  const centerBoard = useCallback((viewportWidth: number, viewportHeight: number) => {
-    if (viewportWidth > 0 && viewportHeight > 0) {
-      viewportRef.current = { width: viewportWidth, height: viewportHeight };
-    }
-    setView((previous) => {
+    const centerBoard = (viewportWidth: number, viewportHeight: number) => {
+      setViewport(viewportWidth, viewportHeight);
+      const previous = viewRef.current;
       const cellSize = BASE_CELL_SIZE * previous.scale;
       const rawOffset = {
         x: (viewportWidth - BOARD_COLS * cellSize) / 2,
         y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
       };
-      return {
-        ...previous,
-        offset: clampOffset(rawOffset, previous.scale, viewportWidth, viewportHeight),
-      };
-    });
-  }, []);
-
-  const resetCamera = useCallback((viewportWidth: number, viewportHeight: number) => {
-    if (viewportWidth > 0 && viewportHeight > 0) {
-      viewportRef.current = { width: viewportWidth, height: viewportHeight };
-    }
-    const cellSize = BASE_CELL_SIZE * DEFAULT_SCALE;
-    const rawOffset = {
-      x: (viewportWidth - BOARD_COLS * cellSize) / 2,
-      y: (viewportHeight - BOARD_ROWS * cellSize) / 2,
+      setView({ ...previous, offset: clampOffset(rawOffset, previous.scale, viewportWidth, viewportHeight) });
     };
-    setView({
-      scale: DEFAULT_SCALE,
-      offset: clampOffset(rawOffset, DEFAULT_SCALE, viewportWidth, viewportHeight),
-    });
-  }, []);
 
-  /** Multiplies the zoom by `factor`, keeping the board point under (clientX, clientY) under it. */
-  const zoomBy = useCallback((factor: number, clientX: number, clientY: number) => {
-    if (!Number.isFinite(factor) || factor <= 0 || factor === 1) return;
-    setView((previous) => {
+    /** Back to 100%, centred in the board's own area. */
+    const resetCamera = () => {
+      const { width, height } = viewportRef.current;
+      const cellSize = BASE_CELL_SIZE * DEFAULT_SCALE;
+      const rawOffset = {
+        x: (width - BOARD_COLS * cellSize) / 2,
+        y: (height - BOARD_ROWS * cellSize) / 2,
+      };
+      setView({ scale: DEFAULT_SCALE, offset: clampOffset(rawOffset, DEFAULT_SCALE, width, height) });
+    };
+
+    /** Multiplies the zoom by `factor`, keeping the board point under (clientX, clientY) under it. */
+    const zoomBy = (factor: number, clientX: number, clientY: number) => {
+      if (!Number.isFinite(factor) || factor <= 0 || factor === 1) return;
+      const previous = viewRef.current;
       const newScale = clampScale(previous.scale * factor);
       const ratio = newScale / previous.scale;
-      if (ratio === 1) return previous;
+      if (ratio === 1) return;
       const rawOffset = {
         x: clientX - (clientX - previous.offset.x) * ratio,
         y: clientY - (clientY - previous.offset.y) * ratio,
       };
-      const clamped = clampOffset(rawOffset, newScale, viewportRef.current.width, viewportRef.current.height);
-      return {
-        scale: newScale,
-        offset: clamped,
-      };
-    });
+      const { width, height } = viewportRef.current;
+      setView({ scale: newScale, offset: clampOffset(rawOffset, newScale, width, height) });
+    };
+
+    /** The zoom buttons zoom around the middle of the board area. */
+    const zoomAtCenter = (factor: number) => {
+      const { width, height } = viewportRef.current;
+      zoomBy(factor, width / 2, height / 2);
+    };
+
+    /** Wheel zoom: scrolling down (positive delta, in pixels) zooms out, in proportion to the distance scrolled. */
+    const zoomAtPoint = (delta: number, clientX: number, clientY: number) => {
+      zoomBy(Math.exp(-delta * WHEEL_ZOOM_SPEED), clientX, clientY);
+    };
+
+    const screenToCell = (screenX: number, screenY: number): { row: number; col: number } | null => {
+      const { scale, offset } = viewRef.current;
+      const cellSize = BASE_CELL_SIZE * scale;
+      const col = Math.floor((screenX - offset.x) / cellSize);
+      const row = Math.floor((screenY - offset.y) / cellSize);
+      if (row >= 0 && row < BOARD_ROWS && col >= 0 && col < BOARD_COLS) {
+        return { row, col };
+      }
+      return null;
+    };
+
+    return {
+      minScale: MIN_SCALE,
+      maxScale: MAX_SCALE,
+      baseCellSize: BASE_CELL_SIZE,
+      getView,
+      subscribe,
+      setViewport,
+      setOffset,
+      centerBoard,
+      resetCamera,
+      zoomBy,
+      zoomAtCenter,
+      zoomAtPoint,
+      screenToCell,
+    };
   }, []);
+}
 
-  /** Wheel zoom: scrolling down (positive delta, in pixels) zooms out, in proportion to the distance scrolled. */
-  const zoomAtPoint = useCallback((delta: number, clientX: number, clientY: number) => {
-    zoomBy(Math.exp(-delta * WHEEL_ZOOM_SPEED), clientX, clientY);
-  }, [zoomBy]);
+export type BoardCamera = ReturnType<typeof useBoardCamera>;
 
-  const screenToCell = useCallback((screenX: number, screenY: number): { row: number; col: number } | null => {
-    const cellSize = BASE_CELL_SIZE * scale;
-    const boardX = screenX - offset.x;
-    const boardY = screenY - offset.y;
-
-    const col = Math.floor(boardX / cellSize);
-    const row = Math.floor(boardY / cellSize);
-
-    if (row >= 0 && row < BOARD_ROWS && col >= 0 && col < BOARD_COLS) {
-      return { row, col };
-    }
-    return null;
-  }, [scale, offset]);
-
-  return {
-    scale,
-    minScale: MIN_SCALE,
-    maxScale: MAX_SCALE,
-    offset,
-    setOffset,
-    setViewport,
-    isPanning,
-    setIsPanning,
-    lastMousePos,
-    cellSize: BASE_CELL_SIZE * scale,
-    baseCellSize: BASE_CELL_SIZE,
-    centerBoard,
-    resetCamera,
-    zoomAtPoint,
-    zoomBy,
-    screenToCell,
-  };
+/** The current zoom level; re-renders the caller only when it changes (not on every pan frame). */
+export function useCameraScale(camera: BoardCamera): number {
+  return useSyncExternalStore(camera.subscribe, () => camera.getView().scale, () => DEFAULT_SCALE);
 }
