@@ -23,7 +23,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
+    const ctx = canvas?.getContext('2d', { alpha: true, desynchronized: true });
     if (!canvas || !ctx) return;
 
     let width = 0;
@@ -31,26 +31,32 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     let frame = 0;
     let nodes: Node[] = [];
     let beams: Beam[] = [];
+    const device = navigator as Navigator & { deviceMemory?: number };
+    const isLowPowerDevice = (device.hardwareConcurrency ?? 8) <= 8 || (device.deviceMemory ?? 8) <= 8;
+    const nodeCount = isLowPowerDevice ? 36 : NODE_COUNT;
+    const beamCount = isLowPowerDevice ? 8 : BEAM_COUNT;
+    const frameInterval = isLowPowerDevice ? 1000 / 30 : 1000 / 60;
+    let lastDrawAt = 0;
     const mouse = { x: -1000, y: -1000 };
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, isLowPowerDevice ? 1 : 1.5);
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     const seed = () => {
-      nodes = Array.from({ length: NODE_COUNT }, () => ({
+      nodes = Array.from({ length: nodeCount }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
         vy: Math.random() * 0.35 + 0.1,
         char: CHARS[Math.floor(Math.random() * CHARS.length)],
       }));
-      beams = Array.from({ length: BEAM_COUNT }, () => ({
+      beams = Array.from({ length: beamCount }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
         length: Math.random() * 90 + 50,
@@ -72,6 +78,12 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     window.addEventListener('pointermove', onPointerMove);
 
     const draw = () => {
+      const now = performance.now();
+      if (now - lastDrawAt < frameInterval) {
+        frame = requestAnimationFrame(draw);
+        return;
+      }
+      lastDrawAt = now;
       ctx.clearRect(0, 0, width, height);
 
       for (const beam of beams) {
@@ -97,8 +109,11 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
 
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
-          const d = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
-          if (d < LINK_DISTANCE) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const distanceSquared = dx * dx + dy * dy;
+          if (distanceSquared < LINK_DISTANCE * LINK_DISTANCE) {
+            const d = Math.sqrt(distanceSquared);
             ctx.strokeStyle = `rgba(148, 163, 184, ${0.12 * (1 - d / LINK_DISTANCE)})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();

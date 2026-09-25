@@ -107,7 +107,7 @@ export default function LobbyPage() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4 gap-6 overflow-hidden">
-      <ParticleField className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-80" />
+      <ParticleField className="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-80" />
       {/* Background grid */}
       <div className="absolute inset-0 opacity-5 pointer-events-none"
         style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }}

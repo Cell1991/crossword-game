@@ -73,6 +73,8 @@ export const TileRack: React.FC<TileRackProps> = ({
   const didDragRef = useRef(false);
   const externalDragRef = useRef(false);
   const rackRef = useRef<HTMLDivElement | null>(null);
+  const dragPositionFrameRef = useRef<number | null>(null);
+  const pendingDragPositionRef = useRef<{ x: number; y: number } | null>(null);
 
   const tileCount = slots.reduce((total, tile) => (tile ? total + 1 : total), 0);
   const isExchanging = exchangeTileIds !== null;
@@ -107,7 +109,13 @@ export const TileRack: React.FC<TileRackProps> = ({
   const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>, tile: Tile) => {
     const start = pointerStartRef.current;
     if (!start || draggedSlot === null) return;
-    setDragPosition({ x: event.clientX, y: event.clientY });
+    pendingDragPositionRef.current = { x: event.clientX, y: event.clientY };
+    if (dragPositionFrameRef.current === null) {
+      dragPositionFrameRef.current = window.requestAnimationFrame(() => {
+        dragPositionFrameRef.current = null;
+        if (pendingDragPositionRef.current) setDragPosition(pendingDragPositionRef.current);
+      });
+    }
     const rackRect = rackRef.current?.getBoundingClientRect();
     const insideRack = Boolean(
       rackRect &&
@@ -140,6 +148,10 @@ export const TileRack: React.FC<TileRackProps> = ({
   };
 
   const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (dragPositionFrameRef.current !== null) {
+      window.cancelAnimationFrame(dragPositionFrameRef.current);
+      dragPositionFrameRef.current = null;
+    }
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
@@ -154,6 +166,7 @@ export const TileRack: React.FC<TileRackProps> = ({
     setDragPosition(null);
     setIsHandedToBoard(false);
     externalDragRef.current = false;
+    pendingDragPositionRef.current = null;
   };
 
   const handleTileClick = (tile: Tile) => {

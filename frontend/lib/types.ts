@@ -169,6 +169,8 @@ export interface WebSocketEvent {
     count?: number;
     /** GAME_ENDED */
     winnerId?: string | null;
+    /** CARD_USED */
+    card?: string;
     /** MOVE_COMMITTED: the private-card reveal animation follows this event. */
     cardAwarded?: string | null;
   };

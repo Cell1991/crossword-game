@@ -79,6 +79,8 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   const hasCenteredBoardRef = useRef(false);
   const wheelFrameRef = useRef<number | null>(null);
   const pendingWheelRef = useRef<{ delta: number; x: number; y: number } | null>(null);
+  const panFrameRef = useRef<number | null>(null);
+  const pendingPanDeltaRef = useRef<Offset>({ x: 0, y: 0 });
   const pendingPointerRef = useRef<{ tile: PlacedTile; x: number; y: number; pointerId: number } | null>(null);
   const pendingDragRef = useRef(false);
   /** Where the current pan started, and whether it has moved far enough to stop counting as a click. */
@@ -87,6 +89,12 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   /** Fingers on the board. Two of them pinch: zoom by how far they spread, pan by how their midpoint moves. */
   const touchPointsRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; x: number; y: number } | null>(null);
+  const device = typeof navigator === 'undefined'
+    ? null
+    : navigator as Navigator & { deviceMemory?: number };
+  const isLowPowerDevice = Boolean(device && (
+    (device.hardwareConcurrency ?? 8) <= 8 || (device.deviceMemory ?? 8) <= 8
+  ));
 
   const {
     offset,
@@ -102,6 +110,22 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     zoomBy,
   } = camera;
 
+  const queuePan = useCallback((dx: number, dy: number) => {
+    pendingPanDeltaRef.current.x += dx;
+    pendingPanDeltaRef.current.y += dy;
+    if (panFrameRef.current !== null) return;
+    panFrameRef.current = requestAnimationFrame(() => {
+      panFrameRef.current = null;
+      const delta = pendingPanDeltaRef.current;
+      pendingPanDeltaRef.current = { x: 0, y: 0 };
+      if (delta.x === 0 && delta.y === 0) return;
+      setOffset((previous: Offset) => ({
+        x: previous.x + delta.x,
+        y: previous.y + delta.y,
+      }));
+    });
+  }, [setOffset]);
+
   const measurePinch = () => {
     const [a, b] = [...touchPointsRef.current.values()];
     return { distance: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
@@ -113,8 +137,9 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       if (!canvasRef.current || !containerRef.current) return;
       const { clientWidth, clientHeight } = containerRef.current;
       setViewport(clientWidth, clientHeight);
-      canvasRef.current.width = clientWidth * window.devicePixelRatio;
-      canvasRef.current.height = clientHeight * window.devicePixelRatio;
+      const dpr = Math.min(window.devicePixelRatio || 1, isLowPowerDevice ? 1 : 1.5);
+      canvasRef.current.width = clientWidth * dpr;
+      canvasRef.current.height = clientHeight * dpr;
       canvasRef.current.style.width = `${clientWidth}px`;
       canvasRef.current.style.height = `${clientHeight}px`;
       const rect = containerRef.current.getBoundingClientRect();
@@ -235,7 +260,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     if (!isRemote && letter && cellSize >= 18) {
       ctx.save();
       const constellation = getConstellationData(letter);
-      const time = performance.now() / 1000;
+      const time = isLowPowerDevice ? 0 : performance.now() / 1000;
 
       // Color scheme: warm celestial gold/champagne for gold tiles, crisp starlight cyan for blue tiles
       const lineColor = isGolden ? 'rgba(254, 240, 138, 0.26)' : 'rgba(147, 220, 252, 0.20)';
@@ -293,7 +318,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
           const inner = baseRad * 0.8 * curScale;
           ctx.save();
           ctx.shadowColor = starGlow;
-          ctx.shadowBlur = Math.max(2, cellSize * 0.05 * curScale);
+          ctx.shadowBlur = isLowPowerDevice ? 0 : Math.max(2, cellSize * 0.05 * curScale);
           ctx.fillStyle = burstFill;
           ctx.globalAlpha = 0.85 * curScale;
           drawStarburst(ctx, sx, sy, outer, inner);
@@ -309,7 +334,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
           // Regular Star (Round Dot + Soft Halo with twinkle)
           ctx.save();
           ctx.shadowColor = starGlow;
-          ctx.shadowBlur = Math.max(1.5, cellSize * 0.035 * curScale);
+          ctx.shadowBlur = isLowPowerDevice ? 0 : Math.max(1.5, cellSize * 0.035 * curScale);
           ctx.fillStyle = starFill;
           ctx.globalAlpha = 0.80 * curScale;
           ctx.beginPath();
@@ -349,7 +374,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         const cy = y + cellSize / 2;
         const starSize = Math.max(6, cellSize * 0.28);
         ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = Math.max(4, cellSize * 0.12);
+        ctx.shadowBlur = isLowPowerDevice ? 0 : Math.max(4, cellSize * 0.12);
         ctx.fillStyle = '#bae6fd';
         drawStarburst(ctx, cx, cy, starSize, starSize * 0.4);
         ctx.fill();
@@ -360,7 +385,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       } else {
         // White text on both navy and royal gold tiles for max clarity and texture with drop shadow
         ctx.shadowColor = isRemote ? 'transparent' : 'rgba(0, 0, 0, 0.85)';
-        ctx.shadowBlur = Math.max(2, cellSize * 0.08);
+        ctx.shadowBlur = isLowPowerDevice ? 0 : Math.max(2, cellSize * 0.08);
         ctx.shadowOffsetY = 1;
         ctx.fillStyle = isRemote ? '#0f172a' : '#ffffff';
         const fontSize = Math.max(12, Math.round(cellSize * 0.70));
@@ -394,7 +419,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
 
           // Outer Glow
           ctx.shadowColor = multiplier === 3 ? 'rgba(239, 68, 68, 0.8)' : 'rgba(245, 158, 11, 0.85)';
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = isLowPowerDevice ? 0 : 8;
           ctx.fillStyle = multiplier === 3 ? 'rgba(220, 38, 38, 0.95)' : 'rgba(217, 119, 6, 0.95)';
           drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeRadius);
           ctx.fill();
@@ -416,7 +441,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
           if (isGolden) {
             // Golden Tile: Radiant Golden Amber Glow
             ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
-            ctx.shadowBlur = 6;
+            ctx.shadowBlur = isLowPowerDevice ? 0 : 6;
             ctx.fillStyle = '#fef08a';
             ctx.fillText(`${effectiveValue}`, numX, numY);
           } else if (isRemote) {
@@ -425,7 +450,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
           } else {
             // Navy Tile: Glowing Sky Cyan Neon Aura
             ctx.shadowColor = 'rgba(56, 189, 248, 0.8)';
-            ctx.shadowBlur = 6;
+            ctx.shadowBlur = isLowPowerDevice ? 0 : 6;
             ctx.fillStyle = '#7dd3fc';
             ctx.fillText(`${effectiveValue}`, numX, numY);
           }
@@ -433,7 +458,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         }
       }
     }
-  }, [offset, cellSize, temporaryTilesValid]);
+  }, [isLowPowerDevice, offset, cellSize, temporaryTilesValid]);
 
   // Render Loop with Viewport Culling
   const render = useCallback(() => {
@@ -442,7 +467,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, isLowPowerDevice ? 1 : 1.5);
     const width = canvas.width / dpr;
     const height = canvas.height / dpr;
 
@@ -509,7 +534,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
             if (cellSize >= 12) {
               ctx.save();
               ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
-              ctx.shadowBlur = Math.max(4, cellSize * 0.2);
+              ctx.shadowBlur = isLowPowerDevice ? 0 : Math.max(4, cellSize * 0.2);
               ctx.fillStyle = '#fbbf24';
               const starSize = Math.max(12, Math.round(cellSize * 0.72));
               ctx.font = `${starSize}px sans-serif`;
@@ -604,11 +629,17 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
 
   useEffect(() => {
     let animId: number;
-    const loop = () => {
-      render();
+    let lastRenderAt = 0;
+    const targetFrameMs = 1000 / 30;
+    const loop = (time: number) => {
+      if (time - lastRenderAt >= targetFrameMs) {
+        render();
+        lastRenderAt = time;
+      }
       animId = requestAnimationFrame(loop);
     };
-    loop();
+    render();
+    animId = requestAnimationFrame(loop);
     // Only the render loop is stopped here: this effect re-runs on every board change, and cancelling a
     // pending wheel frame from here left wheelFrameRef set, which silently disabled zooming for good.
     return () => cancelAnimationFrame(animId);
@@ -682,7 +713,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     if (isPanning) {
       const dx = e.clientX - lastMousePosRef.current.x;
       const dy = e.clientY - lastMousePosRef.current.y;
-      setOffset((prev: Offset) => ({ x: prev.x + dx, y: prev.y + dy }));
+      queuePan(dx, dy);
       lastMousePosRef.current = { x: e.clientX, y: e.clientY };
       const start = panStartRef.current;
       if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) >= 5) panMovedRef.current = true;

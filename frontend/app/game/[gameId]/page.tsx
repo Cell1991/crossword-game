@@ -84,6 +84,8 @@ export default function GamePage() {
   const [exchangeTileIds, setExchangeTileIds] = useState<string[] | null>(null);
   const [dragSession, setDragSession] = useState<DragSession | null>(null);
   const [dragHoverCell, setDragHoverCell] = useState<{ row: number; col: number } | null>(null);
+  const dragUpdateFrameRef = useRef<number | null>(null);
+  const pendingDragPositionRef = useRef<{ x: number; y: number } | null>(null);
   const [boardViewport, setBoardViewport] = useState({ left: 0, top: 0, width: 0, height: 0 });
   const [rackViewport, setRackViewport] = useState({ left: 0, top: 0, width: 0, height: 0 });
   const [blankPickerTarget, setBlankPickerTarget] = useState<{ tileId: string; row?: number; col?: number } | null>(null);
@@ -225,24 +227,41 @@ export default function GamePage() {
   }, [pendingTileIds, seatRackOrder]);
 
   const updateDragHover = useCallback((clientX: number, clientY: number) => {
-    setDragSession(previous => previous ? { ...previous, position: { x: clientX, y: clientY } } : previous);
-    if (
-      clientX < boardViewport.left ||
-      clientX > boardViewport.left + boardViewport.width ||
-      clientY < boardViewport.top ||
-      clientY > boardViewport.top + boardViewport.height
-    ) {
-      setDragHoverCell(null);
-      return;
-    }
-    setDragHoverCell(screenToCell(clientX - boardViewport.left, clientY - boardViewport.top));
+    pendingDragPositionRef.current = { x: clientX, y: clientY };
+    if (dragUpdateFrameRef.current !== null) return;
+    dragUpdateFrameRef.current = window.requestAnimationFrame(() => {
+      dragUpdateFrameRef.current = null;
+      const position = pendingDragPositionRef.current;
+      if (!position) return;
+      setDragSession(previous => previous ? { ...previous, position } : previous);
+
+      const insideBoard = position.x >= boardViewport.left &&
+        position.x <= boardViewport.left + boardViewport.width &&
+        position.y >= boardViewport.top &&
+        position.y <= boardViewport.top + boardViewport.height;
+      const nextCell = insideBoard
+        ? screenToCell(position.x - boardViewport.left, position.y - boardViewport.top)
+        : null;
+      setDragHoverCell(previous => (
+        previous?.row === nextCell?.row && previous?.col === nextCell?.col
+          ? previous
+          : nextCell
+      ));
+    });
   }, [boardViewport, screenToCell]);
 
   const finishDrag = useCallback((clientX?: number, clientY?: number) => {
+    if (dragUpdateFrameRef.current !== null) {
+      window.cancelAnimationFrame(dragUpdateFrameRef.current);
+      dragUpdateFrameRef.current = null;
+    }
+    if (clientX !== undefined && clientY !== undefined) {
+      pendingDragPositionRef.current = { x: clientX, y: clientY };
+    }
     const session = dragSession;
     const pointerPosition = clientX !== undefined && clientY !== undefined
       ? { x: clientX, y: clientY }
-      : session?.position;
+      : pendingDragPositionRef.current ?? session?.position;
     const targetCell = pointerPosition &&
       pointerPosition.x >= boardViewport.left &&
       pointerPosition.x <= boardViewport.left + boardViewport.width &&
@@ -345,6 +364,7 @@ export default function GamePage() {
     }
     setDragSession(null);
     setDragHoverCell(null);
+    pendingDragPositionRef.current = null;
   }, [boardState, boardViewport, canStageMove, designatedBlankLetters, dragHoverCell, dragSession, rackViewport, screenToCell, seatReturningTile, temporaryTiles]);
 
   const cancelDrag = useCallback(() => {
@@ -386,7 +406,7 @@ export default function GamePage() {
   useEffect(() => {
     if (!dragSession) return;
     const handlePointerMove = (event: PointerEvent) => updateDragHover(event.clientX, event.clientY);
-    const handlePointerUp = () => finishDrag();
+    const handlePointerUp = (event: PointerEvent) => finishDrag(event.clientX, event.clientY);
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') cancelDrag();
     };
@@ -980,7 +1000,7 @@ export default function GamePage() {
         background: 'radial-gradient(circle at 50% 18%, rgba(99, 102, 241, 0.16), transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 58%, #171942 100%)',
       }}
     >
-      <ParticleField className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
+      <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" />
       {/* Top HUD. On a phone it wraps: controls and counters on the first row, the turn banner below. */}
       <div className="relative z-10 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3 py-2 sm:px-4 bg-slate-900/75 border-b border-slate-800/60 backdrop-blur-sm shrink-0">
         {/* Left: Exit, logo, connection, room PIN */}

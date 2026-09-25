@@ -102,7 +102,7 @@ export default function HomePage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(99,102,241,0.16),transparent_30%),linear-gradient(135deg,#020617_0%,#0f172a_58%,#171942_100%)] px-4 py-10 sm:py-12">
-      <ParticleField className="absolute inset-0 h-full w-full" />
+      <ParticleField className="pointer-events-none fixed inset-0 h-full w-full" />
 
       <div className="relative z-10 flex w-full max-w-[29rem] flex-col items-center gap-7 sm:gap-8">
         {/* Logo / Title */}
@@ -123,7 +123,7 @@ export default function HomePage() {
         </div>
 
         {/* Card */}
-        <div className="w-full rounded-[1.75rem] border border-white/[0.1] bg-slate-900/65 p-4 shadow-[0_28px_90px_rgba(2,6,23,0.38)] backdrop-blur-xl sm:p-5">
+        <div className="w-full rounded-[1.75rem] border border-white/[0.1] bg-slate-900/65 p-4 shadow-[0_28px_90px_rgba(2,6,23,0.38)] backdrop-blur-md sm:p-5">
 
           {mode === 'home' && (
             <div className="flex flex-col gap-3">
