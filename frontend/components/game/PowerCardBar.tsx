@@ -1,21 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Player } from '../../lib/types';
-import { Eye, Heart, Repeat2, RotateCcw, Shield, Snowflake } from 'lucide-react';
+import React, { memo, useState } from 'react';
+import { BoardCard, Player } from '@/lib/types';
+import { cardIcon } from './cardIcons';
 
 type SimpleCard = 'HINT' | 'HEAL' | 'SHIELD';
 type TargetedCard = 'DOUBLE_DAMAGE' | 'SPY_SWAP';
-type BoardCard = 'FREEZE_TILE' | 'DESTROY_TILE';
+
+const cardMeta = (card: string, label: string, ownTurnOnly: boolean) => ({ icon: cardIcon(card, 'h-4 w-4', '×2'), label, ownTurnOnly });
 
 const CARD_META: Record<string, { icon: React.ReactNode; label: string; ownTurnOnly: boolean }> = {
-  HINT: { icon: <Eye className="h-4 w-4 text-yellow-300" />, label: 'Spell Word', ownTurnOnly: true },
-  SPY_SWAP: { icon: <Repeat2 className="h-4 w-4 text-cyan-300" />, label: 'Swap Word', ownTurnOnly: false },
-  DESTROY_TILE: { icon: <RotateCcw className="h-4 w-4 text-rose-300" />, label: 'Clear Word', ownTurnOnly: false },
-  HEAL: { icon: <Heart className="h-4 w-4 fill-rose-400 text-rose-200" />, label: 'Heal', ownTurnOnly: false },
-  DOUBLE_DAMAGE: { icon: '×2', label: 'Word x2', ownTurnOnly: true },
-  SHIELD: { icon: <Shield className="h-4 w-4 text-sky-200" />, label: 'Shield', ownTurnOnly: false },
-  FREEZE_TILE: { icon: <Snowflake className="h-4 w-4 text-sky-300" />, label: 'Freeze Word', ownTurnOnly: true },
+  HINT: cardMeta('HINT', 'Spell Word', true),
+  SPY_SWAP: cardMeta('SPY_SWAP', 'Swap Word', false),
+  DESTROY_TILE: cardMeta('DESTROY_TILE', 'Clear Word', false),
+  HEAL: cardMeta('HEAL', 'Heal', false),
+  DOUBLE_DAMAGE: cardMeta('DOUBLE_DAMAGE', 'Word x2', true),
+  SHIELD: cardMeta('SHIELD', 'Shield', false),
+  FREEZE_TILE: cardMeta('FREEZE_TILE', 'Freeze Word', true),
 };
 
 interface PowerCardBarProps {
@@ -32,7 +33,7 @@ interface PowerCardBarProps {
   onCancelArm: () => void;
 }
 
-export const PowerCardBar: React.FC<PowerCardBarProps> = ({
+export const PowerCardBar = memo(function PowerCardBar({
   cards,
   opponents,
   isMyTurn,
@@ -44,7 +45,7 @@ export const PowerCardBar: React.FC<PowerCardBarProps> = ({
   onUseBanLetter,
   onArmBoardCard,
   onCancelArm,
-}) => {
+}: PowerCardBarProps) {
   const [pickingTargetFor, setPickingTargetFor] = useState<TargetedCard | null>(null);
   const [pickingLetter, setPickingLetter] = useState(false);
   const [letterDraft, setLetterDraft] = useState('');
@@ -182,4 +183,4 @@ export const PowerCardBar: React.FC<PowerCardBarProps> = ({
       })}
     </div>
   );
-};
+});
