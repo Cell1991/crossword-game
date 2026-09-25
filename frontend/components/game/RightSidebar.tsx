@@ -1,42 +1,84 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { Player } from '../../lib/types';
-import { 
-  Trophy, 
-  Crown, 
-  Wifi, 
-  WifiOff, 
-  ZoomIn, 
-  ZoomOut, 
-  Compass, 
-  History, 
-  ChevronDown, 
-  ChevronUp, 
+import React, { memo, useCallback, useRef, useState } from 'react';
+import { MoveHistoryEntry, Player } from '@/lib/types';
+import { BoardCamera, useCameraScale } from '@/hooks/useBoardCamera';
+import {
+  Trophy,
+  Crown,
+  Wifi,
+  WifiOff,
+  ZoomIn,
+  ZoomOut,
+  Compass,
+  History,
+  ChevronDown,
+  ChevronUp,
   Layers,
-  X,
-  Eye,
-  Heart,
-  Repeat2,
-  RotateCcw,
-  Shield,
-  Snowflake,
 } from 'lucide-react';
+import { cardIcon } from './cardIcons';
+import { TileBagDialog } from './TileBagDialog';
 
-const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-const CARD_USE_ICONS: Record<string, React.ReactNode> = {
-  HINT: <Eye className="h-3.5 w-3.5 text-yellow-300" />, SPY_SWAP: <Repeat2 className="h-3.5 w-3.5 text-cyan-300" />,
-  DESTROY_TILE: <RotateCcw className="h-3.5 w-3.5 text-rose-300" />, HEAL: <Heart className="h-3.5 w-3.5 fill-rose-400 text-rose-200" />,
-  DOUBLE_DAMAGE: <span className="text-xs font-black text-amber-300">×2</span>,
-  SHIELD: <Shield className="h-3.5 w-3.5 text-sky-200" />, FREEZE_TILE: <Snowflake className="h-3.5 w-3.5 text-sky-300" />,
-};
+/** Zoom buttons and level. Subscribes to the camera itself so zooming re-renders only this row. */
+function MapControls({ camera, onZoomIn, onZoomOut, onReset }: {
+  camera: BoardCamera;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onReset: () => void;
+}) {
+  const scale = useCameraScale(camera);
+  const isMinZoom = scale <= camera.minScale;
+  const isMaxZoom = scale >= camera.maxScale;
+  return (
+    <div className="p-3 border-b border-slate-800/80 bg-slate-900/40">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold tracking-widest text-cyan-400 uppercase flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8]" />
+          Map Controls
+        </span>
+        {/* Minimalist Zoom Level Indicator Badge */}
+        <span className="px-2 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-[11px] font-mono font-semibold text-cyan-300 shadow-inner">
+          {Math.round(scale * 100)}%
+        </span>
+      </div>
 
-export interface MoveHistoryEntry {
-  id: string;
-  text: string;
-  timestamp?: string;
-  score?: number;
-  type?: 'move' | 'exchange' | 'pass' | 'card';
+      <div className="flex items-center justify-between gap-2">
+        {/* Zoom In */}
+        <button
+          onClick={onZoomIn}
+          disabled={isMaxZoom}
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 active:scale-95 border border-slate-700/60 text-slate-200 hover:text-cyan-300 disabled:text-slate-600 disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-[0_0_12px_rgba(6,182,212,0.25)] cursor-pointer"
+          title="Zoom In"
+          aria-label="Zoom In"
+        >
+          <ZoomIn className="w-4 h-4 text-cyan-400" />
+          <span className="text-xs font-semibold">+</span>
+        </button>
+
+        {/* Zoom Out */}
+        <button
+          onClick={onZoomOut}
+          disabled={isMinZoom}
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 active:scale-95 border border-slate-700/60 text-slate-200 hover:text-cyan-300 disabled:text-slate-600 disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-[0_0_12px_rgba(6,182,212,0.25)] cursor-pointer"
+          title="Zoom Out"
+          aria-label="Zoom Out"
+        >
+          <ZoomOut className="w-4 h-4 text-cyan-400" />
+          <span className="text-xs font-semibold">-</span>
+        </button>
+
+        {/* Reset View */}
+        <button
+          onClick={onReset}
+          className="flex items-center justify-center p-2 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 active:scale-95 border border-slate-700/60 text-slate-300 hover:text-cyan-300 transition-all shadow-sm hover:shadow-[0_0_12px_rgba(6,182,212,0.25)] cursor-pointer"
+          title="Reset View"
+          aria-label="Reset View"
+        >
+          <Compass className="w-4 h-4 text-cyan-400" />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 interface RightSidebarProps {
@@ -48,15 +90,13 @@ interface RightSidebarProps {
   moveHistory?: MoveHistoryEntry[];
   cardUseEffects?: Record<string, string>;
   // Zoom & Map Controls
+  camera: BoardCamera;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onReset: () => void;
-  scale: number;
-  minScale: number;
-  maxScale: number;
 }
 
-export const RightSidebar: React.FC<RightSidebarProps> = ({
+export const RightSidebar = memo(function RightSidebar({
   players,
   currentPlayerId,
   myPlayerId,
@@ -64,38 +104,20 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   tileBagCounts,
   moveHistory = [],
   cardUseEffects = {},
+  camera,
   onZoomIn,
   onZoomOut,
   onReset,
-  scale,
-  minScale,
-  maxScale,
-}) => {
+}: RightSidebarProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
   const [isTileBagOpen, setIsTileBagOpen] = useState(false);
   const tileBagButtonRef = useRef<HTMLButtonElement>(null);
-  const tileBagCloseRef = useRef<HTMLButtonElement>(null);
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-  const isMinZoom = scale <= minScale;
-  const isMaxZoom = scale >= maxScale;
 
-  useEffect(() => {
-    if (!isTileBagOpen) return;
-    tileBagCloseRef.current?.focus();
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsTileBagOpen(false);
-        tileBagButtonRef.current?.focus();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isTileBagOpen]);
-
-  const closeTileBag = () => {
+  const closeTileBag = useCallback(() => {
     setIsTileBagOpen(false);
     tileBagButtonRef.current?.focus();
-  };
+  }, []);
 
   return (
     <aside className="flex flex-col h-full w-72 shrink-0 p-3 select-none">
@@ -103,54 +125,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
       <div className="flex flex-col h-full bg-slate-950/80 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20 overflow-hidden">
         
         {/* TOP SECTION: VERTICAL MAP & VIEW CONTROLS */}
-        <div className="p-3 border-b border-slate-800/80 bg-slate-900/40">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold tracking-widest text-cyan-400 uppercase flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8]" />
-              Map Controls
-            </span>
-            {/* Minimalist Zoom Level Indicator Badge */}
-            <span className="px-2 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-[11px] font-mono font-semibold text-cyan-300 shadow-inner">
-              {Math.round(scale * 100)}%
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between gap-2">
-            {/* Zoom In */}
-            <button
-              onClick={onZoomIn}
-              disabled={isMaxZoom}
-              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 active:scale-95 border border-slate-700/60 text-slate-200 hover:text-cyan-300 disabled:text-slate-600 disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-[0_0_12px_rgba(6,182,212,0.25)] cursor-pointer"
-              title="Zoom In"
-              aria-label="Zoom In"
-            >
-              <ZoomIn className="w-4 h-4 text-cyan-400" />
-              <span className="text-xs font-semibold">+</span>
-            </button>
-
-            {/* Zoom Out */}
-            <button
-              onClick={onZoomOut}
-              disabled={isMinZoom}
-              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 active:scale-95 border border-slate-700/60 text-slate-200 hover:text-cyan-300 disabled:text-slate-600 disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-[0_0_12px_rgba(6,182,212,0.25)] cursor-pointer"
-              title="Zoom Out"
-              aria-label="Zoom Out"
-            >
-              <ZoomOut className="w-4 h-4 text-cyan-400" />
-              <span className="text-xs font-semibold">-</span>
-            </button>
-
-            {/* Reset View */}
-            <button
-              onClick={onReset}
-              className="flex items-center justify-center p-2 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 active:scale-95 border border-slate-700/60 text-slate-300 hover:text-cyan-300 transition-all shadow-sm hover:shadow-[0_0_12px_rgba(6,182,212,0.25)] cursor-pointer"
-              title="Reset View"
-              aria-label="Reset View"
-            >
-              <Compass className="w-4 h-4 text-cyan-400" />
-            </button>
-          </div>
-        </div>
+        <MapControls camera={camera} onZoomIn={onZoomIn} onZoomOut={onZoomOut} onReset={onReset} />
 
         {/* MIDDLE SECTION: COMPACT TILES STATUS CARD */}
         <div className="p-3 border-b border-slate-800/80 bg-gradient-to-r from-blue-950/30 via-slate-900/30 to-slate-950/30">
@@ -198,7 +173,6 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               const isMe = player.id === myPlayerId;
               const isDead = player.hp <= 0;
               const hasLeft = player.connection_status === 'OFFLINE';
-              const isAway = player.connection_status === 'DISCONNECTED';
 
               return (
                 <div
@@ -241,7 +215,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                             className="animate-pulse rounded-full border border-cyan-300/80 bg-cyan-400/20 px-1.5 py-0.5 text-sm leading-none shadow-[0_0_14px_rgba(34,211,238,0.85)]"
                             title={`${cardUseEffects[player.id]} used`}
                           >
-                            {CARD_USE_ICONS[cardUseEffects[player.id]] ?? '✨'}
+                            {cardIcon(cardUseEffects[player.id], 'h-3.5 w-3.5', <span className="text-xs font-black text-amber-300">×2</span>) ?? '✨'}
                           </span>
                         )}
                         {isCurrent && !isDead && (
@@ -334,83 +308,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
       </div>
 
       {isTileBagOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) closeTileBag();
-          }}
-        >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="remaining-letters-title"
-            onKeyDown={(event) => {
-              if (event.key === 'Tab') {
-                event.preventDefault();
-                tileBagCloseRef.current?.focus();
-              }
-            }}
-            className="flex max-h-[min(720px,calc(100vh-2rem))] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-cyan-500/40 bg-slate-950/95 shadow-[0_0_35px_rgba(6,182,212,0.2),inset_0_1px_1px_rgba(255,255,255,0.1)]"
-          >
-            <div className="flex items-start justify-between border-b border-slate-800/80 bg-slate-900/60 p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-400/50 bg-gradient-to-br from-cyan-500/30 via-blue-600/40 to-slate-900 shadow-[0_0_12px_rgba(6,182,212,0.35)]">
-                  <Layers className="h-5 w-5 text-cyan-300" aria-hidden="true" />
-                </div>
-                <div>
-                  <h2 id="remaining-letters-title" className="text-sm font-bold tracking-wide text-white">Remaining Letters</h2>
-                  <p className="mt-0.5 text-xs font-mono text-cyan-300">{tileBagCount} tiles remaining</p>
-                </div>
-              </div>
-              <button
-                ref={tileBagCloseRef}
-                type="button"
-                onClick={closeTileBag}
-                className="rounded-lg border border-slate-700/80 p-1.5 text-slate-400 hover:border-cyan-400/50 hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-400/60"
-                aria-label="Close remaining letters"
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-              </button>
-            </div>
-
-            <div className="overflow-y-auto p-4">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-5">
-                {LETTERS.map((letter) => {
-                  const count = tileBagCounts[letter] ?? 0;
-                  return (
-                    <div
-                      key={letter}
-                      className={`flex items-center justify-between gap-2 rounded-xl border p-2.5 ${
-                        count === 0
-                          ? 'border-slate-800/60 bg-slate-950/60 opacity-45'
-                          : 'border-blue-500/30 bg-slate-900/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]'
-                      }`}
-                      aria-label={`${letter}, ${count} remaining`}
-                    >
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-sky-400/50 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] font-quakduck text-2xl text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_0_8px_rgba(56,189,248,0.16)]">
-                        {letter}
-                      </span>
-                      <span className="min-w-5 text-right font-mono text-sm font-bold text-amber-400">{count}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className={`mt-3 flex items-center justify-between rounded-xl border p-3 ${
-                (tileBagCounts.BLANK ?? 0) === 0
-                  ? 'border-slate-800/60 bg-slate-950/60 opacity-45'
-                  : 'border-blue-500/30 bg-slate-900/80'
-              }`}>
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-sky-400/50 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] text-lg font-bold text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">*</span>
-                  <span className="text-sm font-medium text-slate-200">Blank Tiles</span>
-                </div>
-                <span className="font-mono text-sm font-bold text-amber-400">{tileBagCounts.BLANK ?? 0}</span>
-              </div>
-            </div>
-          </section>
-        </div>
+        <TileBagDialog tileBagCount={tileBagCount} tileBagCounts={tileBagCounts} onClose={closeTileBag} />
       )}
     </aside>
   );
-};
+});
