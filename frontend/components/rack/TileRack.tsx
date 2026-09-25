@@ -12,6 +12,7 @@ interface TileRackProps {
   /** Fixed seats. `null` means the seat is empty — either the tile is on the board or the bag ran dry. */
   slots: (Tile | null)[];
   selectedTileId: string | null;
+  designatedBlankLetters: Record<string, string>;
   /** Tiles picked to go back to the bag, or `null` when the player is not exchanging. */
   exchangeTileIds: string[] | null;
   tileBagCount: number;
@@ -42,6 +43,7 @@ interface TileRackProps {
 export const TileRack = memo(function TileRack({
   slots,
   selectedTileId,
+  designatedBlankLetters,
   exchangeTileIds,
   tileBagCount,
   onSelectTile,
@@ -178,25 +180,34 @@ export const TileRack = memo(function TileRack({
   };
 
   const draggedTile = draggedSlot !== null ? slots[draggedSlot] : null;
+  const getDisplayLetter = (tile: Tile) => (
+    isBlankLetter(tile.letter) ? designatedBlankLetters[tile.id] ?? tile.letter : tile.letter
+  );
 
   return (
-    <div className="flex flex-col items-center gap-2 w-full max-w-5xl mx-auto px-2 pointer-events-auto">
+    <div className="mx-auto flex w-full max-w-[72rem] flex-col items-center gap-1.5 px-0 pointer-events-auto sm:gap-2 sm:px-2">
       {draggedTile && dragPosition && !isHandedToBoard && (
-        <FloatingTile ref={ghostRef} letter={draggedTile.letter} value={draggedTile.value} position={dragPosition} />
+        <FloatingTile
+          ref={ghostRef}
+          letter={getDisplayLetter(draggedTile)}
+          value={draggedTile.value}
+          position={dragPosition}
+          isDesignatedBlank={isBlankLetter(draggedTile.letter) && Boolean(designatedBlankLetters[draggedTile.id])}
+        />
       )}
 
       {/* Premium Player Control Hub: 3-column layout (Left Pod, Center Tray, Right Pod) */}
-      <div className="flex flex-col md:flex-row items-center md:items-end justify-center gap-3 lg:gap-4 w-full">
+      <div className="flex w-full flex-col items-center gap-2 lg:flex-row lg:items-end lg:justify-center lg:gap-4">
         {/* LEFT POD: GAME MANAGEMENT */}
-        <div className="flex flex-col items-center md:items-start shrink-0">
-          <div className="flex items-center gap-1.5 px-2 mb-1.5">
+        <div className="order-2 flex w-full shrink-0 flex-col items-center lg:order-none lg:w-auto lg:items-start">
+          <div className="mb-1.5 flex items-center gap-1.5 px-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8]" />
-            <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+            <span className="hidden text-[10px] font-bold tracking-widest text-slate-400 uppercase sm:inline">
               {isExchanging ? 'Exchange Mode' : 'Game Management'}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 bg-slate-900/85 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-cyan-500/15 min-h-[58px]">
+          <div className="flex max-w-full items-center gap-1.5 p-1.5 sm:gap-2 sm:p-2 bg-slate-900/85 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-cyan-500/15 min-h-[52px] sm:min-h-[58px]">
             {isExchanging ? (
               <div className="flex items-center gap-2 px-1">
                 <button
@@ -257,14 +268,14 @@ export const TileRack = memo(function TileRack({
         </div>
 
         {/* CENTER POD: COSMIC BLUE TILE TRAY WITH NEON LED UNDER-LIGHTING */}
-        <div className="relative flex flex-col items-center shrink-0">
+        <div className="relative order-1 flex w-full shrink-0 flex-col items-center lg:order-none lg:w-auto">
           {/* LED under-lighting glow (Blue/Cyan Neon) */}
           <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-blue-600/30 via-cyan-500/40 to-blue-600/30 blur-md pointer-events-none opacity-90" />
 
           {/* Tray Stand (Blue Theme) */}
           <div
             ref={rackRef}
-            className={`relative flex items-center justify-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 bg-gradient-to-b from-[#0e1d3d] via-[#081226] to-[#040814] backdrop-blur-md rounded-2xl border-2 shadow-[inset_0_1px_2px_rgba(255,255,255,0.22),0_12px_28px_rgba(0,0,0,0.7),0_0_22px_rgba(37,99,235,0.35)] min-h-[72px] sm:min-h-[78px] ${
+            className={`relative flex w-full items-center justify-center gap-1 p-1.5 sm:w-auto sm:gap-2.5 sm:p-2.5 bg-gradient-to-b from-[#0e1d3d] via-[#081226] to-[#040814] backdrop-blur-md rounded-2xl border-2 shadow-[inset_0_1px_2px_rgba(255,255,255,0.22),0_12px_28px_rgba(0,0,0,0.7),0_0_22px_rgba(37,99,235,0.35)] min-h-[64px] sm:min-h-[78px] ${
               isExternalDragActive ? 'border-cyan-300 ring-2 ring-cyan-400/60 shadow-[0_0_25px_rgba(6,182,212,0.5)]' : 'border-blue-500/70 hover:border-blue-400/90'
             } transition-all`}
           >
@@ -276,7 +287,7 @@ export const TileRack = memo(function TileRack({
                 key={`slot-${slotIndex}`}
                 data-rack-slot={slotIndex}
                 aria-hidden="true"
-                className={`relative w-11 h-12 sm:w-13 sm:h-14 rounded-xl border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all ${
+                className={`relative h-10 w-9 rounded-lg border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:h-14 sm:w-13 sm:rounded-xl ${
                   isDropTarget
                     ? 'ring-2 ring-sky-400/90'
                     : isExternalDragActive
@@ -290,6 +301,8 @@ export const TileRack = memo(function TileRack({
           }
 
           const isSelected = selectedTileId === tile.id;
+          const displayLetter = getDisplayLetter(tile);
+          const isDesignatedBlank = isBlankLetter(tile.letter) && Boolean(designatedBlankLetters[tile.id]);
           const isMarkedForExchange = exchangeTileIds?.includes(tile.id) ?? false;
           const isDragging = draggedSlot === slotIndex;
           const isDropTarget = dragOverSlot === slotIndex;
@@ -304,7 +317,7 @@ export const TileRack = memo(function TileRack({
               onPointerUp={handlePointerUp}
               disabled={!canStageMove}
               aria-pressed={isExchanging ? isMarkedForExchange : undefined}
-              className={`group relative flex flex-col items-center justify-center w-11 h-12 sm:w-13 sm:h-14 rounded-xl font-sans transition-all select-none touch-none overflow-hidden ${
+              className={`group relative flex h-10 w-9 flex-col items-center justify-center rounded-lg font-sans transition-all select-none touch-none overflow-hidden sm:h-14 sm:w-13 sm:rounded-xl ${
                 isDragging
                   ? 'z-10 scale-105 -translate-y-2 opacity-40 bg-[#16274e] border border-blue-400/50 shadow-2xl cursor-grabbing'
                   : isDropTarget
@@ -323,26 +336,26 @@ export const TileRack = memo(function TileRack({
 
               {/* Unique Letter Constellation Star Cluster */}
               <ConstellationGraphic
-                letter={tile.letter}
+                letter={displayLetter}
                 isGolden={isMarkedForExchange}
                 className="opacity-75 group-hover:opacity-95 transition-opacity"
               />
 
               {/* High-Contrast Prominent Letter OR Cosmic Wildcard Star */}
-              {isBlankLetter(tile.letter) ? (
+              {isBlankLetter(tile.letter) && !isDesignatedBlank ? (
                 <div className="relative z-20 flex items-center justify-center">
                   <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-300 drop-shadow-[0_0_12px_rgba(56,189,248,0.95)] animate-pulse" fill="currentColor">
                     <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
                   </svg>
                 </div>
               ) : (
-                <span className="relative z-20 text-[30px] sm:text-[36px] font-normal text-white leading-none font-quakduck drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                  {tile.letter}
+                <span className={`tile-letter relative z-20 text-[26px] sm:text-[36px] font-normal leading-none font-quakduck ${isDesignatedBlank ? 'tile-letter-gold' : 'text-slate-50'}`}>
+                  {displayLetter}
                 </span>
               )}
 
               {/* Glowing Value Badge */}
-              <span className="absolute z-20 bottom-1 right-1.5 text-[11px] sm:text-[13px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">
+              <span className="absolute bottom-0.5 right-1 z-20 text-[9px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)] sm:bottom-1 sm:right-1.5 sm:text-[13px]">
                 {tile.value}
               </span>
             </button>
@@ -352,11 +365,11 @@ export const TileRack = memo(function TileRack({
         </div>
 
         {/* RIGHT POD: TURN ACTIONS */}
-        <div className="flex flex-col items-center md:items-end shrink-0">
-          <div className="flex items-center justify-between w-full px-2 mb-1.5 gap-2">
+        <div className="order-3 flex w-full shrink-0 flex-col items-center lg:order-none lg:w-auto lg:items-end">
+          <div className="mb-1.5 flex w-full items-center justify-between gap-2 px-2">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
-              <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+              <span className="hidden text-[10px] font-bold tracking-widest text-slate-400 uppercase sm:inline">
                 {isExchanging ? 'Confirm Action' : 'Turn Actions'}
               </span>
             </div>
@@ -374,7 +387,7 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 bg-slate-900/85 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-emerald-500/15 min-h-[58px]">
+          <div className="flex max-w-full flex-wrap items-center justify-center gap-1.5 p-1.5 sm:gap-2 sm:p-2 bg-slate-900/85 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-emerald-500/15 min-h-[52px] sm:min-h-[58px]">
             {isExchanging ? (
               <button
                 onClick={onConfirmExchange}

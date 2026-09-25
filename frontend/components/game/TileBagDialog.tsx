@@ -79,7 +79,7 @@ export const TileBagDialog: React.FC<TileBagDialogProps> = ({ tileBagCount, tile
                   }`}
                   aria-label={`${letter}, ${count} remaining`}
                 >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-sky-400/50 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] font-quakduck text-2xl text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_0_8px_rgba(56,189,248,0.16)]">
+                  <span className="tile-letter flex h-9 w-9 items-center justify-center rounded-lg border border-sky-400/50 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] font-quakduck text-2xl text-slate-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_0_8px_rgba(56,189,248,0.16)]">
                     {letter}
                   </span>
                   <span className="min-w-5 text-right font-mono text-sm font-bold text-amber-400">{count}</span>

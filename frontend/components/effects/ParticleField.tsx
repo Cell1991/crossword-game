@@ -6,8 +6,8 @@ type Node = { x: number; y: number; vy: number; char: string };
 type Beam = { x: number; y: number; length: number; speed: number; opacity: number };
 
 const CHARS = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ*+#'.split('');
-const NODE_COUNT = 70;
-const BEAM_COUNT = 18;
+const NODE_COUNT = 44;
+const BEAM_COUNT = 12;
 const LINK_DISTANCE = 110;
 const MOUSE_RADIUS = 160;
 
@@ -33,9 +33,10 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     let beams: Beam[] = [];
     const device = navigator as Navigator & { deviceMemory?: number };
     const isLowPowerDevice = (device.hardwareConcurrency ?? 8) <= 8 || (device.deviceMemory ?? 8) <= 8;
-    const nodeCount = isLowPowerDevice ? 36 : NODE_COUNT;
-    const beamCount = isLowPowerDevice ? 8 : BEAM_COUNT;
-    const frameInterval = isLowPowerDevice ? 1000 / 30 : 1000 / 60;
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+    const nodeCount = isTouchDevice ? 14 : isLowPowerDevice ? 24 : NODE_COUNT;
+    const beamCount = isTouchDevice ? 4 : isLowPowerDevice ? 6 : BEAM_COUNT;
+    const frameInterval = isTouchDevice ? 1000 / 15 : isLowPowerDevice ? 1000 / 20 : 1000 / 30;
     let lastDrawAt = 0;
     const mouse = { x: -1000, y: -1000 };
     /** The canvas box, measured on resize: reading it on every pointer move forced a layout each time. */
@@ -92,6 +93,10 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
 
     const draw = () => {
       const now = performance.now();
+      if (document.visibilityState === 'hidden') {
+        frame = requestAnimationFrame(draw);
+        return;
+      }
       if (now - lastDrawAt < frameInterval) {
         frame = requestAnimationFrame(draw);
         return;

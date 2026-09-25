@@ -8,6 +8,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { commitMove, exchangeTiles, expireTurn, leaveGame, passTurn } from '@/lib/api';
 import { buildRackSlots } from '@/lib/rack';
 import { GameState, Tile } from '@/lib/types';
+import { isBlankLetter } from '@/lib/tiles';
 import { BUTTON_ZOOM_FACTOR, useBoardCamera } from '@/hooks/useBoardCamera';
 import { useGameSession } from '@/hooks/useGameSession';
 import { useGameSync } from '@/hooks/useGameSync';
@@ -271,7 +272,7 @@ export default function GamePage() {
 
   return (
     <div
-      className="relative flex h-screen w-screen flex-col overflow-hidden"
+      className="relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden"
       style={{
         background: 'radial-gradient(circle at 50% 18%, rgba(99, 102, 241, 0.16), transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 58%, #171942 100%)',
       }}
@@ -338,7 +339,13 @@ export default function GamePage() {
               hintCell={cards.hintCell}
             />
             {dragSession && (
-              <FloatingTile ref={dragGhostRef} letter={dragSession.tile.letter} value={dragSession.tile.value} position={dragSession.start} />
+              <FloatingTile
+                ref={dragGhostRef}
+                letter={isBlankLetter(dragSession.tile.letter) ? staged.designatedBlankLetters[dragSession.tile.id] ?? dragSession.tile.letter : dragSession.tile.letter}
+                value={dragSession.tile.value}
+                position={dragSession.start}
+                isDesignatedBlank={isBlankLetter(dragSession.tile.letter) && Boolean(staged.designatedBlankLetters[dragSession.tile.id])}
+              />
             )}
             {/* Floating board controls on mobile only (desktop has them in the RightSidebar) */}
             <div className="lg:hidden">
@@ -371,14 +378,14 @@ export default function GamePage() {
       </div>
 
       {/* Bottom: Tile rack (spectators have no seat and never see a rack) */}
-      <div className="relative z-10 shrink-0 p-3">
+      <div className="relative z-10 shrink-0 px-1.5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1.5 sm:p-3">
         {isSpectator ? (
           <p className="py-3 text-center text-sm text-sky-300">
             👁 You are watching this game. Players&apos; tiles stay hidden.
           </p>
         ) : (
           <>
-            <div className="mb-2">
+            <div className="mb-1 sm:mb-2">
               <PowerCardBar
                 cards={myPlayer?.cards ?? []}
                 opponents={opponents}
@@ -396,6 +403,7 @@ export default function GamePage() {
             <TileRack
               slots={rackSlots}
               selectedTileId={staged.selectedTileId}
+              designatedBlankLetters={staged.designatedBlankLetters}
               exchangeTileIds={exchangeTileIds}
               tileBagCount={tileBagCount}
               onSelectTile={handleSelectTile}

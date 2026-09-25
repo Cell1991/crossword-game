@@ -116,28 +116,41 @@ function drawTile(
 
   // Shadow layer
   const shadowFill = isGolden
-    ? 'rgba(120, 53, 15, 0.4)'
-    : (isRemote ? 'rgba(0,0,0,0.3)' : 'rgba(0, 0, 0, 0.4)');
+    ? 'rgba(72, 42, 18, 0.58)'
+    : (isRemote ? 'rgba(8, 47, 73, 0.58)' : 'rgba(0, 0, 0, 0.4)');
+  if (isGolden && !lowPower) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(251, 191, 36, 0.34)';
+    ctx.shadowBlur = Math.max(4, cellSize * 0.1);
+  }
   ctx.fillStyle = shadowFill;
   drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
   ctx.fill();
+  if (isGolden && !lowPower) ctx.restore();
 
   // Tile face fill
   if (isRemote) {
-    ctx.fillStyle = '#cbd5e1';
+    const ghostGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
+    ghostGrad.addColorStop(0, '#3d5e88');
+    ghostGrad.addColorStop(0.35, '#2f4e77');
+    ghostGrad.addColorStop(0.72, '#254365');
+    ghostGrad.addColorStop(1, '#1c3452');
+    ctx.fillStyle = ghostGrad;
   } else if (isGolden) {
-    // Confirmed on board OR Valid temporary move → Original Deep Royal Amber Gold crystal gradient
+    // Confirmed on board OR valid temporary move: softly burnished gold, not a flat orange gradient.
     const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-    grad.addColorStop(0, '#d97706');
-    grad.addColorStop(0.45, '#854d0e');
-    grad.addColorStop(1, '#3f1a04');
+    grad.addColorStop(0, '#e9c875');
+    grad.addColorStop(0.18, '#c8943f');
+    grad.addColorStop(0.58, '#9a6426');
+    grad.addColorStop(1, '#5d391b');
     ctx.fillStyle = grad;
   } else {
-    // In-progress / unverified placement on board → natural navy gradient
+    // In-progress / unverified placement on board: deep sapphire with a restrained sheen.
     const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-    grad.addColorStop(0, '#23407a');
-    grad.addColorStop(0.5, '#1a305e');
-    grad.addColorStop(1, '#122244');
+    grad.addColorStop(0, '#35527f');
+    grad.addColorStop(0.2, '#2b466f');
+    grad.addColorStop(0.58, '#20385f');
+    grad.addColorStop(1, '#132743');
     ctx.fillStyle = grad;
   }
   drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
@@ -147,25 +160,42 @@ function drawTile(
   if (!isRemote && cellSize >= 16) {
     ctx.save();
     const glossGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW * 0.38);
-    glossGrad.addColorStop(0, 'rgba(255, 255, 255, 0.18)');
+    glossGrad.addColorStop(0, isGolden ? 'rgba(255, 248, 220, 0.22)' : 'rgba(255, 255, 255, 0.13)');
     glossGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
     ctx.fillStyle = glossGrad;
     drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW * 0.38, Math.max(1.5, radius - 1));
     ctx.fill();
     ctx.restore();
+  } else if (isRemote && cellSize >= 16) {
+    ctx.save();
+    const ghostGloss = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW * 0.5);
+    ghostGloss.addColorStop(0, 'rgba(191, 219, 254, 0.13)');
+    ghostGloss.addColorStop(1, 'rgba(125, 211, 252, 0)');
+    ctx.fillStyle = ghostGloss;
+    drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW * 0.5, Math.max(1.5, radius - 1));
+    ctx.fill();
+    ctx.restore();
   }
 
   // Celestial Star Constellation Background (Authentic star chart matching letter with dynamic twinkling)
-  if (!isRemote && letter && cellSize >= 18) {
+  if (cellSize >= 18 && (letter || isRemote)) {
     ctx.save();
-    const constellation = getConstellationData(letter);
+    const constellation = getConstellationData(letter || 'A');
     const time = lowPower ? 0 : scene.time;
 
     // Color scheme: warm celestial gold/champagne for gold tiles, crisp starlight cyan for blue tiles
-    const lineColor = isGolden ? 'rgba(254, 240, 138, 0.26)' : 'rgba(147, 220, 252, 0.20)';
-    const starGlow = isGolden ? 'rgba(251, 191, 36, 0.60)' : 'rgba(56, 189, 248, 0.55)';
-    const starFill = isGolden ? '#fef3c7' : 'rgba(224, 242, 254, 0.80)';
-    const burstFill = isGolden ? '#fde68a' : 'rgba(186, 230, 253, 0.85)';
+    const lineColor = isGolden
+      ? 'rgba(254, 240, 138, 0.26)'
+      : isRemote ? 'rgba(186, 230, 253, 0.14)' : 'rgba(147, 220, 252, 0.20)';
+    const starGlow = isGolden
+      ? 'rgba(251, 191, 36, 0.60)'
+      : isRemote ? 'rgba(125, 211, 252, 0.28)' : 'rgba(56, 189, 248, 0.55)';
+    const starFill = isGolden
+      ? '#fef3c7'
+      : isRemote ? 'rgba(186, 230, 253, 0.42)' : 'rgba(224, 242, 254, 0.80)';
+    const burstFill = isGolden
+      ? '#fde68a'
+      : isRemote ? 'rgba(186, 230, 253, 0.55)' : 'rgba(186, 230, 253, 0.85)';
 
     // 1. Background stardust specks with gentle shimmer
     for (let i = 0; i < constellation.dust.length; i++) {
@@ -247,11 +277,17 @@ function drawTile(
 
   // Stroke
   if (isRemote) {
-    ctx.strokeStyle = '#94a3b8';
-    ctx.lineWidth = 1;
+    ctx.save();
+    ctx.shadowColor = 'rgba(96, 165, 250, 0.28)';
+    ctx.shadowBlur = lowPower ? 0 : Math.max(1, cellSize * 0.03);
+    ctx.strokeStyle = 'rgba(125, 211, 252, 0.62)';
+    ctx.lineWidth = 1.1;
+    ctx.stroke();
+    ctx.restore();
+    return;
   } else if (isGolden) {
-    ctx.strokeStyle = isTemporary ? 'rgba(251, 191, 36, 0.85)' : 'rgba(217, 119, 6, 0.55)';
-    ctx.lineWidth = isTemporary ? 1.8 : 1.2;
+    ctx.strokeStyle = isTemporary ? '#f5d98a' : 'rgba(226, 184, 93, 0.9)';
+    ctx.lineWidth = isTemporary ? 1.8 : 1.3;
   } else {
     ctx.strokeStyle = 'rgba(96, 165, 250, 0.45)';
     ctx.lineWidth = 1.5;
@@ -281,13 +317,26 @@ function drawTile(
       ctx.arc(cx, cy, starSize * 0.22, 0, Math.PI * 2);
       ctx.fill();
     } else {
-      // White text on both navy and royal gold tiles for max clarity and texture with drop shadow
-      ctx.shadowColor = isRemote ? 'transparent' : 'rgba(0, 0, 0, 0.85)';
-      ctx.shadowBlur = lowPower ? 0 : Math.max(2, cellSize * 0.08);
-      ctx.shadowOffsetY = 1;
-      ctx.fillStyle = isRemote ? '#0f172a' : '#ffffff';
+      // Ivory letterface with a grounded shadow and a quiet highlight, matching the tile material.
+      ctx.shadowColor = isRemote ? 'transparent' : isGolden ? 'rgba(45, 25, 10, 0.9)' : 'rgba(3, 12, 28, 0.92)';
+      ctx.shadowBlur = lowPower ? 0 : Math.max(2, cellSize * 0.075);
+      ctx.shadowOffsetY = Math.max(1, cellSize * 0.025);
+      const letterGrad = ctx.createLinearGradient(0, y + cellSize * 0.27, 0, y + cellSize * 0.72);
+      if (isRemote) {
+        letterGrad.addColorStop(0, '#0f172a');
+        letterGrad.addColorStop(1, '#334155');
+      } else if (isGolden) {
+        letterGrad.addColorStop(0, '#fffdf1');
+        letterGrad.addColorStop(0.55, '#fff8dc');
+        letterGrad.addColorStop(1, '#ead8a4');
+      } else {
+        letterGrad.addColorStop(0, '#ffffff');
+        letterGrad.addColorStop(0.58, '#f1f5f9');
+        letterGrad.addColorStop(1, '#cbd8e8');
+      }
+      ctx.fillStyle = letterGrad;
       const fontSize = Math.max(12, Math.round(cellSize * 0.70));
-      ctx.font = `${fontSize}px 'QuakDuck', sans-serif`;
+      ctx.font = `${fontSize}px 'Aveline Eleganza', sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       const textX = Math.round(x + cellSize / 2);
@@ -396,11 +445,11 @@ function drawGrid(
           drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
           ctx.fill();
         } else if (isDouble) {
-          ctx.fillStyle = '#854d0e';
+          ctx.fillStyle = '#166534';
           drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
           ctx.fill();
         } else if (isPower) {
-          ctx.fillStyle = '#075985';
+          ctx.fillStyle = '#0e7490';
           drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
           ctx.fill();
         }

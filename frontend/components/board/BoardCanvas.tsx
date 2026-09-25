@@ -6,8 +6,8 @@ import { BoardCamera, Offset } from '@/hooks/useBoardCamera';
 import { BoardScene, drawBoard } from './boardRenderer';
 import { PremiumCellOverlay } from './PremiumCellOverlay';
 
-/** Tile constellations twinkle at this rate (only on devices that animate them). */
-const TWINKLE_FRAME_MS = 1000 / 30;
+/** Tile constellations twinkle at a bounded rate so the board stays responsive under load. */
+const TWINKLE_FRAME_MS = 1000 / 24;
 
 /** Weaker devices get a 1× canvas and no glows or twinkling. */
 function detectLowPowerDevice() {
@@ -199,7 +199,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     let frame = 0;
     let lastDrawAt = 0;
     const loop = (time: number) => {
-      if (time - lastDrawAt >= TWINKLE_FRAME_MS) {
+      if (document.visibilityState === 'visible' && time - lastDrawAt >= TWINKLE_FRAME_MS) {
         draw();
         lastDrawAt = time;
       }

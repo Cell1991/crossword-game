@@ -10,6 +10,7 @@ interface FloatingTileProps {
   value: number;
   /** Where the tile first appears. Afterwards the owner moves it with `moveFixedElement`. */
   position: { x: number; y: number };
+  isDesignatedBlank?: boolean;
   ref?: React.Ref<HTMLDivElement>;
 }
 
@@ -18,7 +19,7 @@ interface FloatingTileProps {
  * backdrop-blur makes it the containing block for `fixed` children, which drew this tile a
  * whole bar-height below the pointer.
  */
-export const FloatingTile: React.FC<FloatingTileProps> = ({ letter, value, position, ref }) => {
+export const FloatingTile: React.FC<FloatingTileProps> = ({ letter, value, position, isDesignatedBlank = false, ref }) => {
   if (typeof document === 'undefined') return null;
   return createPortal(
     <div
@@ -31,14 +32,14 @@ export const FloatingTile: React.FC<FloatingTileProps> = ({ letter, value, posit
       <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
       {/* Unique Letter Constellation Star Cluster */}
       <ConstellationGraphic letter={letter} />
-      {isBlankLetter(letter) ? (
+      {isBlankLetter(letter) && !isDesignatedBlank ? (
         <div className="relative z-20 flex items-center justify-center">
           <svg viewBox="0 0 24 24" className="w-8 h-8 text-cyan-300 drop-shadow-[0_0_14px_rgba(56,189,248,0.95)] animate-pulse" fill="currentColor">
             <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
           </svg>
         </div>
       ) : (
-        <span className="relative z-20 text-[38px] font-normal leading-none font-quakduck text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+        <span className={`tile-letter relative z-20 text-[38px] font-normal leading-none font-quakduck ${isDesignatedBlank ? 'tile-letter-gold' : 'text-slate-50'}`}>
           {letter}
         </span>
       )}

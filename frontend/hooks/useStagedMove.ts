@@ -222,6 +222,7 @@ export function useStagedMove({
     estimatedScore,
     validationState,
     validationReason,
+    designatedBlankLetters,
     blankPickerTarget,
     stageTile,
     swapStagedTiles,
