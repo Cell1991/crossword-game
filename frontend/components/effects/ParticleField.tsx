@@ -38,9 +38,14 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     const frameInterval = isLowPowerDevice ? 1000 / 30 : 1000 / 60;
     let lastDrawAt = 0;
     const mouse = { x: -1000, y: -1000 };
+    /** The canvas box, measured on resize: reading it on every pointer move forced a layout each time. */
+    let canvasLeft = 0;
+    let canvasTop = 0;
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
+      canvasLeft = rect.left;
+      canvasTop = rect.top;
       width = rect.width;
       height = rect.height;
       const dpr = Math.min(window.devicePixelRatio || 1, isLowPowerDevice ? 1 : 1.5);
@@ -65,11 +70,19 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       }));
     };
 
-    const onResize = () => { resize(); seed(); };
+    // A window drag fires many resize events per frame; re-measure and reseed once per frame.
+    let resizeFrame: number | null = null;
+    const onResize = () => {
+      if (resizeFrame !== null) return;
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = null;
+        resize();
+        seed();
+      });
+    };
     const onPointerMove = (e: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - rect.left;
-      mouse.y = e.clientY - rect.top;
+      mouse.x = e.clientX - canvasLeft;
+      mouse.y = e.clientY - canvasTop;
     };
 
     resize();
@@ -156,6 +169,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
 
     return () => {
       cancelAnimationFrame(frame);
+      if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('pointermove', onPointerMove);
     };
