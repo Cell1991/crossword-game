@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { Player, GameState, CARD_TYPES } from '../../lib/types';
-import { debugSetHp, debugSetRackTile, debugGrantCard, StoredSession } from '../../lib/api';
+import { Player, GameState, CARD_TYPES } from '@/lib/types';
+import { debugSetHp, debugSetRackTile, debugGrantCard, StoredSession } from '@/lib/api';
 
 interface DebugPanelProps {
   gameId: string;
