@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowRight, Eye, LogIn, Plus } from 'lucide-react';
-import { createRoom, getRoom, joinRoom, sessionStore } from '../lib/api';
-import { TurnTimeLimit } from '../lib/types';
-import ParticleField from '../components/effects/ParticleField';
-import MouseGradientText from '../components/effects/MouseGradientText';
+import { createRoom, getRoom, joinRoom, sessionStore } from '@/lib/api';
+import { TurnTimeLimit } from '@/lib/types';
+import ParticleField from '@/components/effects/ParticleField';
+import MouseGradientText from '@/components/effects/MouseGradientText';
 
 type Mode = 'home' | 'create' | 'join';
 
