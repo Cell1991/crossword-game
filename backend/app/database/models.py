@@ -26,6 +26,8 @@ class GameRoom(Base):
     host_player_id = Column(String(36), nullable=False)
     status = Column(String(32), default="WAITING", nullable=False)  # WAITING, PLAYING, FINISHED, ABANDONED
     turn_time_limit = Column(Integer, nullable=True)
+    game_mode = Column(String(16), default="HP", nullable=False)
+    max_turns = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), default=get_utc_now)
     started_at = Column(DateTime(timezone=True), nullable=True)
     finished_at = Column(DateTime(timezone=True), nullable=True)

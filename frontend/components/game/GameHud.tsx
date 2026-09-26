@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { Trophy } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { TurnBanner } from './TurnBanner';
 
@@ -13,7 +14,9 @@ interface GameHudProps {
   isMyTurn: boolean;
   currentPlayer: Player | undefined;
   turnNumber: number;
+  maxTurns: number | null;
   onExit: () => void;
+  onOpenInfo: () => void;
   /** The turn countdown, rendered by its own component so its tick stays local. */
   timer: React.ReactNode;
 }
@@ -27,7 +30,9 @@ export const GameHud: React.FC<GameHudProps> = ({
   isMyTurn,
   currentPlayer,
   turnNumber,
+  maxTurns,
   onExit,
+  onOpenInfo,
   timer,
 }) => (
   <div className="relative z-10 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3 py-2 sm:px-4 bg-slate-900/75 border-b border-slate-800/60 backdrop-blur-sm shrink-0">
@@ -65,6 +70,15 @@ export const GameHud: React.FC<GameHudProps> = ({
           PIN <span className="font-bold text-amber-300">{roomPin}</span>
         </button>
       )}
+      <button
+        type="button"
+        onClick={onOpenInfo}
+        className="lg:hidden rounded-lg border border-slate-700 p-1.5 text-amber-300 hover:bg-slate-800"
+        title="Scores, history, and tile bag"
+        aria-label="Open scores, history, and tile bag"
+      >
+        <Trophy className="h-4 w-4" />
+      </button>
     </div>
 
     {/* Right: spectators, timer, and TurnBanner */}
@@ -73,7 +87,7 @@ export const GameHud: React.FC<GameHudProps> = ({
         <span className="whitespace-nowrap text-xs text-slate-400" title="Spectators watching">👁 {spectatorCount}</span>
       )}
       {timer}
-      <TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} turnNumber={turnNumber} />
+      <TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} turnNumber={turnNumber} maxTurns={maxTurns} />
     </div>
   </div>
 );

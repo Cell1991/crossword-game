@@ -7,6 +7,7 @@ import {
   ValidateMoveResponse,
   CommitMoveResponse,
   ExchangeTilesResponse,
+  GameMode,
   TurnTimeLimit,
 } from './types';
 
@@ -86,11 +87,21 @@ export const debugSessionStore = {
   },
 };
 
-export async function createRoom(hostName: string, turnTimeLimit: TurnTimeLimit = null): Promise<CreateRoomResponse> {
+export async function createRoom(
+  hostName: string,
+  turnTimeLimit: TurnTimeLimit = null,
+  gameMode: GameMode = 'HP',
+  maxTurns: number | null = null,
+): Promise<CreateRoomResponse> {
   const res = await fetch(`${getApiBase()}/rooms`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ host_name: hostName, turn_time_limit: turnTimeLimit }),
+    body: JSON.stringify({
+      host_name: hostName,
+      turn_time_limit: turnTimeLimit,
+      game_mode: gameMode,
+      max_turns: gameMode === 'TURNS' ? maxTurns : null,
+    }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

@@ -317,18 +317,18 @@ export const TileRack = memo(function TileRack({
               onPointerUp={handlePointerUp}
               disabled={!canStageMove}
               aria-pressed={isExchanging ? isMarkedForExchange : undefined}
-              className={`group relative flex h-10 w-9 flex-col items-center justify-center rounded-lg font-sans transition-all select-none touch-none overflow-hidden sm:h-14 sm:w-13 sm:rounded-xl ${
+              className={`tile-face group relative flex h-10 w-9 flex-col items-center justify-center rounded-lg border border-amber-100/80 font-sans transition-all select-none touch-none overflow-hidden sm:h-14 sm:w-13 sm:rounded-xl ${
                 isDragging
-                  ? 'z-10 scale-105 -translate-y-2 opacity-40 bg-[#16274e] border border-blue-400/50 shadow-2xl cursor-grabbing'
+                  ? 'z-10 scale-105 -translate-y-2 opacity-40 shadow-2xl cursor-grabbing'
                   : isDropTarget
                   ? 'translate-x-1 ring-2 ring-sky-400/80'
                   : isMarkedForExchange
-                  ? '-translate-y-3 bg-gradient-to-b from-amber-600 via-amber-700 to-amber-900 border-2 border-amber-300 shadow-amber-500/40 ring-4 ring-amber-400/50 cursor-pointer'
+                  ? '-translate-y-3 border-2 border-amber-100 shadow-amber-500/40 ring-4 ring-amber-300/70 cursor-pointer'
                   : isSelected
-                  ? '-translate-y-3 bg-gradient-to-b from-[#2563eb] to-[#1d4ed8] border-2 border-cyan-300 shadow-[0_0_18px_rgba(59,130,246,0.7)] ring-4 ring-cyan-400/60'
+                  ? '-translate-y-3 border-2 border-cyan-300 shadow-[0_0_18px_rgba(59,130,246,0.55)] ring-4 ring-cyan-400/60'
                   : canStageMove
-                  ? 'bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] border border-blue-400/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_6px_12px_rgba(0,0,0,0.55),0_2px_4px_rgba(0,0,0,0.4)] hover:brightness-110 hover:-translate-y-1 active:translate-y-0.5 cursor-pointer'
-                  : 'bg-[#16274e]/60 border border-blue-900/30 opacity-60 cursor-not-allowed shadow-md'
+                  ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_6px_12px_rgba(74,34,8,0.48),0_2px_4px_rgba(34,24,20,0.35)] hover:brightness-110 hover:-translate-y-1 active:translate-y-0.5 cursor-pointer'
+                  : 'opacity-65 cursor-not-allowed shadow-md'
               }`}
             >
               {/* 3D Specular Top Bevel Glass Highlight */}
@@ -344,18 +344,18 @@ export const TileRack = memo(function TileRack({
               {/* High-Contrast Prominent Letter OR Cosmic Wildcard Star */}
               {isBlankLetter(tile.letter) && !isDesignatedBlank ? (
                 <div className="relative z-20 flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-300 drop-shadow-[0_0_12px_rgba(56,189,248,0.95)] animate-pulse" fill="currentColor">
+                  <svg viewBox="0 0 24 24" className="tile-blank-star w-6 h-6 sm:w-8 sm:h-8 animate-pulse" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
                     <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
                   </svg>
                 </div>
               ) : (
-                <span className={`tile-letter relative z-20 text-[26px] sm:text-[36px] font-normal leading-none font-quakduck ${isDesignatedBlank ? 'tile-letter-gold' : 'text-slate-50'}`}>
+                <span className="tile-letter tile-letter-orange relative z-20 text-[26px] sm:text-[36px] leading-none font-maple">
                   {displayLetter}
                 </span>
               )}
 
               {/* Glowing Value Badge */}
-              <span className="absolute bottom-0.5 right-1 z-20 text-[9px] font-mono font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)] sm:bottom-1 sm:right-1.5 sm:text-[13px]">
+              <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 rounded-sm bg-[#fff2d8]/90 px-0.5 text-[9px] font-mono font-black sm:bottom-1 sm:right-1.5 sm:text-[13px] lg:rounded-none lg:bg-transparent lg:px-0 lg:text-[18px] lg:leading-none">
                 {tile.value}
               </span>
             </button>

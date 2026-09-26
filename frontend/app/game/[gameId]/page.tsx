@@ -8,6 +8,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { commitMove, exchangeTiles, expireTurn, leaveGame, passTurn } from '@/lib/api';
 import { buildRackSlots } from '@/lib/rack';
 import { GameState, Tile } from '@/lib/types';
+import { TILE_THEME_STYLE } from '@/lib/tileTheme';
 import { isBlankLetter } from '@/lib/tiles';
 import { BUTTON_ZOOM_FACTOR, useBoardCamera } from '@/hooks/useBoardCamera';
 import { useGameSession } from '@/hooks/useGameSession';
@@ -116,6 +117,7 @@ export default function GamePage() {
   /** Tiles picked to swap with the bag; `null` while the player is not exchanging. */
   const [exchangeTileIds, setExchangeTileIds] = useState<string[] | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
 
   const seatReturningTile = useCallback((tileId: string, targetSlot: number) => {
     seatReturning(tileId, targetSlot, pendingTileIds);
@@ -274,6 +276,7 @@ export default function GamePage() {
     <div
       className="relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden"
       style={{
+        ...TILE_THEME_STYLE,
         background: 'radial-gradient(circle at 50% 18%, rgba(99, 102, 241, 0.16), transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 58%, #171942 100%)',
       }}
     >
@@ -286,7 +289,9 @@ export default function GamePage() {
         isMyTurn={isMyTurn}
         currentPlayer={currentPlayer}
         turnNumber={gameState.turn_number ?? 1}
+        maxTurns={gameState.max_turns}
         onExit={handleExit}
+        onOpenInfo={() => setIsMobileInfoOpen(true)}
         timer={(
           <TurnTimer
             turnTimeLimit={gameState.turn_time_limit}
@@ -314,7 +319,7 @@ export default function GamePage() {
       {/* Main: Board */}
       <div className="relative z-10 flex flex-1 min-h-0">
         {/* Board canvas takes full space */}
-        <div className="flex-1 relative">
+        <div className="relative min-w-0 flex-1">
           <ToastStack info={toasts.info} error={toasts.error} />
           <div className="absolute inset-0 z-10">
             <BoardCanvas
@@ -338,6 +343,20 @@ export default function GamePage() {
               frozenTile={gameState.frozen_tile}
               hintCell={cards.hintCell}
             />
+            <div className="pointer-events-none absolute left-2 right-16 top-2 z-20 lg:hidden">
+              <div
+                aria-label="Live scoreboard"
+                className="pointer-events-auto flex max-w-full items-center gap-2 overflow-x-auto rounded-lg border border-slate-700/80 bg-slate-950/90 px-2 py-1 text-[11px] shadow-lg"
+              >
+                <span className="shrink-0 font-bold uppercase text-amber-300">Scores</span>
+                {[...(gameState.players ?? [])].sort((a, b) => b.score - a.score).map(player => (
+                  <span key={player.id} title={player.display_name} className="flex shrink-0 items-center gap-1 text-slate-300">
+                    <span className="max-w-20 truncate">{player.display_name}</span>
+                    <strong className="font-mono text-emerald-300">{player.score}</strong>
+                  </span>
+                ))}
+              </div>
+            </div>
             {dragSession && (
               <FloatingTile
                 ref={dragGhostRef}
@@ -363,6 +382,7 @@ export default function GamePage() {
         <div className="hidden lg:flex flex-col shrink-0">
           <RightSidebar
             players={gameState.players ?? []}
+            showHealth={gameState.max_turns === null}
             myPlayerId={myPlayerId}
             currentPlayerId={gameState.current_player_id ?? null}
             tileBagCount={tileBagCount}
@@ -376,6 +396,41 @@ export default function GamePage() {
           />
         </div>
       </div>
+
+      {isMobileInfoOpen && (
+        <div
+          className="fixed inset-x-2 top-20 bottom-[calc(16rem+env(safe-area-inset-bottom))] z-40 flex min-h-0 flex-col gap-1 lg:hidden"
+          onClick={() => setIsMobileInfoOpen(false)}
+        >
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setIsMobileInfoOpen(false)}
+              className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-slate-200"
+              aria-label="Close game information"
+            >
+              Close
+            </button>
+          </div>
+          <div className="min-h-0 flex-1" onClick={event => event.stopPropagation()}>
+            <RightSidebar
+              mobile
+              players={gameState.players ?? []}
+              showHealth={gameState.max_turns === null}
+              myPlayerId={myPlayerId}
+              currentPlayerId={gameState.current_player_id ?? null}
+              tileBagCount={tileBagCount}
+              tileBagCounts={gameState.tile_bag_counts ?? {}}
+              moveHistory={sync.moveHistory}
+              cardUseEffects={sync.cardUseEffects}
+              camera={camera}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onReset={handleResetView}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Bottom: Tile rack (spectators have no seat and never see a rack) */}
       <div className="relative z-10 shrink-0 px-1.5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1.5 sm:p-3">

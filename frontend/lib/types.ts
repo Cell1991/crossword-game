@@ -69,6 +69,7 @@ export interface PendingEffect {
 }
 
 export type TurnTimeLimit = null | 30 | 60 | 90 | 120;
+export type GameMode = 'HP' | 'TURNS';
 
 /** One line of the sidebar's move history, built on this device from socket events. */
 export interface MoveHistoryEntry {
@@ -138,6 +139,8 @@ export interface CreateRoomResponse {
   session_token: string;
   display_name: string;
   turn_time_limit: TurnTimeLimit;
+  game_mode: GameMode;
+  max_turns: number | null;
 }
 
 export interface JoinRoomResponse {
@@ -157,6 +160,8 @@ export interface RoomDetailResponse {
   spectator_count: number;
   created_at: string;
   turn_time_limit: TurnTimeLimit;
+  game_mode: GameMode;
+  max_turns: number | null;
 }
 
 export interface ExchangeTilesResponse {

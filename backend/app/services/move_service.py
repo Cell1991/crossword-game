@@ -290,7 +290,7 @@ class MoveService:
 
         # Score is authoritative damage to every other living player, doubled for a
         # DOUBLE_DAMAGE target. Applied after a short SHIELD window, not immediately.
-        if score > 0:
+        if score > 0 and game.max_turns is None:
             amounts = {
                 opponent.id: score * (2 if opponent.id == game.pending_double_target_id else 1)
                 for opponent in all_players if opponent.id != player.id
@@ -303,9 +303,12 @@ class MoveService:
         completed_turn = game.turn_number
         reached_max_turns = bool(game.max_turns and completed_turn >= game.max_turns)
         game.consecutive_passes = 0
-        is_over, reason, winner = GameEndService.check_game_over(
-            game.tile_bag, GameService.players_summary(all_players), game.consecutive_passes
-        )
+        if game.max_turns is not None:
+            is_over, reason, winner = False, None, None
+        else:
+            is_over, reason, winner = GameEndService.check_game_over(
+                game.tile_bag, GameService.players_summary(all_players), game.consecutive_passes
+            )
         game_over = is_over or reached_max_turns or GameService.too_few_players(all_players)
         if game_over:
             winner = await GameService.finish_game(db, game, all_players, winner)

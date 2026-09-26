@@ -79,7 +79,7 @@ export const TileBagDialog: React.FC<TileBagDialogProps> = ({ tileBagCount, tile
                   }`}
                   aria-label={`${letter}, ${count} remaining`}
                 >
-                  <span className="tile-letter flex h-9 w-9 items-center justify-center rounded-lg border border-sky-400/50 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] font-quakduck text-2xl text-slate-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_0_8px_rgba(56,189,248,0.16)]">
+                  <span className="tile-face tile-letter tile-letter-orange flex h-9 w-9 items-center justify-center rounded-lg border border-amber-100/80 font-maple text-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_4px_8px_rgba(0,0,0,0.35)]">
                     {letter}
                   </span>
                   <span className="min-w-5 text-right font-mono text-sm font-bold text-amber-400">{count}</span>
@@ -93,7 +93,11 @@ export const TileBagDialog: React.FC<TileBagDialogProps> = ({ tileBagCount, tile
               : 'border-blue-500/30 bg-slate-900/80'
           }`}>
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-sky-400/50 bg-gradient-to-b from-[#23407a] via-[#1a305e] to-[#122244] text-lg font-bold text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">*</span>
+              <span className="tile-face flex h-9 w-9 items-center justify-center rounded-lg border border-amber-100/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
+                <svg viewBox="0 0 24 24" className="tile-blank-star h-5 w-5" fill="currentColor" aria-hidden="true">
+                  <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+                </svg>
+              </span>
               <span className="text-sm font-medium text-slate-200">Blank Tiles</span>
             </div>
             <span className="font-mono text-sm font-bold text-amber-400">{tileBagCounts.BLANK ?? 0}</span>

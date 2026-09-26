@@ -32,8 +32,8 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     let nodes: Node[] = [];
     let beams: Beam[] = [];
     const device = navigator as Navigator & { deviceMemory?: number };
-    const isLowPowerDevice = (device.hardwareConcurrency ?? 8) <= 8 || (device.deviceMemory ?? 8) <= 8;
-    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+    const isTouchDevice = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
+    const isLowPowerDevice = isTouchDevice || (device.hardwareConcurrency ?? 8) <= 8 || (device.deviceMemory ?? 8) <= 8;
     const nodeCount = isTouchDevice ? 14 : isLowPowerDevice ? 24 : NODE_COUNT;
     const beamCount = isTouchDevice ? 4 : isLowPowerDevice ? 6 : BEAM_COUNT;
     const frameInterval = isTouchDevice ? 1000 / 15 : isLowPowerDevice ? 1000 / 20 : 1000 / 30;
@@ -79,6 +79,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
         resizeFrame = null;
         resize();
         seed();
+        if (isTouchDevice) draw();
       });
     };
     const onPointerMove = (e: PointerEvent) => {
@@ -94,7 +95,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     const draw = () => {
       const now = performance.now();
       if (document.visibilityState === 'hidden') {
-        frame = requestAnimationFrame(draw);
+        if (!isTouchDevice) frame = requestAnimationFrame(draw);
         return;
       }
       if (now - lastDrawAt < frameInterval) {
@@ -167,7 +168,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
         ctx.fillText(node.char, node.x, node.y);
       }
 
-      frame = requestAnimationFrame(draw);
+      if (!isTouchDevice) frame = requestAnimationFrame(draw);
     };
 
     draw();

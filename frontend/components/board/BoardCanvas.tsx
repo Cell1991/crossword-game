@@ -5,6 +5,7 @@ import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
 import { BoardCamera, Offset } from '@/hooks/useBoardCamera';
 import { BoardScene, drawBoard } from './boardRenderer';
 import { PremiumCellOverlay } from './PremiumCellOverlay';
+import { TILE_THEME } from '@/lib/tileTheme';
 
 /** Tile constellations twinkle at a bounded rate so the board stays responsive under load. */
 const TWINKLE_FRAME_MS = 1000 / 24;
@@ -12,6 +13,7 @@ const TWINKLE_FRAME_MS = 1000 / 24;
 /** Weaker devices get a 1× canvas and no glows or twinkling. */
 function detectLowPowerDevice() {
   if (typeof navigator === 'undefined') return false;
+  if (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches) return true;
   const device = navigator as Navigator & { deviceMemory?: number };
   return (device.hardwareConcurrency ?? 8) <= 8 || (device.deviceMemory ?? 8) <= 8;
 }
@@ -21,7 +23,7 @@ function canvasPixelRatio(lowPower: boolean) {
 }
 
 /** What the board shows, apart from the camera and the canvas size. */
-type SceneContent = Omit<BoardScene, 'width' | 'height' | 'offset' | 'cellSize' | 'lowPower' | 'time'>;
+type SceneContent = Omit<BoardScene, 'width' | 'height' | 'offset' | 'cellSize' | 'lowPower' | 'tilePalette' | 'time'>;
 
 interface BoardCanvasProps {
   /** The board's viewport element; also used to hit-test drags that end over the board. */
@@ -108,6 +110,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       offset,
       cellSize: camera.baseCellSize * scale,
       lowPower,
+      tilePalette: window.innerWidth >= 1024 ? TILE_THEME.desktop : TILE_THEME.mobile,
       time: performance.now() / 1000,
     });
   }, [camera, lowPower]);

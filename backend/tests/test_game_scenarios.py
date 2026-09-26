@@ -57,7 +57,10 @@ async def test_lb01_host_creates_a_room_and_waits_in_the_lobby(client):
     {"host_name": ""},
     {"host_name": "A" * 33},
     {"host_name": "Alice", "turn_time_limit": 45},
-], ids=["empty-name", "name-too-long", "unsupported-time-limit"])
+    {"host_name": "Alice", "game_mode": "TURNS"},
+    {"host_name": "Alice", "game_mode": "HP", "max_turns": 7},
+    {"host_name": "Alice", "game_mode": "TURNS", "max_turns": 501},
+], ids=["empty-name", "name-too-long", "unsupported-time-limit", "turn-mode-needs-limit", "hp-mode-no-limit", "turn-limit-too-high"])
 async def test_lb02_invalid_room_settings_are_rejected(client, body):
     assert (await client.post("/api/rooms", json=body)).status_code == 422
 
@@ -96,18 +99,18 @@ async def test_lb06_only_the_host_can_start_and_only_once(open_table):
     assert (await table.start(alice)).status_code == 400
 
 
-@pytest.mark.parametrize("names, max_turns", [
-    (("Alice", "Bob"), 20),
-    (("Alice", "Bob", "Carol"), 21),
+@pytest.mark.parametrize("names", [
+    ("Alice", "Bob"),
+    ("Alice", "Bob", "Carol"),
 ], ids=["2-players", "3-players"])
-async def test_lb07_start_deals_seven_tiles_and_hides_other_racks(open_table, names, max_turns):
+async def test_lb07_start_deals_seven_tiles_and_hides_other_racks(open_table, names):
     table = await open_table(*names)
     host = table.seats[0]
 
     state = await table.state(host)
 
     assert (state["status"], state["current_player_id"], state["turn_number"]) == ("PLAYING", host.id, 1)
-    assert state["max_turns"] == max_turns
+    assert state["max_turns"] is None
     assert state["tile_bag_count"] == 100 - 7 * len(names)
     assert all(p["rack_count"] == 7 for p in state["players"])
     assert len(me(state, host)["rack"]) == 7
@@ -430,6 +433,35 @@ async def test_tn04_game_ends_after_the_turn_limit(open_table):
     assert res.json()["game_over"] is True
     state = await table.state()
     assert (state["status"], state["current_player_id"]) == ("FINISHED", None)
+
+
+async def test_turn_count_mode_uses_selected_limit_and_ignores_scoreless_end(open_table):
+    table = await open_table("Alice", "Bob", game_mode="TURNS", max_turns=7)
+    alice, bob = table.seats
+    room = (await table.client.get(f"/api/rooms/{table.pin}")).json()
+
+    assert (room["game_mode"], room["max_turns"]) == ("TURNS", 7)
+    assert (await table.state())["max_turns"] == 7
+
+    for seat in (alice, bob, alice, bob, alice, bob):
+        assert (await table.act(seat, "pass")).json()["game_over"] is False
+    result = await table.act(alice, "pass")
+
+    assert result.json()["game_over"] is True
+    assert (await table.state())["status"] == "FINISHED"
+
+
+async def test_turn_count_mode_does_not_apply_score_damage(open_table):
+    table = await open_table("Alice", "Bob", game_mode="TURNS", max_turns=7)
+    alice, bob = table.seats
+    await table.set_tiles(racks={alice: "CATSEIO"})
+
+    result = await table.place(alice, ROW, COL - 1, "CAT")
+
+    assert result.status_code == 200, result.text
+    state = await table.state()
+    assert all(player["hp"] == 100 for player in state["players"])
+    assert state["pending_effect"] is None
 
 
 async def test_tn05_turn_timer_passes_an_expired_turn(open_table):

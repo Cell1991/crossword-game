@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowRight, Eye, LogIn, Plus } from 'lucide-react';
 import { createRoom, getRoom, joinRoom, sessionStore } from '@/lib/api';
-import { TurnTimeLimit } from '@/lib/types';
+import { GameMode, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
 import MouseGradientText from '@/components/effects/MouseGradientText';
 
@@ -19,13 +19,21 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [turnTimeLimit, setTurnTimeLimit] = useState<TurnTimeLimit>(null);
+  const [gameMode, setGameMode] = useState<GameMode>('HP');
+  const [turnCountOption, setTurnCountOption] = useState('7');
+  const [customTurnCount, setCustomTurnCount] = useState('28');
 
   const handleCreate = async () => {
     if (!name.trim()) { setError('Please enter your name'); return; }
+    const maxTurns = turnCountOption === 'custom' ? Number(customTurnCount) : Number(turnCountOption);
+    if (gameMode === 'TURNS' && (!Number.isInteger(maxTurns) || maxTurns < 1 || maxTurns > 500)) {
+      setError('Turn count must be between 1 and 500');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
-      const res = await createRoom(name.trim(), turnTimeLimit);
+      const res = await createRoom(name.trim(), turnTimeLimit, gameMode, gameMode === 'TURNS' ? maxTurns : null);
       sessionStore.save({
         gameId: res.game_id,
         playerId: res.host_player_id,
@@ -177,6 +185,57 @@ export default function HomePage() {
                 <h2 className="mb-2 text-2xl font-bold tracking-tight text-white">Create a Room</h2>
                 <p className="text-sm leading-6 text-slate-400">You&apos;ll be the host and receive a Game PIN to share.</p>
               </div>
+              <fieldset>
+                <legend className="mb-2 block text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game Mode</legend>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    ['HP', 'HP Battle', 'Score drains opponents\' health'],
+                    ['TURNS', 'Turn Count', 'Highest score wins'],
+                  ] as const).map(([value, title, description]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={gameMode === value}
+                      onClick={() => setGameMode(value)}
+                      className={`min-h-20 rounded-xl border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${
+                        gameMode === value
+                          ? 'border-amber-300/70 bg-amber-300/10 text-white'
+                          : 'border-white/10 bg-slate-800/50 text-slate-300 hover:border-white/25'
+                      }`}
+                    >
+                      <span className="block text-sm font-bold">{title}</span>
+                      <span className="mt-1 block text-xs leading-4 text-slate-400">{description}</span>
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+              {gameMode === 'TURNS' && (
+                <div>
+                  <label htmlFor="max-turns" className="mb-2 block text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game Length</label>
+                  <select
+                    id="max-turns"
+                    value={turnCountOption}
+                    onChange={event => setTurnCountOption(event.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3.5 text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+                  >
+                    <option value="7">7 Turns</option>
+                    <option value="14">14 Turns</option>
+                    <option value="21">21 Turns</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                  {turnCountOption === 'custom' && (
+                    <input
+                      type="number"
+                      min={1}
+                      max={500}
+                      value={customTurnCount}
+                      onChange={event => setCustomTurnCount(event.target.value)}
+                      aria-label="Custom turn count"
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3 text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+                    />
+                  )}
+                </div>
+              )}
               <div>
                 <label htmlFor="turn-time" className="mb-2 block text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Turn Time</label>
                 <select

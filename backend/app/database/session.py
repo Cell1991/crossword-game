@@ -130,6 +130,8 @@ def _upgrade_existing_schema(connection):
         },
         "game_rooms": {
             "turn_time_limit": "INTEGER",
+            "game_mode": "VARCHAR(16) DEFAULT 'HP' NOT NULL",
+            "max_turns": "INTEGER",
         },
         "game_players": {
             "hp": "INTEGER DEFAULT 100 NOT NULL",
