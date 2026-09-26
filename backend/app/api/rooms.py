@@ -19,7 +19,7 @@ router = APIRouter(prefix="/rooms", tags=["Rooms"])
 
 @router.post("", response_model=CreateRoomResponse)
 async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)):
-    room, game, host = await RoomService.create_room(db, req.host_name, req.turn_time_limit)
+    room, game, host = await RoomService.create_room(db, req.host_name, req.turn_time_limit, req.is_debug)
     return CreateRoomResponse(
         room_id=room.id,
         game_id=game.id,

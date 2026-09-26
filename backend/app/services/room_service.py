@@ -18,7 +18,9 @@ class RoomService:
         return 21 if player_count == 3 else 20
 
     @staticmethod
-    async def create_room(db: AsyncSession, host_name: str, turn_time_limit: int | None = None) -> tuple[GameRoom, Game, GamePlayer]:
+    async def create_room(
+        db: AsyncSession, host_name: str, turn_time_limit: int | None = None, is_debug: bool = False
+    ) -> tuple[GameRoom, Game, GamePlayer]:
         # Generate unique 6-digit PIN
         for _ in range(10):
             pin = generate_game_pin()
@@ -40,7 +42,8 @@ class RoomService:
             game_pin=pin,
             host_player_id=host_id,
             status="WAITING",
-            turn_time_limit=turn_time_limit
+            turn_time_limit=turn_time_limit,
+            is_debug=is_debug and settings.DEBUG_MODE,
         )
         game = Game(
             id=room_id,

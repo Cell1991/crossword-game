@@ -6,6 +6,9 @@ from app.schemas.player import PlayerOut
 class CreateRoomRequest(BaseModel):
     host_name: str = Field(..., min_length=1, max_length=32, description="Display name of the room host")
     turn_time_limit: Literal[None, 30, 60, 90, 120] = None
+    # Only the /debug solo-testing flow sets this. It only has any effect while settings.DEBUG_MODE
+    # is on, same as every other debug affordance.
+    is_debug: bool = False
 
 class CreateRoomResponse(BaseModel):
     room_id: str

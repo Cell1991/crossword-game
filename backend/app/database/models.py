@@ -26,6 +26,11 @@ class GameRoom(Base):
     host_player_id = Column(String(36), nullable=False)
     status = Column(String(32), default="WAITING", nullable=False)  # WAITING, PLAYING, FINISHED, ABANDONED
     turn_time_limit = Column(Integer, nullable=True)
+    # Set only by the /debug solo-testing flow at room creation, never by a later request on an
+    # existing room: lets a debug game's WebSocket skip disconnect-grace handling (the tester's
+    # single tab intentionally drops one clone's socket on every "Act as" switch) without letting
+    # any player grant that exemption to themselves in a real match by tacking a query param on.
+    is_debug = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), default=get_utc_now)
     started_at = Column(DateTime(timezone=True), nullable=True)
     finished_at = Column(DateTime(timezone=True), nullable=True)

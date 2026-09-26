@@ -86,11 +86,13 @@ export const debugSessionStore = {
   },
 };
 
-export async function createRoom(hostName: string, turnTimeLimit: TurnTimeLimit = null): Promise<CreateRoomResponse> {
+export async function createRoom(
+  hostName: string, turnTimeLimit: TurnTimeLimit = null, isDebug = false
+): Promise<CreateRoomResponse> {
   const res = await fetch(`${getApiBase()}/rooms`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ host_name: hostName, turn_time_limit: turnTimeLimit }),
+    body: JSON.stringify({ host_name: hostName, turn_time_limit: turnTimeLimit, is_debug: isDebug }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

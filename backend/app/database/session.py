@@ -130,6 +130,7 @@ def _upgrade_existing_schema(connection):
         },
         "game_rooms": {
             "turn_time_limit": "INTEGER",
+            "is_debug": "BOOLEAN DEFAULT FALSE NOT NULL",
         },
         "game_players": {
             "hp": "INTEGER DEFAULT 100 NOT NULL",

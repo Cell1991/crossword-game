@@ -248,9 +248,19 @@ export default function GamePage() {
     }
   }, [flashError, gameId, myPlayerId, reload]);
 
-  // Keep the pre-hydration and pre-fetch output empty on both server and client.
-  // The game UI is rendered only after the browser session and game snapshot exist.
-  if (!hydrated || !session || sync.loading || !gameState) return null;
+  // The game UI needs the browser session and a game snapshot first. This loading view reads no
+  // client-only state, so the server and the client's first paint render it identically (no
+  // hydration mismatch) while the session/state fetch that used to show a blank screen resolves.
+  if (!hydrated || !session || sync.loading || !gameState) {
+    return (
+      <div
+        className="flex h-screen w-screen items-center justify-center"
+        style={{ background: 'linear-gradient(135deg, #020617 0%, #0f172a 58%, #171942 100%)' }}
+      >
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-cyan-400" />
+      </div>
+    );
+  }
 
   if (gameState.status === 'FINISHED') {
     return <GameOverScreen gameState={gameState} myPlayerId={myPlayerId} onHome={() => router.push('/')} />;

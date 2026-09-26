@@ -9,10 +9,12 @@ interface UseGameSocketProps {
   token?: string;
   /** Connect as a spectator (no token): events only, no seat. */
   spectate?: boolean;
+  /** Debug games: tells the backend this socket closing (on an "Act as" switch) isn't a real disconnect. */
+  debug?: boolean;
   onEvent?: (event: WebSocketEvent) => void;
 }
 
-export function useGameSocket({ gameId, token, spectate = false, onEvent }: UseGameSocketProps) {
+export function useGameSocket({ gameId, token, spectate = false, debug = false, onEvent }: UseGameSocketProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -34,7 +36,7 @@ export function useGameSocket({ gameId, token, spectate = false, onEvent }: UseG
     }
 
     const query = token ? `token=${encodeURIComponent(token)}` : 'spectate=1';
-    const wsUrl = `${getWsBase()}/ws/games/${gameId}?${query}`;
+    const wsUrl = `${getWsBase()}/ws/games/${gameId}?${query}${debug ? '&debug=1' : ''}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
@@ -77,7 +79,7 @@ export function useGameSocket({ gameId, token, spectate = false, onEvent }: UseG
         }, 2500);
       }
     };
-  }, [gameId, spectate, token]);
+  }, [gameId, spectate, token, debug]);
 
   useEffect(() => {
     connectRef.current = connect;

@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 
 from app.core.config import settings
-from app.database.models import Game
+from app.database.models import Game, GameRoom
 from app.database.session import AsyncSessionLocal
 from app.services.game_service import GameService
 from app.websocket.connection_manager import SPECTATOR_PREFIX, manager
@@ -20,6 +20,7 @@ async def websocket_endpoint(
     game_id: str,
     token: Optional[str] = Query(None),
     spectate: bool = Query(False),
+    debug: bool = Query(False),
 ):
     if spectate and not token:
         await spectate_game(websocket, game_id)
@@ -35,6 +36,11 @@ async def websocket_endpoint(
         player_id = player.id
         player_name = player.display_name
         player.connection_status = "ONLINE"
+        # The room, not the caller's own `debug` query param, decides whether this socket may skip
+        # disconnect-grace handling — otherwise any player in a real game could tack `&debug=1` onto
+        # their own connection to make themselves immune to ever being marked disconnected.
+        room = await db.get(GameRoom, game_id)
+        is_debug_room = bool(room and room.is_debug)
         await db.commit()
 
     await manager.connect(websocket, game_id, player_id)
@@ -70,7 +76,10 @@ async def websocket_endpoint(
             except json.JSONDecodeError:
                 pass
     except WebSocketDisconnect:
-        await handle_disconnect(websocket, game_id, player_id, player_name)
+        await handle_disconnect(
+            websocket, game_id, player_id, player_name,
+            is_debug_socket=debug and settings.DEBUG_MODE and is_debug_room,
+        )
 
 
 async def spectate_game(websocket: WebSocket, game_id: str) -> None:
@@ -110,13 +119,22 @@ async def handle_disconnect(
     player_id: str,
     player_name: str,
     grace_seconds: float | None = None,
+    is_debug_socket: bool = False,
 ) -> None:
     """
     A dropped socket is often just a page refresh. Give the player time to reconnect before
     marking them DISCONNECTED and passing their turn. Unlike leaving (OFFLINE), they stay in the
     game: a locked phone must not hand the other players a win. Reconnecting marks them ONLINE again.
+
+    A debug-game socket (`?debug=1`) closes every time the tester's single tab switches "Acting
+    as" to another clone seat — that is not a real disconnect, so it must never start the grace
+    timer: otherwise the seat not currently being acted as gets marked DISCONNECTED after
+    DISCONNECT_GRACE_SECONDS and next_player_after() skips it forever, stalling Pass on the other
+    clone's turn.
     """
     manager.disconnect(game_id, player_id, websocket)
+    if is_debug_socket:
+        return
     await asyncio.sleep(settings.DISCONNECT_GRACE_SECONDS if grace_seconds is None else grace_seconds)
     if manager.is_connected(game_id, player_id):
         return

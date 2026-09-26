@@ -15,7 +15,7 @@ export default function DebugSetupPage() {
     setBusy(true);
     setError('');
     try {
-      const res = await createRoom('Debug Player 1', null);
+      const res = await createRoom('Debug Player 1', null, true);
       const hostSession: StoredSession = {
         gameId: res.game_id,
         playerId: res.host_player_id,

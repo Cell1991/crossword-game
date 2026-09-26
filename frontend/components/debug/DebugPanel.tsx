@@ -65,15 +65,17 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-3 right-3 z-[200] rounded-full bg-rose-500 px-3 py-1.5 text-xs font-bold text-white shadow-xl"
+        className="fixed top-16 right-3 z-[200] rounded-full bg-rose-500 px-3 py-1.5 text-xs font-bold text-white shadow-xl"
       >
         🐞 Debug
       </button>
     );
   }
 
+  // Anchored under the HUD (not at the bottom) so it never covers the Pass/Confirm Move buttons in
+  // TileRack's bottom-right "Turn Actions" pod — those need to stay clickable while this is open.
   return (
-    <div className="fixed bottom-3 right-3 z-[200] w-[20rem] max-h-[80vh] overflow-y-auto rounded-2xl border border-rose-500/50 bg-slate-950/95 backdrop-blur-md shadow-2xl text-slate-200 text-xs">
+    <div className="fixed top-16 right-3 z-[200] w-[20rem] max-h-[calc(100vh-5rem)] overflow-y-auto rounded-2xl border border-rose-500/50 bg-slate-950/95 backdrop-blur-md shadow-2xl text-slate-200 text-xs">
       <div className="sticky top-0 flex items-center justify-between border-b border-rose-500/30 bg-rose-950/60 px-3 py-2">
         <span className="font-bold text-rose-300">🐞 Debug Panel</span>
         <button onClick={() => setOpen(false)} className="text-rose-300 hover:text-white">✕</button>

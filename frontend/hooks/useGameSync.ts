@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { getGameState, StoredSession } from '@/lib/api';
+import { getGameState, resolvePendingEffect, StoredSession } from '@/lib/api';
 import { CardReveal, GameState, MoveHistoryEntry, WebSocketEvent } from '@/lib/types';
 import { useGameSocket } from './useGameSocket';
 import { GameToasts } from './useGameToasts';
@@ -165,6 +165,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
     gameId,
     token: myToken,
     spectate: isSpectator,
+    debug: isDebug,
     onEvent: handleSocketEvent,
   });
 
@@ -173,6 +174,20 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
     const interval = window.setInterval(() => { void loadGameState(); }, RESYNC_MS);
     return () => window.clearInterval(interval);
   }, [gameState?.status, loadGameState]);
+
+  // A DAMAGE/SWAP effect only becomes real once someone calls the resolve endpoint — nothing on
+  // the server does this on its own. Every connected client schedules the call for when the
+  // SHIELD window closes; the endpoint is a no-op once another client (or a later call here)
+  // already resolved it, so racing harmlessly is fine.
+  const pendingEffectExpiry = gameState?.pending_effect?.expires_at ?? null;
+  useEffect(() => {
+    if (!pendingEffectExpiry) return;
+    const msRemaining = Date.parse(pendingEffectExpiry) - (Date.now() + clockOffsetRef.current);
+    const timer = window.setTimeout(() => {
+      void resolvePendingEffect(gameId).then(() => loadGameState()).catch(() => {});
+    }, Math.max(0, msRemaining));
+    return () => window.clearTimeout(timer);
+  }, [pendingEffectExpiry, gameId, loadGameState]);
 
   const clearRemotePlacements = useCallback(() => setRemotePlacements([]), []);
 

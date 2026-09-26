@@ -26,12 +26,14 @@ def test_board_special_cells_match_the_rendered_19x27_grid():
         (0, 13), (1, 2), (1, 24), (8, 0),
         (8, 26), (10, 0), (10, 26),
         (17, 2), (17, 24), (18, 13),
+        (9, 10), (9, 16),
     })
     assert Board.DOUBLE_LETTER == frozenset({
         (3, 9), (3, 17), (15, 9), (15, 17),
         (5, 13), (13, 13),
         (6, 4), (6, 22), (12, 4), (12, 22),
         (8, 7), (8, 19), (10, 7), (10, 19),
+        (8, 12), (8, 14), (10, 12), (10, 14),
     })
     assert Board.SECRET_POWER == frozenset({
         (3, 4), (3, 22),
@@ -43,23 +45,16 @@ def test_board_special_cells_match_the_rendered_19x27_grid():
     })
 
 def test_premium_squares_are_the_classic_layout_spread_over_the_larger_board():
-    classic_15x15 = {
-        "triple": {(0, 7), (1, 1), (1, 13), (6, 0), (6, 14), (13, 1), (13, 13), (14, 7)},
-        "double": {(2, 5), (2, 9), (4, 7), (5, 2), (5, 12), (6, 4), (6, 10), (8, 2), (8, 12), (9, 7), (11, 5), (11, 9)},
-        "power": {(2, 2), (2, 12), (4, 4), (4, 10), (10, 4), (10, 10), (12, 2), (12, 12)},
-    }
-
-    def spread(cells):
-        return frozenset((round(r * (Board.ROWS - 1) / 14), round(c * (Board.COLS - 1) / 14)) for r, c in cells)
-
     assert Board.TRIPLE_LETTER == frozenset({
         (0, 13), (1, 2), (1, 24), (8, 0), (8, 26),
         (10, 0), (10, 26), (17, 2), (17, 24), (18, 13),
+        (9, 10), (9, 16),
     })
     assert Board.DOUBLE_LETTER == frozenset({
         (3, 9), (3, 17), (15, 9), (15, 17),
         (5, 13), (13, 13), (6, 4), (6, 22), (12, 4), (12, 22),
         (8, 7), (8, 19), (10, 7), (10, 19),
+        (8, 12), (8, 14), (10, 12), (10, 14),
     })
     lightning = {
         (3, 4), (3, 22),
@@ -71,7 +66,7 @@ def test_premium_squares_are_the_classic_layout_spread_over_the_larger_board():
     }
     assert Board.SECRET_POWER == frozenset(lightning)
     premium = Board.TRIPLE_LETTER | Board.DOUBLE_LETTER | Board.SECRET_POWER
-    assert len(premium) == 10 + 14 + 12 and Board.CENTER not in premium
+    assert len(premium) == 12 + 18 + 12 and Board.CENTER not in premium
     assert premium == {(r, Board.COLS - 1 - c) for r, c in premium}
     assert premium == {(Board.ROWS - 1 - r, c) for r, c in premium}
 
