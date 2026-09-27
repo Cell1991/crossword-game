@@ -40,6 +40,8 @@
 
 .tile-letter-orange {
   color: var(--tile-letter-color-mobile);
+  -webkit-text-stroke: 1.2px var(--tile-letter-stroke-mobile);
+  text-shadow: var(--tile-letter-shadow-mobile);
 }
 
 .tile-face { background-image: var(--tile-face-gradient); }
@@ -57,6 +59,8 @@
 @media (min-width: 1024px) {
   .tile-letter-orange {
     color: var(--tile-letter-color-desktop);
+    -webkit-text-stroke: 1.2px var(--tile-letter-stroke-desktop);
+    text-shadow: var(--tile-letter-shadow-desktop);
   }
 
   .tile-score-blue {

@@ -1,10 +1,10 @@
 import type { CSSProperties } from 'react';
 
 const face = {
-  top: '#ffc85c',
-  middle: '#ff951f',
-  bottom: '#df5f0a',
-  shadow: 'rgba(71, 31, 5, 0.58)',
+  top: '#fbbf24',
+  middle: '#e8a600',
+  bottom: '#664a01',
+  shadow: 'rgba(0, 0, 0, 0.58)',
 };
 
 export const TILE_THEME = {
@@ -18,10 +18,10 @@ export const TILE_THEME = {
   },
   mobile: {
     letter: {
-      color: '#0752a4',
-      stroke: '#073b82',
-      shadow: 'rgba(71, 31, 5, 0.48)',
-      textShadow: '0 1px 0 rgba(255, 255, 255, 0.48), 0 2px 0 rgba(132, 50, 7, 0.5), 0 3px 4px rgba(71, 31, 5, 0.38)',
+      color: '#4b87c2',
+      stroke: '#2f6597',
+      shadow: 'rgba(36, 76, 112, 0.32)',
+      textShadow: '0 1px 0 rgba(255, 255, 255, 0.75), 0 2px 0 rgba(25, 65, 105, 0.72), 0 4px 6px rgba(20, 48, 78, 0.52)',
       weight: 800,
     },
     score: {
@@ -39,21 +39,21 @@ export const TILE_THEME = {
   },
   desktop: {
     letter: {
-      color: '#174f91',
+      color: '#ffffff',
       stroke: '#000000',
-      shadow: 'rgba(0, 0, 0, 0.36)',
-      textShadow: '0 1px 0 rgba(255, 220, 163, 0.82), 0 2px 0 rgba(0, 0, 0, 0.88), 0 0 4px rgba(0, 0, 0, 0.36)',
+      shadow: 'rgba(23, 58, 91, 0.28)',
+      textShadow: '0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 4px 7px rgba(0, 0, 0, 0.72)',
       weight: 900,
     },
     score: {
-      color: '#061a35',
+      color: '#efefef',
       stroke: '#04142a',
       glow: 'rgba(0, 109, 220, 0.5)',
       textShadow: '0 0 2px rgba(89, 190, 255, 0.68), 0 0 5px rgba(0, 109, 220, 0.5)',
       weight: 900,
     },
     blank: {
-      color: '#174f91',
+      color: '#ffffff',
       stroke: '#000000',
       glow: 'rgba(0, 0, 0, 0.36)',
     },
