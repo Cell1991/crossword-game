@@ -10,7 +10,7 @@ import { buildRackSlots } from '@/lib/rack';
 import { GameState, Tile } from '@/lib/types';
 import { TILE_THEME_STYLE } from '@/lib/tileTheme';
 import { isBlankLetter } from '@/lib/tiles';
-import { BUTTON_ZOOM_FACTOR, useBoardCamera } from '@/hooks/useBoardCamera';
+import { useBoardCamera } from '@/hooks/useBoardCamera';
 import { useGameSession } from '@/hooks/useGameSession';
 import { useGameSync } from '@/hooks/useGameSync';
 import { useGameToasts } from '@/hooks/useGameToasts';
@@ -19,10 +19,8 @@ import { useRackOrder } from '@/hooks/useRackOrder';
 import { useStagedMove } from '@/hooks/useStagedMove';
 import { useTileDrag } from '@/hooks/useTileDrag';
 import { BoardCanvas } from '@/components/board/BoardCanvas';
-import { BoardControls } from '@/components/board/BoardControls';
 import { TileRack } from '@/components/rack/TileRack';
 import { FloatingTile } from '@/components/rack/FloatingTile';
-import ParticleField from '@/components/effects/ParticleField';
 import { RightSidebar } from '@/components/game/RightSidebar';
 import { PowerCardBar } from '@/components/game/PowerCardBar';
 import { GameHud } from '@/components/game/GameHud';
@@ -164,11 +162,6 @@ export default function GamePage() {
 
   const handleTimeUp = useCallback(() => expireTurn(gameId).then(() => reload()), [gameId, reload]);
 
-  const handleZoomIn = useCallback(() => camera.zoomAtCenter(BUTTON_ZOOM_FACTOR), [camera]);
-  const handleZoomOut = useCallback(() => camera.zoomAtCenter(1 / BUTTON_ZOOM_FACTOR), [camera]);
-  // Centres on the board's own area (not the window), so Reset matches the initial view.
-  const handleResetView = useCallback(() => camera.resetCamera(), [camera]);
-
   // Handlers below are stable callbacks: TileRack, PowerCardBar and RightSidebar are memoised
   // so a drag crossing into another cell does not re-render them.
   const handleCellClick = useCallback((row: number, col: number) => {
@@ -290,7 +283,6 @@ export default function GamePage() {
         background: 'radial-gradient(circle at 50% 18%, rgba(99, 102, 241, 0.16), transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 58%, #171942 100%)',
       }}
     >
-      <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" />
       <GameHud
         isSpectator={isSpectator}
         isConnected={sync.isConnected}
@@ -376,15 +368,6 @@ export default function GamePage() {
                 isDesignatedBlank={isBlankLetter(dragSession.tile.letter) && Boolean(staged.designatedBlankLetters[dragSession.tile.id])}
               />
             )}
-            {/* Floating board controls on mobile only (desktop has them in the RightSidebar) */}
-            <div className="lg:hidden">
-              <BoardControls
-                onZoomIn={handleZoomIn}
-                onZoomOut={handleZoomOut}
-                onReset={handleResetView}
-                camera={camera}
-              />
-            </div>
           </div>
         </div>
 
@@ -399,10 +382,6 @@ export default function GamePage() {
             tileBagCounts={gameState.tile_bag_counts ?? {}}
             moveHistory={sync.moveHistory}
             cardUseEffects={sync.cardUseEffects}
-            camera={camera}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onReset={handleResetView}
           />
         </div>
       </div>
@@ -433,10 +412,6 @@ export default function GamePage() {
               tileBagCounts={gameState.tile_bag_counts ?? {}}
               moveHistory={sync.moveHistory}
               cardUseEffects={sync.cardUseEffects}
-              camera={camera}
-              onZoomIn={handleZoomIn}
-              onZoomOut={handleZoomOut}
-              onReset={handleResetView}
             />
           </div>
         </div>
