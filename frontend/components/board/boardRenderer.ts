@@ -320,7 +320,7 @@ function drawTile(
         ctx.fillStyle = letterFill;
       }
       const fontSize = Math.max(12, Math.round(cellSize * 0.70));
-      ctx.font = `normal ${fontSize}px 'NATOENA', 'RetroLight', sans-serif`;
+      ctx.font = `normal ${fontSize}px 'Granix Demo', sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       const metrics = ctx.measureText(letter);
