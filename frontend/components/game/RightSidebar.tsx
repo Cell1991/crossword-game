@@ -242,7 +242,7 @@ export const RightSidebar = memo(function RightSidebar({
                   </div>
 
                   {showHealth && (
-                    <div className="mt-2 h-1 rounded-full bg-slate-950/80 overflow-hidden">
+                    <div className="mt-2 h-3 rounded-sm bg-slate-950/80 relative overflow-hidden border border-slate-800/60 shadow-inner">
                       <div
                         className={`h-full transition-all duration-300 ${
                           player.hp <= 0
@@ -253,13 +253,17 @@ export const RightSidebar = memo(function RightSidebar({
                         }`}
                         style={{ width: `${Math.max(0, Math.min(100, player.hp))}%` }}
                       />
+                      {/* HP Dividers every 20% */}
+                      {[20, 40, 60, 80].map((percent) => (
+                        <div
+                          key={percent}
+                          className="absolute top-0 bottom-0 w-px bg-slate-950/90 z-10"
+                          style={{ left: `${percent}%` }}
+                        />
+                      ))}
                     </div>
                   )}
 
-                  {/* Vibrant Pink-Magenta Glowing Accent Line for "You" */}
-                  {isMe && (
-                    <div className="mt-1.5 h-0.5 rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-400 to-pink-500 shadow-[0_0_8px_#ec4899]" />
-                  )}
                 </div>
               );
             })}
