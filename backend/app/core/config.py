@@ -40,7 +40,7 @@ class Settings(BaseModel):
     DISCONNECT_GRACE_SECONDS: float = 15
     TURN_TIMER_SECONDS: int = 0      # 0 means timer disabled by default
     # How long an opponent has to play SHIELD before a pending DAMAGE/SWAP effect finalizes.
-    SHIELD_WINDOW_SECONDS: float = 8
+    SHIELD_WINDOW_SECONDS: float = 1
     # Enables /api/debug/* (god-mode HP/rack/card edits, reveal-all racks) for solo bug testing.
     DEBUG_MODE: bool = os.getenv("DEBUG_MODE", "true").lower() == "true"
 
