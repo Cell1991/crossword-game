@@ -197,7 +197,7 @@ body {
 
 .board-premium-letter { margin-left: 0.12em; }
 
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce), (max-width: 767px) {
   .board-power-pulse,
   .board-lightning-halo,
   .board-lightning-logo,

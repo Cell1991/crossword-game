@@ -126,7 +126,7 @@ export const RightSidebar = memo(function RightSidebar({
   return (
     <aside className={`flex h-full shrink-0 flex-col select-none ${mobile ? 'w-full p-0' : 'w-72 p-3'}`}>
       {/* Sleek Vertical Glassmorphism Panel */}
-      <div className="flex flex-col h-full bg-slate-950/80 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20 overflow-hidden">
+      <div className={`flex flex-col h-full bg-slate-950/90 ${mobile ? '' : 'backdrop-blur-xl'} border border-slate-700/60 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20 overflow-hidden`}>
         
         {/* TOP SECTION: VERTICAL MAP & VIEW CONTROLS */}
         <MapControls camera={camera} onZoomIn={onZoomIn} onZoomOut={onZoomOut} onReset={onReset} />

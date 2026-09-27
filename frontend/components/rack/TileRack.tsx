@@ -206,7 +206,7 @@ export const TileRack = memo(function TileRack({
             </span>
           </div>
 
-          <div className="flex max-w-full items-center gap-1.5 p-1.5 sm:gap-2 sm:p-2 bg-slate-900/85 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-cyan-500/15 min-h-[52px] sm:min-h-[58px]">
+          <div className="flex max-w-full items-center gap-1.5 p-1.5 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-cyan-500/15 min-h-[52px] sm:min-h-[58px]">
             {isExchanging ? (
               <div className="flex items-center gap-2 px-1">
                 <button
@@ -274,7 +274,7 @@ export const TileRack = memo(function TileRack({
           {/* Tray Stand (Blue Theme) */}
           <div
             ref={rackRef}
-            className={`relative flex w-full items-center justify-center gap-1 p-1.5 sm:w-auto sm:gap-2.5 sm:p-2.5 bg-gradient-to-b from-[#0e1d3d] via-[#081226] to-[#040814] backdrop-blur-md rounded-2xl border-2 shadow-[inset_0_1px_2px_rgba(255,255,255,0.22),0_12px_28px_rgba(0,0,0,0.7),0_0_22px_rgba(37,99,235,0.35)] min-h-[64px] sm:min-h-[78px] ${
+            className={`relative flex w-full items-center justify-center gap-1 p-1.5 sm:w-auto sm:gap-2.5 sm:p-2.5 bg-gradient-to-b from-[#0e1d3d] via-[#081226] to-[#040814] lg:backdrop-blur-md rounded-2xl border-2 shadow-[inset_0_1px_2px_rgba(255,255,255,0.22),0_12px_28px_rgba(0,0,0,0.7),0_0_22px_rgba(37,99,235,0.35)] min-h-[64px] sm:min-h-[78px] ${
               isExternalDragActive ? 'border-cyan-300 ring-2 ring-cyan-400/60 shadow-[0_0_25px_rgba(6,182,212,0.5)]' : 'border-blue-500/70 hover:border-blue-400/90'
             } transition-all`}
           >
@@ -379,7 +379,7 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
 
-          <div className="flex max-w-full flex-wrap items-center justify-center gap-1.5 p-1.5 sm:gap-2 sm:p-2 bg-slate-900/85 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-emerald-500/15 min-h-[52px] sm:min-h-[58px]">
+          <div className="flex max-w-full flex-wrap items-center justify-center gap-1.5 p-1.5 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-emerald-500/15 min-h-[52px] sm:min-h-[58px]">
             {isExchanging ? (
               <button
                 onClick={onConfirmExchange}

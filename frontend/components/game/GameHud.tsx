@@ -35,7 +35,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   onOpenInfo,
   timer,
 }) => (
-  <div className="relative z-10 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3 py-2 sm:px-4 bg-slate-900/75 border-b border-slate-800/60 backdrop-blur-sm shrink-0">
+  <div className="relative z-10 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3 py-2 sm:px-4 bg-slate-900/75 border-b border-slate-800/60 lg:backdrop-blur-sm shrink-0">
     {/* Left: Exit, logo, connection, room PIN */}
     <div className="flex min-w-0 items-center gap-2 sm:gap-3">
       <button

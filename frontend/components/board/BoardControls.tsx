@@ -23,7 +23,7 @@ export const BoardControls: React.FC<BoardControlsProps> = ({
   const isMaxZoom = scale >= camera.maxScale;
 
   return (
-    <div className="absolute top-4 right-4 z-20 flex flex-col gap-1.5 bg-slate-900/85 backdrop-blur-md p-1.5 rounded-xl border border-slate-700/60 shadow-xl">
+    <div className="absolute top-4 right-4 z-20 flex flex-col gap-1.5 bg-slate-900/90 p-1.5 rounded-xl border border-slate-700/60 shadow-xl">
       <button
         onClick={onZoomIn}
         disabled={isMaxZoom}

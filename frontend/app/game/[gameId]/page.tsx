@@ -409,7 +409,7 @@ export default function GamePage() {
 
       {isMobileInfoOpen && (
         <div
-          className="fixed inset-x-2 top-20 bottom-[calc(16rem+env(safe-area-inset-bottom))] z-40 flex min-h-0 flex-col gap-1 lg:hidden"
+          className="fixed inset-x-2 top-14 bottom-16 z-40 flex min-h-0 flex-col gap-1 [@media(min-height:640px)]:top-20 [@media(min-height:640px)]:bottom-[calc(16rem+env(safe-area-inset-bottom))] lg:hidden"
           onClick={() => setIsMobileInfoOpen(false)}
         >
           <div className="flex justify-end">
