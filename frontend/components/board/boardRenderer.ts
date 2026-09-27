@@ -320,23 +320,14 @@ function drawTile(
         ctx.fillStyle = letterFill;
       }
       const fontSize = Math.max(12, Math.round(cellSize * 0.70));
-      ctx.font = `${scene.tilePalette.letter.weight} ${fontSize}px 'RetroLight', sans-serif`;
+      ctx.font = `normal ${fontSize}px 'NATOENA', 'RetroLight', sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       const metrics = ctx.measureText(letter);
       const textX = x + cellSize / 2 + (metrics.actualBoundingBoxLeft - metrics.actualBoundingBoxRight) / 2;
       const textY = y + cellSize / 2 + (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) / 2;
-      if (!isRemote) {
-        ctx.save();
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
-        ctx.lineJoin = 'round';
-        ctx.lineWidth = Math.max(1.2, fontSize * 0.06);
-        ctx.strokeStyle = scene.tilePalette.letter.stroke;
-        ctx.strokeText(letter, textX, textY);
-        ctx.restore();
-      }
+      
+      // Removed strokeText and bold to match the bag tile exactly without extra thickness or black borders
       ctx.shadowColor = isRemote ? 'transparent' : scene.tilePalette.letter.shadow;
       ctx.shadowBlur = lowPower ? 0 : Math.max(1, cellSize * 0.03);
       ctx.shadowOffsetY = Math.max(1, cellSize * 0.04);
