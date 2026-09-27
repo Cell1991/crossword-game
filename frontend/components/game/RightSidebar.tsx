@@ -83,12 +83,14 @@ function MapControls({ camera, onZoomIn, onZoomOut, onReset }: {
 
 interface RightSidebarProps {
   players: Player[];
+  showHealth: boolean;
   currentPlayerId: string | null;
   myPlayerId: string | null;
   tileBagCount: number;
   tileBagCounts: Record<string, number>;
   moveHistory?: MoveHistoryEntry[];
   cardUseEffects?: Record<string, string>;
+  mobile?: boolean;
   // Zoom & Map Controls
   camera: BoardCamera;
   onZoomIn: () => void;
@@ -98,12 +100,14 @@ interface RightSidebarProps {
 
 export const RightSidebar = memo(function RightSidebar({
   players,
+  showHealth,
   currentPlayerId,
   myPlayerId,
   tileBagCount,
   tileBagCounts,
   moveHistory = [],
   cardUseEffects = {},
+  mobile = false,
   camera,
   onZoomIn,
   onZoomOut,
@@ -120,7 +124,7 @@ export const RightSidebar = memo(function RightSidebar({
   }, []);
 
   return (
-    <aside className="flex flex-col h-full w-72 shrink-0 p-3 select-none">
+    <aside className={`flex h-full shrink-0 flex-col select-none ${mobile ? 'w-full p-0' : 'w-72 p-3'}`}>
       {/* Sleek Vertical Glassmorphism Panel */}
       <div className="flex flex-col h-full bg-slate-950/80 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20 overflow-hidden">
         
@@ -237,19 +241,20 @@ export const RightSidebar = memo(function RightSidebar({
                     </div>
                   </div>
 
-                  {/* HP Bar */}
-                  <div className="mt-2 h-1 rounded-full bg-slate-950/80 overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-300 ${
-                        player.hp <= 0 
-                          ? 'bg-slate-700' 
-                          : player.hp > 50 
-                          ? 'bg-gradient-to-r from-emerald-500 to-teal-400' 
-                          : 'bg-gradient-to-r from-rose-500 to-amber-500'
-                      }`}
-                      style={{ width: `${Math.max(0, Math.min(100, player.hp))}%` }}
-                    />
-                  </div>
+                  {showHealth && (
+                    <div className="mt-2 h-1 rounded-full bg-slate-950/80 overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${
+                          player.hp <= 0
+                            ? 'bg-slate-700'
+                            : player.hp > 50
+                            ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                            : 'bg-gradient-to-r from-rose-500 to-amber-500'
+                        }`}
+                        style={{ width: `${Math.max(0, Math.min(100, player.hp))}%` }}
+                      />
+                    </div>
+                  )}
 
                   {/* Vibrant Pink-Magenta Glowing Accent Line for "You" */}
                   {isMe && (

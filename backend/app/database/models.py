@@ -31,6 +31,8 @@ class GameRoom(Base):
     # single tab intentionally drops one clone's socket on every "Act as" switch) without letting
     # any player grant that exemption to themselves in a real match by tacking a query param on.
     is_debug = Column(Boolean, default=False, nullable=False)
+    game_mode = Column(String(16), default="HP", nullable=False)
+    max_turns = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), default=get_utc_now)
     started_at = Column(DateTime(timezone=True), nullable=True)
     finished_at = Column(DateTime(timezone=True), nullable=True)

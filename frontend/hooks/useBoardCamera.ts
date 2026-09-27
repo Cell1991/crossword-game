@@ -16,6 +16,7 @@ export interface CameraView {
 const BASE_CELL_SIZE = 40;
 // Balanced zoom limit to prevent zooming out too far away
 const MIN_SCALE = 0.52;
+const TOUCH_MIN_SCALE = 0.65;
 const MAX_SCALE = 1.8;
 const DEFAULT_SCALE = 1;
 /** Zoom follows how far the wheel/trackpad moved (no fixed steps): a mouse-wheel notch (100px) is about 14%. */
@@ -23,8 +24,8 @@ const WHEEL_ZOOM_SPEED = 0.0015;
 /** The zoom buttons change the zoom by 20% per press. */
 export const BUTTON_ZOOM_FACTOR = 1.2;
 
-function clampScale(scale: number) {
-  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
+function clampScale(scale: number, minScale: number) {
+  return Math.min(MAX_SCALE, Math.max(minScale, scale));
 }
 
 function clampOffset(
@@ -62,6 +63,7 @@ function clampOffset(
 export function useBoardCamera() {
   const viewRef = useRef<CameraView>({ scale: DEFAULT_SCALE, offset: { x: 0, y: 0 } });
   const viewportRef = useRef({ width: 1200, height: 800 });
+  const minScaleRef = useRef(MIN_SCALE);
   const listenersRef = useRef(new Set<() => void>());
 
   return useMemo(() => {
@@ -82,6 +84,15 @@ export function useBoardCamera() {
     const setViewport = (width: number, height: number) => {
       if (width > 0 && height > 0) {
         viewportRef.current = { width, height };
+        const touchViewport = width < 768 || window.matchMedia('(pointer: coarse)').matches;
+        minScaleRef.current = touchViewport ? TOUCH_MIN_SCALE : MIN_SCALE;
+        const previous = viewRef.current;
+        if (previous.scale < minScaleRef.current) {
+          setView({
+            scale: minScaleRef.current,
+            offset: clampOffset(previous.offset, minScaleRef.current, width, height),
+          });
+        }
       }
     };
 
@@ -118,7 +129,7 @@ export function useBoardCamera() {
     const zoomBy = (factor: number, clientX: number, clientY: number) => {
       if (!Number.isFinite(factor) || factor <= 0 || factor === 1) return;
       const previous = viewRef.current;
-      const newScale = clampScale(previous.scale * factor);
+      const newScale = clampScale(previous.scale * factor, minScaleRef.current);
       const ratio = newScale / previous.scale;
       if (ratio === 1) return;
       const rawOffset = {
@@ -152,7 +163,7 @@ export function useBoardCamera() {
     };
 
     return {
-      minScale: MIN_SCALE,
+      get minScale() { return minScaleRef.current; },
       maxScale: MAX_SCALE,
       baseCellSize: BASE_CELL_SIZE,
       getView,

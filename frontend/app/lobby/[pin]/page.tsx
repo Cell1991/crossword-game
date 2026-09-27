@@ -7,7 +7,7 @@ import { getRoom, leaveRoom, startGame, sessionStore } from '@/lib/api';
 import { PinDisplay } from '@/components/lobby/PinDisplay';
 import { PlayerList } from '@/components/lobby/PlayerList';
 import ParticleField from '@/components/effects/ParticleField';
-import { Player } from '@/lib/types';
+import { GameMode, Player } from '@/lib/types';
 
 /** Matches MIN_PLAYERS on the backend: a host may start alone and play solo. */
 const MIN_PLAYERS = 1;
@@ -29,6 +29,8 @@ export default function LobbyPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [turnTimeLimit, setTurnTimeLimit] = useState<number | null>(null);
+  const [gameMode, setGameMode] = useState<GameMode>('HP');
+  const [maxTurns, setMaxTurns] = useState<number | null>(null);
 
   // Load session
   useEffect(() => {
@@ -55,6 +57,8 @@ export default function LobbyPage() {
       setPlayers(room.players);
       setHostPlayerId(room.host_player_id);
       setTurnTimeLimit(room.turn_time_limit);
+      setGameMode(room.game_mode);
+      setMaxTurns(room.max_turns);
       setLoading(false);
       // If game already started, redirect to game
       if (room.status === 'PLAYING' || room.status === 'ACTIVE') {
@@ -135,8 +139,9 @@ export default function LobbyPage() {
         {/* PIN Display */}
         <PinDisplay pin={pin} />
 
-        <div className="text-sm text-slate-300 bg-slate-900/70 border border-slate-700/50 rounded-xl px-4 py-2">
-          Turn Time: <span className="font-semibold text-amber-300">{turnTimeLimit === null ? 'Unlimited' : `${turnTimeLimit} sec`}</span>
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-sm text-slate-300 bg-slate-900/70 border border-slate-700/50 rounded-xl px-4 py-2">
+          <span>Mode: <span className="font-semibold text-amber-300">{gameMode === 'HP' ? 'HP Battle' : `Turn Count (${maxTurns} turns)`}</span></span>
+          <span>Turn Time: <span className="font-semibold text-amber-300">{turnTimeLimit === null ? 'Unlimited' : `${turnTimeLimit} sec`}</span></span>
         </div>
 
         {/* Player List */}

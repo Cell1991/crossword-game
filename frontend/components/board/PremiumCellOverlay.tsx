@@ -89,7 +89,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
               key={`power-${row}-${col}`}
               data-row={row}
               data-col={col}
-              className="absolute rounded-sm border border-amber-300/35 bg-amber-400/10 shadow-[0_0_16px_rgba(251,191,36,0.3)] board-power-pulse"
+              className="absolute rounded-sm border border-cyan-200/75 bg-cyan-400/20 shadow-[inset_0_0_10px_rgba(165,243,252,0.18),0_0_22px_rgba(34,211,238,0.55)] board-power-pulse"
               style={{
                 animationDelay: `${-((row * 5 + col * 3) % 13) / 10}s`,
                 opacity: alpha,
@@ -105,8 +105,8 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
                   style={{ animationDelay: `${-((row * 7 + col * 2) % 11) / 10}s` }}
                 />
               </span>
-              <i className="board-lightning-spark absolute left-[20%] top-[24%] h-1 w-1 rounded-full bg-amber-100" style={{ animationDelay: `${-((row + col) % 7) / 10}s` }} />
-              <i className="board-lightning-spark absolute bottom-[20%] right-[20%] h-1 w-1 rounded-full bg-orange-100" style={{ animationDelay: `${-((row * 2 + col) % 9) / 10}s` }} />
+              <i className="board-lightning-spark absolute left-[20%] top-[24%] h-1 w-1 rounded-full bg-yellow-100 shadow-[0_0_8px_2px_rgba(253,224,71,0.9)]" style={{ animationDelay: `${-((row + col) % 7) / 10}s` }} />
+              <i className="board-lightning-spark absolute bottom-[20%] right-[20%] h-1 w-1 rounded-full bg-cyan-100 shadow-[0_0_8px_2px_rgba(165,243,252,0.9)]" style={{ animationDelay: `${-((row * 2 + col) % 9) / 10}s` }} />
             </span>
           );
         })}

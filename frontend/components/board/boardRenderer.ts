@@ -10,6 +10,7 @@ import {
 } from '@/lib/board';
 import { getConstellationData } from '@/lib/constellations';
 import { cellKey, isBlankLetter } from '@/lib/tiles';
+import { TILE_THEME, type TilePalette } from '@/lib/tileTheme';
 
 /**
  * Canvas drawing for the board. Everything here is a pure function of the scene passed in, so
@@ -34,6 +35,7 @@ export interface BoardScene {
   hintCell: CellPosition | null;
   /** Skip glows and twinkling on weaker devices. */
   lowPower: boolean;
+  tilePalette: TilePalette;
   /** Seconds, drives the constellation twinkle. */
   time: number;
 }
@@ -41,6 +43,7 @@ export interface BoardScene {
 /** Extended grid lines reach this many cells past the playable board before fading out. */
 const EXTEND_MARGIN_COLS = 16;
 const EXTEND_MARGIN_ROWS = 12;
+const LOW_POWER_GRID_ALPHA_BUCKETS = 24;
 
 /** 1 across the playable 27×19 board, fading smoothly to 0 for the extended grid beyond it. */
 export function getCellAlpha(row: number, col: number): number {
@@ -111,33 +114,33 @@ function drawTile(
   const tileW = cellSize - pad * 2;
   const radius = Math.max(2, cellSize * 0.12);
 
-  // Is this tile in a golden state? (Both confirmed/committed tiles AND valid temporary tiles)
+  // Keep placement status on the outline; the tile face itself stays consistent.
   const isGolden = !isRemote && (!isTemporary || temporaryTilesValid === true);
 
   // Shadow layer
-  const shadowFill = isGolden
-    ? 'rgba(120, 53, 15, 0.4)'
-    : (isRemote ? 'rgba(0,0,0,0.3)' : 'rgba(0, 0, 0, 0.4)');
+  const shadowFill = isRemote ? TILE_THEME.remoteFace.shadow : TILE_THEME.face.shadow;
+  if (!lowPower) {
+    ctx.save();
+    ctx.shadowColor = shadowFill;
+    ctx.shadowBlur = Math.max(4, cellSize * 0.1);
+  }
   ctx.fillStyle = shadowFill;
   drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
   ctx.fill();
+  if (!lowPower) ctx.restore();
 
   // Tile face fill
   if (isRemote) {
-    ctx.fillStyle = '#cbd5e1';
-  } else if (isGolden) {
-    // Confirmed on board OR Valid temporary move → Original Deep Royal Amber Gold crystal gradient
-    const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-    grad.addColorStop(0, '#d97706');
-    grad.addColorStop(0.45, '#854d0e');
-    grad.addColorStop(1, '#3f1a04');
-    ctx.fillStyle = grad;
+    const ghostGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
+    ghostGrad.addColorStop(0, TILE_THEME.remoteFace.top);
+    ghostGrad.addColorStop(0.35, TILE_THEME.remoteFace.middle);
+    ghostGrad.addColorStop(1, TILE_THEME.remoteFace.bottom);
+    ctx.fillStyle = ghostGrad;
   } else {
-    // In-progress / unverified placement on board → natural navy gradient
     const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-    grad.addColorStop(0, '#23407a');
-    grad.addColorStop(0.5, '#1a305e');
-    grad.addColorStop(1, '#122244');
+    grad.addColorStop(0, TILE_THEME.face.top);
+    grad.addColorStop(0.5, TILE_THEME.face.middle);
+    grad.addColorStop(1, TILE_THEME.face.bottom);
     ctx.fillStyle = grad;
   }
   drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
@@ -147,25 +150,42 @@ function drawTile(
   if (!isRemote && cellSize >= 16) {
     ctx.save();
     const glossGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW * 0.38);
-    glossGrad.addColorStop(0, 'rgba(255, 255, 255, 0.18)');
+    glossGrad.addColorStop(0, isGolden ? 'rgba(255, 248, 220, 0.22)' : 'rgba(255, 255, 255, 0.13)');
     glossGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
     ctx.fillStyle = glossGrad;
     drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW * 0.38, Math.max(1.5, radius - 1));
     ctx.fill();
     ctx.restore();
+  } else if (isRemote && cellSize >= 16) {
+    ctx.save();
+    const ghostGloss = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW * 0.5);
+    ghostGloss.addColorStop(0, 'rgba(191, 219, 254, 0.13)');
+    ghostGloss.addColorStop(1, 'rgba(125, 211, 252, 0)');
+    ctx.fillStyle = ghostGloss;
+    drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW * 0.5, Math.max(1.5, radius - 1));
+    ctx.fill();
+    ctx.restore();
   }
 
   // Celestial Star Constellation Background (Authentic star chart matching letter with dynamic twinkling)
-  if (!isRemote && letter && cellSize >= 18) {
+  if (cellSize >= 18 && (letter || isRemote)) {
     ctx.save();
-    const constellation = getConstellationData(letter);
+    const constellation = getConstellationData(letter || 'A');
     const time = lowPower ? 0 : scene.time;
 
     // Color scheme: warm celestial gold/champagne for gold tiles, crisp starlight cyan for blue tiles
-    const lineColor = isGolden ? 'rgba(254, 240, 138, 0.26)' : 'rgba(147, 220, 252, 0.20)';
-    const starGlow = isGolden ? 'rgba(251, 191, 36, 0.60)' : 'rgba(56, 189, 248, 0.55)';
-    const starFill = isGolden ? '#fef3c7' : 'rgba(224, 242, 254, 0.80)';
-    const burstFill = isGolden ? '#fde68a' : 'rgba(186, 230, 253, 0.85)';
+    const lineColor = isGolden
+      ? 'rgba(254, 240, 178, 0.18)'
+      : isRemote ? 'rgba(186, 230, 253, 0.1)' : 'rgba(147, 220, 225, 0.12)';
+    const starGlow = isGolden
+      ? 'rgba(251, 191, 36, 0.42)'
+      : isRemote ? 'rgba(125, 211, 252, 0.22)' : 'rgba(77, 193, 205, 0.32)';
+    const starFill = isGolden
+      ? '#fef3c7'
+      : isRemote ? 'rgba(186, 230, 253, 0.34)' : 'rgba(210, 237, 234, 0.54)';
+    const burstFill = isGolden
+      ? '#fde68a'
+      : isRemote ? 'rgba(186, 230, 253, 0.44)' : 'rgba(186, 230, 253, 0.68)';
 
     // 1. Background stardust specks with gentle shimmer
     for (let i = 0; i < constellation.dust.length; i++) {
@@ -247,11 +267,17 @@ function drawTile(
 
   // Stroke
   if (isRemote) {
-    ctx.strokeStyle = '#94a3b8';
-    ctx.lineWidth = 1;
+    ctx.save();
+    ctx.shadowColor = 'rgba(96, 165, 250, 0.28)';
+    ctx.shadowBlur = lowPower ? 0 : Math.max(1, cellSize * 0.03);
+    ctx.strokeStyle = 'rgba(125, 211, 252, 0.62)';
+    ctx.lineWidth = 1.1;
+    ctx.stroke();
+    ctx.restore();
+    return;
   } else if (isGolden) {
-    ctx.strokeStyle = isTemporary ? 'rgba(251, 191, 36, 0.85)' : 'rgba(217, 119, 6, 0.55)';
-    ctx.lineWidth = isTemporary ? 1.8 : 1.2;
+    ctx.strokeStyle = isTemporary ? '#f5d98a' : 'rgba(226, 184, 93, 0.9)';
+    ctx.lineWidth = isTemporary ? 1.8 : 1.3;
   } else {
     ctx.strokeStyle = 'rgba(96, 165, 250, 0.45)';
     ctx.lineWidth = 1.5;
@@ -271,89 +297,70 @@ function drawTile(
       const cx = x + cellSize / 2;
       const cy = y + cellSize / 2;
       const starSize = Math.max(6, cellSize * 0.28);
-      ctx.shadowColor = '#38bdf8';
+      ctx.shadowColor = scene.tilePalette.blank.glow;
       ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.12);
-      ctx.fillStyle = '#bae6fd';
+      ctx.fillStyle = scene.tilePalette.blank.color;
       drawStarburst(ctx, cx, cy, starSize, starSize * 0.4);
       ctx.fill();
+      ctx.lineWidth = Math.max(0.5, cellSize * 0.055);
+      ctx.strokeStyle = scene.tilePalette.blank.stroke;
+      ctx.stroke();
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(cx, cy, starSize * 0.22, 0, Math.PI * 2);
       ctx.fill();
     } else {
-      // White text on both navy and royal gold tiles for max clarity and texture with drop shadow
-      ctx.shadowColor = isRemote ? 'transparent' : 'rgba(0, 0, 0, 0.85)';
-      ctx.shadowBlur = lowPower ? 0 : Math.max(2, cellSize * 0.08);
-      ctx.shadowOffsetY = 1;
-      ctx.fillStyle = isRemote ? '#0f172a' : '#ffffff';
+      const letterFill = scene.tilePalette.letter.color;
+      if (isRemote) {
+        const letterGrad = ctx.createLinearGradient(0, y + cellSize * 0.27, 0, y + cellSize * 0.72);
+        letterGrad.addColorStop(0, '#0f172a');
+        letterGrad.addColorStop(1, '#334155');
+        ctx.fillStyle = letterGrad;
+      } else {
+        ctx.fillStyle = letterFill;
+      }
       const fontSize = Math.max(12, Math.round(cellSize * 0.70));
-      ctx.font = `${fontSize}px 'QuakDuck', sans-serif`;
+      ctx.font = `${scene.tilePalette.letter.weight} ${fontSize}px 'RetroLight', sans-serif`;
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const textX = Math.round(x + cellSize / 2);
-      const textY = Math.round(y + cellSize / 2 - (cellSize >= 20 ? 1 : 0));
+      ctx.textBaseline = 'alphabetic';
+      const metrics = ctx.measureText(letter);
+      const textX = x + cellSize / 2 + (metrics.actualBoundingBoxLeft - metrics.actualBoundingBoxRight) / 2;
+      const textY = y + cellSize / 2 + (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) / 2;
+      if (!isRemote) {
+        ctx.save();
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = Math.max(1.2, fontSize * 0.06);
+        ctx.strokeStyle = scene.tilePalette.letter.stroke;
+        ctx.strokeText(letter, textX, textY);
+        ctx.restore();
+      }
+      ctx.shadowColor = isRemote ? 'transparent' : scene.tilePalette.letter.shadow;
+      ctx.shadowBlur = lowPower ? 0 : Math.max(1, cellSize * 0.03);
+      ctx.shadowOffsetY = Math.max(1, cellSize * 0.04);
       ctx.fillText(letter, textX, textY);
     }
     ctx.restore();
 
     if (cellSize >= 20) {
       const numFontSize = Math.max(9, Math.round(cellSize * 0.28));
-      ctx.font = `bold ${numFontSize}px 'Geist', sans-serif`;
+      ctx.font = `${scene.tilePalette.score.weight} ${numFontSize}px 'Geist', sans-serif`;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       const numX = x + cellSize - pad * 1.5;
       const numY = y + cellSize - pad * 1.5;
 
-      if (multiplier > 1) {
-        // Multiplier Bonus (2L / 3L): Vibrant Glowing Badge
-        ctx.save();
-        const numStr = `${effectiveValue}`;
-        const metrics = ctx.measureText(numStr);
-        const badgeW = Math.max(numFontSize * 1.25, metrics.width + 6);
-        const badgeH = numFontSize + 4;
-        const badgeX = numX - badgeW + 2;
-        const badgeY = numY - badgeH + 2;
-        const badgeRadius = 4;
-
-        // Outer Glow
-        ctx.shadowColor = multiplier === 3 ? 'rgba(239, 68, 68, 0.8)' : 'rgba(245, 158, 11, 0.85)';
-        ctx.shadowBlur = lowPower ? 0 : 8;
-        ctx.fillStyle = multiplier === 3 ? 'rgba(220, 38, 38, 0.95)' : 'rgba(217, 119, 6, 0.95)';
-        drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeRadius);
-        ctx.fill();
-
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // Reset shadow for crisp text
-        ctx.shadowColor = 'transparent';
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(numStr, badgeX + badgeW / 2, badgeY + badgeH / 2 + 0.5);
-        ctx.restore();
-      } else {
-        // Standard Score Number with clear contrast and aura
-        ctx.save();
-        if (isGolden) {
-          // Golden Tile: Radiant Golden Amber Glow
-          ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
-          ctx.shadowBlur = lowPower ? 0 : 6;
-          ctx.fillStyle = '#fef08a';
-          ctx.fillText(`${effectiveValue}`, numX, numY);
-        } else if (isRemote) {
-          ctx.fillStyle = '#334155';
-          ctx.fillText(`${effectiveValue}`, numX, numY);
-        } else {
-          // Navy Tile: Glowing Sky Cyan Neon Aura
-          ctx.shadowColor = 'rgba(56, 189, 248, 0.8)';
-          ctx.shadowBlur = lowPower ? 0 : 6;
-          ctx.fillStyle = '#7dd3fc';
-          ctx.fillText(`${effectiveValue}`, numX, numY);
-        }
-        ctx.restore();
-      }
+      ctx.save();
+      ctx.shadowColor = scene.tilePalette.score.glow;
+      ctx.shadowBlur = lowPower ? 0 : Math.max(2, numFontSize * 0.35);
+      ctx.lineWidth = Math.max(0.5, numFontSize * 0.05);
+      ctx.strokeStyle = scene.tilePalette.score.stroke;
+      ctx.fillStyle = scene.tilePalette.score.color;
+      ctx.strokeText(`${effectiveValue}`, numX, numY);
+      ctx.fillText(`${effectiveValue}`, numX, numY);
+      ctx.restore();
     }
   }
 }
@@ -371,6 +378,10 @@ function drawGrid(
   bounds: { minRow: number; maxRow: number; minCol: number; maxCol: number }
 ) {
   const { offset, cellSize, lowPower } = scene;
+  const gridPaths = lowPower
+    ? Array.from({ length: LOW_POWER_GRID_ALPHA_BUCKETS }, () => new Path2D())
+    : null;
+  const gridPathCounts = lowPower ? new Uint16Array(LOW_POWER_GRID_ALPHA_BUCKETS) : null;
   ctx.save();
   for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
     for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
@@ -396,11 +407,11 @@ function drawGrid(
           drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
           ctx.fill();
         } else if (isDouble) {
-          ctx.fillStyle = '#854d0e';
+          ctx.fillStyle = '#166534';
           drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
           ctx.fill();
         } else if (isPower) {
-          ctx.fillStyle = '#075985';
+          ctx.fillStyle = '#0e7490';
           drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
           ctx.fill();
         }
@@ -427,15 +438,37 @@ function drawGrid(
         }
       }
 
-      // Extended Grid lines
-      ctx.strokeStyle = 'rgba(245, 190, 72, 0.24)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + cellSize, y);
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + cellSize);
-      ctx.stroke();
+      // Batch low-power grid strokes by opacity; desktop keeps per-cell alpha unchanged.
+      if (gridPaths && gridPathCounts) {
+        const bucket = Math.min(
+          LOW_POWER_GRID_ALPHA_BUCKETS - 1,
+          Math.floor(lineAlpha * LOW_POWER_GRID_ALPHA_BUCKETS)
+        );
+        const path = gridPaths[bucket];
+        path.moveTo(x, y);
+        path.lineTo(x + cellSize, y);
+        path.moveTo(x, y);
+        path.lineTo(x, y + cellSize);
+        gridPathCounts[bucket]++;
+      } else {
+        ctx.strokeStyle = 'rgba(245, 190, 72, 0.24)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + cellSize, y);
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + cellSize);
+        ctx.stroke();
+      }
+    }
+  }
+  if (gridPaths && gridPathCounts) {
+    ctx.strokeStyle = 'rgba(245, 190, 72, 0.24)';
+    ctx.lineWidth = 1;
+    for (let bucket = 0; bucket < gridPaths.length; bucket++) {
+      if (gridPathCounts[bucket] === 0) continue;
+      ctx.globalAlpha = (bucket + 0.5) / LOW_POWER_GRID_ALPHA_BUCKETS;
+      ctx.stroke(gridPaths[bucket]);
     }
   }
   ctx.restore();

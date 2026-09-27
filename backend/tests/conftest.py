@@ -174,9 +174,20 @@ async def client():
 @pytest_asyncio.fixture
 async def open_table(client):
     """Factory: seat the named players in a new room (the first one hosts) and start the game."""
-    async def _open(*names: str, start: bool = True, turn_time_limit: int | None = None) -> GameTable:
+    async def _open(
+        *names: str,
+        start: bool = True,
+        turn_time_limit: int | None = None,
+        game_mode: str = "HP",
+        max_turns: int | None = None,
+    ) -> GameTable:
         host_name, *guest_names = names
-        created = await client.post("/api/rooms", json={"host_name": host_name, "turn_time_limit": turn_time_limit})
+        created = await client.post("/api/rooms", json={
+            "host_name": host_name,
+            "turn_time_limit": turn_time_limit,
+            "game_mode": game_mode,
+            "max_turns": max_turns,
+        })
         assert created.status_code == 200, created.text
         room = created.json()
         seats = [Seat(room["host_player_id"], room["session_token"], host_name)]
