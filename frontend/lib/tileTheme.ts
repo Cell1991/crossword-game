@@ -18,15 +18,15 @@ export const TILE_THEME = {
   },
   mobile: {
     letter: {
-      color: '#4b87c2',
-      stroke: '#2f6597',
+      color: '#ffffff',
+      stroke: '#000000',
       shadow: 'rgba(36, 76, 112, 0.32)',
       textShadow: '0 1px 0 rgba(255, 255, 255, 0.75), 0 2px 0 rgba(25, 65, 105, 0.72), 0 4px 6px rgba(20, 48, 78, 0.52)',
       weight: 800,
     },
     score: {
-      color: '#073b82',
-      stroke: '#073b82',
+      color: '#efefef',
+      stroke: '#04142a',
       glow: 'rgba(0, 0, 0, 0)',
       textShadow: 'none',
       weight: 900,
