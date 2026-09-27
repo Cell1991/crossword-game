@@ -16,7 +16,7 @@ python -m pytest -rxX
 - `tests/conftest.py` บังคับให้เทสต์ใช้ SQLite ชั่วคราวเสมอ เพราะเทสต์ API จะ drop/create ตารางทุกครั้ง จึงไม่ไปลบข้อมูลใน `crossword.db` หรือ Postgres ใน docker
   (ถ้าต้องการใช้ฐานข้อมูลอื่นที่ทิ้งได้ ให้ตั้ง `TEST_DATABASE_URL`)
 - `GameTable` ใน conftest ใช้จัดฉากให้ผลลัพธ์แน่นอน เช่น กำหนดตัวอักษรในแร็ก/ถุง (`set_tiles`), วางตัวอักษรบนกระดาน (`set_board`), ปรับ HP หรือจำนวนเทิร์น
-- ผลล่าสุด: **133 passed** (แก้ BUG-1 แล้วจึงไม่มี xfailed เหลือ)
+- ผลล่าสุด: **138 passed** (แก้ BUG-1 แล้วจึงไม่มี xfailed เหลือ)
 
 สัญลักษณ์: ✅ ผ่าน · ❌ พบบั๊ก (เทสต์เป็น `xfail(strict=True)` จะเปลี่ยนเป็น fail ทันทีเมื่อแก้บั๊กแล้ว ให้ถอด mark ออก) · 🖐 ยังไม่ได้ทดสอบมือ
 
@@ -128,6 +128,7 @@ python -m pytest -rxX
 | CD-03 | BAN_LETTER | Alice แบนตัว A แล้ว pass, Bob วาง CAT | 400 "banned" | ✅ |
 | CD-04 | คน HP 0 ใช้การ์ดไม่ได้ | Bob HP 0 ใช้ HEAL | 403 HP ยังเป็น 0 การ์ดยังอยู่ | ✅ (แก้ BUG-15 แล้ว) |
 | CD-05 | ใช้การ์ดหลังจบเกมไม่ได้ | เกม `FINISHED` แล้วใช้ DESTROY_TILE | 400 กระดานไม่เปลี่ยน | ✅ (แก้ BUG-15 แล้ว) |
+| CD-14 | โหมด Turn Count ไม่แจกการ์ด HP | วางคำทับช่อง SECRET_POWER ในเกม Turn Count และเกม HP | Turn Count สุ่มจาก HINT, SPY_SWAP, DESTROY_TILE, FREEZE_TILE เท่านั้น (ไม่มี HEAL, DOUBLE_DAMAGE, SHIELD ซึ่งไม่มีผลในโหมดนี้) โหมด HP ยังได้ครบ 7 ใบ | ✅ |
 
 ## 8. Realtime sync และการหลุดการเชื่อมต่อ
 

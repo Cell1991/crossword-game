@@ -20,6 +20,15 @@ class MoveService:
     CARD_TYPES = (
         "HINT", "SPY_SWAP", "DESTROY_TILE", "HEAL", "DOUBLE_DAMAGE", "SHIELD", "FREEZE_TILE",
     )
+    # Cards that only act on HP. Turn-count games deal no damage, so these would do nothing there.
+    HP_CARD_TYPES = frozenset({"HEAL", "DOUBLE_DAMAGE", "SHIELD"})
+
+    @classmethod
+    def card_pool(cls, game: Game) -> tuple[str, ...]:
+        """The cards a SECRET_POWER square can award in this game."""
+        if game.max_turns is None:
+            return cls.CARD_TYPES
+        return tuple(card for card in cls.CARD_TYPES if card not in cls.HP_CARD_TYPES)
 
     @classmethod
     def _verify_tile_ownership(cls, player_rack: list[dict[str, Any]], placed_tiles: list[PlacedTileInput]) -> tuple[bool, str | None]:
@@ -262,7 +271,7 @@ class MoveService:
         if any((pt.row, pt.col) in Board.SECRET_POWER for pt in placed_tiles):
             cards = list(player.cards or [])
             if len(cards) < 3:
-                card_awarded = random.choice(cls.CARD_TYPES)
+                card_awarded = random.choice(cls.card_pool(game))
                 cards.append(card_awarded)
                 player.cards = cards
                 from app.database.state import replace_player_cards

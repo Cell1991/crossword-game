@@ -4,6 +4,7 @@ Each test is one row of docs/TEST_SCENARIOS.md (the scenario id is in the test n
 Racks, bag and board are staged with GameTable helpers so every outcome is exact.
 """
 import asyncio
+import random
 import json
 from datetime import datetime, timedelta, timezone
 
@@ -925,6 +926,23 @@ async def test_cd13_cards_cannot_be_used_once_the_game_is_over(open_table):
 
     assert res.status_code == 400
     assert len((await table.state())["board_state"]) == 3
+
+
+@pytest.mark.parametrize("game_mode, max_turns, hp_cards_dealt", [("HP", None, True), ("TURNS", 7, False)])
+async def test_cd14_turn_count_games_never_deal_hp_only_cards(open_table, monkeypatch, game_mode, max_turns, hp_cards_dealt):
+    table = await open_table("Alice", "Bob", game_mode=game_mode, max_turns=max_turns)
+    alice, _ = table.seats
+    await table.set_board({(7, 11): "A", (7, 12): "T"})
+    await table.set_tiles(racks={alice: "CSEIOUR"})
+    pools = []
+    monkeypatch.setattr(random, "choice", lambda pool: pools.append(tuple(pool)) or pool[0])
+
+    res = await table.place(alice, 7, 10, "C..")  # (7, 10) is a SECRET_POWER square
+
+    assert res.status_code == 200, res.text
+    assert len(pools) == 1
+    assert bool({"HEAL", "DOUBLE_DAMAGE", "SHIELD"} & set(pools[0])) is hp_cards_dealt
+    assert {"HINT", "SPY_SWAP", "DESTROY_TILE", "FREEZE_TILE"} <= set(pools[0])
 
 
 # --- Realtime sync (RT) --------------------------------------------------------------------------
