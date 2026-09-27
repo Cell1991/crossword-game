@@ -26,14 +26,12 @@
 }
 
 .font-maple {
-  font-family: "NATOENA", "RetroLight", sans-serif;
+  font-family: "Granix Demo", sans-serif;
   font-weight: 400;
 }
 
 .tile-letter {
-  -webkit-text-stroke: 0.45px rgba(15, 31, 44, 0.9);
-  paint-order: stroke fill;
-  text-shadow: 0 1px 0 rgba(255, 250, 235, 0.38), 0 2px 0 rgba(15, 31, 44, 0.92), 0 3px 4px rgba(2, 8, 18, 0.58);
+  /* Removed stroke and shadow for plain look */
 }
 
 .tile-letter-ivory {
@@ -42,17 +40,12 @@
 
 .tile-letter-orange {
   color: var(--tile-letter-color-mobile);
-  font-weight: 800;
-  -webkit-text-stroke: 1px var(--tile-letter-stroke-mobile);
-  text-shadow: var(--tile-letter-shadow-mobile);
 }
 
 .tile-face { background-image: var(--tile-face-gradient); }
 
 .tile-score-blue {
   color: var(--tile-score-color-mobile);
-  -webkit-text-stroke: 0.45px var(--tile-score-stroke-mobile);
-  text-shadow: var(--tile-score-shadow-mobile);
 }
 
 .tile-blank-star {
@@ -64,15 +57,10 @@
 @media (min-width: 1024px) {
   .tile-letter-orange {
     color: var(--tile-letter-color-desktop);
-    font-weight: 900;
-    -webkit-text-stroke: 1.1px var(--tile-letter-stroke-desktop);
-    text-shadow: var(--tile-letter-shadow-desktop);
   }
 
   .tile-score-blue {
     color: var(--tile-score-color-desktop);
-    -webkit-text-stroke: 0.5px var(--tile-score-stroke-desktop);
-    text-shadow: var(--tile-score-shadow-desktop);
   }
 
   .tile-blank-star {
