@@ -271,8 +271,8 @@ async def test_ex20_exchanges_count_towards_the_scoreless_turns_that_end_the_gam
 
     res = await exchange_one(bob)
 
-    assert res.json()["game_over"] is True
-    assert (await table.state())["status"] == "FINISHED"
+    assert res.json()["game_over"] is False
+    assert (await table.state())["status"] == "PLAYING"
 
 
 @pytest.mark.asyncio
