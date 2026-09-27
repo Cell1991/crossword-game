@@ -1,3 +1,5 @@
+import asyncio
+from collections import defaultdict
 from typing import Optional
 from fastapi import APIRouter, Depends, Header, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +15,10 @@ from app.services.room_service import RoomService
 from app.websocket.connection_manager import manager
 
 router = APIRouter(prefix="/games", tags=["Games"])
+
+# SQLite ignores SELECT ... FOR UPDATE, so players pressing Play Again at the same moment would
+# each open their own lobby. Serialize rematch requests per game in this process instead.
+_rematch_locks: defaultdict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
 
 @router.get("/{game_id}", response_model=GameStateResponse)
 async def get_game(
@@ -197,8 +203,9 @@ async def rematch(
     db: AsyncSession = Depends(get_db),
 ):
     """Play again: open a lobby with this game's settings, or join the one another player already opened."""
-    room, new_game, player, created = await RoomService.rematch(db, game_id, x_player_id)
-    await db.commit()
+    async with _rematch_locks[game_id]:
+        room, new_game, player, created = await RoomService.rematch(db, game_id, x_player_id)
+        await db.commit()
 
     if created:
         # Everyone still on the game-over screen can follow into the new lobby.

@@ -170,8 +170,10 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
     onEvent: handleSocketEvent,
   });
 
+  // Keep resyncing on the game-over screen too: that is where a new lobby (`rematch_pin`) shows
+  // up, and where it has to disappear again once that lobby starts without us.
   useEffect(() => {
-    if (gameState?.status !== 'PLAYING') return;
+    if (gameState?.status !== 'PLAYING' && gameState?.status !== 'FINISHED') return;
     const interval = window.setInterval(() => { void loadGameState(); }, RESYNC_MS);
     return () => window.clearInterval(interval);
   }, [gameState?.status, loadGameState]);

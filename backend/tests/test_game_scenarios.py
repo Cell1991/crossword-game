@@ -654,6 +654,18 @@ async def test_pa04_a_lobby_that_already_started_is_not_joined_again(open_table)
     assert (await table.state())["rematch_pin"] == second["game_pin"]
 
 
+async def test_pa05_players_pressing_play_again_together_share_one_lobby(open_table):
+    table = await open_table("Alice", "Bob", "Carol")
+    await table.update_game(status="FINISHED", current_player_id=None)
+
+    results = [r.json() for r in await asyncio.gather(*(table.act(seat, "rematch") for seat in table.seats))]
+
+    assert len({r["game_pin"] for r in results}) == 1
+    assert sum(r["created"] for r in results) == 1
+    room = (await table.client.get(f"/api/rooms/{results[0]['game_pin']}")).json()
+    assert len(room["players"]) == 3
+
+
 # --- Power cards (CD) ----------------------------------------------------------------------------
 
 async def test_cd01_cannot_use_a_card_you_do_not_hold(open_table):
