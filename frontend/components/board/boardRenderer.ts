@@ -320,17 +320,21 @@ function drawTile(
         ctx.fillStyle = letterFill;
       }
       const fontSize = Math.max(12, Math.round(cellSize * 0.70));
-      ctx.font = `normal ${fontSize}px 'Granix Demo', sans-serif`;
+      ctx.font = `${scene.tilePalette.letter.weight} ${fontSize}px 'Granix Demo', sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       const metrics = ctx.measureText(letter);
       const textX = x + cellSize / 2 + (metrics.actualBoundingBoxLeft - metrics.actualBoundingBoxRight) / 2;
       const textY = y + cellSize / 2 + (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) / 2;
-      
-      // Removed strokeText and bold to match the bag tile exactly without extra thickness or black borders
+      if (!isRemote) {
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = Math.max(1.6, fontSize * 0.08);
+        ctx.strokeStyle = scene.tilePalette.letter.stroke;
+        ctx.strokeText(letter, textX, textY);
+      }
       ctx.shadowColor = isRemote ? 'transparent' : scene.tilePalette.letter.shadow;
-      ctx.shadowBlur = lowPower ? 0 : Math.max(1, cellSize * 0.03);
-      ctx.shadowOffsetY = Math.max(1, cellSize * 0.04);
+      ctx.shadowBlur = isRemote ? 0 : Math.max(2, cellSize * 0.06);
+      ctx.shadowOffsetY = isRemote ? 0 : Math.max(1, cellSize * 0.035);
       ctx.fillText(letter, textX, textY);
     }
     ctx.restore();

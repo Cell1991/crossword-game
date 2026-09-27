@@ -2,15 +2,11 @@
 
 import React, { memo, useCallback, useRef, useState } from 'react';
 import { MoveHistoryEntry, Player } from '@/lib/types';
-import { BoardCamera, useCameraScale } from '@/hooks/useBoardCamera';
 import {
   Trophy,
   Crown,
   Wifi,
   WifiOff,
-  ZoomIn,
-  ZoomOut,
-  Compass,
   History,
   ChevronDown,
   ChevronUp,
@@ -18,68 +14,6 @@ import {
 } from 'lucide-react';
 import { cardIcon } from './cardIcons';
 import { TileBagDialog } from './TileBagDialog';
-
-/** Zoom buttons and level. Subscribes to the camera itself so zooming re-renders only this row. */
-function MapControls({ camera, onZoomIn, onZoomOut, onReset }: {
-  camera: BoardCamera;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onReset: () => void;
-}) {
-  const scale = useCameraScale(camera);
-  const isMinZoom = scale <= camera.minScale;
-  const isMaxZoom = scale >= camera.maxScale;
-  return (
-    <div className="p-3 border-b border-slate-800/80 bg-slate-900/40">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-bold tracking-widest text-cyan-400 uppercase flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8]" />
-          Map Controls
-        </span>
-        {/* Minimalist Zoom Level Indicator Badge */}
-        <span className="px-2 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-[11px] font-mono font-semibold text-cyan-300 shadow-inner">
-          {Math.round(scale * 100)}%
-        </span>
-      </div>
-
-      <div className="flex items-center justify-between gap-2">
-        {/* Zoom In */}
-        <button
-          onClick={onZoomIn}
-          disabled={isMaxZoom}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 active:scale-95 border border-slate-700/60 text-slate-200 hover:text-cyan-300 disabled:text-slate-600 disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-[0_0_12px_rgba(6,182,212,0.25)] cursor-pointer"
-          title="Zoom In"
-          aria-label="Zoom In"
-        >
-          <ZoomIn className="w-4 h-4 text-cyan-400" />
-          <span className="text-xs font-semibold">+</span>
-        </button>
-
-        {/* Zoom Out */}
-        <button
-          onClick={onZoomOut}
-          disabled={isMinZoom}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 active:scale-95 border border-slate-700/60 text-slate-200 hover:text-cyan-300 disabled:text-slate-600 disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-[0_0_12px_rgba(6,182,212,0.25)] cursor-pointer"
-          title="Zoom Out"
-          aria-label="Zoom Out"
-        >
-          <ZoomOut className="w-4 h-4 text-cyan-400" />
-          <span className="text-xs font-semibold">-</span>
-        </button>
-
-        {/* Reset View */}
-        <button
-          onClick={onReset}
-          className="flex items-center justify-center p-2 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 active:scale-95 border border-slate-700/60 text-slate-300 hover:text-cyan-300 transition-all shadow-sm hover:shadow-[0_0_12px_rgba(6,182,212,0.25)] cursor-pointer"
-          title="Reset View"
-          aria-label="Reset View"
-        >
-          <Compass className="w-4 h-4 text-cyan-400" />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 interface RightSidebarProps {
   players: Player[];
@@ -91,11 +25,6 @@ interface RightSidebarProps {
   moveHistory?: MoveHistoryEntry[];
   cardUseEffects?: Record<string, string>;
   mobile?: boolean;
-  // Zoom & Map Controls
-  camera: BoardCamera;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onReset: () => void;
 }
 
 export const RightSidebar = memo(function RightSidebar({
@@ -108,10 +37,6 @@ export const RightSidebar = memo(function RightSidebar({
   moveHistory = [],
   cardUseEffects = {},
   mobile = false,
-  camera,
-  onZoomIn,
-  onZoomOut,
-  onReset,
 }: RightSidebarProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
   const [isTileBagOpen, setIsTileBagOpen] = useState(false);
@@ -126,12 +51,8 @@ export const RightSidebar = memo(function RightSidebar({
   return (
     <aside className={`flex h-full shrink-0 flex-col select-none ${mobile ? 'w-full p-0' : 'w-72 p-3'}`}>
       {/* Sleek Vertical Glassmorphism Panel */}
-      <div className="flex flex-col h-full bg-slate-950/80 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20 overflow-hidden">
-        
-        {/* TOP SECTION: VERTICAL MAP & VIEW CONTROLS */}
-        <MapControls camera={camera} onZoomIn={onZoomIn} onZoomOut={onZoomOut} onReset={onReset} />
-
-        {/* MIDDLE SECTION: COMPACT TILES STATUS CARD */}
+      <div className={`flex flex-col h-full bg-slate-950/90 ${mobile ? '' : 'backdrop-blur-xl'} border border-slate-700/60 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20 overflow-hidden`}>
+        {/* TOP SECTION: COMPACT TILES STATUS CARD */}
         <div className="p-3 border-b border-slate-800/80 bg-gradient-to-r from-blue-950/30 via-slate-900/30 to-slate-950/30">
           <button
             ref={tileBagButtonRef}
