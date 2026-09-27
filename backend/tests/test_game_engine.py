@@ -208,11 +208,11 @@ def test_game_end_conditions():
     assert winner == "p1"
     assert "exhausted" in reason
 
-    # Consecutive passes limit reached
-    is_over, reason, winner = GameEndService.check_game_over(tile_bag=[{"id": "t2"}], players=players, consecutive_passes=4, max_passes=4)
-    assert is_over
-    assert winner == "p1"
-    assert "consecutive passes" in reason
+    # Consecutive passes limit reached (Removed as per user request for HP battle)
+    # is_over, reason, winner = GameEndService.check_game_over(tile_bag=[{"id": "t2"}], players=players, consecutive_passes=4, max_passes=4)
+    # assert is_over
+    # assert winner == "p1"
+    # assert "consecutive passes" in reason
 
 
 def test_csw24_dictionary_loading():
