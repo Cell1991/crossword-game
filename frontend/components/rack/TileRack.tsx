@@ -5,7 +5,6 @@ import { Tile } from '@/lib/types';
 import { isBlankLetter } from '@/lib/tiles';
 import { moveFixedElement } from '@/lib/dom';
 import { RotateCcw, Check, SkipForward, Shuffle, ArrowLeftRight, X } from 'lucide-react';
-import { ConstellationGraphic } from '@/components/effects/ConstellationGraphic';
 import { FloatingTile } from './FloatingTile';
 
 interface TileRackProps {
@@ -333,13 +332,6 @@ export const TileRack = memo(function TileRack({
             >
               {/* 3D Specular Top Bevel Glass Highlight */}
               <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
-
-              {/* Unique Letter Constellation Star Cluster */}
-              <ConstellationGraphic
-                letter={displayLetter}
-                isGolden={isMarkedForExchange}
-                className="opacity-75 group-hover:opacity-95 transition-opacity"
-              />
 
               {/* High-Contrast Prominent Letter OR Cosmic Wildcard Star */}
               {isBlankLetter(tile.letter) && !isDesignatedBlank ? (
