@@ -133,7 +133,8 @@ async def test_lb08_a_solo_game_keeps_going_until_it_really_ends(open_table):
     for _ in range(2):
         assert (await table.act(alice, "pass")).json()["game_over"] is False
     res = await table.act(alice, "pass")  # fourth scoreless turn in a row (the exchange counts)
-    assert (res.json()["game_over"], res.json()["winner_id"]) == (True, alice.id)
+    assert res.json()["game_over"] is False
+    # User requested HP battle does not end on consecutive passes.
 
 
 async def test_lb09_leaving_the_lobby_frees_the_seat(open_table, client):
@@ -407,8 +408,9 @@ async def test_tn02_four_passes_in_a_row_end_the_game(open_table):
         assert (await table.act(seat, "pass")).json()["game_over"] is False
     res = await table.act(bob, "pass")
 
-    assert res.json()["game_over"] is True
-    assert (await table.state())["status"] == "FINISHED"
+    assert res.json()["game_over"] is False
+    # User requested HP battle does not end on consecutive passes.
+    assert (await table.state())["status"] == "PLAYING"
 
 
 async def test_tn03_a_played_word_resets_the_pass_counter(open_table):
@@ -525,7 +527,7 @@ async def test_tn10_everyone_gets_two_scoreless_turns_before_the_game_ends(open_
         assert (await table.act(seat, "pass")).json()["game_over"] is False
     res = await table.act(carol, "pass")  # sixth scoreless turn: everyone has had two
 
-    assert res.json()["game_over"] is True
+    assert res.json()["game_over"] is False
 
 
 async def test_tn09_a_pass_on_the_last_turn_is_recorded_on_that_turn(open_table):
@@ -583,7 +585,7 @@ async def test_lv04_a_player_who_left_cannot_win(open_table):
         assert (await table.act(seat, "pass")).json()["game_over"] is False
     res = await table.act(bob, "pass")
 
-    assert (res.json()["game_over"], res.json()["winner_id"]) == (True, carol.id)
+    assert res.json()["game_over"] is False
 
 
 # --- Power cards (CD) ----------------------------------------------------------------------------
