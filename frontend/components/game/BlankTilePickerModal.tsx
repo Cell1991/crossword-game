@@ -1,8 +1,7 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { X } from 'lucide-react';
-import { ConstellationGraphic } from '@/components/effects/ConstellationGraphic';
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
@@ -63,10 +62,6 @@ export const BlankTilePickerModal: React.FC<BlankTilePickerModalProps> = ({
             >
               {/* Glass Top Bevel Highlight */}
               <div className="absolute inset-x-1 top-0.5 h-[35%] rounded-t-lg bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
-              <ConstellationGraphic
-                letter={letter}
-                className="opacity-80 transition-opacity group-hover:opacity-100"
-              />
 
               <span className="tile-letter tile-letter-orange relative z-10 text-2xl font-maple sm:text-[1.7rem]">
                 {letter}
