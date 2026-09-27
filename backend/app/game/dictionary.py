@@ -15,8 +15,6 @@ class DictionaryService:
             candidates = [
                 env_path,
                 os.path.join(os.path.dirname(__file__), "..", "..", "data", "wordlist.txt"),
-                os.path.join(os.path.dirname(__file__), "..", "..", "data", "CSW24.txt"),
-                os.path.join(os.path.dirname(__file__), "..", "..", "..", "CSW24.txt"),
                 os.path.join(os.path.dirname(__file__), "..", "..", "..", "wordlist.txt"),
             ]
             for candidate in candidates:
