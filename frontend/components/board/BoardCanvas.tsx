@@ -10,7 +10,7 @@ import { TILE_THEME } from '@/lib/tileTheme';
 /** Tile constellations twinkle at a bounded rate so the board stays responsive under load. */
 const TWINKLE_FRAME_MS = 1000 / 24;
 
-/** Weaker devices get a 1× canvas and no glows or twinkling. */
+/** Weaker devices skip costly effects and use a lower canvas resolution cap. */
 function detectLowPowerDevice() {
   if (typeof navigator === 'undefined') return false;
   if (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches) return true;
@@ -19,7 +19,7 @@ function detectLowPowerDevice() {
 }
 
 function canvasPixelRatio(lowPower: boolean) {
-  return Math.min(window.devicePixelRatio || 1, lowPower ? 1 : 1.5);
+  return Math.min(window.devicePixelRatio || 1, lowPower ? 1.5 : 2);
 }
 
 /** What the board shows, apart from the camera and the canvas size. */

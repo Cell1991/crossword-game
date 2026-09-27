@@ -320,7 +320,7 @@ function drawTile(
         ctx.fillStyle = letterFill;
       }
       const fontSize = Math.max(12, Math.round(cellSize * 0.70));
-      ctx.font = `${scene.tilePalette.letter.weight} ${fontSize}px 'Granix Demo', sans-serif`;
+      ctx.font = `400 ${fontSize}px 'Granix Demo', sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       const metrics = ctx.measureText(letter);
