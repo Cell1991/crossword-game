@@ -16,8 +16,17 @@
   font-weight: 400;
 }
 
+@font-face {
+  font-family: "NATOENA";
+  src: url("/fonts/NATOENA.otf") format("opentype"),
+       url("/fonts/NATOENA.ttf") format("truetype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
 .font-maple {
-  font-family: "RetroLight", sans-serif;
+  font-family: "NATOENA", "RetroLight", sans-serif;
   font-weight: 400;
 }
 
