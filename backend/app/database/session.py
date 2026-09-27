@@ -133,6 +133,7 @@ def _upgrade_existing_schema(connection):
             "is_debug": "BOOLEAN DEFAULT FALSE NOT NULL",
             "game_mode": "VARCHAR(16) DEFAULT 'HP' NOT NULL",
             "max_turns": "INTEGER",
+            "rematch_pin": "VARCHAR(6)",
         },
         "game_players": {
             "hp": "INTEGER DEFAULT 100 NOT NULL",

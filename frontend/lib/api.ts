@@ -8,6 +8,7 @@ import {
   CommitMoveResponse,
   ExchangeTilesResponse,
   GameMode,
+  RematchResponse,
   TurnTimeLimit,
 } from './types';
 
@@ -337,6 +338,19 @@ export async function playCard(gameId: string, playerId: string, payload: UseCar
 export async function resolvePendingEffect(gameId: string): Promise<{ status: string }> {
   const res = await fetch(`${getApiBase()}/games/${gameId}/effects/resolve`, { method: 'POST' });
   if (!res.ok) throw new Error('Failed to resolve pending effect');
+  return res.json();
+}
+
+/** Play again after the game is over: opens a lobby with the same settings, or joins the one another player opened. */
+export async function rematchGame(gameId: string, playerId: string): Promise<RematchResponse> {
+  const res = await fetch(`${getApiBase()}/games/${gameId}/rematch`, {
+    method: 'POST',
+    headers: { 'X-Player-ID': playerId },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(getErrorMessage(err, 'Failed to start a new game'));
+  }
   return res.json();
 }
 

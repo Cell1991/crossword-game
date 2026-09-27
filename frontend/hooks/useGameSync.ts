@@ -156,6 +156,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       case 'PLAYER_DISCONNECTED':
       case 'EFFECT_PENDING':
       case 'EFFECT_RESOLVED':
+      case 'REMATCH_CREATED':
         loadGameState();
         break;
     }

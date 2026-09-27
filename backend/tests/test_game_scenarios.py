@@ -588,6 +588,72 @@ async def test_lv04_a_player_who_left_cannot_win(open_table):
     assert res.json()["game_over"] is False
 
 
+# --- Play again (PA) -----------------------------------------------------------------------------
+
+async def test_pa01_first_player_to_play_again_opens_a_lobby_with_the_same_settings(open_table, broadcasts):
+    table = await open_table("Alice", "Bob", turn_time_limit=60, game_mode="TURNS", max_turns=7)
+    alice, _ = table.seats
+    await table.update_game(status="FINISHED", current_player_id=None)
+
+    res = await table.act(alice, "rematch")
+
+    assert res.status_code == 200, res.text
+    rematch = res.json()
+    assert (rematch["created"], rematch["is_host"], rematch["display_name"]) == (True, True, "Alice")
+    assert rematch["game_pin"] != table.pin
+    room = (await table.client.get(f"/api/rooms/{rematch['game_pin']}")).json()
+    assert (room["status"], [p["display_name"] for p in room["players"]]) == ("WAITING", ["Alice"])
+    assert (room["turn_time_limit"], room["game_mode"], room["max_turns"]) == (60, "TURNS", 7)
+    assert (await table.state())["rematch_pin"] == rematch["game_pin"]
+    assert [(e["type"], e["payload"]["gamePin"]) for e in broadcasts if e["type"] == EventType.REMATCH_CREATED] == [
+        (EventType.REMATCH_CREATED, rematch["game_pin"])
+    ]
+
+
+async def test_pa02_other_players_join_the_same_lobby_and_the_opener_hosts_it(open_table):
+    table = await open_table("Alice", "Bob", "Carol")
+    alice, bob, carol = table.seats
+    await table.update_game(status="FINISHED", current_player_id=None)
+
+    opened = (await table.act(bob, "rematch")).json()
+    joined = [(await table.act(seat, "rematch")).json() for seat in (carol, alice)]
+
+    assert {j["game_pin"] for j in joined} == {opened["game_pin"]}
+    assert [(j["created"], j["is_host"]) for j in joined] == [(False, False), (False, False)]
+    room = (await table.client.get(f"/api/rooms/{opened['game_pin']}")).json()
+    assert [p["display_name"] for p in room["players"]] == ["Bob", "Carol", "Alice"]
+    started = await table.client.post(
+        f"/api/rooms/{opened['game_pin']}/start", headers={"X-Player-ID": opened["player_id"]}
+    )
+    assert started.status_code == 200, started.text
+
+
+async def test_pa03_play_again_needs_a_finished_game_and_a_seat_in_it(open_table):
+    table = await open_table("Alice", "Bob")
+    other = await open_table("Dan")
+    alice, _ = table.seats
+
+    assert (await table.act(alice, "rematch")).status_code == 400
+    await table.update_game(status="FINISHED", current_player_id=None)
+    assert (await table.act(other.seats[0], "rematch")).status_code == 403
+    assert (await table.state())["rematch_pin"] is None
+
+
+async def test_pa04_a_lobby_that_already_started_is_not_joined_again(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.update_game(status="FINISHED", current_player_id=None)
+    first = (await table.act(alice, "rematch")).json()
+    await table.client.post(f"/api/rooms/{first['game_pin']}/start", headers={"X-Player-ID": first["player_id"]})
+
+    assert (await table.state())["rematch_pin"] is None
+    second = (await table.act(bob, "rematch")).json()
+
+    assert (second["created"], second["is_host"]) == (True, True)
+    assert second["game_pin"] != first["game_pin"]
+    assert (await table.state())["rematch_pin"] == second["game_pin"]
+
+
 # --- Power cards (CD) ----------------------------------------------------------------------------
 
 async def test_cd01_cannot_use_a_card_you_do_not_hold(open_table):

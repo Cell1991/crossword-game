@@ -12,6 +12,7 @@ from app.game.tiles import TileService, NotEnoughTilesInBag
 from app.schemas.player import PlayerOut, TileSchema
 from app.schemas.game import GameStateResponse
 from app.database.state import bag_tiles, board_state, player_rack, player_cards, replace_game_tiles
+from app.services.room_service import RoomService
 
 class GameService:
 
@@ -218,6 +219,8 @@ class GameService:
                 ,cards=normalized_cards if reveal_all or is_mine else None
             ))
 
+        rematch_room = await RoomService.open_rematch_room(db, room) if room else None
+
         bag = await bag_tiles(db, game_id)
         tile_bag_counts: dict[str, int] = {}
         for tile in bag:
@@ -242,6 +245,7 @@ class GameService:
             winner_id=game.winner_id,
             server_time=datetime.now(timezone.utc),
             game_pin=room.game_pin if room else None,
+            rematch_pin=rematch_room.game_pin if rematch_room else None,
         )
 
     @staticmethod

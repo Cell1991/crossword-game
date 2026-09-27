@@ -30,4 +30,6 @@ class GameStateResponse(BaseModel):
     # Lets clients run the turn timer on the server's clock instead of their own.
     server_time: datetime
     game_pin: Optional[str] = None
+    # Once the game is over: the PIN of the lobby its players are gathering in for another round.
+    rematch_pin: Optional[str] = None
     spectator_count: int = 0

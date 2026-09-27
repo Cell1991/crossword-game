@@ -33,6 +33,8 @@ class GameRoom(Base):
     is_debug = Column(Boolean, default=False, nullable=False)
     game_mode = Column(String(16), default="HP", nullable=False)
     max_turns = Column(Integer, nullable=True)
+    # After the game ends, the PIN of the room its players are gathering in to play again.
+    rematch_pin = Column(String(6), nullable=True)
     created_at = Column(DateTime(timezone=True), default=get_utc_now)
     started_at = Column(DateTime(timezone=True), nullable=True)
     finished_at = Column(DateTime(timezone=True), nullable=True)

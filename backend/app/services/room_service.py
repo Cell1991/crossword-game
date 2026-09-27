@@ -154,6 +154,51 @@ class RoomService:
         return room
 
     @staticmethod
+    async def open_rematch_room(db: AsyncSession, room: GameRoom) -> Optional[GameRoom]:
+        """The lobby this finished room's players are gathering in, while it still takes players."""
+        if not room.rematch_pin:
+            return None
+        rematch = (await db.execute(
+            select(GameRoom).where(GameRoom.game_pin == room.rematch_pin)
+        )).scalar_one_or_none()
+        return rematch if rematch and rematch.status == "WAITING" else None
+
+    @staticmethod
+    async def rematch(db: AsyncSession, game_id: str, player_id: str) -> tuple[GameRoom, Game, GamePlayer, bool]:
+        """
+        Seat a player of a finished game in a new lobby with the same settings. The first player to
+        ask opens it as host; everyone after joins it, until it starts or empties, when the next
+        player to ask opens a fresh one. Returns (room, game, player, created).
+        """
+        # Lock the old room so two players asking at once cannot open two lobbies.
+        room = (await db.execute(
+            select(GameRoom).where(GameRoom.id == game_id).with_for_update()
+        )).scalar_one_or_none()
+        game = (await db.execute(select(Game).where(Game.id == game_id))).scalar_one_or_none()
+        if not room or not game:
+            raise HTTPException(status_code=404, detail="Game not found")
+        if game.status != "FINISHED":
+            raise HTTPException(status_code=400, detail="The game is not over yet")
+        player = (await db.execute(select(GamePlayer).where(
+            GamePlayer.id == player_id, GamePlayer.game_id == game_id
+        ))).scalar_one_or_none()
+        if not player:
+            raise HTTPException(status_code=403, detail="Only players of this game can play again")
+
+        open_room = await RoomService.open_rematch_room(db, room)
+        if open_room:
+            new_room, new_game, new_player = await RoomService.join_room(db, open_room.game_pin, player.display_name)
+            return new_room, new_game, new_player, False
+
+        new_room, new_game, new_player = await RoomService.create_room(
+            db, player.display_name, room.turn_time_limit,
+            is_debug=room.is_debug, game_mode=room.game_mode, max_turns=room.max_turns,
+        )
+        room.rematch_pin = new_room.game_pin
+        await db.flush()
+        return new_room, new_game, new_player, True
+
+    @staticmethod
     async def get_room_details(db: AsyncSession, game_pin: str) -> tuple[GameRoom, list[GamePlayer]]:
         stmt = select(GameRoom).where(GameRoom.game_pin == game_pin)
         res = await db.execute(stmt)

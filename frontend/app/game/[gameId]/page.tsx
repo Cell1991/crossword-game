@@ -5,7 +5,7 @@ export const dynamicParams = true;
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { commitMove, exchangeTiles, expireTurn, leaveGame, passTurn } from '@/lib/api';
+import { commitMove, exchangeTiles, expireTurn, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
 import { buildRackSlots } from '@/lib/rack';
 import { GameState, Tile } from '@/lib/types';
 import { TILE_THEME_STYLE } from '@/lib/tileTheme';
@@ -259,7 +259,38 @@ export default function GamePage() {
   }
 
   if (gameState.status === 'FINISHED') {
-    return <GameOverScreen gameState={gameState} myPlayerId={myPlayerId} onHome={() => router.push('/')} />;
+    const rematchPin = gameState.rematch_pin;
+    const handlePlayAgain = async () => {
+      // A debug game's clones all live in this tab, so set up a fresh set of them instead.
+      if (isDebug) {
+        router.push('/debug');
+        return;
+      }
+      // Already seated in the new lobby (joined it, then came back here): go back to that seat.
+      const last = sessionStore.getLast();
+      if (rematchPin && last && !last.isSpectator && last.gamePin === rematchPin) {
+        router.push(`/lobby/${rematchPin}`);
+        return;
+      }
+      const res = await rematchGame(gameId, myPlayerId ?? '');
+      sessionStore.save({
+        gameId: res.game_id,
+        playerId: res.player_id,
+        token: res.session_token,
+        displayName: res.display_name,
+        isHost: res.is_host,
+        gamePin: res.game_pin,
+      });
+      router.push(`/lobby/${res.game_pin}`);
+    };
+    return (
+      <GameOverScreen
+        gameState={gameState}
+        myPlayerId={myPlayerId}
+        onHome={() => router.push('/')}
+        onPlayAgain={isSpectator ? undefined : handlePlayAgain}
+      />
+    );
   }
 
   const tileBagCount = gameState.tile_bag_count ?? 0;

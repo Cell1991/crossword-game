@@ -53,6 +53,8 @@ export interface GameState {
   /** The server's clock when this snapshot was taken; the turn timer runs on it. */
   server_time: string;
   game_pin: string | null;
+  /** Once the game is over: the PIN of the lobby its players are gathering in for another round. */
+  rematch_pin: string | null;
   spectator_count: number;
 }
 
@@ -151,6 +153,12 @@ export interface JoinRoomResponse {
   is_host: boolean;
 }
 
+export interface RematchResponse extends JoinRoomResponse {
+  game_pin: string;
+  /** True for the player who opened the new lobby, false for players who joined it. */
+  created: boolean;
+}
+
 export interface RoomDetailResponse {
   id: string;
   game_pin: string;
@@ -190,7 +198,8 @@ export type WebSocketEventType =
   | 'PLACEMENT_PREVIEW'
   | 'EFFECT_PENDING'
   | 'EFFECT_RESOLVED'
-  | 'CARD_USED';
+  | 'CARD_USED'
+  | 'REMATCH_CREATED';
 
 export interface WebSocketEvent {
   type: WebSocketEventType;

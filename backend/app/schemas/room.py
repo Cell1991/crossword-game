@@ -42,6 +42,11 @@ class JoinRoomResponse(BaseModel):
     display_name: str
     is_host: bool
 
+class RematchResponse(JoinRoomResponse):
+    game_pin: str
+    # True for the player who opened the new room, False for players who joined it.
+    created: bool
+
 class RoomDetailResponse(BaseModel):
     id: str
     game_pin: str

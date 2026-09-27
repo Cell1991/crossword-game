@@ -6,8 +6,10 @@ from app.core.config import settings
 from app.database.session import get_db
 from app.schemas.game import GameStateResponse
 from app.schemas.move import ExchangeTilesRequest
+from app.schemas.room import RematchResponse
 from app.schemas.events import WebSocketEvent, EventType
 from app.services.game_service import GameService
+from app.services.room_service import RoomService
 from app.websocket.connection_manager import manager
 
 router = APIRouter(prefix="/games", tags=["Games"])
@@ -186,3 +188,41 @@ async def leave_game(
             payload={"reason": reason or "PLAYER_LEFT", "winnerId": winner_id},
         ).model_dump())
     return {"status": "left", "next_player_id": game.current_player_id, "game_over": game.status == "FINISHED"}
+
+
+@router.post("/{game_id}/rematch", response_model=RematchResponse)
+async def rematch(
+    game_id: str,
+    x_player_id: str = Header(..., alias="X-Player-ID"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Play again: open a lobby with this game's settings, or join the one another player already opened."""
+    room, new_game, player, created = await RoomService.rematch(db, game_id, x_player_id)
+    await db.commit()
+
+    if created:
+        # Everyone still on the game-over screen can follow into the new lobby.
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.REMATCH_CREATED,
+            payload={"playerId": x_player_id, "displayName": player.display_name, "gamePin": room.game_pin},
+        ).model_dump())
+    else:
+        await manager.broadcast(room.id, WebSocketEvent(
+            type=EventType.PLAYER_JOINED,
+            payload={
+                "playerId": player.id,
+                "displayName": player.display_name,
+                "isHost": player.is_host,
+                "turnOrder": player.turn_order,
+            },
+        ).model_dump())
+
+    return RematchResponse(
+        game_id=new_game.id,
+        game_pin=room.game_pin,
+        player_id=player.id,
+        session_token=player.session_token,
+        display_name=player.display_name,
+        is_host=player.is_host,
+        created=created,
+    )
