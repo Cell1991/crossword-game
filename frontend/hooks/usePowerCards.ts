@@ -49,8 +49,17 @@ export function usePowerCards({ gameId, myPlayerId, boardState, reload, toasts }
 
   const playSimpleCard = useCallback((card: 'HINT' | 'HEAL' | 'SHIELD') => runCard({ card }), [runCard]);
 
-  const playTargetedCard = useCallback((card: 'DOUBLE_DAMAGE' | 'SPY_SWAP', targetPlayerId: string) => (
+  const playTargetedCard = useCallback((card: 'DOUBLE_DAMAGE', targetPlayerId: string) => (
     runCard({ card, target_player_id: targetPlayerId })
+  ), [runCard]);
+
+  const playSpySwap = useCallback((targetPlayerId: string, ownTileIds: string[], targetTileIndices: number[]) => (
+    runCard({
+      card: 'SPY_SWAP',
+      target_player_id: targetPlayerId,
+      own_tile_ids: ownTileIds,
+      target_tile_indices: targetTileIndices,
+    })
   ), [runCard]);
 
   const playBanLetter = useCallback((letter: string) => runCard({ card: 'BAN_LETTER', letter }), [runCard]);
@@ -79,6 +88,7 @@ export function usePowerCards({ gameId, myPlayerId, boardState, reload, toasts }
     busy,
     playSimpleCard,
     playTargetedCard,
+    playSpySwap,
     playBanLetter,
     playShield,
     playArmedCardAt,

@@ -40,8 +40,9 @@
 
 .tile-letter-orange {
   color: var(--tile-letter-color-mobile);
-  -webkit-text-stroke: 1.2px var(--tile-letter-stroke-mobile);
-  text-shadow: var(--tile-letter-shadow-mobile);
+  -webkit-text-stroke: 2px var(--tile-letter-stroke-mobile);
+  paint-order: stroke fill;
+  text-shadow: 0 2px 1px rgba(0, 0, 0, 0.78), 0 3px 4px rgba(0, 0, 0, 0.58), var(--tile-letter-shadow-mobile);
 }
 
 .tile-face { background-image: var(--tile-face-gradient); }
@@ -59,8 +60,9 @@
 @media (min-width: 1024px) {
   .tile-letter-orange {
     color: var(--tile-letter-color-desktop);
-    -webkit-text-stroke: 1.2px var(--tile-letter-stroke-desktop);
-    text-shadow: var(--tile-letter-shadow-desktop);
+    -webkit-text-stroke: 2.6px var(--tile-letter-stroke-desktop);
+    paint-order: stroke fill;
+    text-shadow: 0 2px 1px rgba(0, 0, 0, 0.9), 0 4px 5px rgba(0, 0, 0, 0.68), var(--tile-letter-shadow-desktop);
   }
 
   .tile-score-blue {

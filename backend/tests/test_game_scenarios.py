@@ -14,6 +14,8 @@ from app.schemas.events import EventType, WebSocketEvent
 from app.services.move_service import MoveService
 from fastapi import WebSocketDisconnect
 
+from app.database.models import Game
+from app.database.session import AsyncSessionLocal
 from app.websocket.connection_manager import ConnectionManager, manager
 from app.websocket.handlers import handle_disconnect, websocket_endpoint
 
@@ -29,9 +31,13 @@ def me(state, seat):
 
 async def resolve_damage(table):
     """Fast-forward past the SHIELD window and finalize the pending DAMAGE/SWAP effect."""
-    pending = (await table.state())["pending_effect"]
-    expired = {**pending, "expires_at": (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat()}
-    await table.update_game(pending_effect=expired)
+    async with AsyncSessionLocal() as db:
+        game = await db.get(Game, table.game_id)
+        game.pending_effect = {
+            **game.pending_effect,
+            "expires_at": (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat(),
+        }
+        await db.commit()
     return await table.client.post(f"/api/games/{table.game_id}/effects/resolve")
 
 
@@ -825,6 +831,62 @@ async def test_cd10_shield_cancels_a_pending_spy_swap(open_table):
 
     assert letters((await table.player(alice))["rack"]) == before_alice
     assert letters((await table.player(bob))["rack"]) == before_bob
+
+
+async def test_cd10b_spy_swap_selects_multiple_hidden_opponent_tiles(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.set_cards(alice, ["SPY_SWAP"])
+    await table.set_tiles(racks={alice: "CATSEIO", bob: "DOGRUNS"})
+    alice_rack = (await table.player(alice))["rack"]
+    own_ids = [alice_rack[2]["id"], alice_rack[0]["id"]]
+
+    res = await table.act(alice, "cards/use", {
+        "card": "SPY_SWAP", "target_player_id": bob.id,
+        "own_tile_ids": own_ids, "target_tile_indices": [1, 3],
+    })
+
+    assert res.json() == {"success": True, "pending": False, "count": 2}
+    assert (await table.state(alice))["pending_effect"] is None
+
+    assert letters((await table.player(alice))["rack"]) == "RAOSEIO"
+    assert letters((await table.player(bob))["rack"]) == "DTGCUNS"
+
+
+async def test_cd10c_spy_swap_rejects_more_than_three_tiles(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.set_cards(alice, ["SPY_SWAP"])
+
+    res = await table.act(alice, "cards/use", {
+        "card": "SPY_SWAP", "target_player_id": bob.id,
+        "own_tile_ids": ["a", "b", "c", "d"], "target_tile_indices": [0, 1, 2, 3],
+    })
+
+    assert res.status_code == 422
+
+
+async def test_cd10d_multi_tile_spy_swap_does_not_open_a_shield_window(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.set_cards(alice, ["SPY_SWAP"])
+    await table.set_cards(bob, ["SHIELD"])
+    await table.set_tiles(racks={alice: "CATSEIO", bob: "DOGRUNS"})
+    alice_rack = (await table.player(alice))["rack"]
+    own_ids = [alice_rack[0]["id"], alice_rack[1]["id"]]
+    before_alice = letters(alice_rack)
+    before_bob = letters((await table.player(bob))["rack"])
+
+    swap_res = await table.act(alice, "cards/use", {
+        "card": "SPY_SWAP", "target_player_id": bob.id,
+        "own_tile_ids": own_ids, "target_tile_indices": [0, 1],
+    })
+    assert swap_res.json()["pending"] is False
+    assert (await table.state(alice))["pending_effect"] is None
+    shield_res = await table.act(bob, "cards/use", {"card": "SHIELD"})
+    assert shield_res.status_code == 400
+    assert letters((await table.player(alice))["rack"]) != before_alice
+    assert letters((await table.player(bob))["rack"]) != before_bob
 
 
 async def test_cd11_hint_returns_a_genuinely_valid_placement(open_table):

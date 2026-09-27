@@ -315,6 +315,8 @@ export interface UseCardPayload {
   col?: number;
   own_tile_id?: string;
   target_tile_id?: string;
+  own_tile_ids?: string[];
+  target_tile_indices?: number[];
   placed_tiles?: PlacedTile[];
 }
 

@@ -460,12 +460,14 @@ export default function GamePage() {
               <PowerCardBar
                 cards={myPlayer?.cards ?? []}
                 opponents={opponents}
+                ownRack={myRack}
                 isMyTurn={isMyTurn}
                 hasStagedMove={temporaryTiles.length > 0}
                 armedCard={cards.armedCard}
                 busy={cards.busy}
                 onUseSimple={cards.playSimpleCard}
                 onUseTargeted={cards.playTargetedCard}
+                onUseSpySwap={cards.playSpySwap}
                 onUseBanLetter={cards.playBanLetter}
                 onArmBoardCard={cards.armBoardCard}
                 onCancelArm={cards.cancelArm}

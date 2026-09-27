@@ -30,6 +30,8 @@ class CardUseRequest(BaseModel):
     col: Optional[int] = Field(None, ge=0, le=Board.COLS - 1)
     own_tile_id: Optional[str] = None
     target_tile_id: Optional[str] = None
+    own_tile_ids: Optional[list[str]] = Field(None, min_length=1, max_length=3)
+    target_tile_indices: Optional[list[int]] = Field(None, min_length=1, max_length=3)
     placed_tiles: Optional[list[PlacedTileInput]] = None
 
 
@@ -85,7 +87,7 @@ async def use_card(
                 effect = None
         targets_me = effect and (
             (effect["type"] == "DAMAGE" and player.id in effect.get("damage", {}))
-            or (effect["type"] == "SWAP" and player.id == effect.get("target_player_id"))
+            or (effect["type"] in ("SWAP", "SPY_SWAP") and player.id == effect.get("target_player_id"))
         )
         if not targets_me:
             raise HTTPException(status_code=400, detail="No incoming effect to block")
@@ -144,6 +146,41 @@ async def use_card(
         target = await _target_player(db, game_id, request.target_player_id, player.id)
         player_rack_items = await player_rack(db, player.id)
         target_rack_items = await player_rack(db, target.id)
+        if request.own_tile_ids is not None or request.target_tile_indices is not None:
+            own_tile_ids = request.own_tile_ids or []
+            target_tile_indices = request.target_tile_indices or []
+            if not 1 <= len(own_tile_ids) <= 3 or len(own_tile_ids) != len(set(own_tile_ids)):
+                raise HTTPException(status_code=400, detail="Choose one to three different tiles from your rack")
+            if len(target_tile_indices) != len(own_tile_ids) or len(target_tile_indices) != len(set(target_tile_indices)):
+                raise HTTPException(status_code=400, detail="Choose the same number of different opponent tiles")
+            own_tiles = {tile["id"]: tile for tile in player_rack_items}
+            if any(tile_id not in own_tiles for tile_id in own_tile_ids):
+                raise HTTPException(status_code=400, detail="A selected tile is no longer in your rack")
+            if any(index < 0 or index >= len(target_rack_items) for index in target_tile_indices):
+                raise HTTPException(status_code=400, detail="An opponent tile selection is no longer available")
+            target_tile_ids = [target_rack_items[index]["id"] for index in target_tile_indices]
+            own_tile_by_id = {tile["id"]: tile for tile in player_rack_items}
+            target_tile_by_id = {tile["id"]: tile for tile in target_rack_items}
+            own_to_target = dict(zip(own_tile_ids, (target_tile_by_id[tile_id] for tile_id in target_tile_ids)))
+            target_to_own = dict(zip(target_tile_ids, (own_tile_by_id[tile_id] for tile_id in own_tile_ids)))
+            player.rack = [own_to_target.get(tile["id"], tile) for tile in player_rack_items]
+            target.rack = [target_to_own.get(tile["id"], tile) for tile in target_rack_items]
+            players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
+            await replace_game_tiles(db, game.id, await bag_tiles(db, game.id), players)
+            await db.commit()
+            await manager.broadcast(game_id, WebSocketEvent(
+                type=EventType.EFFECT_RESOLVED,
+                payload={
+                    "type": "SPY_SWAP",
+                    "performed": True,
+                    "sourcePlayerId": player.id,
+                    "targetPlayerId": target.id,
+                    "count": len(own_tile_ids),
+                },
+            ).model_dump())
+            return {"success": True, "pending": False, "count": len(own_tile_ids)}
+
+        # Keep accepting the original one-tile payload for existing clients.
         own = next((tile for tile in player_rack_items if tile["id"] == request.own_tile_id), None)
         other = next((tile for tile in target_rack_items if tile["id"] == request.target_tile_id), None)
         if not own or not other:

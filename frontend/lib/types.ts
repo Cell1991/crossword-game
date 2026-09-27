@@ -61,7 +61,7 @@ export interface GameState {
 /** A DAMAGE/SWAP effect waiting out its SHIELD window. SWAP tile letters are only
  * present for the two players involved (see GameService._visible_pending_effect). */
 export interface PendingEffect {
-  type: 'DAMAGE' | 'SWAP';
+  type: 'DAMAGE' | 'SWAP' | 'SPY_SWAP';
   expires_at: string;
   source_player_id?: string;
   target_player_id?: string;

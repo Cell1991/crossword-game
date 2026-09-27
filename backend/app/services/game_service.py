@@ -156,6 +156,35 @@ class GameService:
                     room.finished_at = get_utc_now()
             return {"type": "DAMAGE", "applied": applied, "game_over": game_over, "reason": reason, "winner_id": winner}
 
+        if effect["type"] == "SPY_SWAP":
+            own_id = effect["source_player_id"]
+            target_id = effect["target_player_id"]
+            own_rack = await player_rack(db, own_id)
+            target_rack = await player_rack(db, target_id)
+            current_own = {tile["id"]: tile for tile in own_rack}
+            current_target = {tile["id"]: tile for tile in target_rack}
+            own_tile_ids = effect["own_tile_ids"]
+            target_tile_ids = effect["target_tile_ids"]
+            if all(tile_id in current_own for tile_id in own_tile_ids) and all(tile_id in current_target for tile_id in target_tile_ids):
+                players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
+                own_player = next(p for p in players if p.id == own_id)
+                target_player = next(p for p in players if p.id == target_id)
+                own_to_target = iter(current_target[tile_id] for tile_id in target_tile_ids)
+                target_to_own = iter(current_own[tile_id] for tile_id in own_tile_ids)
+                own_tile_id_set = set(own_tile_ids)
+                target_tile_id_set = set(target_tile_ids)
+                own_player.rack = [next(own_to_target) if tile["id"] in own_tile_id_set else tile for tile in own_rack]
+                target_player.rack = [next(target_to_own) if tile["id"] in target_tile_id_set else tile for tile in target_rack]
+                await replace_game_tiles(db, game.id, await bag_tiles(db, game.id), players)
+                performed = True
+            else:
+                performed = False
+            return {
+                "type": "SPY_SWAP", "performed": performed,
+                "source_player_id": own_id, "target_player_id": target_id,
+                "count": len(own_tile_ids),
+            }
+
         # SWAP
         own_id = effect["source_player_id"]
         target_id = effect["target_player_id"]
@@ -254,6 +283,14 @@ class GameService:
         (and DAMAGE effects, which only carry public score-derived amounts) sees the rest."""
         if not effect:
             return None
+        if effect["type"] == "SPY_SWAP":
+            return {
+                "type": "SPY_SWAP",
+                "source_player_id": effect["source_player_id"],
+                "target_player_id": effect["target_player_id"],
+                "count": len(effect["own_tile_ids"]),
+                "expires_at": effect["expires_at"],
+            }
         if effect["type"] == "SWAP" and requesting_player_id not in (effect.get("source_player_id"), effect.get("target_player_id")):
             return {"type": "SWAP", "expires_at": effect["expires_at"]}
         return effect
