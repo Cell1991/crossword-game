@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { ConstellationGraphic } from '@/components/effects/ConstellationGraphic';
 import { isBlankLetter } from '@/lib/tiles';
 import { TILE_THEME_STYLE } from '@/lib/tileTheme';
 
@@ -31,8 +30,6 @@ export const FloatingTile: React.FC<FloatingTileProps> = ({ letter, value, posit
     >
       {/* Top Glass Specular Highlight */}
       <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
-      {/* Unique Letter Constellation Star Cluster */}
-      <ConstellationGraphic letter={letter} />
       {isBlankLetter(letter) && !isDesignatedBlank ? (
         <div className="relative z-20 flex items-center justify-center">
           <svg viewBox="0 0 24 24" className="tile-blank-star w-8 h-8 animate-pulse" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
