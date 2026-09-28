@@ -38,7 +38,7 @@ export const RightSidebar = memo(function RightSidebar({
   cardUseEffects = {},
   mobile = false,
 }: RightSidebarProps) {
-  const [isHistoryOpen, setIsHistoryOpen] = useState(true);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(!mobile);
   const [isTileBagOpen, setIsTileBagOpen] = useState(false);
   const tileBagButtonRef = useRef<HTMLButtonElement>(null);
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);

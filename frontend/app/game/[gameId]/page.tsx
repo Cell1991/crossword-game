@@ -379,7 +379,7 @@ export default function GamePage() {
             <div className="pointer-events-none absolute left-2 right-16 top-2 z-20 lg:hidden">
               <div
                 aria-label="Live scoreboard"
-                className="pointer-events-auto flex max-w-full items-center gap-3 overflow-x-auto hide-scrollbar rounded-lg border border-slate-700/80 bg-slate-950/90 px-2.5 py-1.5 text-[11px] shadow-lg backdrop-blur-sm"
+                className="pointer-events-auto flex max-w-full items-center gap-3 overflow-x-auto touch-pan-x rounded-lg border border-slate-700/80 bg-slate-950/90 px-2.5 py-1.5 text-[11px] shadow-lg backdrop-blur-sm scroll-smooth"
               >
                 <div className="flex shrink-0 items-center gap-1.5 border-r border-slate-700/80 pr-2.5">
                   <span className="font-bold text-sky-400">T{gameState.turn_number}</span>
@@ -430,7 +430,7 @@ export default function GamePage() {
 
       {isMobileInfoOpen && (
         <div
-          className="fixed inset-x-2 top-14 bottom-16 z-40 flex min-h-0 flex-col gap-1 [@media(min-height:640px)]:top-20 [@media(min-height:640px)]:bottom-[calc(16rem+env(safe-area-inset-bottom))] lg:hidden"
+          className="fixed inset-x-2 top-14 z-40 flex min-h-0 flex-col gap-1 [@media(min-height:640px)]:top-20 bottom-[max(1rem,env(safe-area-inset-bottom))] lg:hidden"
           onClick={() => setIsMobileInfoOpen(false)}
         >
           <div className="flex justify-end">
