@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Zap } from 'lucide-react';
+import { CircleAlert, CircleCheck, Zap } from 'lucide-react';
 import { CardReveal, PendingEffect } from '@/lib/types';
 import { cardIcon } from './cardIcons';
 
@@ -57,15 +57,23 @@ export const CardRevealOverlay: React.FC<{ reveal: CardReveal }> = ({ reveal }) 
 export const ToastStack: React.FC<{ info: string | null; error: string }> = ({ info, error }) => {
   if (!info && !error) return null;
   return (
-    <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex w-max max-w-[calc(100%-9rem)] -translate-x-1/2 flex-col items-center gap-2">
+    <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex w-[min(34rem,calc(100%-2rem))] -translate-x-1/2 flex-col gap-2 sm:top-4">
       {info && (
-        <div className="rounded-xl border border-emerald-600/50 bg-emerald-900/90 px-4 py-2 text-center text-sm text-emerald-200 shadow-xl">
-          ✨ {info}
+        <div role="status" aria-live="polite" className="pointer-events-auto relative flex items-start gap-3 overflow-hidden rounded-2xl border border-emerald-300/20 bg-slate-950/95 px-4 py-3 text-left text-sm text-emerald-50 shadow-[0_12px_36px_rgba(0,0,0,0.45),0_0_24px_rgba(16,185,129,0.12)] ring-1 ring-white/5 backdrop-blur-md animate-fadeIn">
+          <span className="absolute inset-y-3 left-0 w-[3px] rounded-r-full bg-emerald-300" />
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-300/20">
+            <CircleCheck className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <span className="min-w-0 flex-1 break-words leading-relaxed">{info}</span>
         </div>
       )}
       {error && (
-        <div className="rounded-xl border border-red-600/50 bg-red-900/90 px-4 py-2 text-center text-sm text-red-200 shadow-xl">
-          {error}
+        <div role="alert" aria-live="assertive" className="pointer-events-auto relative flex items-start gap-3 overflow-hidden rounded-2xl border border-rose-300/20 bg-slate-950/95 px-4 py-3 text-left text-sm text-rose-50 shadow-[0_12px_36px_rgba(0,0,0,0.45),0_0_24px_rgba(244,63,94,0.14)] ring-1 ring-white/5 backdrop-blur-md animate-fadeIn">
+          <span className="absolute inset-y-3 left-0 w-[3px] rounded-r-full bg-rose-300" />
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-400/10 text-rose-300 ring-1 ring-rose-300/20">
+            <CircleAlert className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <span className="min-w-0 flex-1 break-words leading-relaxed">{error}</span>
         </div>
       )}
     </div>
