@@ -7,9 +7,6 @@ import { BoardScene, drawBoard } from './boardRenderer';
 import { PremiumCellOverlay } from './PremiumCellOverlay';
 import { TILE_THEME } from '@/lib/tileTheme';
 
-/** Tile constellations twinkle at a bounded rate so the board stays responsive under load. */
-const TWINKLE_FRAME_MS = 1000 / 24;
-
 /** Weaker devices skip costly effects and use a lower canvas resolution cap. */
 function detectLowPowerDevice() {
   if (typeof navigator === 'undefined') return false;
@@ -111,7 +108,6 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       cellSize: camera.baseCellSize * scale,
       lowPower,
       tilePalette: window.innerWidth >= 1024 ? TILE_THEME.desktop : TILE_THEME.mobile,
-      time: performance.now() / 1000,
     });
   }, [camera, lowPower]);
 
@@ -192,25 +188,6 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       fonts.removeEventListener('loadingdone', redraw);
     };
   }, [draw]);
-
-  // Constellations on tiles twinkle over time; with no tiles (or on low-power devices) nothing moves.
-  const hasTwinklingTiles = !lowPower && (
-    Object.keys(boardState).length > 0 || temporaryTiles.length > 0 || dragPreviewTile !== null
-  );
-  useEffect(() => {
-    if (!hasTwinklingTiles) return;
-    let frame = 0;
-    let lastDrawAt = 0;
-    const loop = (time: number) => {
-      if (document.visibilityState === 'visible' && time - lastDrawAt >= TWINKLE_FRAME_MS) {
-        draw();
-        lastDrawAt = time;
-      }
-      frame = requestAnimationFrame(loop);
-    };
-    frame = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frame);
-  }, [draw, hasTwinklingTiles]);
 
   const queuePan = (dx: number, dy: number) => {
     pendingPanDeltaRef.current.x += dx;

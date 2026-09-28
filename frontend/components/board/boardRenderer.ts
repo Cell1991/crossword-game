@@ -8,7 +8,6 @@ import {
   SECRET_POWER,
   TRIPLE_LETTER,
 } from '@/lib/board';
-import { getConstellationData } from '@/lib/constellations';
 import { cellKey, isBlankLetter } from '@/lib/tiles';
 import { TILE_THEME, type TilePalette } from '@/lib/tileTheme';
 
@@ -36,8 +35,6 @@ export interface BoardScene {
   /** Skip glows and twinkling on weaker devices. */
   lowPower: boolean;
   tilePalette: TilePalette;
-  /** Seconds, drives the constellation twinkle. */
-  time: number;
 }
 
 /** Extended grid lines reach this many cells past the playable board before fading out. */
@@ -116,18 +113,21 @@ function drawTile(
 
   // Keep placement status on the outline; the tile face itself stays consistent.
   const isGolden = !isRemote && (!isTemporary || temporaryTilesValid === true);
+  const isCorrectPlacement = !isRemote && isTemporary && temporaryTilesValid === true;
 
   // Shadow layer
   const shadowFill = isRemote ? TILE_THEME.remoteFace.shadow : TILE_THEME.face.shadow;
-  if (!lowPower) {
+  if (!lowPower || isCorrectPlacement) {
     ctx.save();
-    ctx.shadowColor = shadowFill;
-    ctx.shadowBlur = Math.max(4, cellSize * 0.1);
+    ctx.shadowColor = isCorrectPlacement ? 'rgba(52, 211, 153, 0.9)' : shadowFill;
+    ctx.shadowBlur = isCorrectPlacement
+      ? Math.max(8, cellSize * 0.22)
+      : Math.max(4, cellSize * 0.1);
   }
   ctx.fillStyle = shadowFill;
   drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
   ctx.fill();
-  if (!lowPower) ctx.restore();
+  if (!lowPower || isCorrectPlacement) ctx.restore();
 
   // Tile face fill
   if (isRemote) {
@@ -146,125 +146,6 @@ function drawTile(
   drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
   ctx.fill();
 
-  // 3D Glass Specular Highlight (Top Rim)
-  if (!isRemote && cellSize >= 16) {
-    ctx.save();
-    const glossGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW * 0.38);
-    glossGrad.addColorStop(0, isGolden ? 'rgba(255, 248, 220, 0.22)' : 'rgba(255, 255, 255, 0.13)');
-    glossGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
-    ctx.fillStyle = glossGrad;
-    drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW * 0.38, Math.max(1.5, radius - 1));
-    ctx.fill();
-    ctx.restore();
-  } else if (isRemote && cellSize >= 16) {
-    ctx.save();
-    const ghostGloss = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW * 0.5);
-    ghostGloss.addColorStop(0, 'rgba(191, 219, 254, 0.13)');
-    ghostGloss.addColorStop(1, 'rgba(125, 211, 252, 0)');
-    ctx.fillStyle = ghostGloss;
-    drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW * 0.5, Math.max(1.5, radius - 1));
-    ctx.fill();
-    ctx.restore();
-  }
-
-  // Celestial Star Constellation Background (Authentic star chart matching letter with dynamic twinkling)
-  if (cellSize >= 18 && (letter || isRemote)) {
-    ctx.save();
-    const constellation = getConstellationData(letter || 'A');
-    const time = lowPower ? 0 : scene.time;
-
-    // Color scheme: warm celestial gold/champagne for gold tiles, crisp starlight cyan for blue tiles
-    const lineColor = isGolden
-      ? 'rgba(254, 240, 178, 0.18)'
-      : isRemote ? 'rgba(186, 230, 253, 0.1)' : 'rgba(147, 220, 225, 0.12)';
-    const starGlow = isGolden
-      ? 'rgba(251, 191, 36, 0.42)'
-      : isRemote ? 'rgba(125, 211, 252, 0.22)' : 'rgba(77, 193, 205, 0.32)';
-    const starFill = isGolden
-      ? '#fef3c7'
-      : isRemote ? 'rgba(186, 230, 253, 0.34)' : 'rgba(210, 237, 234, 0.54)';
-    const burstFill = isGolden
-      ? '#fde68a'
-      : isRemote ? 'rgba(186, 230, 253, 0.44)' : 'rgba(186, 230, 253, 0.68)';
-
-    // 1. Background stardust specks with gentle shimmer
-    for (let i = 0; i < constellation.dust.length; i++) {
-      const speck = constellation.dust[i];
-      const dx = x + pad + speck.x * tileW;
-      const dy = y + pad + speck.y * tileW;
-      const rad = Math.max(0.35, speck.r * (cellSize / 40));
-      const shimmer = 0.5 + 0.5 * Math.sin(time * 2.2 + speck.x * 7 + i * 1.7);
-      ctx.fillStyle = starFill;
-      ctx.globalAlpha = speck.opacity * 0.45 * (0.6 + 0.4 * shimmer);
-      ctx.beginPath();
-      ctx.arc(dx, dy, rad, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1.0;
-
-    // 2. Faint Starlight Constellation Lines (thin, solid, subtle breath)
-    const linePulse = 0.75 + 0.25 * Math.sin(time * 1.6 + row * 0.7 + col * 0.5);
-    ctx.strokeStyle = lineColor;
-    ctx.globalAlpha = linePulse;
-    ctx.lineWidth = Math.max(0.65, cellSize * 0.015);
-    for (const [i, j] of constellation.lines) {
-      const s1 = constellation.stars[i];
-      const s2 = constellation.stars[j];
-      if (!s1 || !s2) continue;
-      ctx.beginPath();
-      ctx.moveTo(x + pad + s1.x * tileW, y + pad + s1.y * tileW);
-      ctx.lineTo(x + pad + s2.x * tileW, y + pad + s2.y * tileW);
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1.0;
-
-    // 3. Constellation Stars with dynamic twinkle and breathing starburst
-    for (let idx = 0; idx < constellation.stars.length; idx++) {
-      const star = constellation.stars[idx];
-      const sx = x + pad + star.x * tileW;
-      const sy = y + pad + star.y * tileW;
-      const scale = star.size ?? 1.0;
-      const baseRad = Math.max(0.8, (cellSize * 0.024) * scale);
-
-      // Dynamic twinkle factor per individual star
-      const twinklePhase = time * (2.0 + (idx % 3) * 0.7) + star.x * 6.28 + (idx * 1.35);
-      const twinkle = 0.5 + 0.5 * Math.sin(twinklePhase);
-      const curScale = 0.72 + 0.45 * twinkle;
-
-      if (star.isStarburst && cellSize >= 20) {
-        // 8-Pointed Celestial Starburst (equal scale for gold and blue)
-        const outer = baseRad * 2.0 * curScale;
-        const inner = baseRad * 0.8 * curScale;
-        ctx.save();
-        ctx.shadowColor = starGlow;
-        ctx.shadowBlur = lowPower ? 0 : Math.max(2, cellSize * 0.05 * curScale);
-        ctx.fillStyle = burstFill;
-        ctx.globalAlpha = 0.85 * curScale;
-        drawStarburst(ctx, sx, sy, outer, inner);
-        ctx.fill();
-        // Bright core point
-        ctx.fillStyle = '#ffffff';
-        ctx.globalAlpha = 0.90 * curScale;
-        ctx.beginPath();
-        ctx.arc(sx, sy, Math.max(0.45, baseRad * 0.4 * curScale), 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      } else {
-        // Regular Star (Round Dot + Soft Halo with twinkle)
-        ctx.save();
-        ctx.shadowColor = starGlow;
-        ctx.shadowBlur = lowPower ? 0 : Math.max(1.5, cellSize * 0.035 * curScale);
-        ctx.fillStyle = starFill;
-        ctx.globalAlpha = 0.80 * curScale;
-        ctx.beginPath();
-        ctx.arc(sx, sy, baseRad * curScale, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-    }
-    ctx.restore();
-  }
-
   // Stroke
   if (isRemote) {
     ctx.save();
@@ -275,6 +156,12 @@ function drawTile(
     ctx.stroke();
     ctx.restore();
     return;
+  } else if (isCorrectPlacement) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(52, 211, 153, 0.95)';
+    ctx.shadowBlur = Math.max(12, cellSize * 0.32);
+    ctx.strokeStyle = '#6ee7b7';
+    ctx.lineWidth = Math.max(2.5, cellSize * 0.055);
   } else if (isGolden) {
     ctx.strokeStyle = isTemporary ? '#f5d98a' : 'rgba(226, 184, 93, 0.9)';
     ctx.lineWidth = isTemporary ? 1.8 : 1.3;
@@ -282,7 +169,9 @@ function drawTile(
     ctx.strokeStyle = 'rgba(96, 165, 250, 0.45)';
     ctx.lineWidth = 1.5;
   }
+  drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
   ctx.stroke();
+  if (isCorrectPlacement) ctx.restore();
 
   const key = cellKey(row, col);
   const multiplier = (!isRemote && isGolden)
@@ -349,7 +238,7 @@ function drawTile(
 
       ctx.save();
       ctx.shadowColor = scene.tilePalette.score.glow;
-      ctx.shadowBlur = lowPower ? 0 : Math.max(2, numFontSize * 0.35);
+      ctx.shadowBlur = lowPower ? 2 : Math.max(4, numFontSize * 0.6);
       ctx.lineWidth = Math.max(0.5, numFontSize * 0.05);
       ctx.strokeStyle = scene.tilePalette.score.stroke;
       ctx.fillStyle = scene.tilePalette.score.color;

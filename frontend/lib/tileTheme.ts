@@ -25,10 +25,10 @@ export const TILE_THEME = {
       weight: 800,
     },
     score: {
-      color: '#efefef',
-      stroke: '#04142a',
-      glow: 'rgba(0, 0, 0, 0)',
-      textShadow: 'none',
+      color: '#fff2c2',
+      stroke: '#4b2a00',
+      glow: 'rgba(255, 207, 91, 0.88)',
+      textShadow: '0 0 2px rgba(255, 248, 220, 0.95), 0 0 5px rgba(255, 191, 51, 0.82), 0 1px 2px rgba(48, 29, 0, 0.95)',
       weight: 900,
     },
     blank: {
@@ -46,10 +46,10 @@ export const TILE_THEME = {
       weight: 900,
     },
     score: {
-      color: '#efefef',
-      stroke: '#04142a',
-      glow: 'rgba(0, 109, 220, 0.5)',
-      textShadow: '0 0 2px rgba(89, 190, 255, 0.68), 0 0 5px rgba(0, 109, 220, 0.5)',
+      color: '#fff2c2',
+      stroke: '#4b2a00',
+      glow: 'rgba(255, 196, 55, 0.92)',
+      textShadow: '0 0 3px rgba(255, 248, 220, 0.98), 0 0 8px rgba(255, 196, 55, 0.92), 0 1px 2px rgba(48, 29, 0, 0.95)',
       weight: 900,
     },
     blank: {

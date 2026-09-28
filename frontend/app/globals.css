@@ -49,6 +49,9 @@
 
 .tile-score-blue {
   color: var(--tile-score-color-mobile);
+  -webkit-text-stroke: 0.55px var(--tile-score-stroke-mobile);
+  paint-order: stroke fill;
+  text-shadow: var(--tile-score-shadow-mobile);
 }
 
 .tile-blank-star {
@@ -67,6 +70,8 @@
 
   .tile-score-blue {
     color: var(--tile-score-color-desktop);
+    -webkit-text-stroke: 0.75px var(--tile-score-stroke-desktop);
+    text-shadow: var(--tile-score-shadow-desktop);
   }
 
   .tile-blank-star {
@@ -218,34 +223,6 @@ body {
   .board-premium-label { animation: none; }
 }
 
-/* Tile constellation twinkle (components/effects/ConstellationGraphic.tsx). Defined once here
-   rather than in a <style> inside every tile's SVG, which re-parsed the same keyframes per tile
-   and invalidated the document's styles whenever a tile mounted or unmounted. */
-@keyframes cg-twinkle-a {
-  0%, 100% { opacity: 0.30; transform: scale(0.88); }
-  48%       { opacity: 1.00; transform: scale(1.18); }
-}
-@keyframes cg-twinkle-b {
-  0%, 100% { opacity: 0.90; transform: scale(1.12); }
-  52%       { opacity: 0.22; transform: scale(0.82); }
-}
-@keyframes cg-twinkle-c {
-  0%, 100% { opacity: 0.40; transform: scale(0.92); }
-  44%       { opacity: 1.00; transform: scale(1.22); }
-}
-@keyframes cg-line-pulse {
-  0%, 100% { opacity: 0.55; }
-  50%       { opacity: 1.00; }
-}
-.cg-tw-a { animation: cg-twinkle-a 3.1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-.cg-tw-b { animation: cg-twinkle-b 2.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-.cg-tw-c { animation: cg-twinkle-c 3.7s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-.cg-line  { animation: cg-line-pulse 5.0s ease-in-out infinite; }
-
 @media (pointer: coarse), (max-width: 767px) {
-  .cg-tw-a,
-  .cg-tw-b,
-  .cg-tw-c,
-  .cg-line,
   .board-premium-label { animation: none; }
 }

@@ -66,9 +66,6 @@ export const BlankTilePickerModal: React.FC<BlankTilePickerModalProps> = ({
               <span className="tile-letter tile-letter-orange relative z-10 text-2xl font-maple sm:text-[1.7rem]">
                 {letter}
               </span>
-              <span className="tile-score-blue absolute bottom-0.5 right-1 text-[9px] font-mono font-black opacity-75 group-hover:opacity-100">
-                0
-              </span>
             </button>
           ))}
         </div>

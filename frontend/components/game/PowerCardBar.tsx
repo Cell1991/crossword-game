@@ -2,6 +2,7 @@
 
 import React, { memo, useState } from 'react';
 import { BoardCard, Player, Tile } from '@/lib/types';
+import { isBlankLetter } from '@/lib/tiles';
 import { cardIcon } from './cardIcons';
 
 type SimpleCard = 'HINT' | 'HEAL' | 'SHIELD';
@@ -117,9 +118,15 @@ export const PowerCardBar = memo(function PowerCardBar({
                     className={`tile-face group relative flex h-10 w-9 flex-col items-center justify-center overflow-hidden rounded-lg border font-sans select-none sm:h-14 sm:w-13 sm:rounded-xl ${selected ? 'border-cyan-200 ring-2 ring-cyan-300' : 'border-amber-100/80'}`}
                   >
                     <div className="pointer-events-none absolute inset-x-1 top-0.5 z-10 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent" />
-                    <span className="tile-letter tile-letter-orange relative z-20 text-[26px] leading-none font-maple sm:text-[36px]">
-                      {tile.letter}
-                    </span>
+                    {isBlankLetter(tile.letter) ? (
+                      <svg viewBox="0 0 24 24" className="tile-blank-star relative z-20 h-6 w-6 sm:h-8 sm:w-8" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+                      </svg>
+                    ) : (
+                      <span className="tile-letter tile-letter-orange relative z-20 text-[26px] leading-none font-maple sm:text-[36px]">
+                        {tile.letter}
+                      </span>
+                    )}
                     <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 rounded-sm bg-[#fff2d8]/90 px-0.5 text-[9px] font-mono font-black sm:bottom-1 sm:right-1.5 sm:text-[13px] lg:rounded-none lg:bg-transparent lg:px-0 lg:text-[18px] lg:leading-none">
                       {tile.value}
                     </span>
