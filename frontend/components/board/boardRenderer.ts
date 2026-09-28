@@ -255,7 +255,7 @@ function drawTile(
 
     if (cellSize >= 20) {
       const numFontSize = Math.max(9, Math.round(cellSize * 0.28));
-      ctx.font = `${scene.tilePalette.score.weight} ${numFontSize}px 'Geist', sans-serif`;
+      ctx.font = `${scene.tilePalette.score.weight} ${numFontSize}px 'Granix Demo', sans-serif`;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       const numX = x + cellSize - pad * 1.5;

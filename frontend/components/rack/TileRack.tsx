@@ -348,7 +348,7 @@ export const TileRack = memo(function TileRack({
               )}
 
               {/* Glowing Value Badge */}
-              <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[10px] font-mono font-black sm:bottom-1 sm:right-1.5 sm:text-[13px] lg:text-[18px] leading-none">
+              <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[10px] font-maple sm:bottom-1 sm:right-1.5 sm:text-[13px] lg:text-[18px] leading-none">
                 {tile.value}
               </span>
             </button>

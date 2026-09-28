@@ -41,7 +41,7 @@ export const FloatingTile: React.FC<FloatingTileProps> = ({ letter, value, posit
           {letter}
         </span>
       )}
-      <span className="tile-score-blue absolute z-20 bottom-1 right-1.5 text-[16px] font-mono font-black leading-none">
+      <span className="tile-score-blue absolute z-20 bottom-1 right-1.5 text-[16px] font-maple leading-none">
         {value}
       </span>
     </div>,
