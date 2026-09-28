@@ -42,10 +42,35 @@ const EXTEND_MARGIN_COLS = 16;
 const EXTEND_MARGIN_ROWS = 12;
 const LOW_POWER_GRID_ALPHA_BUCKETS = 24;
 
+export interface BoardVisualExpansion {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}
+
+const NO_BOARD_EXPANSION: BoardVisualExpansion = { top: 0, bottom: 0, left: 0, right: 0 };
+
+/** Let the full-opacity grid edge ease outward on sides where tiles approach the playable edge. */
+export function getBoardVisualExpansion(tiles: CellPosition[]): BoardVisualExpansion {
+  if (tiles.length === 0) return NO_BOARD_EXPANSION;
+  const rows = tiles.map(tile => tile.row);
+  const cols = tiles.map(tile => tile.col);
+  const edgeGrowth = (distance: number) => distance <= 2 ? ((3 - distance) / 3) * 5 : 0;
+  return {
+    top: edgeGrowth(Math.min(...rows)),
+    bottom: edgeGrowth(BOARD_ROWS - 1 - Math.max(...rows)),
+    left: edgeGrowth(Math.min(...cols)),
+    right: edgeGrowth(BOARD_COLS - 1 - Math.max(...cols)),
+  };
+}
+
 /** 1 across the playable 27×19 board, fading smoothly to 0 for the extended grid beyond it. */
-export function getCellAlpha(row: number, col: number): number {
-  const dx = (col - CENTER_COL) / 13.0;
-  const dy = (row - CENTER_ROW) / 9.0;
+export function getCellAlpha(row: number, col: number, expansion = NO_BOARD_EXPANSION): number {
+  const horizontalRadius = 13 + (col < CENTER_COL ? expansion.left : expansion.right);
+  const verticalRadius = 9 + (row < CENTER_ROW ? expansion.top : expansion.bottom);
+  const dx = (col - CENTER_COL) / horizontalRadius;
+  const dy = (row - CENTER_ROW) / verticalRadius;
   const norm = Math.hypot(dx, dy); // 0 at center (9,13), 1.0 at 27x19 board edge midpoints
 
   // Playable 27x19 board area is 100% solid visible
@@ -259,7 +284,8 @@ function drawTile(
 function drawGrid(
   ctx: CanvasRenderingContext2D,
   scene: BoardScene,
-  bounds: { minRow: number; maxRow: number; minCol: number; maxCol: number }
+  bounds: { minRow: number; maxRow: number; minCol: number; maxCol: number },
+  expansion: BoardVisualExpansion
 ) {
   const { offset, cellSize, lowPower } = scene;
   const gridPaths = lowPower
@@ -271,7 +297,7 @@ function drawGrid(
     for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
       const x = offset.x + c * cellSize;
       const y = offset.y + r * cellSize;
-      const lineAlpha = getCellAlpha(r, c);
+      const lineAlpha = getCellAlpha(r, c, expansion);
 
       if (lineAlpha <= 0.005) continue;
 
@@ -376,7 +402,13 @@ export function drawBoard(ctx: CanvasRenderingContext2D, dpr: number, scene: Boa
     cell.row >= minRow && cell.row <= maxRow && cell.col >= minCol && cell.col <= maxCol
   );
 
-  drawGrid(ctx, scene, { minRow, maxRow, minCol, maxCol });
+  const occupiedTiles = [
+    ...Object.values(scene.boardState),
+    ...scene.temporaryTiles,
+    ...scene.remotePlacements,
+  ];
+  const expansion = getBoardVisualExpansion(occupiedTiles);
+  drawGrid(ctx, scene, { minRow, maxRow, minCol, maxCol }, expansion);
 
   // Draw Committed Tiles
   for (const key in scene.boardState) {
