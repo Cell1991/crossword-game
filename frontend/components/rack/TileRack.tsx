@@ -196,9 +196,9 @@ export const TileRack = memo(function TileRack({
       )}
 
       {/* Premium Player Control Hub: 3-column layout (Left Pod, Center Tray, Right Pod) */}
-      <div className="flex w-full flex-col items-center gap-2 lg:flex-row lg:items-end lg:justify-center lg:gap-4">
+      <div className="flex w-full flex-row flex-wrap items-end justify-center gap-1.5 sm:gap-2 lg:flex-nowrap lg:gap-4">
         {/* LEFT POD: GAME MANAGEMENT */}
-        <div className="order-2 flex w-full shrink-0 flex-col items-center lg:order-none lg:w-auto lg:items-start">
+        <div className="order-2 flex shrink-0 flex-col items-center lg:order-none lg:w-auto lg:items-start">
           <div className="mb-1.5 flex items-center gap-1.5 px-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8]" />
             <span className="hidden text-[10px] font-bold tracking-widest text-slate-400 uppercase sm:inline">
@@ -267,37 +267,38 @@ export const TileRack = memo(function TileRack({
         </div>
 
         {/* CENTER POD: COSMIC BLUE TILE TRAY WITH NEON LED UNDER-LIGHTING */}
-        <div className="relative order-1 flex w-full shrink-0 flex-col items-center lg:order-none lg:w-auto">
+        <div className="relative order-1 flex w-full max-w-full shrink-0 flex-col items-center lg:order-none lg:w-auto">
           {/* LED under-lighting glow (Blue/Cyan Neon) */}
           <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-blue-600/30 via-cyan-500/40 to-blue-600/30 blur-md pointer-events-none opacity-90" />
 
           {/* Tray Stand (Blue Theme) */}
-          <div
-            ref={rackRef}
-            className={`relative flex w-full items-center justify-center gap-1 p-1.5 sm:w-auto sm:gap-2.5 sm:p-2.5 bg-gradient-to-b from-[#0e1d3d] via-[#081226] to-[#040814] lg:backdrop-blur-md rounded-2xl border-2 shadow-[inset_0_1px_2px_rgba(255,255,255,0.22),0_12px_28px_rgba(0,0,0,0.7),0_0_22px_rgba(37,99,235,0.35)] min-h-[64px] sm:min-h-[78px] ${
-              isExternalDragActive ? 'border-cyan-300 ring-2 ring-cyan-400/60 shadow-[0_0_25px_rgba(6,182,212,0.5)]' : 'border-blue-500/70 hover:border-blue-400/90'
-            } transition-all`}
-          >
-        {slots.map((tile, slotIndex) => {
-          if (!tile) {
-            const isDropTarget = dragOverSlot === slotIndex;
-            return (
-              <div
-                key={`slot-${slotIndex}`}
-                data-rack-slot={slotIndex}
-                aria-hidden="true"
-                className={`relative h-10 w-9 rounded-lg border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:h-14 sm:w-13 sm:rounded-xl ${
-                  isDropTarget
-                    ? 'ring-2 ring-sky-400/90'
-                    : isExternalDragActive
-                    ? 'ring-1 ring-sky-400/40'
-                    : ''
-                }`}
-              >
-                <span className="absolute inset-[7px] rounded-md border border-dashed border-sky-400/20" />
-              </div>
-            );
-          }
+          <div className="w-full overflow-x-auto overflow-y-hidden hide-scrollbar scroll-smooth pb-1 -mb-1 px-1 sm:px-0 flex justify-center">
+            <div
+              ref={rackRef}
+              className={`relative flex items-center justify-center gap-1.5 p-2 sm:w-auto sm:gap-2.5 sm:p-2.5 bg-gradient-to-b from-[#0e1d3d] via-[#081226] to-[#040814] lg:backdrop-blur-md rounded-2xl border-2 shadow-[inset_0_1px_2px_rgba(255,255,255,0.22),0_12px_28px_rgba(0,0,0,0.7),0_0_22px_rgba(37,99,235,0.35)] min-h-[64px] sm:min-h-[78px] ${
+                isExternalDragActive ? 'border-cyan-300 ring-2 ring-cyan-400/60 shadow-[0_0_25px_rgba(6,182,212,0.5)]' : 'border-blue-500/70 hover:border-blue-400/90'
+              } transition-all`}
+            >
+          {slots.map((tile, slotIndex) => {
+            if (!tile) {
+              const isDropTarget = dragOverSlot === slotIndex;
+              return (
+                <div
+                  key={`slot-${slotIndex}`}
+                  data-rack-slot={slotIndex}
+                  aria-hidden="true"
+                  className={`relative shrink-0 h-[46px] w-[40px] sm:h-[56px] sm:w-[50px] rounded-[10px] border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:rounded-xl ${
+                    isDropTarget
+                      ? 'ring-2 ring-sky-400/90'
+                      : isExternalDragActive
+                      ? 'ring-1 ring-sky-400/40'
+                      : ''
+                  }`}
+                >
+                  <span className="absolute inset-[7px] rounded-md border border-dashed border-sky-400/20" />
+                </div>
+              );
+            }
 
           const isSelected = selectedTileId === tile.id;
           const displayLetter = getDisplayLetter(tile);
@@ -316,7 +317,7 @@ export const TileRack = memo(function TileRack({
               onPointerUp={handlePointerUp}
               disabled={!canStageMove}
               aria-pressed={isExchanging ? isMarkedForExchange : undefined}
-              className={`tile-face group relative flex h-10 w-9 flex-col items-center justify-center rounded-lg border border-amber-100/80 font-sans transition-all select-none touch-none overflow-hidden sm:h-14 sm:w-13 sm:rounded-xl ${
+              className={`tile-face group relative shrink-0 flex h-[46px] w-[40px] sm:h-[56px] sm:w-[50px] flex-col items-center justify-center rounded-[10px] border border-amber-100/80 font-sans transition-all select-none touch-none overflow-hidden sm:rounded-xl ${
                 isDragging
                   ? 'z-10 scale-105 -translate-y-2 opacity-40 shadow-2xl cursor-grabbing'
                   : isDropTarget
@@ -341,23 +342,24 @@ export const TileRack = memo(function TileRack({
                   </svg>
                 </div>
               ) : (
-                <span className="tile-letter tile-letter-orange relative z-20 text-[26px] sm:text-[36px] leading-none font-maple">
+                <span className="tile-letter tile-letter-orange relative z-20 text-[28px] sm:text-[36px] leading-none font-maple">
                   {displayLetter}
                 </span>
               )}
 
               {/* Glowing Value Badge */}
-              <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 rounded-sm bg-[#fff2d8]/90 px-0.5 text-[9px] font-mono font-black sm:bottom-1 sm:right-1.5 sm:text-[13px] lg:rounded-none lg:bg-transparent lg:px-0 lg:text-[18px] lg:leading-none">
+              <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[10px] font-mono font-black sm:bottom-1 sm:right-1.5 sm:text-[13px] lg:text-[18px] leading-none">
                 {tile.value}
               </span>
             </button>
           );
         })}
+            </div>
           </div>
         </div>
 
         {/* RIGHT POD: TURN ACTIONS */}
-        <div className="order-3 flex w-full shrink-0 flex-col items-center lg:order-none lg:w-auto lg:items-end">
+        <div className="order-3 flex shrink-0 flex-col items-center lg:order-none lg:w-auto lg:items-end">
           <div className="mb-1.5 flex w-full items-center justify-between gap-2 px-2">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />

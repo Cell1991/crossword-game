@@ -87,7 +87,7 @@ export const GameHud: React.FC<GameHudProps> = ({
         <span className="whitespace-nowrap text-xs text-slate-400" title="Spectators watching">👁 {spectatorCount}</span>
       )}
       {timer}
-      <TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} turnNumber={turnNumber} maxTurns={maxTurns} />
+      <div className="hidden lg:block"><TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} turnNumber={turnNumber} maxTurns={maxTurns} /></div>
     </div>
   </div>
 );
