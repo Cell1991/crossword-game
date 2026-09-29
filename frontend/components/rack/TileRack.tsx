@@ -291,7 +291,7 @@ export const TileRack = memo(function TileRack({
 
 
         {/* MOBILE CONTROLS WRAPPER */}
-        <div className="order-2 flex w-full flex-row justify-center gap-1 sm:gap-2 lg:contents">
+        <div className="order-2 flex w-full flex-row justify-center gap-0 lg:contents">
         {/* LEFT POD: GAME MANAGEMENT */}
         <div className="flex flex-1 shrink flex-col items-center lg:order-none lg:w-auto lg:items-start min-w-0">
           <div className="mb-1.5 flex items-center gap-1.5 px-2">
@@ -301,7 +301,7 @@ export const TileRack = memo(function TileRack({
             </span>
           </div>
 
-          <div className="flex max-w-full items-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-xl sm:rounded-2xl shadow-xl shadow-black/60 ring-1 ring-cyan-500/15 min-h-[48px] sm:min-h-[58px]">
+          <div className="flex w-full justify-center items-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-l-xl sm:rounded-l-2xl rounded-r-none lg:rounded-2xl border-r-0 lg:border-r lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-cyan-500/15 min-h-[48px] sm:min-h-[58px]">
             {isExchanging ? (
               <div className="flex items-center gap-2 px-1">
                 <button
@@ -384,7 +384,7 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
 
-          <div className="flex max-w-full flex-wrap items-center justify-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-xl sm:rounded-2xl shadow-xl shadow-black/60 ring-1 ring-emerald-500/15 min-h-[48px] sm:min-h-[58px]">
+          <div className="flex max-w-full flex-wrap items-center justify-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-r-xl sm:rounded-r-2xl rounded-l-none lg:rounded-2xl border-l-0 lg:border-l lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-emerald-500/15 min-h-[48px] sm:min-h-[58px]">
             {isExchanging ? (
               <button
                 onClick={onConfirmExchange}
