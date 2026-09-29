@@ -42,37 +42,39 @@ export interface BoardScene {
 
 const LOW_POWER_GRID_ALPHA_BUCKETS = 24;
 
-/** True smooth elliptical / oval falloff radiating from center star (9, 13) */
+/** Smooth Superellipse with filled corners and 8-block lookahead fade */
 export function getCellAlpha(row: number, col: number, occupiedTiles: CellPosition[] = []): number {
-  // 1. Normalized Elliptical distance from center star (9, 13)
-  const dx = (col - CENTER_COL) / 13.5;
-  const dy = (row - CENTER_ROW) / 9.5;
-  const ellipseNorm = Math.hypot(dx, dy);
+  // 1. Superellipse norm (p = 2.6): Gently rounded oval contour with corners nicely filled
+  const p = 2.6;
+  const dx = Math.abs(col - CENTER_COL) / 13.8;
+  const dy = Math.abs(row - CENTER_ROW) / 9.8;
+  const superellipseNorm = Math.pow(Math.pow(dx, p) + Math.pow(dy, p), 1 / p);
 
   let alpha = 0;
-  if (ellipseNorm <= 0.82) {
+  if (superellipseNorm <= 0.88) {
     alpha = 1.0;
-  } else if (ellipseNorm <= 1.15) {
+  } else if (superellipseNorm <= 1.22) {
     // Smooth ease-out fade in an oval ring around the board
-    const t = (ellipseNorm - 0.82) / (1.15 - 0.82);
+    const t = (superellipseNorm - 0.88) / (1.22 - 0.88);
     alpha = Math.pow(1 - t, 1.5);
   }
 
-  // 2. Local rounded aura around any placed tiles (committed, staged, or extended words)
+  // 2. 8-Block lookahead aura around any placed tiles (committed, staged, or extended words)
   for (let i = 0; i < occupiedTiles.length; i++) {
     const t = occupiedTiles[i];
     const tileDist = Math.hypot(row - t.row, (col - t.col) * 0.85);
     if (tileDist <= 1.2) {
       alpha = Math.max(alpha, 1.0);
-    } else if (tileDist <= 3.0) {
-      const u = (tileDist - 1.2) / 1.8;
-      const tileAlpha = Math.pow(1 - u, 1.5);
+    } else if (tileDist <= 8.2) {
+      const u = (tileDist - 1.2) / 7.0;
+      const tileAlpha = Math.pow(1 - u, 1.4);
       if (tileAlpha > alpha) alpha = tileAlpha;
     }
   }
 
   return Math.max(0, Math.min(1, alpha));
 }
+
 
 
 
@@ -576,10 +578,10 @@ export function drawBoard(ctx: CanvasRenderingContext2D, dpr: number, scene: Boa
   const viewportMinRow = Math.floor(-offset.y / cellSize) - 1;
   const viewportMaxRow = Math.ceil((height - offset.y) / cellSize) + 1;
 
-  const minCol = Math.max(viewportMinCol, activeMinCol - 3);
-  const maxCol = Math.min(viewportMaxCol, activeMaxCol + 3);
-  const minRow = Math.max(viewportMinRow, activeMinRow - 3);
-  const maxRow = Math.min(viewportMaxRow, activeMaxRow + 3);
+  const minCol = Math.max(viewportMinCol, activeMinCol - 8);
+  const maxCol = Math.min(viewportMaxCol, activeMaxCol + 8);
+  const minRow = Math.max(viewportMinRow, activeMinRow - 8);
+  const maxRow = Math.min(viewportMaxRow, activeMaxRow + 8);
 
   const visible = (cell: CellPosition) => (
     cell.row >= viewportMinRow && cell.row <= viewportMaxRow && cell.col >= viewportMinCol && cell.col <= viewportMaxCol

@@ -93,15 +93,15 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
     ...remotePlacements,
   ], [boardState, remotePlacements, temporaryTiles]);
 
-  // Efficient local candidate echoes: only examine 3-cell radius around occupied tiles + starter perimeter
+  // Efficient local candidate echoes: examine 8-cell radius around occupied tiles + starter perimeter
   const candidateEchoes = useMemo(() => {
     const echoes = new Map<string, { row: number; col: number; type: 'power' | 'triple' | 'double' }>();
 
-    // 1. Around each placed tile (up to 3 cells away)
+    // 1. Around each placed tile (up to 8 cells away)
     for (let i = 0; i < occupiedPositions.length; i++) {
       const tile = occupiedPositions[i];
-      for (let dr = -3; dr <= 3; dr++) {
-        for (let dc = -3; dc <= 3; dc++) {
+      for (let dr = -8; dr <= 8; dr++) {
+        for (let dc = -8; dc <= 8; dc++) {
           const r = tile.row + dr;
           const c = tile.col + dc;
           if (r >= 0 && r < BOARD_ROWS && c >= 0 && c < BOARD_COLS) continue;
@@ -118,9 +118,9 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
       }
     }
 
-    // 2. Around starter board edges (up to 2 cells away)
-    for (let r = -2; r <= BOARD_ROWS + 1; r++) {
-      for (let c = -2; c <= BOARD_COLS + 1; c++) {
+    // 2. Around starter board edges (up to 3 cells away)
+    for (let r = -3; r <= BOARD_ROWS + 2; r++) {
+      for (let c = -3; c <= BOARD_COLS + 2; c++) {
         if (r >= 0 && r < BOARD_ROWS && c >= 0 && c < BOARD_COLS) continue;
         const key = `${r}_${c}`;
         if (echoes.has(key)) continue;
