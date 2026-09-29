@@ -127,7 +127,8 @@ async def use_card(
         return {"success": True, "drawn": len(drawn)}
 
     if card == "HEAL":
-        player.hp = min(100, player.hp + sum(int(tile["value"]) for tile in await player_rack(db, player.id)))
+        max_cap = getattr(player, "max_hp", 100) or 100
+        player.hp = min(max_cap, player.hp + sum(int(tile["value"]) for tile in await player_rack(db, player.id)))
         return {"success": True, "hp": player.hp}
 
     if card == "STEAL_TILE":
@@ -225,7 +226,8 @@ async def use_card(
         if not validation.valid:
             raise HTTPException(status_code=400, detail=validation.reason or "That move is not valid")
         base_points = sum(pt.value for pt in request.placed_tiles)
-        player.hp = min(100, player.hp + base_points)
+        max_cap = getattr(player, "max_hp", 100) or 100
+        player.hp = min(max_cap, player.hp + base_points)
         return {"success": True, "healed": base_points, "hp": player.hp}
 
     if card == "DOUBLE_DAMAGE":

@@ -234,28 +234,31 @@ export const RightSidebar = memo(function RightSidebar({
                     </div>
                   </div>
 
-                  {showHealth && (
-                    <div className="mt-2 h-3 rounded-sm bg-slate-950/80 relative overflow-hidden border border-slate-800/60 shadow-inner">
-                      <div
-                        className={`h-full transition-all duration-300 ${
-                          player.hp <= 0
-                            ? 'bg-slate-700'
-                            : player.hp > maxHp / 2
-                            ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
-                            : 'bg-gradient-to-r from-rose-500 to-amber-500'
-                        }`}
-                        style={{ width: `${Math.max(0, Math.min(100, (player.hp / maxHp) * 100))}%` }}
-                      />
-                      {/* HP Dividers every 20% */}
-                      {[20, 40, 60, 80].map((percent) => (
+                  {showHealth && (() => {
+                    const playerMaxHp = player.max_hp || maxHp;
+                    return (
+                      <div className="mt-2 h-3 rounded-sm bg-slate-950/80 relative overflow-hidden border border-slate-800/60 shadow-inner">
                         <div
-                          key={percent}
-                          className="absolute top-0 bottom-0 w-px bg-slate-950/90 z-10"
-                          style={{ left: `${percent}%` }}
+                          className={`h-full transition-all duration-300 ${
+                            player.hp <= 0
+                              ? 'bg-slate-700'
+                              : player.hp > playerMaxHp / 2
+                              ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                              : 'bg-gradient-to-r from-rose-500 to-amber-500'
+                          }`}
+                          style={{ width: `${Math.max(0, Math.min(100, (player.hp / playerMaxHp) * 100))}%` }}
                         />
-                      ))}
-                    </div>
-                  )}
+                        {/* HP Dividers every 20% */}
+                        {[20, 40, 60, 80].map((percent) => (
+                          <div
+                            key={percent}
+                            className="absolute top-0 bottom-0 w-px bg-slate-950/90 z-10"
+                            style={{ left: `${percent}%` }}
+                          />
+                        ))}
+                      </div>
+                    );
+                  })()}
 
                 </div>
               );

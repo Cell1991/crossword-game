@@ -95,6 +95,7 @@ export async function createRoom(
   gameMode: GameMode = 'HP',
   maxTurns: number | null = null,
   isDebug = false,
+  startingHp: number | null = null,
 ): Promise<CreateRoomResponse> {
   const res = await fetch(`${getApiBase()}/rooms`, {
     method: 'POST',
@@ -104,6 +105,7 @@ export async function createRoom(
       turn_time_limit: turnTimeLimit,
       game_mode: gameMode,
       max_turns: gameMode === 'TURNS' ? maxTurns : null,
+      starting_hp: gameMode === 'HP' ? startingHp : null,
       is_debug: isDebug,
     }),
   });

@@ -135,43 +135,49 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
         {/* CENTRAL FOCUS: GRAND MULTI-TIERED VICTORY PODIUM */}
         <div className="w-full flex flex-col items-center gap-4">
           
-          {/* 3-Tier Podium (Desktop & Tablet) / Stacked Cards (Mobile) */}
-          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-end justify-center">
+          {/* 3-Tier Podium Side-by-Side on both Mobile and Desktop */}
+          <div className={`w-full ${
+            sorted.length === 1
+              ? 'flex justify-center max-w-sm'
+              : sorted.length === 2
+              ? 'grid grid-cols-2 max-w-lg gap-2.5 sm:gap-5 md:gap-6 items-end justify-center'
+              : 'grid grid-cols-3 gap-1.5 sm:gap-4 md:gap-6 items-end justify-center'
+          }`}>
             
             {/* 🥈 2ND PLACE (Left Silver Pedestal - Intermediate Height) */}
             {secondPlace && (
-              <div className="order-2 md:order-1 flex flex-col items-center w-full">
-                <div className="w-full relative rounded-3xl bg-gradient-to-b from-slate-800/90 via-slate-900/95 to-slate-950 border-2 border-slate-300/70 p-5 sm:p-6 shadow-[0_16px_40px_rgba(0,0,0,0.7),0_0_28px_rgba(226,232,240,0.25)] backdrop-blur-xl ring-1 ring-slate-300/40 flex flex-col items-center text-center gap-3 transition-all hover:scale-[1.02] md:min-h-[300px] justify-between">
+              <div className={`${sorted.length > 2 ? 'order-1' : 'order-2'} flex flex-col items-center w-full`}>
+                <div className="w-full relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-slate-800/90 via-slate-900/95 to-slate-950 border-2 border-slate-300/70 p-2 sm:p-5 md:p-6 shadow-[0_16px_40px_rgba(0,0,0,0.7),0_0_28px_rgba(226,232,240,0.25)] backdrop-blur-xl ring-1 ring-slate-300/40 flex flex-col items-center text-center gap-1.5 sm:gap-3 transition-all hover:scale-[1.02] min-h-[200px] sm:min-h-[270px] md:min-h-[300px] justify-between">
                   
                   {/* Sunburst Silver Aura */}
-                  <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-slate-400/15 via-slate-200/20 to-slate-400/15 blur-lg pointer-events-none animate-pulse" />
+                  <div className="absolute -inset-1.5 sm:-inset-2 rounded-3xl bg-gradient-to-r from-slate-400/15 via-slate-200/20 to-slate-400/15 blur-md sm:blur-lg pointer-events-none animate-pulse" />
 
                   {/* Grand 3D Silver Medallion Shield */}
                   <div className="relative">
-                    <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-3xl bg-gradient-to-br from-white via-slate-300 to-slate-500 border-2 border-white shadow-[0_0_28px_rgba(226,232,240,0.85),inset_0_1px_2px_rgba(255,255,255,0.9)] flex items-center justify-center">
-                      <Medal className="w-9 h-9 sm:w-10 sm:h-10 text-slate-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)]" />
+                    <div className="w-10 h-10 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-xl sm:rounded-3xl bg-gradient-to-br from-white via-slate-300 to-slate-500 border-2 border-white shadow-[0_0_20px_rgba(226,232,240,0.75),inset_0_1px_2px_rgba(255,255,255,0.9)] flex items-center justify-center">
+                      <Medal className="w-5 h-5 sm:w-9 sm:h-9 md:w-10 md:h-10 text-slate-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)]" />
                     </div>
                   </div>
 
                   {/* 2nd Place Silver Badge */}
-                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-slate-300 via-slate-100 to-slate-300 text-slate-950 font-black text-xs uppercase tracking-widest shadow-[0_0_14px_rgba(226,232,240,0.6)]">
-                    <Medal className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-gradient-to-r from-slate-300 via-slate-100 to-slate-300 text-slate-950 font-black text-[8px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-[0_0_12px_rgba(226,232,240,0.5)] whitespace-nowrap">
+                    <Medal className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 shrink-0" />
                     <span>Runner-Up • 2nd</span>
                   </div>
 
                   {/* Player Name */}
-                  <div className="flex items-center gap-1.5 max-w-full truncate mt-0.5">
-                    <span className={`text-base sm:text-xl font-bold truncate ${secondPlace.id === myPlayerId ? 'text-pink-300 font-black drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]' : 'text-slate-100'}`}>
+                  <div className="flex items-center justify-center gap-1 max-w-full truncate mt-0.5 px-1">
+                    <span className={`text-xs sm:text-base md:text-xl font-bold truncate ${secondPlace.id === myPlayerId ? 'text-pink-300 font-black drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]' : 'text-slate-100'}`}>
                       {secondPlace.display_name} {secondPlace.id === myPlayerId && '(You)'}
                     </span>
                     {secondPlace.is_host && (
-                      <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
                     )}
                   </div>
 
                   {/* Silver Score Orb */}
-                  <div className="w-full px-4 py-2 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-400/60 text-slate-100 font-mono font-black text-base sm:text-lg shadow-[0_0_15px_rgba(203,213,225,0.25)]">
-                    {secondPlace.score} <span className="text-xs font-semibold text-slate-400">PTS</span>
+                  <div className="w-full px-2 py-1 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-400/60 text-slate-100 font-mono font-black text-xs sm:text-base md:text-lg shadow-[0_0_12px_rgba(203,213,225,0.2)]">
+                    {secondPlace.score} <span className="text-[8px] sm:text-xs font-semibold text-slate-400">PTS</span>
                   </div>
                 </div>
               </div>
@@ -179,38 +185,38 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
 
             {/* 🥇 1ST PLACE (Center Tallest Golden Champion Tier) */}
             {firstPlace && (
-              <div className="order-1 md:order-2 flex flex-col items-center w-full">
-                <div className="w-full relative rounded-3xl bg-gradient-to-b from-amber-950/80 via-slate-900/95 to-slate-950 border-2 border-amber-400 p-5 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_40px_rgba(251,191,36,0.4)] backdrop-blur-2xl ring-2 ring-amber-400/50 flex flex-col items-center text-center gap-3.5 transition-all hover:scale-[1.02] md:min-h-[355px] justify-between">
+              <div className={`${sorted.length > 2 ? 'order-2' : 'order-1'} flex flex-col items-center w-full`}>
+                <div className="w-full relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-amber-950/80 via-slate-900/95 to-slate-950 border-2 border-amber-400 p-2.5 sm:p-6 md:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_40px_rgba(251,191,36,0.4)] backdrop-blur-2xl ring-2 ring-amber-400/50 flex flex-col items-center text-center gap-2 sm:gap-3.5 transition-all hover:scale-[1.02] min-h-[235px] sm:min-h-[320px] md:min-h-[355px] justify-between">
                   
                   {/* Sunburst Trophy Aura */}
-                  <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-amber-500/25 via-yellow-400/30 to-amber-600/25 blur-xl pointer-events-none animate-pulse" />
+                  <div className="absolute -inset-2 sm:-inset-4 rounded-3xl bg-gradient-to-r from-amber-500/25 via-yellow-400/30 to-amber-600/25 blur-md sm:blur-xl pointer-events-none animate-pulse" />
 
                   {/* Grand 3D Gold Champion Trophy */}
                   <div className="relative">
-                    <div className="w-18 h-18 sm:w-22 sm:h-22 rounded-3xl bg-gradient-to-br from-yellow-200 via-amber-400 to-amber-700 border-2 border-yellow-100 shadow-[0_0_35px_rgba(251,191,36,0.9),inset_0_1px_3px_rgba(255,255,255,0.8)] flex items-center justify-center">
-                      <Trophy className="w-10 h-10 sm:w-12 sm:h-12 text-slate-950 drop-shadow-[0_1px_3px_rgba(255,255,255,0.7)]" />
+                    <div className="w-12 h-12 sm:w-18 sm:h-18 md:w-22 md:h-22 rounded-xl sm:rounded-3xl bg-gradient-to-br from-yellow-200 via-amber-400 to-amber-700 border-2 border-yellow-100 shadow-[0_0_25px_rgba(251,191,36,0.85),inset_0_1px_3px_rgba(255,255,255,0.8)] flex items-center justify-center">
+                      <Trophy className="w-6 h-6 sm:w-10 sm:h-10 md:w-12 md:h-12 text-slate-950 drop-shadow-[0_1px_3px_rgba(255,255,255,0.7)]" />
                     </div>
                   </div>
 
                   {/* 1st Place Gold Pill */}
-                  <div className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950 font-black text-xs uppercase tracking-widest shadow-[0_0_18px_rgba(251,191,36,0.7)]">
-                    <Crown className="w-4 h-4" />
+                  <div className="flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-3.5 sm:py-1 rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950 font-black text-[8.5px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-[0_0_15px_rgba(251,191,36,0.7)] whitespace-nowrap">
+                    <Crown className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
                     <span>Champion • 1st</span>
                   </div>
 
                   {/* Champion Name */}
-                  <div className="flex items-center gap-1.5 max-w-full truncate mt-0.5">
-                    <span className={`text-xl sm:text-2xl font-black truncate drop-shadow-[0_0_14px_rgba(251,191,36,0.6)] ${firstPlace.id === myPlayerId ? 'text-pink-300' : 'text-amber-200'}`}>
+                  <div className="flex items-center justify-center gap-1 max-w-full truncate mt-0.5 px-1">
+                    <span className={`text-xs sm:text-xl md:text-2xl font-black truncate drop-shadow-[0_0_14px_rgba(251,191,36,0.6)] ${firstPlace.id === myPlayerId ? 'text-pink-300' : 'text-amber-200'}`}>
                       {firstPlace.display_name} {firstPlace.id === myPlayerId && '(You)'}
                     </span>
                     {firstPlace.is_host && (
-                      <Crown className="w-4 h-4 text-amber-400 shrink-0" />
+                      <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
                     )}
                   </div>
 
                   {/* Gold Score Orb */}
-                  <div className="w-full px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 border-2 border-amber-400/80 text-amber-300 font-mono font-black text-lg sm:text-xl shadow-[0_0_22px_rgba(251,191,36,0.4)]">
-                    {firstPlace.score} <span className="text-xs font-bold text-amber-400/80">PTS</span>
+                  <div className="w-full px-2 py-1 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 border-2 border-amber-400/80 text-amber-300 font-mono font-black text-xs sm:text-lg md:text-xl shadow-[0_0_18px_rgba(251,191,36,0.35)]">
+                    {firstPlace.score} <span className="text-[8px] sm:text-xs font-bold text-amber-400/80">PTS</span>
                   </div>
                 </div>
               </div>
@@ -218,38 +224,38 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
 
             {/* 🥉 3RD PLACE (Right Bronze Pedestal - Lowest Height) */}
             {thirdPlace ? (
-              <div className="order-3 md:order-3 flex flex-col items-center w-full">
-                <div className="w-full relative rounded-3xl bg-gradient-to-b from-amber-950/60 via-slate-900/95 to-slate-950 border-2 border-amber-600/70 p-4 sm:p-5 shadow-[0_16px_40px_rgba(0,0,0,0.7),0_0_28px_rgba(217,119,6,0.25)] backdrop-blur-xl ring-1 ring-amber-600/40 flex flex-col items-center text-center gap-2.5 transition-all hover:scale-[1.02] md:min-h-[250px] justify-between">
+              <div className="order-3 flex flex-col items-center w-full">
+                <div className="w-full relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-amber-950/60 via-slate-900/95 to-slate-950 border-2 border-amber-600/70 p-2 sm:p-4 md:p-5 shadow-[0_16px_40px_rgba(0,0,0,0.7),0_0_28px_rgba(217,119,6,0.25)] backdrop-blur-xl ring-1 ring-amber-600/40 flex flex-col items-center text-center gap-1.5 sm:gap-2.5 transition-all hover:scale-[1.02] min-h-[175px] sm:min-h-[230px] md:min-h-[250px] justify-between">
                   
                   {/* Sunburst Bronze Aura */}
-                  <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-amber-600/20 via-orange-500/25 to-amber-700/20 blur-lg pointer-events-none animate-pulse" />
+                  <div className="absolute -inset-1.5 sm:-inset-2 rounded-3xl bg-gradient-to-r from-amber-600/20 via-orange-500/25 to-amber-700/20 blur-md sm:blur-lg pointer-events-none animate-pulse" />
 
                   {/* Grand 3D Bronze Medallion Shield */}
                   <div className="relative">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl bg-gradient-to-br from-amber-400 via-amber-600 to-amber-900 border-2 border-amber-300 shadow-[0_0_28px_rgba(217,119,6,0.85),inset_0_1px_2px_rgba(255,255,255,0.6)] flex items-center justify-center">
-                      <Award className="w-8 h-8 sm:w-9 sm:h-9 text-amber-950 drop-shadow-[0_1px_2px_rgba(251,191,36,0.6)]" />
+                    <div className="w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-3xl bg-gradient-to-br from-amber-400 via-amber-600 to-amber-900 border-2 border-amber-300 shadow-[0_0_20px_rgba(217,119,6,0.75),inset_0_1px_2px_rgba(255,255,255,0.6)] flex items-center justify-center">
+                      <Award className="w-4.5 h-4.5 sm:w-8 sm:h-8 md:w-9 md:h-9 text-amber-950 drop-shadow-[0_1px_2px_rgba(251,191,36,0.6)]" />
                     </div>
                   </div>
 
                   {/* 3rd Place Bronze Badge */}
-                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-amber-950 font-black text-xs uppercase tracking-widest shadow-[0_0_14px_rgba(217,119,6,0.6)]">
-                    <Award className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-amber-950 font-black text-[8px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-[0_0_12px_rgba(217,119,6,0.5)] whitespace-nowrap">
+                    <Award className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 shrink-0" />
                     <span>Bronze • 3rd</span>
                   </div>
 
                   {/* Player Name */}
-                  <div className="flex items-center gap-1.5 max-w-full truncate mt-0.5">
-                    <span className={`text-base sm:text-lg font-bold truncate ${thirdPlace.id === myPlayerId ? 'text-pink-300 font-black drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]' : 'text-amber-100'}`}>
+                  <div className="flex items-center justify-center gap-1 max-w-full truncate mt-0.5 px-1">
+                    <span className={`text-xs sm:text-base md:text-lg font-bold truncate ${thirdPlace.id === myPlayerId ? 'text-pink-300 font-black drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]' : 'text-amber-100'}`}>
                       {thirdPlace.display_name} {thirdPlace.id === myPlayerId && '(You)'}
                     </span>
                     {thirdPlace.is_host && (
-                      <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
                     )}
                   </div>
 
                   {/* Bronze Score Orb */}
-                  <div className="w-full px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-950 via-slate-850 to-amber-950 border border-amber-600/70 text-amber-200 font-mono font-black text-base sm:text-lg shadow-[0_0_15px_rgba(217,119,6,0.25)]">
-                    {thirdPlace.score} <span className="text-xs font-semibold text-amber-400/80">PTS</span>
+                  <div className="w-full px-2 py-1 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-950 via-slate-850 to-amber-950 border border-amber-600/70 text-amber-200 font-mono font-black text-xs sm:text-base md:text-lg shadow-[0_0_12px_rgba(217,119,6,0.2)]">
+                    {thirdPlace.score} <span className="text-[8px] sm:text-xs font-semibold text-amber-400/80">PTS</span>
                   </div>
                 </div>
               </div>

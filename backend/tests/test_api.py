@@ -134,3 +134,36 @@ async def test_current_player_leaving_advances_turn():
         state = (await client.get(f"/api/games/{created['game_id']}?token={joined['session_token']}")).json()
         assert state["current_player_id"] == joined["player_id"]
 
+
+@pytest.mark.asyncio
+async def test_custom_starting_hp():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # Create room with 50 starting HP
+        res = await client.post("/api/rooms", json={"host_name": "Alice", "game_mode": "HP", "starting_hp": 50})
+        assert res.status_code == 200
+        created = res.json()
+        assert created["starting_hp"] == 50
+
+        # Room details have starting_hp
+        room_res = await client.get(f"/api/rooms/{created['game_pin']}")
+        assert room_res.status_code == 200
+        assert room_res.json()["starting_hp"] == 50
+
+        # Join second player
+        joined = (await client.post(f"/api/rooms/{created['game_pin']}/join", json={
+            "game_pin": created["game_pin"], "player_name": "Bob"
+        })).json()
+
+        # Start game
+        start_res = await client.post(f"/api/rooms/{created['game_pin']}/start", headers={"X-Player-ID": created["host_player_id"]})
+        assert start_res.status_code == 200
+
+        # Game state shows starting_hp and players start with 50 HP and max_hp 50
+        state = (await client.get(f"/api/games/{created['game_id']}?token={created['session_token']}")).json()
+        assert state["starting_hp"] == 50
+        assert len(state["players"]) == 2
+        for p in state["players"]:
+            assert p["hp"] == 50
+            assert p["max_hp"] == 50
+

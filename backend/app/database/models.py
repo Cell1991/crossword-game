@@ -33,6 +33,7 @@ class GameRoom(Base):
     is_debug = Column(Boolean, default=False, nullable=False)
     game_mode = Column(String(16), default="HP", nullable=False)
     max_turns = Column(Integer, nullable=True)
+    starting_hp = Column(Integer, default=100, nullable=True)
     # After the game ends, the PIN of the room its players are gathering in to play again.
     rematch_pin = Column(String(6), nullable=True)
     created_at = Column(DateTime(timezone=True), default=get_utc_now)
@@ -49,6 +50,7 @@ class Game(Base):
     current_player_id = Column(String(36), nullable=True)
     turn_number = Column(Integer, default=1, nullable=False)
     max_turns = Column(Integer, nullable=True)
+    starting_hp = Column(Integer, default=100, nullable=True)
     consecutive_passes = Column(Integer, default=0, nullable=False)
     # Sparse board state: {"r_c": {"row": r, "col": c, "letter": "A", "value": 1, "player_id": "...", "turn": 1}}
     board_state = Column(JSON, default=dict, nullable=False)
@@ -77,6 +79,7 @@ class GamePlayer(Base):
     is_host = Column(Boolean, default=False, nullable=False)
     score = Column(Integer, default=0, nullable=False)
     hp = Column(Integer, default=100, nullable=False)
+    max_hp = Column(Integer, default=100, nullable=False)
     rack = Column(JSON, default=list, nullable=False)  # [{"id": "...", "letter": "A", "value": 1}]
     cards = Column(JSON, default=list, nullable=False)
     banned_letter = Column(String(10), nullable=True)

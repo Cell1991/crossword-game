@@ -3,12 +3,13 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowRight, Eye, LogIn, Plus } from 'lucide-react';
+import { ArrowRight, Eye, LogIn, Minus, Plus } from 'lucide-react';
 import { createRoom, getRoom, joinRoom, sessionStore } from '@/lib/api';
 import { GameMode, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
 import MouseGradientText from '@/components/effects/MouseGradientText';
 import FullscreenButton from '@/components/ui/FullscreenButton';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 type Mode = 'home' | 'create' | 'join';
 
@@ -23,6 +24,8 @@ export default function HomePage() {
   const [gameMode, setGameMode] = useState<GameMode>('HP');
   const [turnCountOption, setTurnCountOption] = useState('7');
   const [customTurnCount, setCustomTurnCount] = useState('28');
+  const [hpOption, setHpOption] = useState('100');
+  const [customHp, setCustomHp] = useState('100');
 
   const handleCreate = async () => {
     if (!name.trim()) { setError('Please enter your name'); return; }
@@ -31,10 +34,22 @@ export default function HomePage() {
       setError('Turn count must be between 1 and 500');
       return;
     }
+    const startingHp = hpOption === 'custom' ? Number(customHp) : Number(hpOption);
+    if (gameMode === 'HP' && (!Number.isInteger(startingHp) || startingHp < 10 || startingHp > 1000)) {
+      setError('Starting HP must be between 10 and 1000');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
-      const res = await createRoom(name.trim(), turnTimeLimit, gameMode, gameMode === 'TURNS' ? maxTurns : null, false);
+      const res = await createRoom(
+        name.trim(),
+        turnTimeLimit,
+        gameMode,
+        gameMode === 'TURNS' ? maxTurns : null,
+        false,
+        gameMode === 'HP' ? startingHp : null,
+      );
       sessionStore.save({
         gameId: res.game_id,
         playerId: res.host_player_id,
@@ -214,47 +229,119 @@ export default function HomePage() {
                   ))}
                 </div>
               </fieldset>
+              {gameMode === 'HP' && (
+                <div>
+                  <label htmlFor="starting-hp" className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Starting Health</label>
+                  <CustomSelect
+                    id="starting-hp"
+                    value={hpOption}
+                    onChange={setHpOption}
+                    options={[
+                      { value: '50', label: '50 HP' },
+                      { value: '100', label: '100 HP (Default)' },
+                      { value: '150', label: '150 HP' },
+                      { value: '200', label: '200 HP' },
+                      { value: 'custom', label: 'Custom' },
+                    ]}
+                  />
+                  {hpOption === 'custom' && (
+                    <div className="mt-2 flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
+                        className="flex items-center justify-center w-11 sm:w-12 h-11 sm:h-12 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                        aria-label="Decrease HP"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
+                        <input
+                          type="number"
+                          min={10}
+                          max={1000}
+                          value={customHp}
+                          onChange={event => setCustomHp(event.target.value)}
+                          aria-label="Custom starting HP"
+                          placeholder="100"
+                          className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">HP</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
+                        className="flex items-center justify-center w-11 sm:w-12 h-11 sm:h-12 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                        aria-label="Increase HP"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
               {gameMode === 'TURNS' && (
                 <div>
                   <label htmlFor="max-turns" className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game Length</label>
-                  <select
+                  <CustomSelect
                     id="max-turns"
                     value={turnCountOption}
-                    onChange={event => setTurnCountOption(event.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
-                  >
-                    <option value="7">7 Turns</option>
-                    <option value="14">14 Turns</option>
-                    <option value="21">21 Turns</option>
-                    <option value="custom">Custom</option>
-                  </select>
+                    onChange={setTurnCountOption}
+                    options={[
+                      { value: '7', label: '7 Turns' },
+                      { value: '14', label: '14 Turns' },
+                      { value: '21', label: '21 Turns' },
+                      { value: 'custom', label: 'Custom' },
+                    ]}
+                  />
                   {turnCountOption === 'custom' && (
-                    <input
-                      type="number"
-                      min={1}
-                      max={500}
-                      value={customTurnCount}
-                      onChange={event => setCustomTurnCount(event.target.value)}
-                      aria-label="Custom turn count"
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
-                    />
+                    <div className="mt-2 flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 28) - 1)))}
+                        className="flex items-center justify-center w-11 sm:w-12 h-11 sm:h-12 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                        aria-label="Decrease turns"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
+                        <input
+                          type="number"
+                          min={1}
+                          max={500}
+                          value={customTurnCount}
+                          onChange={event => setCustomTurnCount(event.target.value)}
+                          aria-label="Custom turn count"
+                          placeholder="28"
+                          className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Turns</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 28) + 1)))}
+                        className="flex items-center justify-center w-11 sm:w-12 h-11 sm:h-12 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                        aria-label="Increase turns"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
                   )}
                 </div>
               )}
               <div>
                 <label htmlFor="turn-time" className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Turn Time</label>
-                <select
+                <CustomSelect
                   id="turn-time"
-                  value={turnTimeLimit ?? ''}
-                  onChange={event => setTurnTimeLimit(event.target.value === '' ? null : Number(event.target.value) as TurnTimeLimit)}
-                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
-                >
-                  <option value="">Unlimited</option>
-                  <option value="30">30 sec</option>
-                  <option value="60">60 sec</option>
-                  <option value="90">90 sec</option>
-                  <option value="120">120 sec</option>
-                </select>
+                  value={turnTimeLimit === null ? '' : String(turnTimeLimit)}
+                  onChange={val => setTurnTimeLimit(val === '' ? null : Number(val) as TurnTimeLimit)}
+                  options={[
+                    { value: '', label: 'Unlimited' },
+                    { value: '30', label: '30 sec' },
+                    { value: '60', label: '60 sec' },
+                    { value: '90', label: '90 sec' },
+                    { value: '120', label: '120 sec' },
+                  ]}
+                />
               </div>
               <div>
                 <label className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Your Name</label>

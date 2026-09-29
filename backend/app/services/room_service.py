@@ -21,6 +21,7 @@ class RoomService:
         is_debug: bool = False,
         game_mode: str = "HP",
         max_turns: int | None = None,
+        starting_hp: int | None = None,
     ) -> tuple[GameRoom, Game, GamePlayer]:
         # Generate unique 6-digit PIN
         for _ in range(10):
@@ -38,6 +39,8 @@ class RoomService:
         # Initialize tile bag
         tile_bag = TileService.create_tile_bag()
 
+        hp_setting = (starting_hp if starting_hp is not None else 100) if game_mode == "HP" else None
+
         room = GameRoom(
             id=room_id,
             game_pin=pin,
@@ -47,12 +50,15 @@ class RoomService:
             is_debug=is_debug and settings.DEBUG_MODE,
             game_mode=game_mode,
             max_turns=max_turns,
+            starting_hp=hp_setting,
         )
         game = Game(
             id=room_id,
             status="WAITING",
             current_player_id=None,
             turn_number=1,
+            max_turns=max_turns if game_mode == "TURNS" else None,
+            starting_hp=hp_setting,
             consecutive_passes=0,
             board_state={},
             tile_bag=tile_bag
@@ -193,6 +199,7 @@ class RoomService:
         new_room, new_game, new_player = await RoomService.create_room(
             db, player.display_name, room.turn_time_limit,
             is_debug=room.is_debug, game_mode=room.game_mode, max_turns=room.max_turns,
+            starting_hp=room.starting_hp,
         )
         room.rematch_pin = new_room.game_pin
         await db.flush()
@@ -233,12 +240,14 @@ class RoomService:
         stmt_game = select(Game).where(Game.id == room.id)
         game = (await db.execute(stmt_game)).scalar_one()
 
-        # Base 100 HP, +20 per player beyond the first two (a 4-player free-for-all takes damage
+        # Base starting HP, +20 per player beyond the first two (a 4-player free-for-all takes damage
         # from three opponents each round, so a flat base would knock players out too fast).
-        starting_hp = 100 + max(0, len(players) - 2) * 20
+        base_hp = room.starting_hp if room.starting_hp is not None else 100
+        starting_hp = base_hp + max(0, len(players) - 2) * 20
         bag = list(game.tile_bag)
         for player in players:
             player.hp = starting_hp
+            player.max_hp = starting_hp
             rack, bag = TileService.draw_tiles(bag, settings.RACK_SIZE)
             player.rack = rack
 
@@ -246,6 +255,7 @@ class RoomService:
         game.status = "PLAYING"
         game.current_player_id = players[0].id if players else None
         game.max_turns = room.max_turns if room.game_mode == "TURNS" else None
+        game.starting_hp = base_hp
         room.status = "PLAYING"
         room.started_at = get_utc_now()
         game.turn_started_at = get_utc_now()

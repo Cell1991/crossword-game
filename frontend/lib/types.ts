@@ -27,6 +27,7 @@ export interface Player {
   is_host: boolean;
   score: number;
   hp: number;
+  max_hp?: number;
   turn_order: number;
   connection_status: 'ONLINE' | 'DISCONNECTED' | 'OFFLINE';
   rack_count: number;
@@ -47,6 +48,7 @@ export interface GameState {
   turn_time_limit: TurnTimeLimit;
   turn_started_at: string | null;
   max_turns: number | null;
+  starting_hp?: number | null;
   pending_effect: PendingEffect | null;
   frozen_tile: { row: number; col: number; set_by: string; expires_turn: number } | null;
   /** True when this game's room was created with debug mode on: every player in it gets it. */
@@ -163,6 +165,7 @@ export interface CreateRoomResponse {
   turn_time_limit: TurnTimeLimit;
   game_mode: GameMode;
   max_turns: number | null;
+  starting_hp?: number | null;
 }
 
 export interface JoinRoomResponse {
@@ -190,6 +193,7 @@ export interface RoomDetailResponse {
   turn_time_limit: TurnTimeLimit;
   game_mode: GameMode;
   max_turns: number | null;
+  starting_hp?: number | null;
   is_debug: boolean;
 }
 

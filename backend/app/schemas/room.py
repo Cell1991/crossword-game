@@ -11,6 +11,7 @@ class CreateRoomRequest(BaseModel):
     is_debug: bool = False
     game_mode: Literal["HP", "TURNS"] = "HP"
     max_turns: Optional[int] = Field(None, ge=1, le=500)
+    starting_hp: Optional[int] = Field(None, ge=10, le=1000)
 
     @model_validator(mode="after")
     def validate_game_mode_settings(self):
@@ -18,6 +19,8 @@ class CreateRoomRequest(BaseModel):
             raise ValueError("max_turns is required for turn-count mode")
         if self.game_mode == "HP" and self.max_turns is not None:
             raise ValueError("max_turns is only available in turn-count mode")
+        if self.game_mode == "TURNS" and self.starting_hp is not None:
+            raise ValueError("starting_hp is only available in HP mode")
         return self
 
 class CreateRoomResponse(BaseModel):
@@ -30,6 +33,7 @@ class CreateRoomResponse(BaseModel):
     turn_time_limit: Optional[int] = None
     game_mode: Literal["HP", "TURNS"]
     max_turns: Optional[int] = None
+    starting_hp: Optional[int] = None
 
 class JoinRoomRequest(BaseModel):
     game_pin: str = Field(..., min_length=6, max_length=6, description="6-digit numeric game PIN")
@@ -58,4 +62,5 @@ class RoomDetailResponse(BaseModel):
     turn_time_limit: Optional[int] = None
     game_mode: Literal["HP", "TURNS"]
     max_turns: Optional[int] = None
+    starting_hp: Optional[int] = None
     is_debug: bool = False

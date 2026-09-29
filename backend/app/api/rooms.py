@@ -22,6 +22,7 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
     room, game, host = await RoomService.create_room(
         db, req.host_name, req.turn_time_limit,
         is_debug=req.is_debug, game_mode=req.game_mode, max_turns=req.max_turns,
+        starting_hp=req.starting_hp,
     )
     return CreateRoomResponse(
         room_id=room.id,
@@ -33,6 +34,7 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
         turn_time_limit=room.turn_time_limit,
         game_mode=room.game_mode,
         max_turns=room.max_turns,
+        starting_hp=room.starting_hp,
     )
 
 @router.post("/{game_pin}/join", response_model=JoinRoomResponse)
@@ -85,6 +87,8 @@ async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
             display_name=p.display_name,
             is_host=p.is_host,
             score=p.score,
+            hp=p.hp,
+            max_hp=p.max_hp,
             turn_order=p.turn_order,
             connection_status=p.connection_status,
             rack_count=len(await player_rack(db, p.id))
@@ -102,6 +106,7 @@ async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
         turn_time_limit=room.turn_time_limit,
         game_mode=room.game_mode,
         max_turns=room.max_turns,
+        starting_hp=room.starting_hp,
         is_debug=room.is_debug,
     )
 

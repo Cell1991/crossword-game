@@ -12,6 +12,7 @@ class PlayerOut(BaseModel):
     is_host: bool
     score: int
     hp: int = 100
+    max_hp: int = 100
     turn_order: int
     connection_status: str
     rack_count: int = 0

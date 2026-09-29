@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Hide default browser spin buttons */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 @font-face {
   font-family: "Granix Demo";
   src: url("/fonts/Granix-Demo.otf") format("opentype");
