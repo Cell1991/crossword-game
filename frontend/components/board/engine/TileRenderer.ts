@@ -74,26 +74,30 @@ export class TileRenderer {
     const shadowFill = isFrozen
       ? 'rgba(4, 28, 56, 0.75)'
       : isRemote
-      ? TILE_THEME.remoteFace.shadow
+      ? 'rgba(6, 182, 212, 0.5)'
       : TILE_THEME.face.shadow;
 
-    if (!lowPower || isCorrectPlacement || isFrozen) {
+    if (!lowPower || isCorrectPlacement || isFrozen || isRemote) {
       ctx.save();
       ctx.shadowColor = isCorrectPlacement
         ? 'rgba(52, 211, 153, 0.9)'
         : isFrozen
         ? 'rgba(6, 182, 212, 0.95)'
+        : isRemote
+        ? 'rgba(6, 182, 212, 0.8)'
         : shadowFill;
       ctx.shadowBlur = isCorrectPlacement
         ? Math.max(8, cellSize * 0.22)
         : isFrozen
         ? Math.max(10, cellSize * 0.28)
+        : isRemote
+        ? Math.max(8, cellSize * 0.2)
         : Math.max(4, cellSize * 0.1);
     }
     ctx.fillStyle = shadowFill;
     drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
     ctx.fill();
-    if (!lowPower || isCorrectPlacement || isFrozen) ctx.restore();
+    if (!lowPower || isCorrectPlacement || isFrozen || isRemote) ctx.restore();
 
     // 2. Tile face fill
     if (isFrozen) {
@@ -104,83 +108,124 @@ export class TileRenderer {
       iceGrad.addColorStop(1, '#075985');
       ctx.fillStyle = iceGrad;
     } else if (isRemote) {
-      // 1. Shadow & Outer Aura
-      if (!lowPower) {
-        ctx.save();
-        ctx.shadowColor = 'rgba(6, 182, 212, 0.6)';
-        ctx.shadowBlur = Math.max(6, cellSize * 0.18);
-        ctx.fillStyle = 'rgba(6, 182, 212, 0.18)';
-        drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // 2. Cosmic Obsidian Hologram Face Fill
       const ghostGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-      ghostGrad.addColorStop(0, '#1e293b');
-      ghostGrad.addColorStop(0.3, '#0f172a');
-      ghostGrad.addColorStop(0.75, '#090d16');
-      ghostGrad.addColorStop(1, '#020617');
+      ghostGrad.addColorStop(0, '#0284c7');
+      ghostGrad.addColorStop(0.3, '#0369a1');
+      ghostGrad.addColorStop(0.7, '#075985');
+      ghostGrad.addColorStop(1, '#082f49');
       ctx.fillStyle = ghostGrad;
-      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-      ctx.fill();
+    } else {
+      const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
+      grad.addColorStop(0, TILE_THEME.face.top);
+      grad.addColorStop(0.5, TILE_THEME.face.middle);
+      grad.addColorStop(1, TILE_THEME.face.bottom);
+      ctx.fillStyle = grad;
+    }
+    drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+    ctx.fill();
 
-      // 3. Holographic Specular Bevel & Inner Sheen
+    // 3. Specular Sheen, Chiseled Facets & Holographic Glyphs
+    if (isRemote) {
       ctx.save();
       ctx.beginPath();
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.clip();
 
-      const sheen = ctx.createLinearGradient(x + pad, y + pad, x + pad, y + pad + tileW * 0.55);
-      sheen.addColorStop(0, 'rgba(56, 189, 248, 0.45)');
-      sheen.addColorStop(0.35, 'rgba(56, 189, 248, 0.1)');
-      sheen.addColorStop(1, 'transparent');
-      ctx.fillStyle = sheen;
+      // Top-diagonal specular glass highlight
+      const sheenGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW * 0.75, y + pad + tileW * 0.75);
+      sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+      sheenGrad.addColorStop(0.25, 'rgba(56, 189, 248, 0.25)');
+      sheenGrad.addColorStop(0.6, 'rgba(56, 189, 248, 0)');
+      ctx.fillStyle = sheenGrad;
       ctx.fillRect(x + pad, y + pad, tileW, tileW);
 
-      // Inner subtle neon bevel
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-      ctx.lineWidth = Math.max(0.8, cellSize * 0.02);
-      drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW - 2, Math.max(1, radius - 1));
-      ctx.stroke();
-
-      // Center Holographic Staged Glyph (Celestial Sparkle Beacon)
-      if (cellSize >= 16) {
+      // Center Holographic Energy Rune Star
+      if (cellSize >= 14) {
         const cx = x + cellSize / 2;
         const cy = y + cellSize / 2;
-        const starSize = Math.max(4, cellSize * 0.2);
-
+        const hr = Math.max(2, cellSize * 0.16);
         if (!lowPower) {
           ctx.shadowColor = '#38bdf8';
-          ctx.shadowBlur = Math.max(4, cellSize * 0.12);
+          ctx.shadowBlur = 6;
         }
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.8)';
+        ctx.fillStyle = '#e0f2fe';
         ctx.beginPath();
-        ctx.moveTo(cx, cy - starSize * 1.35);
-        ctx.lineTo(cx + starSize * 0.35, cy - starSize * 0.35);
-        ctx.lineTo(cx + starSize * 1.35, cy);
-        ctx.lineTo(cx + starSize * 0.35, cy + starSize * 0.35);
-        ctx.lineTo(cx, cy + starSize * 1.35);
-        ctx.lineTo(cx - starSize * 0.35, cy + starSize * 0.35);
-        ctx.lineTo(cx - starSize * 1.35, cy);
-        ctx.lineTo(cx - starSize * 0.35, cy - starSize * 0.35);
+        ctx.moveTo(cx, cy - hr * 1.5);
+        ctx.lineTo(cx + hr * 0.35, cy - hr * 0.35);
+        ctx.lineTo(cx + hr * 1.5, cy);
+        ctx.lineTo(cx + hr * 0.35, cy + hr * 0.35);
+        ctx.lineTo(cx, cy + hr * 1.5);
+        ctx.lineTo(cx - hr * 0.35, cy + hr * 0.35);
+        ctx.lineTo(cx - hr * 1.5, cy);
+        ctx.lineTo(cx - hr * 0.35, cy - hr * 0.35);
         ctx.closePath();
         ctx.fill();
 
-        // Center bright diamond core
+        // Subtle inner glowing neon rim
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+        ctx.lineWidth = 1;
+        drawRoundedRect(ctx, x + pad + 1.5, y + pad + 1.5, tileW - 3, tileW - 3, Math.max(1, radius - 1));
+        ctx.stroke();
+      }
+      ctx.restore();
+    } else if (isFrozen) {
+      ctx.save();
+      ctx.beginPath();
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.clip();
+
+      const sheenGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW * 0.75, y + pad + tileW * 0.75);
+      sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
+      sheenGrad.addColorStop(0.35, 'rgba(255, 255, 255, 0.15)');
+      sheenGrad.addColorStop(0.65, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = sheenGrad;
+      ctx.fillRect(x + pad, y + pad, tileW, tileW);
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+      ctx.lineWidth = Math.max(1, cellSize * 0.025);
+      drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW - 2, Math.max(1, radius - 1));
+      ctx.stroke();
+
+      if (cellSize >= 16) {
         ctx.fillStyle = '#ffffff';
+        if (!lowPower) {
+          ctx.shadowColor = '#38bdf8';
+          ctx.shadowBlur = 4;
+        }
+        const starX = x + pad + tileW * 0.2;
+        const starY = y + pad + tileW * 0.2;
+        const sr = Math.max(1.5, cellSize * 0.035);
         ctx.beginPath();
-        ctx.arc(cx, cy, Math.max(1, starSize * 0.28), 0, Math.PI * 2);
+        ctx.moveTo(starX, starY - sr * 1.6);
+        ctx.lineTo(starX + sr * 0.4, starY - sr * 0.4);
+        ctx.lineTo(starX + sr * 1.6, starY);
+        ctx.lineTo(starX + sr * 0.4, starY + sr * 0.4);
+        ctx.lineTo(starX, starY + sr * 1.6);
+        ctx.lineTo(starX - sr * 0.4, starY + sr * 0.4);
+        ctx.lineTo(starX - sr * 1.6, starY);
+        ctx.lineTo(starX - sr * 0.4, starY - sr * 0.4);
+        ctx.closePath();
         ctx.fill();
       }
       ctx.restore();
+    }
 
-      // 4. Glowing Cyberpunk Outer Border Stroke
+    // 4. Stroke outline
+    if (isFrozen) {
       ctx.save();
-      ctx.shadowColor = 'rgba(6, 182, 212, 0.85)';
+      ctx.shadowColor = '#00f0ff';
       ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.1);
+      ctx.strokeStyle = '#67e8f9';
+      ctx.lineWidth = Math.max(1.8, cellSize * 0.045);
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
+      ctx.restore();
+    } else if (isRemote) {
+      ctx.save();
+      ctx.shadowColor = '#38bdf8';
+      ctx.shadowBlur = lowPower ? 0 : Math.max(6, cellSize * 0.16);
       ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = Math.max(1.5, cellSize * 0.04);
+      ctx.lineWidth = Math.max(1.6, cellSize * 0.04);
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
       ctx.restore();
