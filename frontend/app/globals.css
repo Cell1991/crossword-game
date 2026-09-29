@@ -226,19 +226,22 @@ body {
 
 .board-premium-letter { margin-left: 0.12em; }
 
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse) {
   .board-power-pulse,
   .board-lightning-halo,
   .board-lightning-logo,
   .board-lightning-spark,
-  .board-center-pulse { animation: none; }
+  .board-center-pulse { animation: none !important; }
   .board-triple-aura,
   .board-fire-core,
-  .board-double-aura { animation: none; }
+  .board-double-aura { animation: none !important; }
   .board-earth-glow,
   .board-earth-mountain,
   .board-earth-speck,
-  .board-premium-label { animation: none; }
+  .board-premium-label { animation: none !important; }
+  .board-freeze-pulse,
+  .board-ice-shimmer,
+  .board-frost-sparkle { animation: none !important; }
 }
 
 .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
