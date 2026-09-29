@@ -27,7 +27,7 @@ export const BlankTilePickerModal: React.FC<BlankTilePickerModalProps> = ({
     >
       <div
         role="dialog"
-        aria-label="เลือกตัวอักษรสำหรับแผ่น Blank"
+        aria-label="Choose a letter for the wildcard blank tile"
         className="pointer-events-auto relative w-full max-w-[31rem] overflow-hidden rounded-[1.35rem] border border-cyan-400/45 bg-[#071326]/[.98] p-4 text-white shadow-[0_18px_55px_rgba(0,0,0,0.7),0_0_34px_rgba(14,165,233,0.2)] animate-fadeIn"
       >
         <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300 to-transparent opacity-80" />

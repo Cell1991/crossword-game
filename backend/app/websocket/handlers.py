@@ -93,7 +93,7 @@ async def spectate_game(websocket: WebSocket, game_id: str) -> None:
     if manager.spectator_count(game_id) >= settings.MAX_SPECTATORS:
         await websocket.close(
             code=4005,
-            reason="โซนผู้ชมเต็มแล้ว และห้องนี้เต็มทั้งผู้เล่นและผู้ชมแล้ว"
+            reason="Spectator gallery is full for this room."
         )
         return
 

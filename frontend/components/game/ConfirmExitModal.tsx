@@ -50,12 +50,12 @@ export function ConfirmExitModal({
 
         {/* Text */}
         <h3 id="exit-modal-title" className="text-xl font-black tracking-tight text-white">
-          {isSpectator ? 'หยุดรับชม?' : 'ออกจากเกม?'}
+          {isSpectator ? 'Stop Watching?' : 'Leave Game?'}
         </h3>
         <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-400">
           {isSpectator
-            ? 'คุณต้องการออกจากการรับชมเกมนี้และกลับสู่หน้าหลักหรือไม่?'
-            : 'คุณต้องการออกจากห้องเล่นนี้หรือไม่? หากออกไประหว่างเล่นเกม คุณจะไม่สามารถกลับมาเล่นต่อในรอบนี้ได้'}
+            ? 'Are you sure you want to stop watching and return to the main menu?'
+            : 'Are you sure you want to leave this game? If you leave now, you will forfeit this match.'}
         </p>
 
         {/* Action Buttons */}
@@ -65,14 +65,14 @@ export function ConfirmExitModal({
             onClick={onClose}
             className="flex-1 rounded-xl border border-slate-700 bg-slate-800/80 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-slate-300 transition hover:border-slate-600 hover:bg-slate-700/80 hover:text-white active:scale-95"
           >
-            ยกเลิก
+            Cancel
           </button>
           <button
             type="button"
             onClick={onConfirm}
             className="flex-1 rounded-xl border border-rose-500/50 bg-gradient-to-r from-rose-600 to-red-600 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white shadow-[0_0_20px_rgba(244,63,94,0.4)] transition hover:brightness-110 active:scale-95"
           >
-            ออกจากเกม
+            Leave Game
           </button>
         </div>
       </div>

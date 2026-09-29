@@ -99,11 +99,11 @@ class RoomService:
             if spectator_count < settings.MAX_SPECTATORS:
                 raise HTTPException(
                     status_code=400,
-                    detail="ห้องนี้เต็มสำหรับผู้เล่นแล้ว แต่ยังมีพื้นที่สำหรับผู้ชมอยู่ คุณสามารถเข้าร่วมในโหมดผู้ชมได้เลย"
+                    detail="This room is full for players, but spectator spots are still available. You can join as a spectator."
                 )
             raise HTTPException(
                 status_code=400,
-                detail="ห้องนี้เต็มทั้งผู้เล่นและผู้ชมแล้ว คราวนี้เลือกห้องอื่นเพื่อร่วมสนุกกันต่อไปนะ"
+                detail="This room is full for both players and spectators. Please choose another room."
             )
 
         player_id = str(uuid.uuid4())

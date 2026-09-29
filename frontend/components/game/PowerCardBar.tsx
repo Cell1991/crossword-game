@@ -160,7 +160,7 @@ export const PowerCardBar = memo(function PowerCardBar({
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-cyan-400/50 bg-slate-950/90 px-3 py-2 text-xs text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.16)]">
         {spySwapStep === 'own' && (
           <>
-            <span className="font-semibold">SPY_SWAP: เลือกไทล์ของคุณ (สูงสุด 3)</span>
+            <span className="font-semibold">SPY_SWAP: Select your tiles (up to 3)</span>
             <div className="flex flex-wrap gap-1">
               {ownRack.map(tile => {
                 const selected = spyOwnTileIds.includes(tile.id);
@@ -200,7 +200,7 @@ export const PowerCardBar = memo(function PowerCardBar({
         )}
         {spySwapStep === 'opponent' && (
           <>
-            <span className="font-semibold">เลือกผู้เล่นที่จะใช้การ์ด</span>
+            <span className="font-semibold">Select a target player:</span>
             {opponents.map(opponent => (
               <button
                 key={opponent.id}
@@ -216,7 +216,7 @@ export const PowerCardBar = memo(function PowerCardBar({
         )}
         {spySwapStep === 'tiles' && selectedOpponent && (
           <>
-            <span className="font-semibold">เลือกบล็อกปิด {spyTargetTileIndices.length}/{spyOwnTileIds.length}</span>
+            <span className="font-semibold">Select hidden tiles {spyTargetTileIndices.length}/{spyOwnTileIds.length}</span>
             <div className="flex flex-wrap gap-1">
               {Array.from({ length: selectedOpponent.rack_count }, (_, index) => {
                 const selected = spyTargetTileIndices.includes(index);
@@ -224,7 +224,7 @@ export const PowerCardBar = memo(function PowerCardBar({
                   <button
                     key={index}
                     type="button"
-                    aria-label={`บล็อกปิด ${index + 1}${selected ? ', selected' : ''}`}
+                    aria-label={`Hidden tile ${index + 1}${selected ? ', selected' : ''}`}
                     aria-pressed={selected}
                     disabled={!selected && spyTargetTileIndices.length >= spyOwnTileIds.length}
                     onClick={() => toggleTargetSlot(index)}

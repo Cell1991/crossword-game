@@ -86,11 +86,11 @@ export default function HomePage() {
       const seatsAreFull = room.players.length >= 6;
       const spectatorGalleryIsFull = room.spectator_count >= spectatorLimit;
       if (seatsAreFull && spectatorGalleryIsFull) {
-        setError('ห้องนี้เต็มทั้งผู้เล่นและผู้ชมแล้ว เลือกห้องอื่นเพื่อร่วมสนุกกันต่อไปได้เลย');
+        setError('This room is full for both players and spectators. Please choose another room.');
         return;
       }
       if (!seatsAreFull && spectatorGalleryIsFull) {
-        setError('โซนผู้ชมเต็มแล้ว แต่ยังมีที่นั่งสำหรับผู้เล่นอยู่ในห้องนี้');
+        setError('Spectator gallery is full, but player seats are still available in this room.');
         return;
       }
       sessionStore.save({

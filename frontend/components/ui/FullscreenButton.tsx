@@ -72,7 +72,7 @@ export default function FullscreenButton({ className = '' }: FullscreenButtonPro
       type="button"
       onClick={toggleFullscreen}
       className={`group flex items-center justify-center rounded-xl border border-white/10 bg-slate-900/60 p-2 text-slate-300 shadow-lg backdrop-blur-md transition-all hover:border-white/20 hover:bg-slate-800/80 hover:text-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${className}`}
-      title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen (เต็มจอ)'}
+      title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
       aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
     >
       {isFullscreen ? (

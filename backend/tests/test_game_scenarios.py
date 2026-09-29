@@ -86,7 +86,7 @@ async def test_lb04_room_holds_at_most_max_players(open_table, client):
     res = await client.post(f"/api/rooms/{table.pin}/join", json={"game_pin": table.pin, "player_name": "Overflow"})
 
     assert res.status_code == 400
-    assert "เต็ม" in res.json()["detail"]  # room is full for players (spectating is a separate WS-only path)
+    assert "full" in res.json()["detail"].lower()  # room is full for players (spectating is a separate WS-only path)
 
 
 async def test_lb05_nobody_can_join_after_the_game_starts(open_table, client):

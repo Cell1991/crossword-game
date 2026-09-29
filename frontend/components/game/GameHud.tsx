@@ -122,7 +122,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           type="button"
           onClick={toggleFullscreen}
           className="rounded-lg border border-slate-700 p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-          title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen (เต็มจอ)'}
+          title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
         >
           {isFullscreen ? <Minimize className="h-4 w-4 text-cyan-300" /> : <Maximize className="h-4 w-4" />}
