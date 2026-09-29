@@ -42,36 +42,57 @@ export interface BoardScene {
 
 const LOW_POWER_GRID_ALPHA_BUCKETS = 24;
 
-/** Directional cell alpha: 1.0 within starter board & active words, fading cleanly within 2-3 cells */
+/** Rounded Signed Distance function for smooth organic rounded board contours */
+function getRoundedBoxDistance(
+  r: number,
+  c: number,
+  minR: number,
+  maxR: number,
+  minC: number,
+  maxC: number,
+  radius = 4.0
+): number {
+  const boxMinR = minR + radius;
+  const boxMaxR = maxR - radius;
+  const boxMinC = minC + radius;
+  const boxMaxC = maxC - radius;
+
+  const dR = r < boxMinR ? boxMinR - r : r > boxMaxR ? r - boxMaxR : 0;
+  const dC = c < boxMinC ? boxMinC - c : c > boxMaxC ? c - boxMaxC : 0;
+
+  return Math.hypot(dR, dC) - radius;
+}
+
+/** Directional cell alpha with smooth organic rounded-corner falloff */
 export function getCellAlpha(row: number, col: number, occupiedTiles: CellPosition[] = []): number {
-  // Inside starter board is 100% solid
-  if (row >= 0 && row < BOARD_ROWS && col >= 0 && col < BOARD_COLS) {
-    return 1.0;
+  // 1. Distance to smooth rounded starter board contour
+  const baseDist = getRoundedBoxDistance(row, col, 0, BOARD_ROWS - 1, 0, BOARD_COLS - 1, 4.0);
+
+  let alpha = 0;
+  if (baseDist <= -0.5) {
+    alpha = 1.0;
+  } else if (baseDist <= 2.6) {
+    // Smooth ease-out fade from border to cosmic space
+    const t = Math.max(0, (baseDist + 0.5) / 3.1);
+    alpha = Math.max(0, Math.pow(1 - t, 1.7));
   }
 
-  // Distance to nearest occupied tile
-  let distToTile = Infinity;
+  // 2. Local rounded aura around any placed tiles (committed, staged, or extended words)
   for (let i = 0; i < occupiedTiles.length; i++) {
     const t = occupiedTiles[i];
-    const d = Math.max(Math.abs(t.row - row), Math.abs(t.col - col));
-    if (d < distToTile) distToTile = d;
+    const tileDist = Math.hypot(row - t.row, (col - t.col) * 0.9);
+    if (tileDist <= 1.2) {
+      alpha = Math.max(alpha, 1.0);
+    } else if (tileDist <= 3.2) {
+      const u = (tileDist - 1.2) / 2.0;
+      const tileAlpha = Math.pow(1 - u, 1.6);
+      if (tileAlpha > alpha) alpha = tileAlpha;
+    }
   }
 
-  if (distToTile <= 1) return 1.0;
-  if (distToTile === 2) return 0.75;
-  if (distToTile === 3) return 0.35;
-
-  // Distance to starter board perimeter
-  const dRow = row < 0 ? -row : row >= BOARD_ROWS ? row - (BOARD_ROWS - 1) : 0;
-  const dCol = col < 0 ? -col : col >= BOARD_COLS ? col - (BOARD_COLS - 1) : 0;
-  const distToStarter = Math.max(dRow, dCol);
-
-  if (distToStarter === 1) return 0.65;
-  if (distToStarter === 2) return 0.30;
-  if (distToStarter === 3) return 0.12;
-
-  return 0;
+  return Math.max(0, Math.min(1, alpha));
 }
+
 
 
 
