@@ -42,20 +42,20 @@ export interface BoardScene {
 
 const LOW_POWER_GRID_ALPHA_BUCKETS = 24;
 
-/** Smooth Superellipse with filled corners and 8-block lookahead fade */
+/** Smooth Superellipse with filled corners, 2 extra vertical fade rows, and 8-block lookahead */
 export function getCellAlpha(row: number, col: number, occupiedTiles: CellPosition[] = []): number {
-  // 1. Superellipse norm (p = 2.6): Gently rounded oval contour with corners nicely filled
+  // 1. Superellipse norm (p = 2.6): extended 2 rows vertically (dy / 11.6) for graceful top/bottom fade
   const p = 2.6;
-  const dx = Math.abs(col - CENTER_COL) / 13.8;
-  const dy = Math.abs(row - CENTER_ROW) / 9.8;
+  const dx = Math.abs(col - CENTER_COL) / 14.6;
+  const dy = Math.abs(row - CENTER_ROW) / 11.6;
   const superellipseNorm = Math.pow(Math.pow(dx, p) + Math.pow(dy, p), 1 / p);
 
   let alpha = 0;
   if (superellipseNorm <= 0.88) {
     alpha = 1.0;
-  } else if (superellipseNorm <= 1.22) {
+  } else if (superellipseNorm <= 1.24) {
     // Smooth ease-out fade in an oval ring around the board
-    const t = (superellipseNorm - 0.88) / (1.22 - 0.88);
+    const t = (superellipseNorm - 0.88) / (1.24 - 0.88);
     alpha = Math.pow(1 - t, 1.5);
   }
 
