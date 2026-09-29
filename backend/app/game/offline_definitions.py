@@ -59,6 +59,7 @@ OFFLINE_DEFINITIONS: dict[str, dict] = {
     "KA": {"phonetic": "/kɑː/", "meanings": [{"partOfSpeech": "noun", "definitions": ["In ancient Egyptian religion, the spiritual double or vital spark of a human."]}]},
     "KI": {"phonetic": "/kiː/", "meanings": [{"partOfSpeech": "noun", "definitions": ["Qi or vital life force in Japanese martial arts."]}]},
     "LA": {"phonetic": "/lɑː/", "meanings": [{"partOfSpeech": "noun", "definitions": ["The sixth musical solfège syllable."]}]},
+    "LAH": {"phonetic": "/lɑː/", "meanings": [{"partOfSpeech": "noun", "definitions": ["A syllable used in solfège to represent the sixth note of a musical major scale (variant of la); an exclamation used in informal speech."]}]},
     "LI": {"phonetic": "/liː/", "meanings": [{"partOfSpeech": "noun", "definitions": ["A traditional Chinese unit of distance equal to about 500 meters."]}]},
     "LO": {"phonetic": "/loʊ/", "meanings": [{"partOfSpeech": "interjection", "definitions": ["Used to draw attention to an interesting or unexpected event."]}]},
     "MA": {"phonetic": "/mɑː/", "meanings": [{"partOfSpeech": "noun", "definitions": ["Informal term for mother."]}]},

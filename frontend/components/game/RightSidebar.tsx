@@ -13,6 +13,8 @@ import {
   Layers,
   BookOpen,
   Loader2,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { cardIcon } from './cardIcons';
 import { TileBagDialog } from './TileBagDialog';
@@ -47,6 +49,7 @@ export const RightSidebar = memo(function RightSidebar({
   const [definitionsCache, setDefinitionsCache] = useState<Record<string, WordDefinition | null>>({});
   const [loadingWords, setLoadingWords] = useState<Record<string, boolean>>({});
   const [selectedWordByMove, setSelectedWordByMove] = useState<Record<string, string>>({});
+  const [copiedWord, setCopiedWord] = useState<string | null>(null);
 
   const tileBagButtonRef = useRef<HTMLButtonElement>(null);
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
@@ -103,6 +106,19 @@ export const RightSidebar = memo(function RightSidebar({
     setSelectedWordByMove(prev => ({ ...prev, [moveId]: word }));
     fetchDefinition(word);
   }, [fetchDefinition]);
+
+  const copyDefinitionText = useCallback((word: string, def?: WordDefinition | null) => {
+    let copyText = word;
+    if (def && def.meanings && def.meanings.length > 0) {
+      const meaningsText = def.meanings
+        .map(m => `[${m.partOfSpeech.toUpperCase()}] ${m.definitions.join('; ')}`)
+        .join('\n');
+      copyText = `${word}${def.phonetic ? ` ${def.phonetic}` : ''}\n${meaningsText}`;
+    }
+    navigator.clipboard?.writeText(copyText);
+    setCopiedWord(word);
+    window.setTimeout(() => setCopiedWord(null), 2000);
+  }, []);
 
   return (
     <aside className={`flex h-full shrink-0 flex-col select-none ${mobile ? 'w-full p-0' : 'w-72 p-3'}`}>
@@ -265,13 +281,13 @@ export const RightSidebar = memo(function RightSidebar({
           </button>
 
           {isHistoryOpen && (
-            <div className="p-2.5 pt-0 max-h-56 overflow-y-auto space-y-1.5">
+            <div className="p-2.5 pt-0 max-h-64 overflow-y-auto pr-1 space-y-2">
               {moveHistory.length === 0 ? (
-                <div className="py-2 text-center text-[11px] text-slate-500 italic">
+                <div className="py-3 text-center text-[11px] text-slate-500 italic">
                   No moves recorded yet
                 </div>
               ) : (
-                moveHistory.slice(-8).reverse().map((entry) => {
+                moveHistory.slice(-10).reverse().map((entry) => {
                   const isExpanded = expandedMoveId === entry.id;
                   
                   // Extract words for this move
@@ -292,54 +308,56 @@ export const RightSidebar = memo(function RightSidebar({
                   return (
                     <div
                       key={entry.id}
-                      className={`rounded-lg border transition-all duration-200 overflow-hidden ${
+                      className={`rounded-xl border transition-all duration-200 overflow-hidden ${
                         isExpanded
-                          ? 'bg-slate-900/90 border-cyan-500/50 shadow-[0_0_12px_rgba(6,182,212,0.15)]'
-                          : 'bg-slate-900/60 border-slate-800/60 hover:border-slate-700/80'
+                          ? 'bg-slate-900/90 border-cyan-500/50 shadow-[0_0_16px_rgba(6,182,212,0.18)] ring-1 ring-cyan-500/20'
+                          : 'bg-slate-900/60 border-slate-800/70 hover:border-slate-700/90 hover:bg-slate-900/80'
                       }`}
                     >
                       {/* Move Row Header (Clickable to expand/collapse) */}
                       <div
                         onClick={() => hasWords && toggleMoveAccordion(entry)}
-                        className={`flex items-center justify-between p-2 text-xs transition-colors ${
-                          hasWords ? 'cursor-pointer hover:bg-slate-800/40' : ''
+                        className={`flex items-center justify-between p-2.5 text-xs transition-colors ${
+                          hasWords ? 'cursor-pointer hover:bg-slate-800/40 select-none' : ''
                         }`}
                       >
-                        <div className="flex items-center gap-1.5 min-w-0 pr-1">
+                        <div className="flex items-center gap-2 min-w-0 pr-1">
                           {hasWords && (
-                            <BookOpen className={`w-3.5 h-3.5 shrink-0 transition-colors ${
-                              isExpanded ? 'text-cyan-400' : 'text-slate-500 group-hover:text-slate-400'
-                            }`} />
+                            <div className={`p-1 rounded-md transition-colors ${
+                              isExpanded ? 'bg-cyan-500/20 text-cyan-300' : 'bg-slate-800 text-slate-400'
+                            }`}>
+                              <BookOpen className="w-3.5 h-3.5 shrink-0" />
+                            </div>
                           )}
-                          <span className="text-slate-300 truncate font-medium">
+                          <span className="text-slate-200 truncate font-semibold tracking-wide">
                             {entry.text}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-2 shrink-0">
                           {entry.score !== undefined && entry.score > 0 && (
-                            <span className="font-mono font-bold text-emerald-400">
+                            <span className="font-mono font-bold text-emerald-400 text-xs drop-shadow-[0_0_6px_rgba(52,211,153,0.3)]">
                               +{entry.score}
                             </span>
                           )}
                           {hasWords && (
-                            <div className="text-slate-500">
+                            <div className="text-slate-400 hover:text-white transition-colors">
                               {isExpanded ? (
-                                <ChevronUp className="w-3.5 h-3.5 text-cyan-400" />
+                                <ChevronUp className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.6)]" />
                               ) : (
-                                <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                                <ChevronDown className="w-4 h-4 text-slate-500" />
                               )}
                             </div>
                           )}
                         </div>
                       </div>
 
-                      {/* Accordion Definition Content */}
+                      {/* Accordion Definition Content (Selectable with mouse) */}
                       {isExpanded && hasWords && words && (
-                        <div className="p-2.5 pt-1 border-t border-slate-800/80 bg-slate-950/60 space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div className="p-3 pt-2 border-t border-slate-800/90 bg-gradient-to-b from-slate-950/90 to-slate-900/90 space-y-2.5 select-text cursor-text animate-in fade-in slide-in-from-top-1 duration-200">
                           {/* Multi-word Tabs (if multiple words formed in 1 turn) */}
                           {words.length > 1 && (
-                            <div className="flex flex-wrap gap-1 pb-1 border-b border-slate-800/60">
+                            <div className="flex flex-wrap gap-1.5 pb-1.5 border-b border-slate-800/80 select-none">
                               {words.map((w) => (
                                 <button
                                   key={w}
@@ -348,9 +366,9 @@ export const RightSidebar = memo(function RightSidebar({
                                     e.stopPropagation();
                                     selectWordForMove(entry.id, w);
                                   }}
-                                  className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono transition-all cursor-pointer ${
+                                  className={`px-2.5 py-1 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer ${
                                     activeWord === w
-                                      ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/50 shadow-[0_0_8px_rgba(6,182,212,0.3)]'
+                                      ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/60 shadow-[0_0_10px_rgba(6,182,212,0.35)]'
                                       : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
                                   }`}
                                 >
@@ -360,39 +378,62 @@ export const RightSidebar = memo(function RightSidebar({
                             </div>
                           )}
 
-                          {/* Definition Card */}
+                          {/* Definition Details Card */}
                           {isLoading ? (
-                            <div className="flex items-center justify-center py-3 text-cyan-400 gap-2">
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              <span className="text-[11px] text-slate-400">Looking up definition...</span>
+                            <div className="flex items-center justify-center py-4 text-cyan-400 gap-2.5 select-none">
+                              <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                              <span className="text-xs text-slate-300 font-medium">Looking up definition...</span>
                             </div>
                           ) : definition && definition.meanings && definition.meanings.length > 0 ? (
-                            <div className="space-y-1.5">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="font-bold text-cyan-300 tracking-wide text-xs">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between pb-1 border-b border-slate-800/60 select-none">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-extrabold text-cyan-300 tracking-wider text-sm drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]">
                                     {definition.word}
                                   </span>
                                   {definition.phonetic && (
-                                    <span className="text-[10px] text-slate-400 font-mono">
+                                    <span className="text-[11px] text-cyan-400/80 font-mono italic">
                                       {definition.phonetic}
                                     </span>
                                   )}
                                 </div>
-                                <span className="text-[9px] text-slate-500 uppercase font-semibold tracking-wider">
-                                  Definition
-                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    copyDefinitionText(definition.word, definition);
+                                  }}
+                                  className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium text-slate-400 hover:text-cyan-300 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 transition-all cursor-pointer"
+                                  title="Copy word and definition"
+                                >
+                                  {copiedWord === definition.word ? (
+                                    <>
+                                      <Check className="w-3 h-3 text-emerald-400" />
+                                      <span className="text-emerald-400 font-bold">Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-3 h-3" />
+                                      <span>Copy</span>
+                                    </>
+                                  )}
+                                </button>
                               </div>
-                              <div className="space-y-1.5 max-h-40 overflow-y-auto pr-0.5">
+
+                              <div className="space-y-2">
                                 {definition.meanings.map((m, idx) => (
-                                  <div key={idx} className="bg-slate-900/70 p-1.5 rounded border border-slate-800/80 space-y-1">
-                                    <span className="inline-block px-1.5 py-0.5 rounded bg-cyan-950/70 border border-cyan-700/50 text-[9px] font-semibold text-cyan-300 uppercase tracking-wider">
+                                  <div
+                                    key={idx}
+                                    className="bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/80 shadow-inner space-y-1.5"
+                                  >
+                                    <span className="inline-block px-2 py-0.5 rounded-md bg-cyan-950/80 border border-cyan-500/40 text-[10px] font-bold text-cyan-300 uppercase tracking-widest select-none">
                                       {m.partOfSpeech}
                                     </span>
-                                    <ul className="list-disc list-inside space-y-0.5 text-[11px] text-slate-300 leading-snug">
+                                    <ul className="space-y-1.5 text-xs text-slate-200 leading-relaxed pl-1">
                                       {m.definitions.map((def, dIdx) => (
-                                        <li key={dIdx} className="line-clamp-3">
-                                          {def}
+                                        <li key={dIdx} className="flex items-start gap-1.5">
+                                          <span className="text-cyan-400 font-bold shrink-0 mt-0.5">•</span>
+                                          <span>{def}</span>
                                         </li>
                                       ))}
                                     </ul>
@@ -401,7 +442,7 @@ export const RightSidebar = memo(function RightSidebar({
                               </div>
                             </div>
                           ) : (
-                            <div className="py-2 text-center text-[11px] text-slate-400 italic">
+                            <div className="py-3 text-center text-xs text-slate-400 italic">
                               No definition found for {activeWord}.
                             </div>
                           )}
@@ -423,4 +464,5 @@ export const RightSidebar = memo(function RightSidebar({
     </aside>
   );
 });
+
 

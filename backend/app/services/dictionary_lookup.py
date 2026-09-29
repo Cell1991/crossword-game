@@ -6,6 +6,7 @@ asynchronous online API fallback and memory caching.
 
 from __future__ import annotations
 import logging
+import re
 from typing import Any, Optional
 import httpx
 
@@ -24,6 +25,34 @@ POS_MAP = {
     "conj": "conjunction",
     "art": "article",
 }
+
+GEO_PREFIXES = (
+    "a locality in",
+    "a municipality of",
+    "a village in",
+    "a town in",
+    "a city in",
+    "a county of",
+    "a county in",
+    "a commune of",
+    "a commune in",
+    "a parish in",
+    "a district of",
+    "an unincorporated community in",
+    "a civil parish in",
+)
+
+
+def clean_definition_text(text: str) -> str:
+    """Clean raw Datamuse/Wiktionary definition strings."""
+    cleaned = text.strip()
+    # Unpack nested [(...)] patterns
+    cleaned = re.sub(r"\[\((.*?)\)\s*", r"(\1) ", cleaned)
+    # Remove hanging unclosed brackets at end
+    cleaned = cleaned.rstrip("] ")
+    # Clean multiple spaces
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
 
 
 class DictionaryLookupService:
@@ -70,6 +99,8 @@ class DictionaryLookupService:
                         defs_raw: list[str] = entry.get("defs", [])
                         if defs_raw:
                             meanings_map: dict[str, list[str]] = {}
+                            geo_fallbacks: list[tuple[str, str]] = []
+
                             for d_str in defs_raw:
                                 if "\t" in d_str:
                                     tag, def_text = d_str.split("\t", 1)
@@ -77,13 +108,28 @@ class DictionaryLookupService:
                                 else:
                                     pos = "general"
                                     def_text = d_str
-                                
-                                clean_def = def_text.strip()
-                                if clean_def:
+
+                                clean_def = clean_definition_text(def_text)
+                                if not clean_def:
+                                    continue
+
+                                # Deprioritize obscure geography places if general definitions exist
+                                lower_def = clean_def.lower()
+                                if any(lower_def.startswith(prefix) for prefix in GEO_PREFIXES):
+                                    geo_fallbacks.append((pos, clean_def))
+                                    continue
+
+                                if pos not in meanings_map:
+                                    meanings_map[pos] = []
+                                if clean_def not in meanings_map[pos]:
+                                    meanings_map[pos].append(clean_def)
+
+                            # If only geo definitions were found, restore them
+                            if not meanings_map and geo_fallbacks:
+                                for pos, geo_def in geo_fallbacks:
                                     if pos not in meanings_map:
                                         meanings_map[pos] = []
-                                    if clean_def not in meanings_map[pos]:
-                                        meanings_map[pos].append(clean_def)
+                                    meanings_map[pos].append(geo_def)
 
                             meanings = [
                                 {
