@@ -48,6 +48,141 @@ function drawStarburst(
   ctx.closePath();
 }
 
+function drawFrostMist(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  tileW: number
+) {
+  // 1. Diagonal frosty ice sheet sheen
+  const sheenGrad = ctx.createLinearGradient(x, y, x + tileW, y + tileW);
+  sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+  sheenGrad.addColorStop(0.18, 'rgba(224, 242, 254, 0.45)');
+  sheenGrad.addColorStop(0.42, 'rgba(56, 189, 248, 0.12)');
+  sheenGrad.addColorStop(0.68, 'rgba(224, 242, 254, 0.35)');
+  sheenGrad.addColorStop(1, 'rgba(255, 255, 255, 0.55)');
+  ctx.fillStyle = sheenGrad;
+  ctx.fillRect(x, y, tileW, tileW);
+
+  // 2. Swirling ice mist fog clouds (bottom-left cold vapor puff)
+  const fog1 = ctx.createRadialGradient(
+    x + tileW * 0.28,
+    y + tileW * 0.75,
+    tileW * 0.05,
+    x + tileW * 0.28,
+    y + tileW * 0.75,
+    tileW * 0.55
+  );
+  fog1.addColorStop(0, 'rgba(240, 249, 255, 0.6)');
+  fog1.addColorStop(0.45, 'rgba(186, 230, 253, 0.32)');
+  fog1.addColorStop(1, 'rgba(186, 230, 253, 0)');
+  ctx.fillStyle = fog1;
+  ctx.fillRect(x, y, tileW, tileW);
+
+  // 3. Top-right drifting sub-zero mist
+  const fog2 = ctx.createRadialGradient(
+    x + tileW * 0.75,
+    y + tileW * 0.28,
+    tileW * 0.05,
+    x + tileW * 0.75,
+    y + tileW * 0.28,
+    tileW * 0.5
+  );
+  fog2.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
+  fog2.addColorStop(0.45, 'rgba(125, 211, 252, 0.28)');
+  fog2.addColorStop(1, 'rgba(125, 211, 252, 0)');
+  ctx.fillStyle = fog2;
+  ctx.fillRect(x, y, tileW, tileW);
+
+  // 4. Center ethereal mist band
+  const mistBand = ctx.createLinearGradient(x, y + tileW * 0.38, x + tileW, y + tileW * 0.62);
+  mistBand.addColorStop(0, 'rgba(255, 255, 255, 0)');
+  mistBand.addColorStop(0.3, 'rgba(224, 242, 254, 0.3)');
+  mistBand.addColorStop(0.5, 'rgba(255, 255, 255, 0.42)');
+  mistBand.addColorStop(0.75, 'rgba(186, 230, 253, 0.22)');
+  mistBand.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = mistBand;
+  ctx.fillRect(x, y, tileW, tileW);
+}
+
+function drawIceCrystals(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  tileW: number,
+  cellSize: number
+) {
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // 1. Top-Left Frost Crystal Shard / Fracture line
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+  ctx.lineWidth = Math.max(1, cellSize * 0.024);
+  ctx.moveTo(x + tileW * 0.08, y + tileW * 0.24);
+  ctx.lineTo(x + tileW * 0.22, y + tileW * 0.17);
+  ctx.lineTo(x + tileW * 0.32, y + tileW * 0.25);
+  ctx.lineTo(x + tileW * 0.42, y + tileW * 0.14);
+  ctx.stroke();
+
+  // Branch offshoot
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(224, 242, 254, 0.65)';
+  ctx.lineWidth = Math.max(0.75, cellSize * 0.016);
+  ctx.moveTo(x + tileW * 0.22, y + tileW * 0.17);
+  ctx.lineTo(x + tileW * 0.2, y + tileW * 0.07);
+  ctx.moveTo(x + tileW * 0.32, y + tileW * 0.25);
+  ctx.lineTo(x + tileW * 0.36, y + tileW * 0.33);
+  ctx.stroke();
+
+  // 2. Bottom-Right Frost Spikes / Ice Crystal Cluster
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+  ctx.lineWidth = Math.max(0.85, cellSize * 0.02);
+  ctx.moveTo(x + tileW * 0.92, y + tileW * 0.66);
+  ctx.lineTo(x + tileW * 0.78, y + tileW * 0.78);
+  ctx.lineTo(x + tileW * 0.64, y + tileW * 0.74);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(186, 230, 253, 0.6)';
+  ctx.moveTo(x + tileW * 0.78, y + tileW * 0.78);
+  ctx.lineTo(x + tileW * 0.82, y + tileW * 0.92);
+  ctx.stroke();
+
+  // 3. Ice Glint Stars (Sparkling Ice Diamonds)
+  const drawGlint = (gx: number, gy: number, r: number) => {
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(gx, gy - r * 1.8);
+    ctx.lineTo(gx + r * 0.35, gy - r * 0.35);
+    ctx.lineTo(gx + r * 1.8, gy);
+    ctx.lineTo(gx + r * 0.35, gy + r * 0.35);
+    ctx.lineTo(gx, gy + r * 1.8);
+    ctx.lineTo(gx - r * 0.35, gy + r * 0.35);
+    ctx.lineTo(gx - r * 1.8, gy);
+    ctx.lineTo(gx - r * 0.35, gy - r * 0.35);
+    ctx.closePath();
+    ctx.fill();
+
+    // Glint core point
+    ctx.fillStyle = '#e0f2fe';
+    ctx.beginPath();
+    ctx.arc(gx, gy, r * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  // Primary frost diamond star (top left)
+  drawGlint(x + tileW * 0.18, y + tileW * 0.18, Math.max(1.8, cellSize * 0.045));
+  // Secondary micro glint (top right)
+  drawGlint(x + tileW * 0.82, y + tileW * 0.22, Math.max(1.2, cellSize * 0.028));
+  // Micro glint (bottom left)
+  drawGlint(x + tileW * 0.24, y + tileW * 0.82, Math.max(1.0, cellSize * 0.022));
+
+  ctx.restore();
+}
+
 export class TileRenderer {
   public static renderTile(
     context: TileRenderContext,
@@ -71,41 +206,60 @@ export class TileRenderer {
     const isCorrectPlacement = !isRemote && isTemporary && temporaryTilesValid === true;
 
     // 1. Shadow layer & Outer Aura
-    const shadowFill = isFrozen
-      ? 'rgba(4, 28, 56, 0.75)'
-      : isRemote
-      ? 'rgba(6, 182, 212, 0.5)'
-      : TILE_THEME.face.shadow;
-
-    if (!lowPower || isCorrectPlacement || isFrozen || isRemote) {
+    if (isFrozen) {
+      // Atmospheric Sub-Zero Cold Mist Aura
       ctx.save();
-      ctx.shadowColor = isCorrectPlacement
-        ? 'rgba(52, 211, 153, 0.9)'
-        : isFrozen
-        ? 'rgba(6, 182, 212, 0.95)'
-        : isRemote
-        ? 'rgba(6, 182, 212, 0.8)'
-        : shadowFill;
-      ctx.shadowBlur = isCorrectPlacement
-        ? Math.max(8, cellSize * 0.22)
-        : isFrozen
-        ? Math.max(10, cellSize * 0.28)
-        : isRemote
-        ? Math.max(8, cellSize * 0.2)
-        : Math.max(4, cellSize * 0.1);
+      const cx = x + cellSize / 2;
+      const cy = y + cellSize / 2;
+      const mistOuter = ctx.createRadialGradient(cx, cy, tileW * 0.25, cx, cy, cellSize * 0.8);
+      mistOuter.addColorStop(0, 'rgba(56, 189, 248, 0.4)');
+      mistOuter.addColorStop(0.45, 'rgba(14, 165, 233, 0.22)');
+      mistOuter.addColorStop(0.75, 'rgba(186, 230, 253, 0.1)');
+      mistOuter.addColorStop(1, 'rgba(186, 230, 253, 0)');
+      ctx.fillStyle = mistOuter;
+      ctx.beginPath();
+      ctx.arc(cx, cy, cellSize * 0.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cold glacial shadow
+      ctx.shadowColor = 'rgba(56, 189, 248, 0.95)';
+      ctx.shadowBlur = lowPower ? 4 : Math.max(12, cellSize * 0.32);
+      ctx.fillStyle = 'rgba(4, 28, 56, 0.8)';
+      drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
+      ctx.fill();
+      ctx.restore();
+    } else {
+      const shadowFill = isRemote
+        ? 'rgba(6, 182, 212, 0.5)'
+        : TILE_THEME.face.shadow;
+
+      if (!lowPower || isCorrectPlacement || isRemote) {
+        ctx.save();
+        ctx.shadowColor = isCorrectPlacement
+          ? 'rgba(52, 211, 153, 0.9)'
+          : isRemote
+          ? 'rgba(6, 182, 212, 0.8)'
+          : shadowFill;
+        ctx.shadowBlur = isCorrectPlacement
+          ? Math.max(8, cellSize * 0.22)
+          : isRemote
+          ? Math.max(8, cellSize * 0.2)
+          : Math.max(4, cellSize * 0.1);
+      }
+      ctx.fillStyle = shadowFill;
+      drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
+      ctx.fill();
+      if (!lowPower || isCorrectPlacement || isRemote) ctx.restore();
     }
-    ctx.fillStyle = shadowFill;
-    drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
-    ctx.fill();
-    if (!lowPower || isCorrectPlacement || isFrozen || isRemote) ctx.restore();
 
     // 2. Tile face fill
     if (isFrozen) {
       const iceGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-      iceGrad.addColorStop(0, '#7dd3fc');
-      iceGrad.addColorStop(0.25, '#38bdf8');
-      iceGrad.addColorStop(0.68, '#0284c7');
-      iceGrad.addColorStop(1, '#075985');
+      iceGrad.addColorStop(0, '#bae6fd');
+      iceGrad.addColorStop(0.18, '#38bdf8');
+      iceGrad.addColorStop(0.55, '#0284c7');
+      iceGrad.addColorStop(0.85, '#0369a1');
+      iceGrad.addColorStop(1, '#082f49');
       ctx.fillStyle = iceGrad;
     } else if (isRemote) {
       const ghostGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
@@ -124,7 +278,7 @@ export class TileRenderer {
     drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
     ctx.fill();
 
-    // 3. Specular Sheen, Chiseled Facets & Holographic Glyphs
+    // 3. Specular Sheen, Chiseled Facets & Holographic Glyphs / Ice Frost
     if (isRemote) {
       ctx.save();
       ctx.beginPath();
@@ -174,50 +328,40 @@ export class TileRenderer {
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.clip();
 
-      const sheenGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW * 0.75, y + pad + tileW * 0.75);
-      sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
-      sheenGrad.addColorStop(0.35, 'rgba(255, 255, 255, 0.15)');
-      sheenGrad.addColorStop(0.65, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = sheenGrad;
-      ctx.fillRect(x + pad, y + pad, tileW, tileW);
+      // 1. Draw billowing frost mist clouds
+      drawFrostMist(ctx, x + pad, y + pad, tileW);
 
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
-      ctx.lineWidth = Math.max(1, cellSize * 0.025);
+      // 2. Inner frosty condensation border
+      const innerFrostGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad, y + pad + tileW);
+      innerFrostGrad.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
+      innerFrostGrad.addColorStop(0.5, 'rgba(186, 230, 253, 0.45)');
+      innerFrostGrad.addColorStop(1, 'rgba(56, 189, 248, 0.65)');
+      ctx.strokeStyle = innerFrostGrad;
+      ctx.lineWidth = Math.max(1.2, cellSize * 0.03);
       drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW - 2, Math.max(1, radius - 1));
       ctx.stroke();
 
-      if (cellSize >= 16) {
-        ctx.fillStyle = '#ffffff';
-        if (!lowPower) {
-          ctx.shadowColor = '#38bdf8';
-          ctx.shadowBlur = 4;
-        }
-        const starX = x + pad + tileW * 0.2;
-        const starY = y + pad + tileW * 0.2;
-        const sr = Math.max(1.5, cellSize * 0.035);
-        ctx.beginPath();
-        ctx.moveTo(starX, starY - sr * 1.6);
-        ctx.lineTo(starX + sr * 0.4, starY - sr * 0.4);
-        ctx.lineTo(starX + sr * 1.6, starY);
-        ctx.lineTo(starX + sr * 0.4, starY + sr * 0.4);
-        ctx.lineTo(starX, starY + sr * 1.6);
-        ctx.lineTo(starX - sr * 0.4, starY + sr * 0.4);
-        ctx.lineTo(starX - sr * 1.6, starY);
-        ctx.lineTo(starX - sr * 0.4, starY - sr * 0.4);
-        ctx.closePath();
-        ctx.fill();
+      // 3. Draw crystalline ice shards, fractures & diamond frost stars
+      if (cellSize >= 14) {
+        drawIceCrystals(ctx, x + pad, y + pad, tileW, cellSize);
       }
+
       ctx.restore();
     }
 
     // 4. Stroke outline
     if (isFrozen) {
       ctx.save();
-      ctx.shadowColor = '#00f0ff';
-      ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.1);
-      ctx.strokeStyle = '#67e8f9';
-      ctx.lineWidth = Math.max(1.8, cellSize * 0.045);
+      ctx.shadowColor = '#38bdf8';
+      ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
+      ctx.strokeStyle = '#e0f2fe';
+      ctx.lineWidth = Math.max(2, cellSize * 0.048);
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = Math.max(1, cellSize * 0.024);
+      drawRoundedRect(ctx, x + pad + 0.5, y + pad + 0.5, tileW - 1, tileW - 1, radius);
       ctx.stroke();
       ctx.restore();
     } else if (isRemote) {
@@ -277,7 +421,13 @@ export class TileRenderer {
         ctx.fill();
       } else {
         const letterFill = tilePalette.letter.color;
-        if (isRemote) {
+        if (isFrozen) {
+          const frostLetterGrad = ctx.createLinearGradient(0, y + cellSize * 0.25, 0, y + cellSize * 0.75);
+          frostLetterGrad.addColorStop(0, '#ffffff');
+          frostLetterGrad.addColorStop(0.65, '#f0f9ff');
+          frostLetterGrad.addColorStop(1, '#bae6fd');
+          ctx.fillStyle = frostLetterGrad;
+        } else if (isRemote) {
           const letterGrad = ctx.createLinearGradient(0, y + cellSize * 0.27, 0, y + cellSize * 0.72);
           letterGrad.addColorStop(0, '#0f172a');
           letterGrad.addColorStop(1, '#334155');
@@ -295,11 +445,11 @@ export class TileRenderer {
         if (!isRemote) {
           ctx.lineJoin = 'round';
           ctx.lineWidth = Math.max(1.8, fontSize * 0.09);
-          ctx.strokeStyle = isFrozen ? '#020617' : tilePalette.letter.stroke;
+          ctx.strokeStyle = isFrozen ? '#02182b' : tilePalette.letter.stroke;
           ctx.strokeText(letter, textX, textY);
         }
-        ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(0, 0, 0, 0.95)' : tilePalette.letter.shadow;
-        ctx.shadowBlur = isRemote ? 0 : isFrozen ? Math.max(3, cellSize * 0.06) : Math.max(2, cellSize * 0.06);
+        ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(56, 189, 248, 0.85)' : tilePalette.letter.shadow;
+        ctx.shadowBlur = isRemote ? 0 : isFrozen ? Math.max(4, cellSize * 0.09) : Math.max(2, cellSize * 0.06);
         ctx.shadowOffsetY = isRemote ? 0 : Math.max(1, cellSize * 0.035);
         ctx.fillText(letter, textX, textY);
       }

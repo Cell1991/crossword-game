@@ -89,6 +89,7 @@ async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
             score=p.score,
             hp=p.hp,
             max_hp=p.max_hp,
+            has_shield=getattr(p, 'has_shield', False),
             turn_order=p.turn_order,
             connection_status=p.connection_status,
             rack_count=len(await player_rack(db, p.id))

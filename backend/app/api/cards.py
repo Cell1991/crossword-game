@@ -78,6 +78,11 @@ async def use_card(
         return {"success": True, "found": True, "row": row, "col": col}
 
     if card == "SHIELD":
+        cards.remove(card)
+        player.cards = cards
+        player.has_shield = True
+        await replace_player_cards(db, player.id, cards)
+
         effect = game.pending_effect
         if effect:
             expires_at = datetime.fromisoformat(effect["expires_at"])
@@ -89,26 +94,35 @@ async def use_card(
             (effect["type"] == "DAMAGE" and player.id in effect.get("damage", {}))
             or (effect["type"] in ("SWAP", "SPY_SWAP") and player.id == effect.get("target_player_id"))
         )
-        if not targets_me:
-            raise HTTPException(status_code=400, detail="No incoming effect to block")
 
-        cards.remove(card)
-        await replace_player_cards(db, player.id, cards)
-        if effect["type"] == "DAMAGE":
-            remaining_damage = {pid: amount for pid, amount in effect["damage"].items() if pid != player.id}
-            game.pending_effect = {**effect, "damage": remaining_damage} if remaining_damage else None
-        else:
-            game.pending_effect = None
+        if targets_me:
+            player.has_shield = False
+            if effect["type"] == "DAMAGE":
+                remaining_damage = {pid: amount for pid, amount in effect["damage"].items() if pid != player.id}
+                game.pending_effect = {**effect, "damage": remaining_damage} if remaining_damage else None
+            else:
+                game.pending_effect = None
+            await db.commit()
+            await manager.broadcast(game_id, WebSocketEvent(
+                type=EventType.CARD_USED,
+                payload={"playerId": player.id, "card": card},
+            ).model_dump())
+            await manager.broadcast(game_id, WebSocketEvent(
+                type=EventType.EFFECT_RESOLVED,
+                payload={"type": effect["type"], "blocked": True, "blockedBy": player.id},
+            ).model_dump())
+            return {"success": True, "blocked": True, "has_shield": False}
+
         await db.commit()
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.CARD_USED,
             payload={"playerId": player.id, "card": card},
         ).model_dump())
         await manager.broadcast(game_id, WebSocketEvent(
-            type=EventType.EFFECT_RESOLVED,
-            payload={"type": effect["type"], "blocked": True, "blockedBy": player.id},
+            type=EventType.GAME_STATE_SYNC,
+            payload={"reason": "CARD_USED", "card": "SHIELD", "playerId": player.id},
         ).model_dump())
-        return {"success": True, "blocked": True}
+        return {"success": True, "blocked": False, "has_shield": True}
 
     cards.remove(card)
     player.cards = cards

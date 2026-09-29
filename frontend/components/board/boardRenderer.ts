@@ -26,6 +26,7 @@ export interface BoardScene {
   frozenTile: CellPosition | null;
   hintCell: CellPosition | null;
   pendingArmedCell: CellPosition | null;
+  pendingArmedCard?: string | null;
   lowPower: boolean;
   tilePalette: TilePalette;
   model?: BoardModel;

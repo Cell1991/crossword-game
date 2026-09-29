@@ -15,6 +15,7 @@ import {
   Loader2,
   Copy,
   Check,
+  Shield,
 } from 'lucide-react';
 import { cardIcon } from './cardIcons';
 import { TileBagDialog } from './TileBagDialog';
@@ -207,6 +208,15 @@ export const RightSidebar = memo(function RightSidebar({
                         {player.is_host && (
                           <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0 drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]" />
                         )}
+                        {player.has_shield && !isDead && (
+                          <span
+                            className="flex items-center gap-1 rounded-full border border-cyan-400/80 bg-cyan-950/80 px-1.5 py-0.5 text-[10px] font-bold text-cyan-200 shadow-[0_0_10px_rgba(6,182,212,0.6)] animate-pulse"
+                            title="Shield Active: Blocks 1 incoming attack"
+                          >
+                            <Shield className="w-3 h-3 text-cyan-300 fill-cyan-400/40 drop-shadow-[0_0_4px_#38bdf8]" />
+                            <span className="hidden sm:inline text-[9px] font-extrabold tracking-wider">SHIELD</span>
+                          </span>
+                        )}
                         {cardUseEffects[player.id] && (
                           <span
                             className="animate-pulse rounded-full border border-cyan-300/80 bg-cyan-400/20 px-1.5 py-0.5 text-sm leading-none shadow-[0_0_14px_rgba(34,211,238,0.85)]"
@@ -236,26 +246,50 @@ export const RightSidebar = memo(function RightSidebar({
 
                   {showHealth && (() => {
                     const playerMaxHp = player.max_hp || maxHp;
+                    const hasShield = Boolean(player.has_shield && !isDead);
                     return (
-                      <div className="mt-2 h-3 rounded-sm bg-slate-950/80 relative overflow-hidden border border-slate-800/60 shadow-inner">
-                        <div
-                          className={`h-full transition-all duration-300 ${
-                            player.hp <= 0
-                              ? 'bg-slate-700'
-                              : player.hp > playerMaxHp / 2
-                              ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
-                              : 'bg-gradient-to-r from-rose-500 to-amber-500'
-                          }`}
-                          style={{ width: `${Math.max(0, Math.min(100, (player.hp / playerMaxHp) * 100))}%` }}
-                        />
-                        {/* HP Dividers every 20% */}
-                        {[20, 40, 60, 80].map((percent) => (
+                      <div className="relative mt-2">
+                        {/* Shield Aura Glow effect surrounding the HP bar */}
+                        {hasShield && (
+                          <div className="absolute -inset-1 rounded-md bg-gradient-to-r from-cyan-500/40 via-sky-400/50 to-blue-500/40 blur-[5px] animate-pulse pointer-events-none" />
+                        )}
+                        <div className={`h-3.5 rounded-sm relative overflow-hidden transition-all ${
+                          hasShield
+                            ? 'bg-slate-950/90 border-2 border-cyan-300 shadow-[0_0_16px_rgba(6,182,212,0.9),inset_0_0_10px_rgba(56,189,248,0.5)] ring-1 ring-cyan-200/80'
+                            : 'bg-slate-950/80 border border-slate-800/60 shadow-inner'
+                        }`}>
                           <div
-                            key={percent}
-                            className="absolute top-0 bottom-0 w-px bg-slate-950/90 z-10"
-                            style={{ left: `${percent}%` }}
+                            className={`h-full transition-all duration-300 ${
+                              player.hp <= 0
+                                ? 'bg-slate-700'
+                                : hasShield
+                                ? 'bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400'
+                                : player.hp > playerMaxHp / 2
+                                ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                                : 'bg-gradient-to-r from-rose-500 to-amber-500'
+                            }`}
+                            style={{ width: `${Math.max(0, Math.min(100, (player.hp / playerMaxHp) * 100))}%` }}
                           />
-                        ))}
+                          {/* HP Dividers every 20% */}
+                          {[20, 40, 60, 80].map((percent) => (
+                            <div
+                              key={percent}
+                              className="absolute top-0 bottom-0 w-px bg-slate-950/90 z-10"
+                              style={{ left: `${percent}%` }}
+                            />
+                          ))}
+                          {/* Protective Shield Shimmer / Badge */}
+                          {hasShield && (
+                            <div className="absolute inset-0 z-20 flex items-center px-1.5 pointer-events-none">
+                              <div className="flex items-center gap-1">
+                                <Shield className="w-2.5 h-2.5 text-white fill-cyan-300 drop-shadow-[0_0_4px_#38bdf8]" />
+                                <span className="text-[9px] font-black tracking-wider text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] uppercase">
+                                  Shielded
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })()}

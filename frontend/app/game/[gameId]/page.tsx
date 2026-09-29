@@ -393,6 +393,7 @@ export default function GamePage() {
               frozenTile={gameState.frozen_tile}
               hintCell={cards.hintCell}
               pendingArmedCell={cards.pendingArmedCell ?? deferredFreezeCell}
+              pendingArmedCard={cards.armedCard ?? (cards.deferredFreezeTileId ? 'FREEZE_TILE' : null)}
             />
             {dragSession && (
               <FloatingTile
@@ -443,8 +444,13 @@ export default function GamePage() {
             👁 You are watching this game. Players&apos; tiles stay hidden.
           </p>
         ) : (
-          <>
-            <div className="flex justify-center items-center w-full mb-1 sm:mb-2.5">
+          <TileRack
+            slots={rackSlots}
+            selectedTileId={staged.selectedTileId}
+            designatedBlankLetters={staged.designatedBlankLetters}
+            exchangeTileIds={exchangeTileIds}
+            tileBagCount={tileBagCount}
+            powerCardSlot={
               <PowerCardBar
                 cards={myPlayer?.cards ?? []}
                 opponents={opponents}
@@ -465,14 +471,8 @@ export default function GamePage() {
                 onCancelArmedCell={cards.cancelPendingArmedCell}
                 onCancelDeferredFreeze={cards.cancelDeferredFreeze}
               />
-            </div>
-            <TileRack
-              slots={rackSlots}
-              selectedTileId={staged.selectedTileId}
-              designatedBlankLetters={staged.designatedBlankLetters}
-              exchangeTileIds={exchangeTileIds}
-              tileBagCount={tileBagCount}
-              onSelectTile={handleSelectTile}
+            }
+            onSelectTile={handleSelectTile}
               onCancelMove={clearStagedMove}
               onConfirmMove={handleConfirmMove}
               onPassTurn={handlePassTurn}
@@ -493,7 +493,6 @@ export default function GamePage() {
               isSubmitting={isSubmitting}
               estimatedScore={staged.estimatedScore}
             />
-          </>
         )}
       </div>
 

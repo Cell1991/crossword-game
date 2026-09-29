@@ -135,9 +135,13 @@ class GameService:
             applied: dict[str, int] = {}
             for player in players:
                 amount = effect["damage"].get(player.id)
-                if amount:
-                    player.hp = max(0, player.hp - amount)
-                    applied[player.id] = amount
+                if amount and amount > 0:
+                    if getattr(player, "has_shield", False):
+                        player.has_shield = False
+                        applied[player.id] = 0
+                    else:
+                        player.hp = max(0, player.hp - amount)
+                        applied[player.id] = amount
             players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in players]
             is_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
             # A DISCONNECTED player is recoverable (they rejoin on reconnect) and must not end the
@@ -246,6 +250,7 @@ class GameService:
                 score=p.score,
                 hp=p.hp,
                 max_hp=getattr(p, 'max_hp', 100) or 100,
+                has_shield=getattr(p, 'has_shield', False),
                 turn_order=p.turn_order,
                 connection_status=p.connection_status,
                 rack_count=len(normalized_rack),

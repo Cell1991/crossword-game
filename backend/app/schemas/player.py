@@ -13,6 +13,7 @@ class PlayerOut(BaseModel):
     score: int
     hp: int = 100
     max_hp: int = 100
+    has_shield: bool = False
     turn_order: int
     connection_status: str
     rack_count: int = 0

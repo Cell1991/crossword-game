@@ -862,14 +862,27 @@ async def test_cd08_shield_blocks_damage_for_the_blocker_only(open_table):
     assert [me(state, seat)["hp"] for seat in (alice, bob, carol)] == [120, 120, 115]
 
 
-async def test_cd09_shield_without_an_incoming_effect_is_rejected(open_table):
+async def test_cd09_shield_can_be_activated_proactively(open_table):
     table = await open_table("Alice", "Bob")
-    alice, _ = table.seats
+    alice, bob = table.seats
     await table.set_cards(alice, ["SHIELD"])
 
     res = await table.act(alice, "cards/use", {"card": "SHIELD"})
 
-    assert res.status_code == 400
+    assert res.status_code == 200
+    assert res.json()["has_shield"] is True
+    state = await table.state()
+    assert me(state, alice)["has_shield"] is True
+
+    # Now Bob attacks Alice with a word move
+    await table.set_tiles(racks={bob: "CATSEIO"})
+    await table.place(bob, ROW, COL - 1, "CAT")
+    await resolve_damage(table)
+
+    # Alice's shield absorbed the attack: Alice took 0 damage, shield is consumed
+    state_after = await table.state()
+    assert me(state_after, alice)["hp"] == 100
+    assert me(state_after, alice)["has_shield"] is False
 
 
 async def test_cd10_shield_cancels_a_pending_spy_swap(open_table):

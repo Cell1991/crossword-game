@@ -140,6 +140,7 @@ def _upgrade_existing_schema(connection):
         "game_players": {
             "hp": "INTEGER DEFAULT 100 NOT NULL",
             "max_hp": "INTEGER DEFAULT 100 NOT NULL",
+            "has_shield": "BOOLEAN DEFAULT FALSE NOT NULL",
             "cards": "JSON",
             "banned_letter": "VARCHAR(10)",
             "banned_until_turn": "INTEGER",

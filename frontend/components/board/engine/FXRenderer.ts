@@ -20,14 +20,16 @@ export class FXRenderer {
     ctx: CanvasRenderingContext2D,
     cell: CellPosition,
     offset: { x: number; y: number },
-    cellSize: number
+    cellSize: number,
+    cardType?: string | null
   ): void {
     const x = offset.x + cell.col * cellSize;
     const y = offset.y + cell.row * cellSize;
-    ctx.strokeStyle = '#f43f5e';
+    const isFreeze = cardType === 'FREEZE_TILE';
+    ctx.strokeStyle = isFreeze ? '#38bdf8' : '#f43f5e';
     ctx.lineWidth = 3;
     ctx.strokeRect(x + 1.5, y + 1.5, cellSize - 3, cellSize - 3);
-    ctx.fillStyle = 'rgba(244, 63, 94, 0.22)';
+    ctx.fillStyle = isFreeze ? 'rgba(56, 189, 248, 0.25)' : 'rgba(244, 63, 94, 0.22)';
     ctx.fillRect(x + 1.5, y + 1.5, cellSize - 3, cellSize - 3);
   }
 

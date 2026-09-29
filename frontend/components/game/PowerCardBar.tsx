@@ -142,7 +142,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   const [spyOwnTileIds, setSpyOwnTileIds] = useState<string[]>([]);
   const [spyTargetPlayerId, setSpyTargetPlayerId] = useState<string | null>(null);
   const [spyTargetTileIndices, setSpyTargetTileIndices] = useState<number[]>([]);
-  const [confirmingCard, setConfirmingCard] = useState<string | null>(null);
+  const [confirmingSimpleCard, setConfirmingSimpleCard] = useState<SimpleCard | null>(null);
 
   const counts = new Map<string, number>();
   for (const card of cards) {
@@ -175,16 +175,31 @@ export const PowerCardBar = memo(function PowerCardBar({
 
   if (armedCard && pendingArmedCell) {
     const meta = CARD_META[armedCard];
-    const verb = armedCard === 'DESTROY_TILE' ? 'Destroy' : 'Freeze';
+    const isDestroy = armedCard === 'DESTROY_TILE';
+    const verb = isDestroy ? 'Destroy' : 'Freeze';
+    const durationNote = isDestroy ? 'Permanent' : '1 Round';
+
     return (
-      <div className="flex flex-wrap items-center justify-between sm:justify-center gap-2 sm:gap-4 rounded-2xl border border-rose-500/80 bg-gradient-to-r from-rose-950/95 via-slate-900/95 to-slate-950/95 px-4 py-2 text-xs text-rose-100 shadow-[0_8px_30px_rgba(244,63,94,0.4)] ring-1 ring-rose-500/50 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+      <div className={`flex flex-wrap items-center justify-between sm:justify-center gap-2 sm:gap-4 rounded-2xl border px-4 py-2 text-xs backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 ${
+        isDestroy
+          ? 'border-orange-500/80 bg-gradient-to-r from-orange-950/95 via-red-950/90 to-slate-950/95 text-orange-100 shadow-[0_8px_30px_rgba(249,115,22,0.4)] ring-1 ring-orange-500/50'
+          : 'border-cyan-400/80 bg-gradient-to-r from-sky-950/95 via-cyan-950/90 to-slate-950/95 text-cyan-100 shadow-[0_8px_30px_rgba(6,182,212,0.4)] ring-1 ring-cyan-400/50'
+      }`}>
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-400/60 shadow-[0_0_12px_rgba(244,63,94,0.5)]">
+          <div className={`flex items-center justify-center w-8 h-8 rounded-xl border ${
+            isDestroy
+              ? 'bg-orange-500/20 border-orange-400/60 shadow-[0_0_12px_rgba(249,115,22,0.5)]'
+              : 'bg-cyan-500/20 border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)]'
+          }`}>
             {meta?.icon}
           </div>
           <div>
-            <span className="text-[10px] uppercase font-extrabold tracking-wider text-rose-400">Target Selected</span>
-            <p className="font-bold text-slate-100">{verb} this tile? <span className="text-rose-300 font-normal">Permanent</span></p>
+            <span className={`text-[10px] uppercase font-extrabold tracking-wider ${isDestroy ? 'text-orange-400' : 'text-cyan-400'}`}>
+              Target Selected
+            </span>
+            <p className="font-bold text-slate-100">
+              {verb} this tile? <span className={`font-normal ${isDestroy ? 'text-orange-300' : 'text-cyan-300'}`}>{durationNote}</span>
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -192,18 +207,15 @@ export const PowerCardBar = memo(function PowerCardBar({
             type="button"
             disabled={busy}
             onClick={onConfirmArmedCell}
-            className="group relative flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-500 px-4 py-1.5 font-black text-white shadow-[0_0_16px_rgba(244,63,94,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)] hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+            className={`group relative flex items-center gap-1.5 rounded-xl px-4 py-1.5 font-black hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all cursor-pointer ${
+              isDestroy
+                ? 'bg-gradient-to-r from-orange-500 via-rose-500 to-red-500 text-white shadow-[0_0_16px_rgba(249,115,22,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                : 'bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400 text-slate-950 shadow-[0_0_16px_rgba(6,182,212,0.7),inset_0_1px_1px_rgba(255,255,255,0.6)]'
+            }`}
           >
             <div className="pointer-events-none absolute inset-x-1.5 top-0.5 h-1/2 rounded-t-lg bg-gradient-to-b from-white/25 to-transparent" />
-            <Check className="w-4 h-4 stroke-[3]" />
+            <Check className={`w-4 h-4 stroke-[3] ${isDestroy ? 'text-white' : 'text-slate-950'}`} />
             <span className="tracking-wide uppercase text-[11px] sm:text-xs">Confirm {verb}</span>
-          </button>
-          <button
-            type="button"
-            onClick={onCancelArmedCell}
-            className="rounded-xl border border-rose-400/40 bg-rose-950/70 hover:bg-rose-900 px-3 py-1.5 text-xs font-bold text-rose-200 hover:text-white transition-colors cursor-pointer"
-          >
-            Pick Another
           </button>
           <button
             type="button"
@@ -219,16 +231,27 @@ export const PowerCardBar = memo(function PowerCardBar({
 
   if (armedCard) {
     const meta = CARD_META[armedCard];
+    const isDestroy = armedCard === 'DESTROY_TILE';
     return (
-      <div className="flex flex-wrap items-center justify-between sm:justify-center gap-2 sm:gap-4 rounded-2xl border border-cyan-400/80 bg-gradient-to-r from-cyan-950/95 via-slate-900/95 to-slate-950/95 px-4 py-2 text-xs text-cyan-100 shadow-[0_8px_30px_rgba(6,182,212,0.35)] ring-1 ring-cyan-500/40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+      <div className={`flex flex-wrap items-center justify-between sm:justify-center gap-2 sm:gap-4 rounded-2xl border px-4 py-2 text-xs backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 ${
+        isDestroy
+          ? 'border-orange-500/80 bg-gradient-to-r from-orange-950/95 via-slate-900/95 to-slate-950/95 text-orange-100 shadow-[0_8px_30px_rgba(249,115,22,0.35)] ring-1 ring-orange-500/40'
+          : 'border-cyan-400/80 bg-gradient-to-r from-cyan-950/95 via-slate-900/95 to-slate-950/95 text-cyan-100 shadow-[0_8px_30px_rgba(6,182,212,0.35)] ring-1 ring-cyan-500/40'
+      }`}>
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)] animate-pulse">
+          <div className={`flex items-center justify-center w-8 h-8 rounded-xl border animate-pulse ${
+            isDestroy
+              ? 'bg-orange-500/20 border-orange-400/60 shadow-[0_0_12px_rgba(249,115,22,0.5)]'
+              : 'bg-cyan-500/20 border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)]'
+          }`}>
             {meta?.icon}
           </div>
           <div className="text-left">
-            <span className="text-[10px] uppercase font-extrabold tracking-wider text-cyan-400">Armed Power</span>
+            <span className={`text-[10px] uppercase font-extrabold tracking-wider ${isDestroy ? 'text-orange-400' : 'text-cyan-400'}`}>
+              Armed Power
+            </span>
             <p className="font-bold text-slate-100">
-              {armedCard === 'DESTROY_TILE' ? 'Select a board tile to clear' : 'Select a tile to freeze'}
+              {isDestroy ? 'Select a board tile to clear' : 'Select a tile to freeze'}
             </p>
           </div>
         </div>
@@ -455,55 +478,56 @@ export const PowerCardBar = memo(function PowerCardBar({
     );
   }
 
-  if (confirmingCard) {
-    const meta = CARD_META[confirmingCard];
+  if (confirmingSimpleCard) {
+    const meta = CARD_META[confirmingSimpleCard];
+    const isHeal = confirmingSimpleCard === 'HEAL';
     return (
-      <div className={`flex items-center justify-between sm:justify-center gap-2.5 sm:gap-4 w-full max-w-lg sm:w-auto rounded-2xl border bg-gradient-to-r ${meta?.bgGradient ?? 'from-cyan-950/95 via-slate-900/95 to-slate-950/95'} ${meta?.borderColor ?? 'border-cyan-400/80'} px-3.5 py-2 sm:px-5 sm:py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-white/20 backdrop-blur-2xl transition-all animate-in fade-in zoom-in-95 duration-200 select-none`}>
-        {/* Card Identity & Aura */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <div className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-900/90 border border-white/25 shadow-[0_0_14px_rgba(255,255,255,0.2)] shrink-0">
-            <div className="drop-shadow-[0_0_6px_currentColor]">
-              {meta?.icon}
-            </div>
+      <div className={`flex flex-wrap items-center justify-between sm:justify-center gap-2 sm:gap-4 rounded-2xl border px-4 py-2 text-xs backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 ${
+        isHeal
+          ? 'border-rose-500/80 bg-gradient-to-r from-rose-950/95 via-pink-950/90 to-slate-950/95 text-rose-100 shadow-[0_8px_30px_rgba(244,63,94,0.4)] ring-1 ring-rose-500/50'
+          : 'border-blue-500/80 bg-gradient-to-r from-blue-950/95 via-indigo-950/90 to-slate-950/95 text-blue-100 shadow-[0_8px_30px_rgba(59,130,246,0.4)] ring-1 ring-blue-500/50'
+      }`}>
+        <div className="flex items-center gap-2.5">
+          <div className={`flex items-center justify-center w-8 h-8 rounded-xl border ${
+            isHeal
+              ? 'bg-rose-500/20 border-rose-400/60 shadow-[0_0_12px_rgba(244,63,94,0.5)]'
+              : 'bg-blue-500/20 border-blue-400/60 shadow-[0_0_12px_rgba(59,130,246,0.5)]'
+          }`}>
+            {meta?.icon}
           </div>
-          <div className="flex flex-col text-left min-w-0">
-            <span className="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-widest text-slate-400">
-              Activate Power
+          <div>
+            <span className={`text-[10px] uppercase font-extrabold tracking-wider ${isHeal ? 'text-rose-400' : 'text-blue-400'}`}>
+              Confirm Action
             </span>
-            <span className="text-xs sm:text-sm font-black text-white truncate drop-shadow">
-              {meta?.label}
-            </span>
+            <p className="font-bold text-slate-100">
+              {isHeal ? 'Use Heal card now?' : `Use ${meta?.label || confirmingSimpleCard}?`}
+            </p>
           </div>
         </div>
-
-        {/* High-Contrast Vibrant Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             disabled={busy}
             onClick={() => {
-              const card = confirmingCard;
-              setConfirmingCard(null);
-              if (card === 'DESTROY_TILE') onArmBoardCard(card as BoardCard);
-              else if (card === 'DOUBLE_DAMAGE') setPickingTargetFor(card);
-              else if (card === 'SPY_SWAP') { setSpySwapStep('own'); setSpyOwnTileIds([]); }
-              else if (card === 'BAN_LETTER') setPickingLetter(true);
-              else onUseSimple(card as SimpleCard);
+              onUseSimple(confirmingSimpleCard);
+              setConfirmingSimpleCard(null);
             }}
-            className="group relative flex items-center gap-1 sm:gap-1.5 rounded-xl bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-300 px-3.5 py-1.5 sm:px-4 sm:py-2 text-slate-950 shadow-[0_0_18px_rgba(45,212,191,0.65),inset_0_1px_1px_rgba(255,255,255,0.8)] hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all cursor-pointer font-black"
+            className={`group relative flex items-center gap-1.5 rounded-xl px-4 py-1.5 font-black hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all cursor-pointer ${
+              isHeal
+                ? 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white shadow-[0_0_16px_rgba(244,63,94,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                : 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-[0_0_16px_rgba(59,130,246,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)]'
+            }`}
           >
-            {/* Specular Top Shine */}
-            <div className="pointer-events-none absolute inset-x-1.5 top-0.5 h-1/2 rounded-t-lg bg-gradient-to-b from-white/40 to-transparent" />
-            <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-950 stroke-[3]" />
-            <span className="tracking-wide uppercase text-[11px] sm:text-xs">Use Card</span>
+            <div className="pointer-events-none absolute inset-x-1.5 top-0.5 h-1/2 rounded-t-lg bg-gradient-to-b from-white/25 to-transparent" />
+            <Check className="w-4 h-4 stroke-[3] text-white" />
+            <span className="tracking-wide uppercase text-[11px] sm:text-xs">Confirm {meta?.label || 'Heal'}</span>
           </button>
           <button
             type="button"
-            onClick={() => setConfirmingCard(null)}
-            className="flex items-center gap-1 rounded-xl border border-slate-700/80 bg-slate-900/80 hover:bg-slate-800 hover:border-slate-600 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-bold text-slate-300 hover:text-white transition-all cursor-pointer active:scale-95"
+            onClick={() => setConfirmingSimpleCard(null)}
+            className="rounded-xl border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-3 py-1.5 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
           >
-            <X className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Cancel</span>
+            Cancel
           </button>
         </div>
       </div>
@@ -532,8 +556,20 @@ export const PowerCardBar = memo(function PowerCardBar({
               disabled={disabled}
               title={meta.ownTurnOnly && !isMyTurn ? 'Available only during your turn' : `Click to use ${meta.label}`}
               onClick={() => {
-                if (card === 'FREEZE_TILE') onArmBoardCard(card as BoardCard);
-                else setConfirmingCard(card);
+                if (card === 'FREEZE_TILE' || card === 'DESTROY_TILE') {
+                  onArmBoardCard(card as BoardCard);
+                } else if (card === 'DOUBLE_DAMAGE') {
+                  setPickingTargetFor(card);
+                } else if (card === 'SPY_SWAP') {
+                  setSpySwapStep('own');
+                  setSpyOwnTileIds([]);
+                } else if (card === 'BAN_LETTER') {
+                  setPickingLetter(true);
+                } else if (card === 'HEAL') {
+                  setConfirmingSimpleCard('HEAL');
+                } else {
+                  onUseSimple(card as SimpleCard);
+                }
               }}
               className={`group relative flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border bg-gradient-to-r transition-all duration-200 cursor-pointer select-none active:scale-95 ${
                 disabled

@@ -123,9 +123,9 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
 
           {/* Crown & Winner Proclamation */}
           {winner && (
-            <div className="flex items-center justify-center gap-2 mt-1 px-4 py-1 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-400/20 to-amber-500/10 border border-amber-400/30 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
-              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-bounce" />
-              <p className="text-xs sm:text-base font-extrabold tracking-wide text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.4)]">
+            <div className="flex items-center justify-center gap-2 mt-1 px-3 sm:px-4 py-1 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-400/20 to-amber-500/10 border border-amber-400/30 shadow-[0_0_15px_rgba(251,191,36,0.2)] max-w-full">
+              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] shrink-0 animate-bounce" />
+              <p className="text-xs sm:text-base font-extrabold tracking-wide text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.4)] truncate">
                 {winner.display_name} {isMeWinner ? '(You)' : ''} reigns victorious!
               </p>
             </div>
@@ -166,12 +166,26 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                   </div>
 
                   {/* Player Name */}
-                  <div className="flex items-center justify-center gap-1 max-w-full truncate mt-0.5 px-1">
-                    <span className={`text-xs sm:text-base md:text-xl font-bold truncate ${secondPlace.id === myPlayerId ? 'text-pink-300 font-black drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]' : 'text-slate-100'}`}>
-                      {secondPlace.display_name} {secondPlace.id === myPlayerId && '(You)'}
-                    </span>
-                    {secondPlace.is_host && (
-                      <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
+                  <div className="flex flex-col items-center justify-center w-full min-h-[38px] sm:min-h-[52px] px-0.5 my-auto">
+                    <div className="flex items-center justify-center gap-1 max-w-full">
+                      <span
+                        title={secondPlace.display_name}
+                        className={`text-[11px] xs:text-xs sm:text-base md:text-xl font-bold leading-tight line-clamp-2 break-words text-center ${
+                          secondPlace.id === myPlayerId
+                            ? 'text-pink-300 font-black drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]'
+                            : 'text-slate-100'
+                        }`}
+                      >
+                        {secondPlace.display_name}
+                      </span>
+                      {secondPlace.is_host && (
+                        <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
+                      )}
+                    </div>
+                    {secondPlace.id === myPlayerId && (
+                      <span className="text-[8.5px] xs:text-[9.5px] sm:text-xs font-black text-pink-400 tracking-wide mt-0.5">
+                        (You)
+                      </span>
                     )}
                   </div>
 
@@ -205,12 +219,24 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                   </div>
 
                   {/* Champion Name */}
-                  <div className="flex items-center justify-center gap-1 max-w-full truncate mt-0.5 px-1">
-                    <span className={`text-xs sm:text-xl md:text-2xl font-black truncate drop-shadow-[0_0_14px_rgba(251,191,36,0.6)] ${firstPlace.id === myPlayerId ? 'text-pink-300' : 'text-amber-200'}`}>
-                      {firstPlace.display_name} {firstPlace.id === myPlayerId && '(You)'}
-                    </span>
-                    {firstPlace.is_host && (
-                      <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
+                  <div className="flex flex-col items-center justify-center w-full min-h-[42px] sm:min-h-[56px] px-0.5 my-auto">
+                    <div className="flex items-center justify-center gap-1 max-w-full">
+                      <span
+                        title={firstPlace.display_name}
+                        className={`text-xs xs:text-sm sm:text-xl md:text-2xl font-black leading-tight line-clamp-2 break-words text-center drop-shadow-[0_0_14px_rgba(251,191,36,0.6)] ${
+                          firstPlace.id === myPlayerId ? 'text-pink-300' : 'text-amber-200'
+                        }`}
+                      >
+                        {firstPlace.display_name}
+                      </span>
+                      {firstPlace.is_host && (
+                        <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
+                      )}
+                    </div>
+                    {firstPlace.id === myPlayerId && (
+                      <span className="text-[9px] xs:text-[10px] sm:text-xs font-black text-pink-400 tracking-wide mt-0.5">
+                        (You)
+                      </span>
                     )}
                   </div>
 
@@ -244,12 +270,26 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                   </div>
 
                   {/* Player Name */}
-                  <div className="flex items-center justify-center gap-1 max-w-full truncate mt-0.5 px-1">
-                    <span className={`text-xs sm:text-base md:text-lg font-bold truncate ${thirdPlace.id === myPlayerId ? 'text-pink-300 font-black drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]' : 'text-amber-100'}`}>
-                      {thirdPlace.display_name} {thirdPlace.id === myPlayerId && '(You)'}
-                    </span>
-                    {thirdPlace.is_host && (
-                      <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
+                  <div className="flex flex-col items-center justify-center w-full min-h-[38px] sm:min-h-[52px] px-0.5 my-auto">
+                    <div className="flex items-center justify-center gap-1 max-w-full">
+                      <span
+                        title={thirdPlace.display_name}
+                        className={`text-[11px] xs:text-xs sm:text-base md:text-lg font-bold leading-tight line-clamp-2 break-words text-center ${
+                          thirdPlace.id === myPlayerId
+                            ? 'text-pink-300 font-black drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]'
+                            : 'text-amber-100'
+                        }`}
+                      >
+                        {thirdPlace.display_name}
+                      </span>
+                      {thirdPlace.is_host && (
+                        <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
+                      )}
+                    </div>
+                    {thirdPlace.id === myPlayerId && (
+                      <span className="text-[8.5px] xs:text-[9.5px] sm:text-xs font-black text-pink-400 tracking-wide mt-0.5">
+                        (You)
+                      </span>
                     )}
                   </div>
 

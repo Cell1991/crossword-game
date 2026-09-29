@@ -22,6 +22,7 @@ export interface SceneRenderConfig {
   frozenTile: CellPosition | null;
   hintCell: CellPosition | null;
   pendingArmedCell: CellPosition | null;
+  pendingArmedCard?: string | null;
   lowPower: boolean;
   tilePalette: TilePalette;
   model: BoardModel;
@@ -103,7 +104,7 @@ export class BoardCompositor {
       FXRenderer.renderHint(ctx, config.hintCell, offset, cellSize);
     }
     if (config.pendingArmedCell && isCellVisible(config.pendingArmedCell.row, config.pendingArmedCell.col)) {
-      FXRenderer.renderPendingArmed(ctx, config.pendingArmedCell, offset, cellSize);
+      FXRenderer.renderPendingArmed(ctx, config.pendingArmedCell, offset, cellSize, config.pendingArmedCard);
     }
 
     // 5. Layer 4: Temporary Placed Tiles

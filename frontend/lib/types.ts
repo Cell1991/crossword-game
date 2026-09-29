@@ -28,6 +28,7 @@ export interface Player {
   score: number;
   hp: number;
   max_hp?: number;
+  has_shield?: boolean;
   turn_order: number;
   connection_status: 'ONLINE' | 'DISCONNECTED' | 'OFFLINE';
   rack_count: number;

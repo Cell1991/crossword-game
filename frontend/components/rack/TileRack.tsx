@@ -37,6 +37,7 @@ interface TileRackProps {
   placementValid: boolean | null;
   isSubmitting: boolean;
   estimatedScore?: number;
+  powerCardSlot?: React.ReactNode;
 }
 
 export const TileRack = memo(function TileRack({
@@ -65,6 +66,7 @@ export const TileRack = memo(function TileRack({
   placementValid,
   isSubmitting,
   estimatedScore,
+  powerCardSlot,
 }: TileRackProps) {
   const [draggedSlot, setDraggedSlot] = useState<number | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
@@ -195,10 +197,18 @@ export const TileRack = memo(function TileRack({
         />
       )}
 
-      {/* Premium Player Control Hub: 3-column layout (Left Pod, Center Tray, Right Pod) */}
+      {/* SEPARATE ROW 1: POWER CARDS BAR (Always centered above the rack, never pushes buttons in row below) */}
+      {powerCardSlot && (
+        <div className="w-full flex justify-center items-center mb-1 sm:mb-2">
+          {powerCardSlot}
+        </div>
+      )}
+
+      {/* ROW 2: Premium Player Control Hub: 3-column balanced layout (Left Pod, Center Tray, Right Pod) */}
       <div className="flex w-full flex-row flex-wrap items-end justify-center gap-1.5 sm:gap-2 lg:flex-nowrap lg:gap-4">
-        {/* CENTER POD: COSMIC BLUE TILE TRAY WITH NEON LED UNDER-LIGHTING */}
+        {/* CENTER POD: COSMIC BLUE TILE TRAY */}
         <div className="relative order-1 flex w-full max-w-full shrink-0 flex-col items-center lg:order-2 lg:w-auto">
+
           {/* Mobile Score Badge above Tray */}
           {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
             <div className="lg:hidden w-full flex justify-center mb-1.5 pointer-events-none">
@@ -209,8 +219,6 @@ export const TileRack = memo(function TileRack({
               </span>
             </div>
           )}
-          {/* LED under-lighting glow (Blue/Cyan Neon) */}
-          <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-blue-600/30 via-cyan-500/40 to-blue-600/30 blur-md pointer-events-none opacity-90" />
 
           {/* Tray Stand (Blue Theme) */}
           <div className="w-full overflow-x-auto overflow-y-hidden hide-scrollbar scroll-smooth pb-1 -mb-1 px-1 sm:px-0 flex justify-center">
@@ -304,7 +312,7 @@ export const TileRack = memo(function TileRack({
         <div className="order-2 relative flex w-auto max-w-full flex-row items-center justify-center gap-1 rounded-2xl bg-slate-900/90 border border-slate-700/60 p-1 shadow-xl shadow-black/60 lg:contents lg:bg-transparent lg:border-0 lg:p-0 lg:shadow-none">
 
         {/* LEFT POD: GAME MANAGEMENT */}
-        <div className="flex shrink flex-col items-center lg:order-1 lg:w-auto lg:items-start min-w-0">
+        <div className="flex shrink flex-col items-center lg:order-1 lg:flex-1 lg:basis-0 lg:items-end min-w-0">
           <div className="hidden lg:flex mb-1.5 items-center gap-1.5 px-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8]" />
             <span className="hidden text-[10px] font-bold tracking-widest text-slate-400 uppercase sm:inline">
@@ -376,7 +384,7 @@ export const TileRack = memo(function TileRack({
         <div className="h-5 w-px bg-slate-700/60 mx-0.5 lg:hidden" />
 
         {/* RIGHT POD: TURN ACTIONS */}
-        <div className="flex shrink flex-col items-center lg:order-3 lg:w-auto lg:items-end min-w-0">
+        <div className="flex shrink flex-col items-center lg:order-3 lg:flex-1 lg:basis-0 lg:items-start min-w-0">
           <div className="mb-1.5 hidden lg:flex w-full items-center justify-between gap-2 px-2">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />

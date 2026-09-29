@@ -80,6 +80,7 @@ class GamePlayer(Base):
     score = Column(Integer, default=0, nullable=False)
     hp = Column(Integer, default=100, nullable=False)
     max_hp = Column(Integer, default=100, nullable=False)
+    has_shield = Column(Boolean, default=False, nullable=False)
     rack = Column(JSON, default=list, nullable=False)  # [{"id": "...", "letter": "A", "value": 1}]
     cards = Column(JSON, default=list, nullable=False)
     banned_letter = Column(String(10), nullable=True)
