@@ -21,6 +21,7 @@ interface UsePowerCardsOptions {
 export function usePowerCards({ gameId, myPlayerId, boardState, reload, toasts }: UsePowerCardsOptions) {
   const { flashError, flashInfo } = toasts;
   const [armedCard, setArmedCard] = useState<BoardCard | null>(null);
+  const [pendingArmedCell, setPendingArmedCell] = useState<CellPosition | null>(null);
   const [hintCell, setHintCell] = useState<CellPosition | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -67,23 +68,32 @@ export function usePowerCards({ gameId, myPlayerId, boardState, reload, toasts }
   /** Blocks an incoming DAMAGE/SWAP while its window is open. */
   const playShield = useCallback(() => runCard({ card: 'SHIELD' }, 'Failed to use Shield'), [runCard]);
 
-  /** An armed board card (FREEZE/DESTROY) is spent on the committed tile the player clicks. */
+  /** An armed board card (FREEZE/DESTROY) picks a committed tile first; it is only spent once confirmed. */
   const playArmedCardAt = useCallback((row: number, col: number) => {
-    if (!armedCard) return;
-    if (!myPlayerId || !isCellCommitted(boardState, row, col) || busy) return;
+    if (!armedCard || busy || !isCellCommitted(boardState, row, col)) return;
+    setPendingArmedCell({ row, col });
+  }, [armedCard, boardState, busy]);
+
+  const confirmArmedCardAt = useCallback(() => {
+    if (!armedCard || !pendingArmedCell || !myPlayerId || busy) return;
     setBusy(true);
-    playCard(gameId, myPlayerId, { card: armedCard, row, col })
+    playCard(gameId, myPlayerId, { card: armedCard, ...pendingArmedCell })
       .then(() => reload())
       .catch((error: unknown) => flashError(error instanceof Error ? error.message : 'Failed to use card'))
-      .finally(() => { setBusy(false); setArmedCard(null); });
-  }, [armedCard, boardState, busy, flashError, gameId, myPlayerId, reload]);
+      .finally(() => { setBusy(false); setArmedCard(null); setPendingArmedCell(null); });
+  }, [armedCard, pendingArmedCell, myPlayerId, busy, flashError, gameId, reload]);
 
-  const cancelArm = useCallback(() => setArmedCard(null), []);
+  const cancelPendingArmedCell = useCallback(() => setPendingArmedCell(null), []);
+
+  const cancelArm = useCallback(() => { setArmedCard(null); setPendingArmedCell(null); }, []);
 
   return {
     armedCard,
     armBoardCard: setArmedCard,
     cancelArm,
+    pendingArmedCell,
+    confirmArmedCardAt,
+    cancelPendingArmedCell,
     hintCell,
     busy,
     playSimpleCard,

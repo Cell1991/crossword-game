@@ -375,6 +375,7 @@ export default function GamePage() {
               camera={camera}
               frozenTile={gameState.frozen_tile}
               hintCell={cards.hintCell}
+              pendingArmedCell={cards.pendingArmedCell}
             />
             <div className="pointer-events-none absolute left-2 right-16 top-2 z-20 lg:hidden">
               <div
@@ -475,6 +476,7 @@ export default function GamePage() {
                 isMyTurn={isMyTurn}
                 hasStagedMove={temporaryTiles.length > 0}
                 armedCard={cards.armedCard}
+                pendingArmedCell={cards.pendingArmedCell}
                 busy={cards.busy}
                 onUseSimple={cards.playSimpleCard}
                 onUseTargeted={cards.playTargetedCard}
@@ -482,6 +484,8 @@ export default function GamePage() {
                 onUseBanLetter={cards.playBanLetter}
                 onArmBoardCard={cards.armBoardCard}
                 onCancelArm={cards.cancelArm}
+                onConfirmArmedCell={cards.confirmArmedCardAt}
+                onCancelArmedCell={cards.cancelPendingArmedCell}
               />
             </div>
             <TileRack
