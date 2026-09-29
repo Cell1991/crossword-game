@@ -123,15 +123,15 @@ Choose between high-stakes elimination battles or classic competitive scoring fo
 
 Players collect and unleash game-changing tactical cards to disrupt opponent boards, steal tiles, or protect their own health:
 
-| Card | Theme | Type | Tactical Effect |
-| :---: | :---: | :---: | :--- |
-| <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/heart.svg" width="20" height="20" alt="Heal" /> **Heal** | `Rose / Pink` | Instant Self | Restores player HP based on current rack tile values (with safety confirm dialog). |
-| <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/shield.svg" width="20" height="20" alt="Shield" /> **Shield** | `Cyan / Blue` | Proactive Aura | Grants a radiant energy barrier around the HP bar that completely negates the next incoming attack. |
-| <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/snowflake.svg" width="20" height="20" alt="Freeze" /> **Freeze Word** | `Sky / Frost` | Board Targeted | Locks an opponent's placed tile under sub-zero ice mist for 1 round, preventing plays through that cell. |
-| <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/flame.svg" width="20" height="20" alt="Clear" /> **Clear Word** | `Orange / Red` | Board Targeted | Permanently vaporizes a target tile from the board, opening up new paths or breaking word connections. |
-| <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/eye.svg" width="20" height="20" alt="Spell Word" /> **Spell Word** | `Amber / Gold` | AI Assistant | Analyzes the current rack and board state to suggest the highest-scoring valid word placement. |
-| <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/arrow-left-right.svg" width="20" height="20" alt="Swap Word" /> **Swap Word** | `Emerald / Teal` | Targeted PvP | Forces an exchange of up to 3 tiles with a targeted opponent's hidden rack. |
-| <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/zap.svg" width="20" height="20" alt="Word x2" /> **Word ×2** | `Purple / Neo` | Next Move | Applies a $2\times$ multiplier to the damage or points generated on your next played word. |
+| Card | Theme Color | Type | Tactical Effect |
+| :--- | :--- | :--- | :--- |
+| 💖 **Heal** | `Rose / Pink` | Instant Self | Restores player HP based on current rack tile values (with safety confirm dialog). |
+| 🛡️ **Shield** | `Cyan / Blue` | Proactive Aura | Grants a radiant energy barrier around the HP bar that completely negates the next incoming attack. |
+| ❄️ **Freeze Word** | `Sky / Frost` | Board Targeted | Locks an opponent's placed tile under sub-zero ice mist for 1 round, preventing plays through that cell. |
+| 💥 **Clear Word** | `Orange / Red` | Board Targeted | Permanently vaporizes a target tile from the board, opening up new paths or breaking word connections. |
+| 👁️ **Spell Word** | `Amber / Gold` | AI Assistant | Analyzes the current rack and board state to suggest the highest-scoring valid word placement. |
+| 🔄 **Swap Word** | `Emerald / Teal` | Targeted PvP | Forces an exchange of up to 3 tiles with a targeted opponent's hidden rack. |
+| ⚡ **Word ×2** | `Purple / Neo` | Next Move | Applies a $2\times$ multiplier to the damage or points generated on your next played word. |
 
 ---
 
@@ -140,59 +140,70 @@ Players collect and unleash game-changing tactical cards to disrupt opponent boa
 The application is structured into clean, modular tiers ensuring predictable state flow, high concurrency, and minimal latency:
 
 ```mermaid
-flowchart TD
-    %% Client Tier
-    subgraph Client["🖥️ Frontend Client (Next.js 16 + React 19)"]
-        UI["Game UI & React Hooks"]
-        Canvas["HTML5 Canvas 2D Engine (60 FPS)"]
-        WSClient["WebSocket Client Manager"]
-        UI --- Canvas
-        UI --- WSClient
+graph TB
+    %% Actors
+    User(["👤 Player / Spectator<br/>[Web / Mobile Browser]"])
+
+    %% Subgraphs
+    subgraph Client["🖥️ Client Layer (Frontend)"]
+        UI["<b>Web Application</b><br/>[Next.js 16 + React 19]"]
+        Canvas["<b>Board Canvas Engine</b><br/>[HTML5 Canvas 2D / 60 FPS]"]
+        WSClient["<b>Real-Time Client</b><br/>[WebSocket API]"]
     end
 
-    %% Gateway Tier
-    subgraph Gateway["🌐 Ingress & Gateway Layer"]
-        Nginx["Nginx Reverse Proxy (:8080)"]
-        Ngrok["Ngrok Public Tunnel (:4040)"]
-        Ngrok --> Nginx
+    subgraph Gateway["🌐 Ingress & Gateway Tier"]
+        Ngrok["<b>Public Tunnel</b><br/>[Ngrok Container :4040]"]
+        Nginx["<b>Reverse Proxy & SSL</b><br/>[Nginx 1.27 :8080]"]
     end
 
-    %% Backend Tier
-    subgraph Backend["⚙️ Backend Services (FastAPI + Python 3.12)"]
-        Router["REST & WebSocket API Endpoints"]
-        GameEngine["Game & Turn State Machine"]
-        Lexicon["CSW24 Lexicon & Placement Validator"]
-        CardService["Power Card Resolution Engine"]
-        WSHub["WebSocket Connection Manager"]
-        
-        Router --> GameEngine
-        Router --> WSHub
-        GameEngine --> Lexicon
-        GameEngine --> CardService
-        GameEngine --> WSHub
+    subgraph Backend["⚙️ Application Backend Tier"]
+        API["<b>API Gateway & WS Router</b><br/>[FastAPI / Python 3.12]"]
+        GameEngine["<b>Game & Turn State Engine</b><br/>[Async Event Loop]"]
+        CardService["<b>Power Card Resolution Engine</b><br/>[Rules & Effect Processor]"]
+        Validator["<b>CSW24 Placement Validator</b><br/>[DAWG / Orthogonal Trie]"]
+        WSHub["<b>Connection Broadcast Hub</b><br/>[WebSocket Channel Manager]"]
     end
 
-    %% Data Tier
-    subgraph Database["🗄️ Persistence Layer"]
-        PG[("PostgreSQL 16 Engine")]
+    subgraph Data["🗄️ Persistence & Storage Tier"]
+        DB[("<b>Primary Database</b><br/>[PostgreSQL 16 Engine]")]
+        Lexicon[("<b>Tournament Lexicon</b><br/>[CSW24 Wordlist File]")]
     end
 
-    %% Network Interconnections
-    WSClient <==>|WSS Protocol| Nginx
-    UI <==>|HTTPS REST| Nginx
-    Nginx <==> Router
-    GameEngine <==>|Async SQLAlchemy| PG
+    %% Flow Relationships
+    User -->|Interacts with UI| UI
+    UI -->|Render Board / FX| Canvas
+    UI -->|Manage Socket Session| WSClient
 
-    %% Visual Styling
-    classDef clientStyle fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
-    classDef gatewayStyle fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
-    classDef backendStyle fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#f8fafc;
-    classDef dbStyle fill:#311042,stroke:#c084fc,stroke-width:2px,color:#f8fafc;
+    User -.->|Public HTTPS / WSS| Ngrok
+    Ngrok -->|Proxy Pass :8080| Nginx
+    WSClient ===>|WSS Protocol| Nginx
+    UI ===>|HTTPS REST API| Nginx
 
-    class Client,UI,Canvas,WSClient clientStyle;
-    class Gateway,Nginx,Ngrok gatewayStyle;
-    class Backend,Router,GameEngine,Lexicon,CardService,WSHub backendStyle;
-    class Database,PG dbStyle;
+    Nginx -->|Route Requests :8000| API
+    API -->|Dispatch Move & Turns| GameEngine
+    API -->|Handle WS Connections| WSHub
+
+    GameEngine -->|Process Card Triggers| CardService
+    GameEngine -->|Validate Words & Scores| Validator
+    Validator -->|In-Memory Lookup| Lexicon
+
+    GameEngine -->|Broadcast State Sync| WSHub
+    WSHub -.->|Push Real-Time Events| WSClient
+
+    GameEngine ===>|Async ORM / asyncpg| DB
+
+    %% Clean Minimalist Styling Scheme
+    classDef actorStyle fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#1e1b4b;
+    classDef clientStyle fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0c4a6e;
+    classDef gatewayStyle fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f;
+    classDef backendStyle fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d;
+    classDef dataStyle fill:#f3e8ff,stroke:#9333ea,stroke-width:1.5px,color:#581c87;
+
+    class User actorStyle;
+    class UI,Canvas,WSClient clientStyle;
+    class Ngrok,Nginx gatewayStyle;
+    class API,GameEngine,CardService,Validator,WSHub backendStyle;
+    class DB,Lexicon dataStyle;
 ```
 
 <br/>
