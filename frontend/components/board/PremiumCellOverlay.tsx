@@ -53,12 +53,20 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
     return camera.subscribe(applyCamera);
   }, [camera]);
 
+  const occupied = useMemo(() => {
+    const keys = new Set(Object.keys(boardState));
+    for (let i = 0; i < temporaryTiles.length; i++) keys.add(`${temporaryTiles[i].row}_${temporaryTiles[i].col}`);
+    for (let i = 0; i < remotePlacements.length; i++) keys.add(`${remotePlacements[i].row}_${remotePlacements[i].col}`);
+    return keys;
+  }, [boardState, temporaryTiles, remotePlacements]);
+
   const model = useMemo(() => {
-    if (propModel) return propModel;
     const m = new BoardModel();
     m.updateState(boardState, temporaryTiles, remotePlacements);
     return m;
-  }, [boardState, propModel, remotePlacements, temporaryTiles]);
+  }, [boardState, remotePlacements, temporaryTiles]);
+
+  const isCellOccupied = (r: number, c: number) => occupied.has(`${r}_${c}`);
 
   const candidateEchoes = useMemo(() => model.getCandidateEchoes(), [model]);
   const powerEchoes = useMemo(() => candidateEchoes.filter(e => e.type === 'power'), [candidateEchoes]);
@@ -74,11 +82,11 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
       <div ref={layerRef} className="absolute left-0 top-0">
         {/* 1. Lightning Power Cells */}
         {[
-          ...POWER_CELLS.filter(([r, c]) => !model.isOccupied(r, c)).map(([r, c]) => {
+          ...POWER_CELLS.filter(([r, c]) => !isCellOccupied(r, c)).map(([r, c]) => {
             const alpha = model.getCellAlpha(r, c);
             return { row: r, col: c, isSolid: true, alpha, isEcho: false };
           }),
-          ...powerEchoes.map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
+          ...powerEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
         ].map(({ row, col, isSolid, alpha, isEcho }) => {
           if (alpha <= 0.01) return null;
           return (
@@ -114,11 +122,11 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
 
         {/* 2. Triple Letter Fire Cells (3L) */}
         {[
-          ...TRIPLE_CELLS.filter(([r, c]) => !model.isOccupied(r, c)).map(([r, c]) => {
+          ...TRIPLE_CELLS.filter(([r, c]) => !isCellOccupied(r, c)).map(([r, c]) => {
             const alpha = model.getCellAlpha(r, c);
             return { row: r, col: c, isSolid: true, alpha, isEcho: false };
           }),
-          ...tripleEchoes.map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
+          ...tripleEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
         ].map(({ row, col, isSolid, alpha, isEcho }) => {
           if (alpha <= 0.01) return null;
           return (
@@ -148,11 +156,11 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
 
         {/* 3. Double Letter Earth Cells (2L) */}
         {[
-          ...DOUBLE_CELLS.filter(([r, c]) => !model.isOccupied(r, c)).map(([r, c]) => {
+          ...DOUBLE_CELLS.filter(([r, c]) => !isCellOccupied(r, c)).map(([r, c]) => {
             const alpha = model.getCellAlpha(r, c);
             return { row: r, col: c, isSolid: true, alpha, isEcho: false };
           }),
-          ...doubleEchoes.map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
+          ...doubleEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
         ].map(({ row, col, isSolid, alpha, isEcho }) => {
           if (alpha <= 0.01) return null;
           return (
@@ -185,7 +193,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
         })}
 
         {/* 4. Center Start Star */}
-        {!model.isOccupied(CENTER_ROW, CENTER_COL) && (
+        {!isCellOccupied(CENTER_ROW, CENTER_COL) && (
           <span
             className="absolute border border-amber-300/35 shadow-[0_0_18px_rgba(251,191,36,0.25)] board-center-pulse"
             style={{

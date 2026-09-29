@@ -226,7 +226,7 @@ body {
 
 .board-premium-letter { margin-left: 0.12em; }
 
-@media (prefers-reduced-motion: reduce), (max-width: 767px) {
+@media (prefers-reduced-motion: reduce) {
   .board-power-pulse,
   .board-lightning-halo,
   .board-lightning-logo,
@@ -238,10 +238,6 @@ body {
   .board-earth-glow,
   .board-earth-mountain,
   .board-earth-speck,
-  .board-premium-label { animation: none; }
-}
-
-@media (pointer: coarse), (max-width: 767px) {
   .board-premium-label { animation: none; }
 }
 

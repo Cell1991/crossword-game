@@ -33,10 +33,10 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     let beams: Beam[] = [];
     const device = navigator as Navigator & { deviceMemory?: number };
     const isTouchDevice = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
-    const isLowPowerDevice = isTouchDevice || (device.hardwareConcurrency ?? 8) <= 8 || (device.deviceMemory ?? 8) <= 8;
-    const nodeCount = isTouchDevice ? 14 : isLowPowerDevice ? 24 : NODE_COUNT;
-    const beamCount = isTouchDevice ? 4 : isLowPowerDevice ? 6 : BEAM_COUNT;
-    const frameInterval = isTouchDevice ? 1000 / 15 : isLowPowerDevice ? 1000 / 20 : 1000 / 30;
+    const isLowPowerDevice = (device.hardwareConcurrency ?? 8) <= 4 || (device.deviceMemory ?? 8) <= 4;
+    const nodeCount = isTouchDevice ? 20 : isLowPowerDevice ? 28 : NODE_COUNT;
+    const beamCount = isTouchDevice ? 6 : isLowPowerDevice ? 8 : BEAM_COUNT;
+    const frameInterval = 1000 / 30;
     let lastDrawAt = 0;
     const mouse = { x: -1000, y: -1000 };
     /** The canvas box, measured on resize: reading it on every pointer move forced a layout each time. */
@@ -79,23 +79,30 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
         resizeFrame = null;
         resize();
         seed();
-        if (isTouchDevice) draw();
       });
     };
     const onPointerMove = (e: PointerEvent) => {
       mouse.x = e.clientX - canvasLeft;
       mouse.y = e.clientY - canvasTop;
     };
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        mouse.x = e.touches[0].clientX - canvasLeft;
+        mouse.y = e.touches[0].clientY - canvasTop;
+      }
+    };
 
     resize();
     seed();
     window.addEventListener('resize', onResize);
     window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchstart', onTouchMove, { passive: true });
 
     const draw = () => {
       const now = performance.now();
       if (document.visibilityState === 'hidden') {
-        if (!isTouchDevice) frame = requestAnimationFrame(draw);
+        frame = requestAnimationFrame(draw);
         return;
       }
       if (now - lastDrawAt < frameInterval) {
@@ -168,7 +175,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
         ctx.fillText(node.char, node.x, node.y);
       }
 
-      if (!isTouchDevice) frame = requestAnimationFrame(draw);
+      frame = requestAnimationFrame(draw);
     };
 
     draw();
@@ -178,6 +185,8 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchstart', onTouchMove);
     };
   }, [accent]);
 
