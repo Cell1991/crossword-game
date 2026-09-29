@@ -333,7 +333,9 @@ def test_infinite_board_expansion_and_echo_multipliers():
     assert valid
     assert len(words) == 1
     assert words[0].word == "AT"
-    assert Board.ALL_TRIPLE_LETTER.issuperset(Board.TRIPLE_LETTER)
-    assert Board.ALL_DOUBLE_LETTER.issuperset(Board.DOUBLE_LETTER)
-    assert Board.ALL_SECRET_POWER.issuperset(Board.SECRET_POWER)
+    # Column 27 mirrors column 25; column -1 mirrors column 1
+    assert Board.multiplier_at(0, 13) == 3
+    assert Board.multiplier_at(0, 27) == Board.multiplier_at(0, 25)
+    assert Board.multiplier_at(18, 27) == Board.multiplier_at(18, 25)
+
 

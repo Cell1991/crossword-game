@@ -1,12 +1,13 @@
 import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
 import {
-  ALL_DOUBLE_LETTER,
-  ALL_SECRET_POWER,
-  ALL_TRIPLE_LETTER,
   BOARD_COLS,
   BOARD_ROWS,
   CENTER_COL,
   CENTER_ROW,
+  cellMultiplier,
+  isDoubleLetterCell,
+  isPowerCell,
+  isTripleLetterCell,
 } from '@/lib/board';
 import { cellKey, isBlankLetter } from '@/lib/tiles';
 import { TILE_THEME, type TilePalette } from '@/lib/tileTheme';
@@ -41,42 +42,37 @@ export interface BoardScene {
 
 const LOW_POWER_GRID_ALPHA_BUCKETS = 24;
 
-export interface BoardVisualBounds {
-  minRow: number;
-  maxRow: number;
-  minCol: number;
-  maxCol: number;
-}
-
-export function getActiveBoardBounds(tiles: CellPosition[]): BoardVisualBounds {
-  let minRow = 0;
-  let maxRow = BOARD_ROWS - 1;
-  let minCol = 0;
-  let maxCol = BOARD_COLS - 1;
-
-  for (const t of tiles) {
-    if (t.row < minRow) minRow = t.row;
-    if (t.row > maxRow) maxRow = t.row;
-    if (t.col < minCol) minCol = t.col;
-    if (t.col > maxCol) maxCol = t.col;
+/** Directional cell alpha: 1.0 within starter board & active words, fading cleanly within 2-3 cells */
+export function getCellAlpha(row: number, col: number, occupiedTiles: CellPosition[] = []): number {
+  // Inside starter board is 100% solid
+  if (row >= 0 && row < BOARD_ROWS && col >= 0 && col < BOARD_COLS) {
+    return 1.0;
   }
-  return { minRow, maxRow, minCol, maxCol };
+
+  // Distance to nearest occupied tile
+  let distToTile = Infinity;
+  for (let i = 0; i < occupiedTiles.length; i++) {
+    const t = occupiedTiles[i];
+    const d = Math.max(Math.abs(t.row - row), Math.abs(t.col - col));
+    if (d < distToTile) distToTile = d;
+  }
+
+  if (distToTile <= 1) return 1.0;
+  if (distToTile === 2) return 0.75;
+  if (distToTile === 3) return 0.35;
+
+  // Distance to starter board perimeter
+  const dRow = row < 0 ? -row : row >= BOARD_ROWS ? row - (BOARD_ROWS - 1) : 0;
+  const dCol = col < 0 ? -col : col >= BOARD_COLS ? col - (BOARD_COLS - 1) : 0;
+  const distToStarter = Math.max(dRow, dCol);
+
+  if (distToStarter === 1) return 0.65;
+  if (distToStarter === 2) return 0.30;
+  if (distToStarter === 3) return 0.12;
+
+  return 0;
 }
 
-/** 1.0 across the active board bounding box, fading smoothly outward for extended grid lines. */
-export function getCellAlpha(row: number, col: number, bounds?: BoardVisualBounds): number {
-  const b = bounds ?? { minRow: 0, maxRow: BOARD_ROWS - 1, minCol: 0, maxCol: BOARD_COLS - 1 };
-  const dRow = row < b.minRow ? b.minRow - row : row > b.maxRow ? row - b.maxRow : 0;
-  const dCol = col < b.minCol ? b.minCol - col : col > b.maxCol ? col - b.maxCol : 0;
-
-  if (dRow === 0 && dCol === 0) return 1.0;
-
-  const norm = Math.hypot(dCol / 12, dRow / 9);
-  if (norm <= 0.08) return 1.0;
-
-  const t = norm;
-  return Math.max(0, Math.min(1, 1 - Math.pow(t, 1.35)));
-}
 
 
 function drawRoundedRect(
@@ -275,9 +271,8 @@ function drawTile(
     ctx.stroke();
   }
 
-  const key = cellKey(row, col);
   const multiplier = (!isRemote && (isGolden || isFrozen))
-    ? (ALL_DOUBLE_LETTER.has(key) ? 2 : ALL_TRIPLE_LETTER.has(key) ? 3 : 1)
+    ? cellMultiplier(row, col)
     : 1;
   const effectiveValue = value * multiplier;
 
@@ -448,7 +443,7 @@ function drawGrid(
   ctx: CanvasRenderingContext2D,
   scene: BoardScene,
   bounds: { minRow: number; maxRow: number; minCol: number; maxCol: number },
-  visualBounds: BoardVisualBounds
+  occupiedTiles: CellPosition[]
 ) {
   const { offset, cellSize, lowPower } = scene;
   const gridPaths = lowPower
@@ -458,20 +453,19 @@ function drawGrid(
   ctx.save();
   for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
     for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
+      const lineAlpha = getCellAlpha(r, c, occupiedTiles);
+      if (lineAlpha <= 0.005) continue;
+
       const x = offset.x + c * cellSize;
       const y = offset.y + r * cellSize;
-      const lineAlpha = getCellAlpha(r, c, visualBounds);
-
-      if (lineAlpha <= 0.005) continue;
 
       ctx.globalAlpha = lineAlpha;
 
-      // Special cell fills and Center Star
-      const key = cellKey(r, c);
+      // Special cell fills and Center Star (100% mirrored)
       const isCenter = r === CENTER_ROW && c === CENTER_COL;
-      const isTriple = ALL_TRIPLE_LETTER.has(key);
-      const isDouble = ALL_DOUBLE_LETTER.has(key);
-      const isPower = ALL_SECRET_POWER.has(key);
+      const isTriple = isTripleLetterCell(r, c);
+      const isDouble = isDoubleLetterCell(r, c);
+      const isPower = isPowerCell(r, c);
       const specialRadius = Math.max(3, cellSize * 0.12);
 
       if (isTriple) {
@@ -554,22 +548,43 @@ export function drawBoard(ctx: CanvasRenderingContext2D, dpr: number, scene: Boa
   // Clear background transparently to reveal background ParticleField (floating letters)
   ctx.clearRect(0, 0, width, height);
 
-  // Viewport bounds in cell coordinates (with seamless support for infinite pan)
-  const minCol = Math.floor(-offset.x / cellSize) - 1;
-  const maxCol = Math.ceil((width - offset.x) / cellSize) + 1;
-  const minRow = Math.floor(-offset.y / cellSize) - 1;
-  const maxRow = Math.ceil((height - offset.y) / cellSize) + 1;
-  const visible = (cell: CellPosition) => (
-    cell.row >= minRow && cell.row <= maxRow && cell.col >= minCol && cell.col <= maxCol
-  );
-
   const occupiedTiles = [
     ...Object.values(scene.boardState),
     ...scene.temporaryTiles,
     ...scene.remotePlacements,
   ];
-  const visualBounds = getActiveBoardBounds(occupiedTiles);
-  drawGrid(ctx, scene, { minRow, maxRow, minCol, maxCol }, visualBounds);
+
+  // Calculate active envelope bounds
+  let activeMinRow = 0;
+  let activeMaxRow = BOARD_ROWS - 1;
+  let activeMinCol = 0;
+  let activeMaxCol = BOARD_COLS - 1;
+  for (let i = 0; i < occupiedTiles.length; i++) {
+    const t = occupiedTiles[i];
+    if (t.row < activeMinRow) activeMinRow = t.row;
+    if (t.row > activeMaxRow) activeMaxRow = t.row;
+    if (t.col < activeMinCol) activeMinCol = t.col;
+    if (t.col > activeMaxCol) activeMaxCol = t.col;
+  }
+
+  // Tightly bounded to viewport intersection with active area + 3 margin cells
+  const viewportMinCol = Math.floor(-offset.x / cellSize) - 1;
+  const viewportMaxCol = Math.ceil((width - offset.x) / cellSize) + 1;
+  const viewportMinRow = Math.floor(-offset.y / cellSize) - 1;
+  const viewportMaxRow = Math.ceil((height - offset.y) / cellSize) + 1;
+
+  const minCol = Math.max(viewportMinCol, activeMinCol - 3);
+  const maxCol = Math.min(viewportMaxCol, activeMaxCol + 3);
+  const minRow = Math.max(viewportMinRow, activeMinRow - 3);
+  const maxRow = Math.min(viewportMaxRow, activeMaxRow + 3);
+
+  const visible = (cell: CellPosition) => (
+    cell.row >= viewportMinRow && cell.row <= viewportMaxRow && cell.col >= viewportMinCol && cell.col <= viewportMaxCol
+  );
+
+  if (minCol <= maxCol && minRow <= maxRow) {
+    drawGrid(ctx, scene, { minRow, maxRow, minCol, maxCol }, occupiedTiles);
+  }
 
   // Draw Committed Tiles
   for (const key in scene.boardState) {

@@ -1,21 +1,22 @@
+'use client';
+
 import React, { memo, useLayoutEffect, useMemo, useRef } from 'react';
 import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
 import {
-  ALL_DOUBLE_LETTER,
-  ALL_SECRET_POWER,
-  ALL_TRIPLE_LETTER,
   BOARD_COLS,
   BOARD_ROWS,
   CENTER_COL,
   CENTER_ROW,
   DOUBLE_LETTER,
-  generateEchoes,
+  isDoubleLetterCell,
+  isPowerCell,
+  isTripleLetterCell,
   SECRET_POWER,
   TRIPLE_LETTER,
 } from '@/lib/board';
 import { BoardCamera } from '@/hooks/useBoardCamera';
 import { cellKey } from '@/lib/tiles';
-import { getActiveBoardBounds, getCellAlpha } from './boardRenderer';
+import { getCellAlpha } from './boardRenderer';
 
 const toCells = (keys: Set<string>) => [...keys].map((key) => key.split('_').map(Number) as [number, number]);
 const POWER_CELLS = toCells(SECRET_POWER);
@@ -23,16 +24,9 @@ const DOUBLE_CELLS = toCells(DOUBLE_LETTER);
 const TRIPLE_CELLS = toCells(TRIPLE_LETTER);
 const PREMIUM_ECHO_ALPHA = 0.28;
 
-const POWER_ECHOES = generateEchoes(SECRET_POWER);
-const DOUBLE_ECHOES = generateEchoes(DOUBLE_LETTER);
-const TRIPLE_ECHOES = generateEchoes(TRIPLE_LETTER);
-
-
 /**
  * Follows the camera without React. Panning only translates the layer (the squares sit in board
- * coordinates inside it). Zooming writes each square's box and label size directly; a CSS
- * variable would be tidier, but changing an inherited variable restyles every animated element
- * under the layer and measured about 3× slower per zoom frame.
+ * coordinates inside it). Zooming writes each square's box and label size directly.
  */
 function layoutSquares(layer: HTMLElement, cellSize: number) {
   const size = `${cellSize - 2}px`;
@@ -59,8 +53,8 @@ interface PremiumCellOverlayProps {
 }
 
 /**
- * The animated premium squares (lightning, 3L fire, 2L earth, centre pulse). They are DOM, not
- * canvas, because their effects are CSS animations; a square disappears once a tile covers it.
+ * The animated premium squares (lightning, 3L fire, 2L earth, centre pulse).
+ * Renders base starter squares + local mirrored echoes within 2-3 cells of active words/borders.
  */
 export const PremiumCellOverlay = memo(function PremiumCellOverlay({
   camera,
@@ -70,7 +64,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
 }: PremiumCellOverlayProps) {
   const layerRef = useRef<HTMLDivElement>(null);
 
-  // Runs after every render (squares come and go as tiles cover them), then on each camera move.
+  // Runs after every render, then on each camera move.
   useLayoutEffect(() => {
     let laidOutScale = NaN;
     const applyCamera = () => {
@@ -92,31 +86,82 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
     for (const placement of remotePlacements) keys.add(cellKey(placement.row, placement.col));
     return keys;
   }, [boardState, remotePlacements, temporaryTiles]);
+
   const occupiedPositions = useMemo(() => [
     ...Object.values(boardState).map(({ row, col }) => ({ row, col })),
     ...temporaryTiles.map(({ row, col }) => ({ row, col })),
     ...remotePlacements,
   ], [boardState, remotePlacements, temporaryTiles]);
-  const visualBounds = getActiveBoardBounds(occupiedPositions);
+
+  // Efficient local candidate echoes: only examine 3-cell radius around occupied tiles + starter perimeter
+  const candidateEchoes = useMemo(() => {
+    const echoes = new Map<string, { row: number; col: number; type: 'power' | 'triple' | 'double' }>();
+
+    // 1. Around each placed tile (up to 3 cells away)
+    for (let i = 0; i < occupiedPositions.length; i++) {
+      const tile = occupiedPositions[i];
+      for (let dr = -3; dr <= 3; dr++) {
+        for (let dc = -3; dc <= 3; dc++) {
+          const r = tile.row + dr;
+          const c = tile.col + dc;
+          if (r >= 0 && r < BOARD_ROWS && c >= 0 && c < BOARD_COLS) continue;
+          const key = `${r}_${c}`;
+          if (echoes.has(key)) continue;
+          if (isPowerCell(r, c)) {
+            echoes.set(key, { row: r, col: c, type: 'power' });
+          } else if (isTripleLetterCell(r, c)) {
+            echoes.set(key, { row: r, col: c, type: 'triple' });
+          } else if (isDoubleLetterCell(r, c)) {
+            echoes.set(key, { row: r, col: c, type: 'double' });
+          }
+        }
+      }
+    }
+
+    // 2. Around starter board edges (up to 2 cells away)
+    for (let r = -2; r <= BOARD_ROWS + 1; r++) {
+      for (let c = -2; c <= BOARD_COLS + 1; c++) {
+        if (r >= 0 && r < BOARD_ROWS && c >= 0 && c < BOARD_COLS) continue;
+        const key = `${r}_${c}`;
+        if (echoes.has(key)) continue;
+        if (isPowerCell(r, c)) {
+          echoes.set(key, { row: r, col: c, type: 'power' });
+        } else if (isTripleLetterCell(r, c)) {
+          echoes.set(key, { row: r, col: c, type: 'triple' });
+        } else if (isDoubleLetterCell(r, c)) {
+          echoes.set(key, { row: r, col: c, type: 'double' });
+        }
+      }
+    }
+
+    return [...echoes.values()];
+  }, [occupiedPositions]);
+
   const isCellOccupied = (row: number, col: number) => occupied.has(cellKey(row, col));
   const getEchoDistance = (row: number, col: number) => {
     if (occupiedPositions.length === 0) return Infinity;
-    return occupiedPositions.reduce((nearest, tile) => Math.min(
-      nearest,
-      Math.max(Math.abs(tile.row - row), Math.abs(tile.col - col))
-    ), Infinity);
+    let minD = Infinity;
+    for (let i = 0; i < occupiedPositions.length; i++) {
+      const t = occupiedPositions[i];
+      const d = Math.max(Math.abs(t.row - row), Math.abs(t.col - col));
+      if (d < minD) minD = d;
+    }
+    return minD;
   };
+
+  const powerEchoes = useMemo(() => candidateEchoes.filter(e => e.type === 'power').map(e => [e.row, e.col] as [number, number]), [candidateEchoes]);
+  const tripleEchoes = useMemo(() => candidateEchoes.filter(e => e.type === 'triple').map(e => [e.row, e.col] as [number, number]), [candidateEchoes]);
+  const doubleEchoes = useMemo(() => candidateEchoes.filter(e => e.type === 'double').map(e => [e.row, e.col] as [number, number]), [candidateEchoes]);
 
   return (
     <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
       <div ref={layerRef} className="absolute left-0 top-0">
-        {[...POWER_CELLS.map(cell => [...cell, false] as const), ...POWER_ECHOES.map(cell => [...cell, true] as const)]
+        {[...POWER_CELLS.map(cell => [...cell, false] as const), ...powerEchoes.map(cell => [...cell, true] as const)]
           .filter(([row, col]) => !isCellOccupied(row, col))
           .map(([row, col, isEcho]) => {
           const distance = isEcho ? getEchoDistance(row, col) : 0;
-          const isApproached = isEcho && distance <= 2;
-          const isSolid = !isEcho || isApproached;
-          const baseAlpha = getCellAlpha(row, col, visualBounds);
+          const isSolid = !isEcho || distance <= 2;
+          const baseAlpha = getCellAlpha(row, col, occupiedPositions);
           const alpha = isSolid ? baseAlpha : baseAlpha * PREMIUM_ECHO_ALPHA;
           if (alpha <= 0.01) return null;
           return (
@@ -147,13 +192,12 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
             </span>
           );
         })}
-        {[...TRIPLE_CELLS.map(cell => [...cell, false] as const), ...TRIPLE_ECHOES.map(cell => [...cell, true] as const)]
+        {[...TRIPLE_CELLS.map(cell => [...cell, false] as const), ...tripleEchoes.map(cell => [...cell, true] as const)]
           .filter(([row, col]) => !isCellOccupied(row, col))
           .map(([row, col, isEcho]) => {
           const distance = isEcho ? getEchoDistance(row, col) : 0;
-          const isApproached = isEcho && distance <= 2;
-          const isSolid = !isEcho || isApproached;
-          const baseAlpha = getCellAlpha(row, col, visualBounds);
+          const isSolid = !isEcho || distance <= 2;
+          const baseAlpha = getCellAlpha(row, col, occupiedPositions);
           const alpha = isSolid ? baseAlpha : baseAlpha * PREMIUM_ECHO_ALPHA;
           if (alpha <= 0.01) return null;
           return (
@@ -172,13 +216,12 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
             </span>
           );
         })}
-        {[...DOUBLE_CELLS.map(cell => [...cell, false] as const), ...DOUBLE_ECHOES.map(cell => [...cell, true] as const)]
+        {[...DOUBLE_CELLS.map(cell => [...cell, false] as const), ...doubleEchoes.map(cell => [...cell, true] as const)]
           .filter(([row, col]) => !isCellOccupied(row, col))
           .map(([row, col, isEcho]) => {
           const distance = isEcho ? getEchoDistance(row, col) : 0;
-          const isApproached = isEcho && distance <= 2;
-          const isSolid = !isEcho || isApproached;
-          const baseAlpha = getCellAlpha(row, col, visualBounds);
+          const isSolid = !isEcho || distance <= 2;
+          const baseAlpha = getCellAlpha(row, col, occupiedPositions);
           const alpha = isSolid ? baseAlpha : baseAlpha * PREMIUM_ECHO_ALPHA;
           if (alpha <= 0.01) return null;
           return (
@@ -212,3 +255,4 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
     </div>
   );
 });
+

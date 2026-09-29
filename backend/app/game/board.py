@@ -1,23 +1,18 @@
 from typing import Any, Optional
 from app.core.config import settings
 
-def _generate_echoes(base_cells: frozenset[tuple[int, int]], max_ring: int = 16) -> frozenset[tuple[int, int]]:
-    echoes: set[tuple[int, int]] = set()
-    center_r, center_c = settings.CENTER_ROW, settings.CENTER_COL
-    def round_from_center(v: float) -> int:
-        return (1 if v > 0 else -1 if v < 0 else 0) * int(round(abs(v)))
+def mirror_row(r: int) -> int:
+    period = 2 * (settings.BOARD_ROWS - 1)  # 2 * 18 = 36
+    m = r % period
+    return period - m if m > settings.BOARD_ROWS - 1 else m
 
-    for r, c in base_cells:
-        for ring in range(1, max_ring + 1):
-            scale = 1.0 + ring * 0.25
-            echo_r = center_r + round_from_center((r - center_r) * scale)
-            echo_c = center_c + round_from_center((c - center_c) * scale)
-            if echo_r < 0 or echo_r >= settings.BOARD_ROWS or echo_c < 0 or echo_c >= settings.BOARD_COLS:
-                echoes.add((echo_r, echo_c))
-    return frozenset(echoes)
+def mirror_col(c: int) -> int:
+    period = 2 * (settings.BOARD_COLS - 1)  # 2 * 26 = 52
+    m = c % period
+    return period - m if m > settings.BOARD_COLS - 1 else m
 
 class Board:
-    """Logical game board with sparse cell storage and infinite expansion."""
+    """Logical game board with sparse cell storage and infinite mirror expansion."""
 
     ROWS = settings.BOARD_ROWS
     COLS = settings.BOARD_COLS
@@ -46,10 +41,6 @@ class Board:
         (15, 4), (15, 22),
     })
 
-    # Extended echoes for infinite expansion
-    ALL_TRIPLE_LETTER = TRIPLE_LETTER | _generate_echoes(TRIPLE_LETTER)
-    ALL_DOUBLE_LETTER = DOUBLE_LETTER | _generate_echoes(DOUBLE_LETTER)
-    ALL_SECRET_POWER = SECRET_POWER | _generate_echoes(SECRET_POWER)
 
     def __init__(self, sparse_state: Optional[dict[str, Any]] = None):
         self.cells: dict[str, dict[str, Any]] = sparse_state.copy() if sparse_state else {}
@@ -68,15 +59,17 @@ class Board:
 
     @classmethod
     def multiplier_at(cls, row: int, col: int) -> int:
-        if (row, col) in cls.ALL_TRIPLE_LETTER:
+        mr, mc = mirror_row(row), mirror_col(col)
+        if (mr, mc) in cls.TRIPLE_LETTER:
             return 3
-        if (row, col) in cls.ALL_DOUBLE_LETTER:
+        if (mr, mc) in cls.DOUBLE_LETTER:
             return 2
         return 1
 
     @classmethod
     def is_power_cell(cls, row: int, col: int) -> bool:
-        return (row, col) in cls.ALL_SECRET_POWER
+        mr, mc = mirror_row(row), mirror_col(col)
+        return (mr, mc) in cls.SECRET_POWER
 
     def is_empty(self, row: int, col: int) -> bool:
         return self.key(row, col) not in self.cells

@@ -36,35 +36,34 @@ export const SECRET_POWER = cellKeys([
   [15, 4], [15, 22],
 ]);
 
-export function generateEchoes(baseKeys: Set<string>, maxRing = 16): [number, number][] {
-  const echoes = new Map<string, [number, number]>();
-  const roundFromCenter = (value: number) => Math.sign(value) * Math.round(Math.abs(value));
-  for (const key of baseKeys) {
-    const [row, col] = key.split('_').map(Number);
-    for (let ring = 1; ring <= maxRing; ring++) {
-      const scale = 1.0 + ring * 0.25;
-      const echoR = CENTER_ROW + roundFromCenter((row - CENTER_ROW) * scale);
-      const echoC = CENTER_COL + roundFromCenter((col - CENTER_COL) * scale);
-      if (echoR < 0 || echoR >= BOARD_ROWS || echoC < 0 || echoC >= BOARD_COLS) {
-        echoes.set(`${echoR}_${echoC}`, [echoR, echoC]);
-      }
-    }
-  }
-  return [...echoes.values()];
+export function mirrorRow(r: number): number {
+  const period = 2 * (BOARD_ROWS - 1); // 36
+  const m = ((r % period) + period) % period;
+  return m > BOARD_ROWS - 1 ? period - m : m;
 }
 
-export const ALL_DOUBLE_LETTER = new Set([
-  ...DOUBLE_LETTER,
-  ...generateEchoes(DOUBLE_LETTER).map(([r, c]) => `${r}_${c}`),
-]);
+export function mirrorCol(c: number): number {
+  const period = 2 * (BOARD_COLS - 1); // 52
+  const m = ((c % period) + period) % period;
+  return m > BOARD_COLS - 1 ? period - m : m;
+}
 
-export const ALL_TRIPLE_LETTER = new Set([
-  ...TRIPLE_LETTER,
-  ...generateEchoes(TRIPLE_LETTER).map(([r, c]) => `${r}_${c}`),
-]);
+export function isTripleLetterCell(row: number, col: number): boolean {
+  return TRIPLE_LETTER.has(`${mirrorRow(row)}_${mirrorCol(col)}`);
+}
 
-export const ALL_SECRET_POWER = new Set([
-  ...SECRET_POWER,
-  ...generateEchoes(SECRET_POWER).map(([r, c]) => `${r}_${c}`),
-]);
+export function isDoubleLetterCell(row: number, col: number): boolean {
+  return DOUBLE_LETTER.has(`${mirrorRow(row)}_${mirrorCol(col)}`);
+}
+
+export function isPowerCell(row: number, col: number): boolean {
+  return SECRET_POWER.has(`${mirrorRow(row)}_${mirrorCol(col)}`);
+}
+
+export function cellMultiplier(row: number, col: number): number {
+  if (isTripleLetterCell(row, col)) return 3;
+  if (isDoubleLetterCell(row, col)) return 2;
+  return 1;
+}
+
 
