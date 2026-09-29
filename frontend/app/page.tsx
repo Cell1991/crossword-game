@@ -111,10 +111,10 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-x-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(99,102,241,0.16),transparent_30%),linear-gradient(135deg,#020617_0%,#0f172a_58%,#171942_100%)] px-3 py-2 sm:px-4 sm:py-12">
+    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-x-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(99,102,241,0.16),transparent_30%),linear-gradient(135deg,#020617_0%,#0f172a_58%,#171942_100%)] px-4 py-6 sm:py-12">
       <ParticleField className="pointer-events-none fixed inset-0 h-full w-full" />
 
-      <div className="relative z-10 flex w-full max-w-[29rem] flex-col items-center gap-2 sm:gap-8">
+      <div className="relative z-10 my-auto flex w-full max-w-[28rem] flex-col items-center gap-6 sm:gap-8">
         {/* Logo / Title */}
         <div className="text-center">
           <Image
@@ -123,75 +123,77 @@ export default function HomePage() {
             width={112}
             height={112}
             priority
-            className="mx-auto mb-0.5 sm:mb-2 h-11 w-11 sm:h-28 sm:w-28 object-contain drop-shadow-[0_18px_28px_rgba(0,0,0,0.42)]"
+            className="mx-auto mb-2 h-20 w-20 sm:h-28 sm:w-28 object-contain drop-shadow-[0_18px_28px_rgba(0,0,0,0.42)] transition-transform hover:scale-105"
           />
-          <p className="mb-0 sm:mb-2 text-[0.55rem] sm:text-[0.65rem] font-bold uppercase tracking-[0.22em] sm:tracking-[0.32em] text-amber-300/75">Real-time word play</p>
-          <h1 className="text-2xl sm:text-5xl sm:text-[3.4rem] font-black tracking-[-0.04em] leading-tight">
+          <p className="mb-1 text-[0.65rem] font-bold uppercase tracking-[0.3em] text-amber-300/80">Real-time word play</p>
+          <h1 className="text-4xl sm:text-5xl sm:text-[3.4rem] font-black tracking-[-0.04em] leading-none">
             <MouseGradientText>WordX</MouseGradientText>
           </h1>
-          <p className="mt-0.5 sm:mt-2 text-[0.7rem] sm:text-sm font-medium tracking-wide text-slate-400">Multiplayer Crossword Game</p>
+          <p className="mt-2 text-xs sm:text-sm font-medium tracking-wide text-slate-400">Multiplayer Crossword Game</p>
         </div>
 
         {/* Card */}
-        <div className="w-full rounded-2xl sm:rounded-[1.75rem] border border-white/[0.1] bg-slate-900/75 sm:bg-slate-900/65 p-3 sm:p-5 shadow-[0_28px_90px_rgba(2,6,23,0.38)] backdrop-blur-md">
+        <div className="w-full rounded-2xl sm:rounded-[1.75rem] border border-white/[0.1] bg-slate-900/75 sm:bg-slate-900/65 p-4 sm:p-5 shadow-[0_28px_90px_rgba(2,6,23,0.38)] backdrop-blur-md">
 
           {mode === 'home' && (
-            <div className="flex flex-col gap-2.5 sm:gap-3">
-              <div className="flex items-center justify-between px-1.5 pb-1 sm:px-2 sm:pb-2">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between px-1 pb-1">
                 <div>
-                  <p className="text-xs sm:text-sm font-semibold text-white">Start playing</p>
-                  <p className="mt-0.5 text-[0.68rem] sm:text-xs text-slate-500">Choose how you want to enter</p>
+                  <p className="text-sm font-semibold text-white">Start playing</p>
+                  <p className="mt-0.5 text-xs text-slate-400">Choose how you want to enter</p>
                 </div>
                 <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" aria-label="Online" />
               </div>
               <button
                 onClick={() => { setMode('create'); setError(''); }}
-                className="group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-amber-200/50 bg-gradient-to-r from-amber-300 to-amber-400 px-3.5 py-3 sm:px-5 sm:py-4 text-left text-slate-950 shadow-[0_14px_34px_rgba(245,158,11,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:from-amber-200 hover:to-amber-300 hover:shadow-[0_18px_42px_rgba(245,158,11,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
+                className="group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-amber-200/50 bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3.5 sm:px-5 sm:py-4 text-left text-slate-950 shadow-[0_14px_34px_rgba(245,158,11,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:from-amber-200 hover:to-amber-300 hover:shadow-[0_18px_42px_rgba(245,158,11,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
               >
-                <span className="flex items-center gap-2.5 sm:gap-3">
-                  <span className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-lg sm:rounded-xl bg-slate-950/10">
-                    <Plus className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2.5} />
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950/10">
+                    <Plus className="h-5 w-5" strokeWidth={2.5} />
                   </span>
                   <span>
-                    <span className="block text-[0.6rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-800/60">New session</span>
-                    <span className="block text-base sm:text-lg font-bold tracking-tight">Create Game</span>
+                    <span className="block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-800/70">New session</span>
+                    <span className="block text-lg font-bold tracking-tight">Create Game</span>
                   </span>
                 </span>
-                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-200 group-hover:translate-x-1" />
+                <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
               </button>
               <button
                 onClick={() => { setMode('join'); setError(''); }}
-                className="group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-3.5 py-3 sm:px-5 sm:py-4 text-left text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200/30 hover:from-indigo-300/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
+                className="group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-4 py-3.5 sm:px-5 sm:py-4 text-left text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200/30 hover:from-indigo-300/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
               >
-                <span className="flex items-center gap-2.5 sm:gap-3">
-                  <span className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-lg sm:rounded-xl bg-indigo-300/15 text-indigo-200">
-                    <LogIn className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2.2} />
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-300/15 text-indigo-200">
+                    <LogIn className="h-5 w-5" strokeWidth={2.2} />
                   </span>
                   <span>
-                    <span className="block text-[0.6rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Have a PIN?</span>
-                    <span className="block text-base sm:text-lg font-bold tracking-tight">Join Game</span>
+                    <span className="block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Have a PIN?</span>
+                    <span className="block text-lg font-bold tracking-tight">Join Game</span>
                   </span>
                 </span>
-                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-white" />
+                <ArrowRight className="h-5 w-5 text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-white" />
               </button>
             </div>
           )}
 
           {mode === 'create' && (
-            <div className="flex flex-col gap-2 sm:gap-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
               <div>
-                <button onClick={() => { setMode('home'); setError(''); }} className="mb-1 sm:mb-6 flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
-                  ← Back
-                </button>
-                <p className="mb-0.5 sm:mb-2 text-[0.6rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.2em] text-amber-300/80">Host a session</p>
-                <h2 className="mb-0.5 sm:mb-2 text-lg sm:text-2xl font-bold tracking-tight text-white">Create a Room</h2>
-                <p className="text-xs sm:text-sm leading-tight sm:leading-6 text-slate-400">You&apos;ll be the host and receive a Game PIN to share.</p>
+                <div className="mb-2 flex items-center justify-between">
+                  <button onClick={() => { setMode('home'); setError(''); }} className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70">
+                    ← Back
+                  </button>
+                  <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-amber-300/80">Host a session</p>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Create a Room</h2>
+                <p className="mt-0.5 text-xs sm:text-sm leading-5 text-slate-400">You&apos;ll be the host and receive a Game PIN to share.</p>
               </div>
               <fieldset>
-                <legend className="mb-1 sm:mb-2 block text-[0.6rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game Mode</legend>
+                <legend className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game Mode</legend>
                 <div className="grid grid-cols-2 gap-2">
                   {([
-                    ['HP', 'HP Battle', 'Score drains opponents\' health'],
+                    ['HP', 'HP Battle', 'Score drains health'],
                     ['TURNS', 'Turn Count', 'Highest score wins'],
                   ] as const).map(([value, title, description]) => (
                     <button
@@ -199,26 +201,26 @@ export default function HomePage() {
                       type="button"
                       aria-pressed={gameMode === value}
                       onClick={() => setGameMode(value)}
-                      className={`min-h-12 sm:min-h-20 rounded-lg sm:rounded-xl border p-2 sm:p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${
+                      className={`rounded-xl border p-2.5 sm:p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${
                         gameMode === value
                           ? 'border-amber-300/70 bg-amber-300/10 text-white'
                           : 'border-white/10 bg-slate-800/50 text-slate-300 hover:border-white/25'
                       }`}
                     >
                       <span className="block text-xs sm:text-sm font-bold">{title}</span>
-                      <span className="mt-0.5 sm:mt-1 block text-[0.65rem] sm:text-xs leading-3 sm:leading-4 text-slate-400">{description}</span>
+                      <span className="mt-0.5 block text-[0.68rem] leading-snug text-slate-400">{description}</span>
                     </button>
                   ))}
                 </div>
               </fieldset>
               {gameMode === 'TURNS' && (
                 <div>
-                  <label htmlFor="max-turns" className="mb-1 sm:mb-2 block text-[0.6rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game Length</label>
+                  <label htmlFor="max-turns" className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game Length</label>
                   <select
                     id="max-turns"
                     value={turnCountOption}
                     onChange={event => setTurnCountOption(event.target.value)}
-                    className="w-full rounded-lg sm:rounded-xl border border-white/10 bg-slate-800/80 px-3 py-1.5 sm:px-4 sm:py-3.5 text-xs sm:text-base text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+                    className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
                   >
                     <option value="7">7 Turns</option>
                     <option value="14">14 Turns</option>
@@ -233,18 +235,18 @@ export default function HomePage() {
                       value={customTurnCount}
                       onChange={event => setCustomTurnCount(event.target.value)}
                       aria-label="Custom turn count"
-                      className="mt-1.5 sm:mt-2 w-full rounded-lg sm:rounded-xl border border-white/10 bg-slate-800/80 px-3 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-base text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
                     />
                   )}
                 </div>
               )}
               <div>
-                <label htmlFor="turn-time" className="mb-1 sm:mb-2 block text-[0.6rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Turn Time</label>
+                <label htmlFor="turn-time" className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Turn Time</label>
                 <select
                   id="turn-time"
                   value={turnTimeLimit ?? ''}
                   onChange={event => setTurnTimeLimit(event.target.value === '' ? null : Number(event.target.value) as TurnTimeLimit)}
-                  className="w-full rounded-lg sm:rounded-xl border border-white/10 bg-slate-800/80 px-3 py-1.5 sm:px-4 sm:py-3.5 text-xs sm:text-base text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
                 >
                   <option value="">Unlimited</option>
                   <option value="30">30 sec</option>
@@ -254,7 +256,7 @@ export default function HomePage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1 sm:mb-2 block text-[0.6rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Your Name</label>
+                <label className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Your Name</label>
                 <input
                   type="text"
                   value={name}
@@ -262,26 +264,26 @@ export default function HomePage() {
                   onKeyDown={e => e.key === 'Enter' && handleCreate()}
                   placeholder="Enter your name..."
                   maxLength={24}
-                  className="w-full rounded-lg sm:rounded-xl border border-white/10 bg-slate-800/80 px-3 py-2 sm:px-4 sm:py-3.5 text-sm sm:text-lg text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
                 />
               </div>
-              <label className="flex items-center gap-2 rounded-lg sm:rounded-xl border border-rose-400/30 bg-rose-950/20 px-2.5 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-rose-200">
+              <label className="flex items-center gap-2.5 rounded-xl border border-rose-400/30 bg-rose-950/20 px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm text-rose-200">
                 <input
                   type="checkbox"
                   checked={isDebugMode}
                   onChange={e => setIsDebugMode(e.target.checked)}
-                  className="h-3.5 w-3.5 sm:h-4 sm:w-4 accent-rose-400"
+                  className="h-4 w-4 accent-rose-400"
                 />
                 <span>
-                  🐞 <span className="font-semibold text-xs sm:text-sm">Debug room</span>
-                  <span className="block text-[0.62rem] sm:text-xs text-rose-300/70">Everyone who joins sees every rack and gets debug tools</span>
+                  🐞 <span className="font-semibold">Debug room</span>
+                  <span className="block text-[0.65rem] sm:text-xs text-rose-300/70">Everyone sees every rack and gets debug tools</span>
                 </span>
               </label>
               {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
               <button
                 onClick={handleCreate}
                 disabled={loading}
-                className="w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-amber-400 py-2.5 sm:py-4 text-sm sm:text-lg font-bold text-slate-950 shadow-[0_12px_30px_rgba(245,158,11,0.16)] transition-all hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px"
+                className="w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-amber-400 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_12px_30px_rgba(245,158,11,0.16)] transition-all hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px"
               >
                 {loading ? 'Creating...' : 'Create Room'}
               </button>
@@ -289,28 +291,30 @@ export default function HomePage() {
           )}
 
           {mode === 'join' && (
-            <div className="flex flex-col gap-2.5 sm:gap-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
               <div>
-                <button onClick={() => { setMode('home'); setError(''); }} className="mb-1 sm:mb-6 flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
-                  ← Back
-                </button>
-                <p className="mb-0.5 sm:mb-2 text-[0.6rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.2em] text-indigo-300/80">Enter a session</p>
-                <h2 className="mb-0.5 sm:mb-2 text-lg sm:text-2xl font-bold tracking-tight text-white">Join a Game</h2>
-                <p className="text-xs sm:text-sm leading-tight sm:leading-6 text-slate-400">Enter the Game PIN given by the host.</p>
+                <div className="mb-2 flex items-center justify-between">
+                  <button onClick={() => { setMode('home'); setError(''); }} className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/70">
+                    ← Back
+                  </button>
+                  <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-indigo-300/80">Enter a session</p>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Join a Game</h2>
+                <p className="mt-0.5 text-xs sm:text-sm leading-5 text-slate-400">Enter the Game PIN given by the host.</p>
               </div>
               <div>
-                <label className="mb-1 sm:mb-2 block text-[0.6rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Your Name</label>
+                <label className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Your Name</label>
                 <input
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="Enter your name..."
                   maxLength={24}
-                  className="w-full rounded-lg sm:rounded-xl border border-white/10 bg-slate-800/80 px-3 py-2 sm:px-4 sm:py-3.5 text-sm sm:text-lg text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
                 />
               </div>
               <div>
-                <label className="mb-1 sm:mb-2 block text-[0.6rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game PIN</label>
+                <label className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game PIN</label>
                 <input
                   type="text"
                   value={pin}
@@ -318,31 +322,31 @@ export default function HomePage() {
                   onKeyDown={e => e.key === 'Enter' && handleJoin()}
                   placeholder="6-digit PIN"
                   maxLength={6}
-                  className="w-full rounded-lg sm:rounded-xl border border-white/10 bg-slate-800/80 px-3 py-2 sm:px-4 sm:py-3.5 text-center font-mono text-lg sm:text-2xl tracking-[0.28em] text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-center font-mono text-xl sm:text-2xl tracking-[0.28em] text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
                 />
               </div>
               {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
               <button
                 onClick={handleJoin}
                 disabled={loading}
-                className="w-full rounded-xl sm:rounded-2xl border border-indigo-300/30 bg-indigo-500 py-2.5 sm:py-4 text-sm sm:text-lg font-bold text-white shadow-[0_12px_30px_rgba(99,102,241,0.18)] transition-all hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px"
+                className="w-full rounded-xl sm:rounded-2xl border border-indigo-300/30 bg-indigo-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-white shadow-[0_12px_30px_rgba(99,102,241,0.18)] transition-all hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px"
               >
                 {loading ? 'Joining...' : 'Join Game'}
               </button>
               <button
                 onClick={handleWatch}
                 disabled={loading}
-                className="-mt-1 sm:-mt-3 flex w-full items-center justify-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl border border-white/10 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-slate-300 transition-all hover:border-sky-300/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+                className="-mt-1.5 sm:-mt-3 flex w-full items-center justify-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl border border-white/10 py-2.5 text-xs sm:text-sm font-semibold text-slate-300 transition-all hover:border-sky-300/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
                 title="Watch the game without playing (only the PIN is needed)"
               >
-                <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <Eye className="h-4 w-4" />
                 Watch as spectator
               </button>
             </div>
           )}
         </div>
 
-        <p className="text-center text-[0.6rem] sm:text-[0.68rem] font-medium uppercase tracking-[0.2em] text-slate-600 hidden sm:block">
+        <p className="text-center text-[0.65rem] sm:text-[0.68rem] font-medium uppercase tracking-[0.2em] text-slate-500">
           Think sharp · play together · score big
         </p>
       </div>
