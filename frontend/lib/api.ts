@@ -254,7 +254,8 @@ export async function validateMove(
 export async function commitMove(
   gameId: string,
   playerId: string,
-  placedTiles: PlacedTile[]
+  placedTiles: PlacedTile[],
+  freezeTileId?: string
 ): Promise<CommitMoveResponse> {
   const res = await fetch(`${getApiBase()}/games/${gameId}/moves`, {
     method: 'POST',
@@ -262,7 +263,7 @@ export async function commitMove(
       'Content-Type': 'application/json',
       'X-Player-ID': playerId,
     },
-    body: JSON.stringify({ placed_tiles: placedTiles }),
+    body: JSON.stringify({ placed_tiles: placedTiles, freeze_tile_id: freezeTileId }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

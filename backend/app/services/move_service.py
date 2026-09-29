@@ -11,7 +11,9 @@ from app.game.tiles import TileService
 from app.services.game_service import GameService
 from app.schemas.move import PlacedTileInput, ValidateMoveResponse, CommitMoveResponse, WordFormed
 from app.game.board import Board
-from app.database.state import bag_tiles, board_state, player_rack, replace_board_state, replace_game_tiles
+from app.database.state import (
+    bag_tiles, board_state, player_rack, replace_board_state, replace_game_tiles, replace_player_cards,
+)
 from app.services.game_service import GameService
 import random
 
@@ -169,7 +171,8 @@ class MoveService:
         db: AsyncSession,
         game_id: str,
         player_id: str,
-        placed_tiles: list[PlacedTileInput]
+        placed_tiles: list[PlacedTileInput],
+        freeze_tile_id: str | None = None,
     ) -> tuple[CommitMoveResponse, Game, GamePlayer]:
         stmt_game = select(Game).where(Game.id == game_id).with_for_update()
         game = (await db.execute(stmt_game)).scalar_one_or_none()
@@ -216,6 +219,17 @@ class MoveService:
             frozen_cell = (game.frozen_tile["row"], game.frozen_tile["col"])
             if any(frozen_cell in w.cells for w in words):
                 raise HTTPException(status_code=400, detail="That letter is frozen this turn")
+
+        # FREEZE_TILE played on one of this move's own tiles: takes effect once the move commits,
+        # below, in this same turn - staging it client-side and only sending it here is what lets
+        # recalling the tile before Confirm Move act as cancelling the freeze.
+        freeze_target = None
+        if freeze_tile_id:
+            if "FREEZE_TILE" not in (player.cards or []):
+                raise HTTPException(status_code=400, detail="You don't have a Freeze card")
+            freeze_target = next((pt for pt in placed_tiles if pt.tile_id == freeze_tile_id), None)
+            if not freeze_target:
+                raise HTTPException(status_code=400, detail="Freeze target is not part of this move")
 
         # Commit tiles to board
         updated_board = dict(game.board_state)
@@ -274,7 +288,6 @@ class MoveService:
                 card_awarded = random.choice(cls.card_pool(game))
                 cards.append(card_awarded)
                 player.cards = cards
-                from app.database.state import replace_player_cards
                 await replace_player_cards(db, player.id, cards)
 
         words_formed = cls._words_formed(words, breakdown)
@@ -296,6 +309,17 @@ class MoveService:
         # Advance turn
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
         all_players = (await db.execute(stmt_players)).scalars().all()
+
+        if freeze_target is not None:
+            held_cards = list(player.cards or [])
+            held_cards.remove("FREEZE_TILE")
+            player.cards = held_cards
+            await replace_player_cards(db, player.id, held_cards)
+            turns_to_block = max(1, len(GameService.eligible_players(all_players)) - 1)
+            game.frozen_tile = {
+                "row": freeze_target.row, "col": freeze_target.col,
+                "set_by": player.id, "expires_turn": game.turn_number + turns_to_block,
+            }
 
         # Score is authoritative damage to every other living player, doubled for a
         # DOUBLE_DAMAGE target. Applied after a short SHIELD window, not immediately.

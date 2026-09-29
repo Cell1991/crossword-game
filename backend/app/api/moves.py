@@ -30,7 +30,9 @@ async def commit_move(
     x_player_id: str = Header(..., alias="X-Player-ID"),
     db: AsyncSession = Depends(get_db)
 ):
-    res, game, player = await MoveService.commit_move(db, game_id, x_player_id, req.placed_tiles)
+    res, game, player = await MoveService.commit_move(
+        db, game_id, x_player_id, req.placed_tiles, freeze_tile_id=req.freeze_tile_id
+    )
     # Save before telling anyone: clients reload the game the moment an event arrives.
     await db.commit()
 

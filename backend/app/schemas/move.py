@@ -26,6 +26,9 @@ class ValidateMoveResponse(BaseModel):
 
 class CommitMoveRequest(BaseModel):
     placed_tiles: list[PlacedTileInput]
+    # A FREEZE_TILE card played on one of these placed tiles: freezes it once the move commits,
+    # in the same turn (rather than needing an already-committed tile from a prior turn).
+    freeze_tile_id: Optional[str] = None
 
 class CommitMoveResponse(BaseModel):
     success: bool

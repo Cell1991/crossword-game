@@ -103,8 +103,14 @@ export default function GamePage() {
     [rackSlots]
   );
 
-  const cards = usePowerCards({ gameId, myPlayerId, boardState, reload, toasts });
+  const cards = usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, reload, toasts });
   const { armedCard, playArmedCardAt } = cards;
+  /** The staged tile a FREEZE_TILE mark will apply to on Confirm Move, for the board highlight. */
+  const deferredFreezeCell = useMemo(() => {
+    if (!cards.deferredFreezeTileId) return null;
+    const tile = temporaryTiles.find(t => t.tile_id === cards.deferredFreezeTileId);
+    return tile ? { row: tile.row, col: tile.col } : null;
+  }, [cards.deferredFreezeTileId, temporaryTiles]);
   const { handleCellClick: placeAtCell, unstageTile, selectTile, clearSelection, clearStagedMove } = staged;
   const { validationState, validationReason } = staged;
   const { flashError, setError } = toasts;
@@ -221,7 +227,8 @@ export default function GamePage() {
     }
     setIsSubmitting(true);
     try {
-      await commitMove(gameId, myPlayerId, temporaryTiles);
+      const freezeTileId = cards.deferredFreezeTileId ?? undefined;
+      await commitMove(gameId, myPlayerId, temporaryTiles, freezeTileId);
       clearStagedMove();
       reload();
     } catch (error: unknown) {
@@ -229,7 +236,7 @@ export default function GamePage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearStagedMove, flashError, gameId, myPlayerId, reload, setError, temporaryTiles, validationReason, validationState]);
+  }, [cards.deferredFreezeTileId, clearStagedMove, flashError, gameId, myPlayerId, reload, setError, temporaryTiles, validationReason, validationState]);
 
   const handlePassTurn = useCallback(async () => {
     if (!myPlayerId) return;
@@ -379,7 +386,7 @@ export default function GamePage() {
               camera={camera}
               frozenTile={gameState.frozen_tile}
               hintCell={cards.hintCell}
-              pendingArmedCell={cards.pendingArmedCell}
+              pendingArmedCell={cards.pendingArmedCell ?? deferredFreezeCell}
             />
             <div className="pointer-events-none absolute left-2 right-16 top-2 z-20 lg:hidden">
               <div
@@ -481,6 +488,7 @@ export default function GamePage() {
                 hasStagedMove={temporaryTiles.length > 0}
                 armedCard={cards.armedCard}
                 pendingArmedCell={cards.pendingArmedCell}
+                deferredFreezeTileId={cards.deferredFreezeTileId}
                 busy={cards.busy}
                 onUseSimple={cards.playSimpleCard}
                 onUseTargeted={cards.playTargetedCard}
@@ -490,6 +498,7 @@ export default function GamePage() {
                 onCancelArm={cards.cancelArm}
                 onConfirmArmedCell={cards.confirmArmedCardAt}
                 onCancelArmedCell={cards.cancelPendingArmedCell}
+                onCancelDeferredFreeze={cards.cancelDeferredFreeze}
               />
             </div>
             <TileRack
