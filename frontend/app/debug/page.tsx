@@ -1,15 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createRoom, joinRoom, startGame, sessionStore, debugSessionStore, StoredSession } from '@/lib/api';
+import { createRoom, getRoom, joinRoom, startGame, sessionStore, debugSessionStore, StoredSession } from '@/lib/api';
+import { PinDisplay } from '@/components/lobby/PinDisplay';
+import { PlayerList } from '@/components/lobby/PlayerList';
+import { Player } from '@/lib/types';
 
 export default function DebugSetupPage() {
   const router = useRouter();
   const [sessions, setSessions] = useState<StoredSession[]>([]);
   const [gamePin, setGamePin] = useState<string | null>(null);
+  // The room's own player list (polled): shows real players who joined with the PIN, which the
+  // locally-tracked `sessions` (this tab's host + clones) never would on its own.
+  const [roomPlayers, setRoomPlayers] = useState<Player[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!gamePin) return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const room = await getRoom(gamePin);
+        if (!cancelled) setRoomPlayers(room.players);
+      } catch {
+        // Transient poll failure: next tick retries.
+      }
+    };
+    void poll();
+    const interval = setInterval(poll, 2000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [gamePin]);
 
   const handleCreateRoom = async () => {
     setBusy(true);
@@ -97,30 +119,21 @@ export default function DebugSetupPage() {
           </button>
         ) : (
           <>
-            <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Players ({sessions.length})</p>
-              <div className="flex flex-col gap-1.5">
-                {sessions.map(s => (
-                  <div key={s.playerId} className="flex items-center justify-between text-sm text-white">
-                    <span>{s.displayName}</span>
-                    {s.isHost && <span className="text-[10px] font-bold uppercase text-amber-400">Host</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <PinDisplay pin={gamePin} />
+            <PlayerList players={roomPlayers} myPlayerId={sessions.find(s => s.isHost)?.playerId} />
             <button
               onClick={handleAddClone}
               disabled={busy}
               className="w-full rounded-2xl border border-slate-700 bg-slate-800 hover:bg-slate-700 py-3 font-semibold text-white disabled:opacity-50"
             >
-              + Add Clone Player
+              + Add Clone Player (controlled by you)
             </button>
             <button
               onClick={handleStart}
-              disabled={busy}
+              disabled={busy || roomPlayers.length === 0}
               className="w-full rounded-2xl bg-emerald-500 hover:bg-emerald-400 py-3.5 text-lg font-bold text-slate-950 disabled:opacity-50"
             >
-              {busy ? 'Starting…' : `Start Debug Game (${sessions.length} player${sessions.length === 1 ? '' : 's'})`}
+              {busy ? 'Starting…' : `Start Debug Game (${roomPlayers.length} player${roomPlayers.length === 1 ? '' : 's'})`}
             </button>
           </>
         )}

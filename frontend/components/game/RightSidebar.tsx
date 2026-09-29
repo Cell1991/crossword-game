@@ -42,6 +42,8 @@ export const RightSidebar = memo(function RightSidebar({
   const [isTileBagOpen, setIsTileBagOpen] = useState(false);
   const tileBagButtonRef = useRef<HTMLButtonElement>(null);
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+  // Starting HP scales with the roster (see RoomService.start_game); the bar must scale with it too.
+  const maxHp = 100 + Math.max(0, players.length - 2) * 20;
 
   const closeTileBag = useCallback(() => {
     setIsTileBagOpen(false);
@@ -168,11 +170,11 @@ export const RightSidebar = memo(function RightSidebar({
                         className={`h-full transition-all duration-300 ${
                           player.hp <= 0
                             ? 'bg-slate-700'
-                            : player.hp > 50
+                            : player.hp > maxHp / 2
                             ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
                             : 'bg-gradient-to-r from-rose-500 to-amber-500'
                         }`}
-                        style={{ width: `${Math.max(0, Math.min(100, player.hp))}%` }}
+                        style={{ width: `${Math.max(0, Math.min(100, (player.hp / maxHp) * 100))}%` }}
                       />
                       {/* HP Dividers every 20% */}
                       {[20, 40, 60, 80].map((percent) => (

@@ -43,6 +43,7 @@ interface BoardCanvasProps {
   camera: BoardCamera;
   frozenTile?: CellPosition | null;
   hintCell?: CellPosition | null;
+  pendingArmedCell?: CellPosition | null;
 }
 
 /**
@@ -73,6 +74,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   camera,
   frozenTile = null,
   hintCell = null,
+  pendingArmedCell = null,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<SceneContent | null>(null);
@@ -125,9 +127,10 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       draggingTileId,
       frozenTile,
       hintCell,
+      pendingArmedCell,
     };
     draw();
-  }, [boardState, dragPreviewCell, dragPreviewIsValid, dragPreviewTile, draggingTileId, draw, frozenTile, hintCell, remotePlacements, selectedCell, temporaryTiles, temporaryTilesValid]);
+  }, [boardState, dragPreviewCell, dragPreviewIsValid, dragPreviewTile, draggingTileId, draw, frozenTile, hintCell, pendingArmedCell, remotePlacements, selectedCell, temporaryTiles, temporaryTilesValid]);
 
   // Size the canvas to its container, and centre the board the first time it has a size.
   useLayoutEffect(() => {

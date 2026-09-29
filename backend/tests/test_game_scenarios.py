@@ -360,7 +360,7 @@ async def test_hp01_score_is_dealt_as_damage_to_every_opponent(open_table):
     await resolve_damage(table)
 
     state = await table.state()
-    assert [me(state, seat)["hp"] for seat in (alice, bob, carol)] == [100, 95, 95]
+    assert [me(state, seat)["hp"] for seat in (alice, bob, carol)] == [120, 115, 115]
 
 
 async def test_hp02_knocking_out_the_last_opponent_wins_the_game(open_table, broadcasts):
@@ -786,6 +786,31 @@ async def test_cd07_freeze_tile_blocks_a_word_through_it_for_one_turn(open_table
     assert allowed.status_code == 200, allowed.text
 
 
+async def test_cd07b_freeze_tile_blocks_every_opponent_until_it_wraps_back(open_table):
+    """With N players it takes N-1 turns to come back to the freezer, so all N-1 opponents
+    (not just the next one) should be blocked - and the marker should clear exactly then."""
+    table = await open_table("Alice", "Bob", "Carol", "Dave")
+    alice, bob, carol, dave = table.seats
+    await table.set_board({(ROW, COL - 1): "C", (ROW, COL): "A", (ROW, COL + 1): "T"})
+    await table.set_cards(alice, ["FREEZE_TILE"])
+
+    assert (await table.act(alice, "cards/use", {"card": "FREEZE_TILE", "row": ROW, "col": COL})).status_code == 200
+    await table.act(alice, "pass")
+
+    for seat in (bob, carol, dave):
+        await table.set_tiles(racks={seat: "SEIOURN"})
+        blocked = await table.place(seat, ROW, COL + 2, "S")
+        assert blocked.status_code == 400, f"{seat.name} should still be blocked"
+        assert "frozen" in blocked.json()["detail"]
+        assert (await table.state())["frozen_tile"] is not None
+        await table.act(seat, "pass")
+
+    await table.set_tiles(racks={alice: "SEIOURN"})
+    allowed = await table.place(alice, ROW, COL + 2, "S")
+    assert allowed.status_code == 200, allowed.text
+    assert (await table.state())["frozen_tile"] is None
+
+
 async def test_cd08_shield_blocks_damage_for_the_blocker_only(open_table):
     table = await open_table("Alice", "Bob", "Carol")
     alice, bob, carol = table.seats
@@ -797,7 +822,7 @@ async def test_cd08_shield_blocks_damage_for_the_blocker_only(open_table):
     await resolve_damage(table)
 
     state = await table.state()
-    assert [me(state, seat)["hp"] for seat in (alice, bob, carol)] == [100, 100, 95]
+    assert [me(state, seat)["hp"] for seat in (alice, bob, carol)] == [120, 120, 115]
 
 
 async def test_cd09_shield_without_an_incoming_effect_is_rejected(open_table):

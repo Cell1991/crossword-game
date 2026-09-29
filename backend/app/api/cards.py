@@ -243,9 +243,13 @@ async def use_card(
         current_board = await board_state(db, game.id)
         if Board.key(request.row, request.col) not in current_board:
             raise HTTPException(status_code=400, detail="Board tile not found")
+        # Block every opponent's turn until this wraps back around to the freezer, not just the
+        # next one - with N players in rotation that is N-1 turns, regardless of table size.
+        all_players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
+        turns_to_block = max(1, len(GameService.eligible_players(all_players)) - 1)
         game.frozen_tile = {
             "row": request.row, "col": request.col,
-            "set_by": player.id, "expires_turn": game.turn_number + 1,
+            "set_by": player.id, "expires_turn": game.turn_number + turns_to_block,
         }
         return {"success": True}
 

@@ -233,8 +233,12 @@ class RoomService:
         stmt_game = select(Game).where(Game.id == room.id)
         game = (await db.execute(stmt_game)).scalar_one()
 
+        # Base 100 HP, +20 per player beyond the first two (a 4-player free-for-all takes damage
+        # from three opponents each round, so a flat base would knock players out too fast).
+        starting_hp = 100 + max(0, len(players) - 2) * 20
         bag = list(game.tile_bag)
         for player in players:
+            player.hp = starting_hp
             rack, bag = TileService.draw_tiles(bag, settings.RACK_SIZE)
             player.rack = rack
 

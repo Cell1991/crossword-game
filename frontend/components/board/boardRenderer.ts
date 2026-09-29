@@ -32,6 +32,8 @@ export interface BoardScene {
   draggingTileId: string | null;
   frozenTile: CellPosition | null;
   hintCell: CellPosition | null;
+  /** A DESTROY/FREEZE card's target tile, picked but not yet confirmed. */
+  pendingArmedCell: CellPosition | null;
   /** Skip glows and twinkling on weaker devices. */
   lowPower: boolean;
   tilePalette: TilePalette;
@@ -441,6 +443,17 @@ export function drawBoard(ctx: CanvasRenderingContext2D, dpr: number, scene: Boa
     ctx.setLineDash([6, 4]);
     ctx.strokeRect(x + 1.5, y + 1.5, cellSize - 3, cellSize - 3);
     ctx.setLineDash([]);
+  }
+
+  const { pendingArmedCell } = scene;
+  if (pendingArmedCell && visible(pendingArmedCell)) {
+    const x = offset.x + pendingArmedCell.col * cellSize;
+    const y = offset.y + pendingArmedCell.row * cellSize;
+    ctx.strokeStyle = '#f43f5e';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x + 1.5, y + 1.5, cellSize - 3, cellSize - 3);
+    ctx.fillStyle = 'rgba(244, 63, 94, 0.22)';
+    ctx.fillRect(x + 1.5, y + 1.5, cellSize - 3, cellSize - 3);
   }
 
   // Draw Temporary Placed Tiles

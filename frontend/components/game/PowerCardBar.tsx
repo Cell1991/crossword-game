@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo, useState } from 'react';
-import { BoardCard, Player, Tile } from '@/lib/types';
+import { BoardCard, CellPosition, Player, Tile } from '@/lib/types';
 import { isBlankLetter } from '@/lib/tiles';
 import { cardIcon } from './cardIcons';
 
@@ -28,6 +28,7 @@ interface PowerCardBarProps {
   isMyTurn: boolean;
   hasStagedMove: boolean;
   armedCard: BoardCard | null;
+  pendingArmedCell: CellPosition | null;
   busy: boolean;
   onUseSimple: (card: SimpleCard) => void;
   onUseTargeted: (card: TargetedCard, targetPlayerId: string) => void;
@@ -35,6 +36,8 @@ interface PowerCardBarProps {
   onUseBanLetter: (letter: string) => void;
   onArmBoardCard: (card: BoardCard) => void;
   onCancelArm: () => void;
+  onConfirmArmedCell: () => void;
+  onCancelArmedCell: () => void;
 }
 
 export const PowerCardBar = memo(function PowerCardBar({
@@ -44,6 +47,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   isMyTurn,
   hasStagedMove,
   armedCard,
+  pendingArmedCell,
   busy,
   onUseSimple,
   onUseTargeted,
@@ -51,6 +55,8 @@ export const PowerCardBar = memo(function PowerCardBar({
   onUseBanLetter,
   onArmBoardCard,
   onCancelArm,
+  onConfirmArmedCell,
+  onCancelArmedCell,
 }: PowerCardBarProps) {
   const [pickingTargetFor, setPickingTargetFor] = useState<TargetedCard | null>(null);
   const [pickingLetter, setPickingLetter] = useState(false);
@@ -66,6 +72,35 @@ export const PowerCardBar = memo(function PowerCardBar({
     if (CARD_META[card]) counts.set(card, (counts.get(card) ?? 0) + 1);
   }
   if (counts.size === 0 && armedCard === null) return null;
+
+  if (armedCard && pendingArmedCell) {
+    const meta = CARD_META[armedCard];
+    const verb = armedCard === 'DESTROY_TILE' ? 'destroy' : 'freeze';
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-rose-400/60 bg-rose-950/60 px-3 py-1.5 text-xs text-rose-200">
+        <span className="flex items-center gap-1.5">{meta.icon} Really {verb} this tile? This can&apos;t be undone.</span>
+        <button
+          disabled={busy}
+          onClick={onConfirmArmedCell}
+          className="rounded-full bg-rose-500 px-3 py-1 font-bold text-slate-950 hover:bg-rose-300 disabled:opacity-50"
+        >
+          {verb === 'destroy' ? 'Destroy' : 'Freeze'}
+        </button>
+        <button
+          onClick={onCancelArmedCell}
+          className="rounded-full border border-rose-300/40 px-2 py-0.5 text-[11px] hover:bg-rose-900"
+        >
+          Pick another tile
+        </button>
+        <button
+          onClick={onCancelArm}
+          className="rounded-full border border-rose-300/20 px-2 py-0.5 text-rose-300/70 hover:bg-rose-900"
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  }
 
   if (armedCard) {
     const meta = CARD_META[armedCard];
