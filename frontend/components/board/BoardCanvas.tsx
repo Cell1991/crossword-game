@@ -2,8 +2,8 @@
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
-import { BoardCamera, Offset } from '@/hooks/useBoardCamera';
-import { BoardScene, drawBoard } from './boardRenderer';
+import { BoardCamera } from '@/hooks/useBoardCamera';
+import { BoardModel, BoardScene, drawBoard } from './boardRenderer';
 import { PremiumCellOverlay } from './PremiumCellOverlay';
 import { TILE_THEME } from '@/lib/tileTheme';
 
@@ -78,9 +78,8 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<SceneContent | null>(null);
+  const modelRef = useRef(new BoardModel());
   const [lowPower] = useState(detectLowPowerDevice);
-  const panFrameRef = useRef<number | null>(null);
-  const pendingPanDeltaRef = useRef<Offset>({ x: 0, y: 0 });
   const pendingPointerRef = useRef<{ tile: PlacedTile; x: number; y: number; pointerId: number } | null>(null);
   const pendingDragRef = useRef(false);
   const isPanningRef = useRef(false);
@@ -108,11 +107,13 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       cellSize: camera.baseCellSize * scale,
       lowPower,
       tilePalette: window.innerWidth >= 1024 ? TILE_THEME.desktop : TILE_THEME.mobile,
+      model: modelRef.current,
     });
   }, [camera, lowPower]);
 
   // New board content: remember it for the imperative draws and draw it before the browser paints.
   useLayoutEffect(() => {
+    modelRef.current.updateState(boardState, temporaryTiles, remotePlacements);
     sceneRef.current = {
       boardState,
       temporaryTiles,
@@ -126,6 +127,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       frozenTile,
       hintCell,
       pendingArmedCell,
+      model: modelRef.current,
     };
     draw();
   }, [boardState, dragPreviewCell, dragPreviewIsValid, dragPreviewTile, draggingTileId, draw, frozenTile, hintCell, pendingArmedCell, remotePlacements, selectedCell, temporaryTiles, temporaryTilesValid]);
@@ -361,6 +363,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         boardState={boardState}
         temporaryTiles={temporaryTiles}
         remotePlacements={remotePlacements}
+        model={modelRef.current}
       />
     </div>
   );
