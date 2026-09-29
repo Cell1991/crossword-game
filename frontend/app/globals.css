@@ -246,3 +246,15 @@ body {
 
 .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Hide Next.js development badges and indicators */
+nextjs-portal,
+#nextjs-dev-indicator,
+[data-nextjs-toast],
+[data-nextjs-dev-tools-button],
+[data-nextjs-toast-wrapper],
+div[data-nextjs-dialog-backdrop] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

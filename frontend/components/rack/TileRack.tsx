@@ -300,8 +300,8 @@ export const TileRack = memo(function TileRack({
         </div>
 
 
-        {/* MOBILE CONTROLS WRAPPER */}
-        <div className="order-2 relative flex w-full flex-row justify-center gap-0 lg:contents">
+        {/* MOBILE CONTROLS WRAPPER (Unified symmetrical pill on mobile, split pods on desktop) */}
+        <div className="order-2 relative flex w-auto max-w-full flex-row items-center justify-center gap-1 rounded-2xl bg-slate-900/90 border border-slate-700/60 p-1 shadow-xl shadow-black/60 lg:contents lg:bg-transparent lg:border-0 lg:p-0 lg:shadow-none">
 
         {/* LEFT POD: GAME MANAGEMENT */}
         <div className="flex shrink flex-col items-center lg:order-1 lg:w-auto lg:items-start min-w-0">
@@ -312,7 +312,7 @@ export const TileRack = memo(function TileRack({
             </span>
           </div>
 
-          <div className="flex w-auto justify-center items-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-l-xl sm:rounded-l-2xl rounded-r-none lg:rounded-2xl border-r-0 lg:border-r lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-cyan-500/15 min-h-[52px] sm:min-h-[58px]">
+          <div className="flex w-auto justify-center items-center gap-1 p-0 lg:p-2 lg:bg-slate-900/85 lg:backdrop-blur-xl lg:border lg:border-slate-700/60 lg:rounded-2xl lg:shadow-xl lg:shadow-black/60 lg:ring-1 lg:ring-cyan-500/15 min-h-[44px] sm:min-h-[58px]">
             {isExchanging ? (
               <div className="flex items-center gap-2 px-1">
                 <button
@@ -335,7 +335,7 @@ export const TileRack = memo(function TileRack({
                 <button
                   onClick={onCancelMove}
                   disabled={!hasTemporaryTiles || isSubmitting}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
                     hasTemporaryTiles
                       ? 'bg-rose-950/70 text-rose-300 hover:bg-rose-900/90 border border-rose-600/60 cursor-pointer shadow-md shadow-rose-950/40 active:scale-95'
                       : 'bg-slate-800/40 text-slate-600 border border-slate-800/60 cursor-not-allowed'
@@ -350,7 +350,7 @@ export const TileRack = memo(function TileRack({
                 <button
                   onClick={onShuffleRack}
                   disabled={tileCount < 2 || isSubmitting}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
                   title="Shuffle rack tiles"
                 >
                   <Shuffle className="w-4 h-4 text-amber-400" />
@@ -361,7 +361,7 @@ export const TileRack = memo(function TileRack({
                 <button
                   onClick={onStartExchange}
                   disabled={!canStartExchange}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
                   title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
                 >
                   <ArrowLeftRight className="w-4 h-4 text-sky-400" />
@@ -371,6 +371,9 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
         </div>
+
+        {/* Divider on mobile */}
+        <div className="h-5 w-px bg-slate-700/60 mx-0.5 lg:hidden" />
 
         {/* RIGHT POD: TURN ACTIONS */}
         <div className="flex shrink flex-col items-center lg:order-3 lg:w-auto lg:items-end min-w-0">
@@ -395,12 +398,12 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
 
-          <div className="relative flex w-auto flex-wrap items-center justify-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-r-xl sm:rounded-r-2xl rounded-l-none lg:rounded-2xl border-l-0 lg:border-l lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-emerald-500/15 min-h-[52px] sm:min-h-[58px]">
+          <div className="relative flex w-auto flex-wrap items-center justify-center gap-1 p-0 lg:p-2 lg:bg-slate-900/85 lg:backdrop-blur-xl lg:border lg:border-slate-700/60 lg:rounded-2xl lg:shadow-xl lg:shadow-black/60 lg:ring-1 lg:ring-emerald-500/15 min-h-[44px] sm:min-h-[58px]">
             {isExchanging ? (
               <button
                 onClick={onConfirmExchange}
                 disabled={!canConfirmExchange}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+                className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
                   canConfirmExchange
                     ? 'bg-sky-600 text-white hover:bg-sky-500 active:scale-95 shadow-[0_0_20px_rgba(14,165,233,0.5)] cursor-pointer border-2 border-sky-400/50 ring-2 ring-sky-400/30'
                     : 'bg-slate-800/40 text-slate-600 border border-slate-800/60 cursor-not-allowed'
@@ -415,31 +418,30 @@ export const TileRack = memo(function TileRack({
                 {passConfirming ? (
                   <>
                     <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap tracking-wide">
-                      Skip turn?
+                      Skip?
                     </span>
                     <button
                       onClick={() => { setPassConfirming(false); onPassTurn(); }}
                       disabled={isSubmitting}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all bg-slate-700 hover:bg-slate-600 text-white border border-slate-500/70 cursor-pointer shadow-sm active:scale-95"
+                      className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-bold text-xs sm:text-sm transition-all bg-slate-700 hover:bg-slate-600 text-white border border-slate-500/70 cursor-pointer shadow-sm active:scale-95"
                       title="Confirm pass"
                     >
                       <Check className="w-4 h-4 text-sky-400" />
-                      <span>Confirm</span>
+                      <span>Yes</span>
                     </button>
                     <button
                       onClick={() => setPassConfirming(false)}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all bg-slate-800/60 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 border border-slate-700/50 cursor-pointer active:scale-95"
+                      className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-all bg-slate-800/60 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 border border-slate-700/50 cursor-pointer active:scale-95"
                       title="Cancel"
                     >
                       <X className="w-4 h-4" />
-                      <span>Cancel</span>
                     </button>
                   </>
                 ) : (
                   <button
                     onClick={() => setPassConfirming(true)}
                     disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
                       isMyTurn && !hasTemporaryTiles
                         ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/60 cursor-pointer shadow-sm active:scale-95'
                         : 'bg-slate-800/30 text-slate-600 border border-slate-800/60 cursor-not-allowed'
@@ -455,7 +457,7 @@ export const TileRack = memo(function TileRack({
                 <button
                   onClick={onConfirmMove}
                   disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
-                  className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all ${
+                  className={`flex items-center gap-1.5 px-3 sm:px-6 py-1.5 sm:py-2.5 rounded-xl font-bold text-xs sm:text-base transition-all ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
                       ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.65)] border-2 border-emerald-300 ring-2 ring-emerald-400/40 animate-pulse hover:brightness-110 active:scale-95 cursor-pointer'
                       : 'bg-slate-800/40 text-slate-600 border border-slate-700/30 cursor-not-allowed'
