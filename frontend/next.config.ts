@@ -1,8 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
   images: {
+    formats: ["image/avif", "image/webp"],
     localPatterns: [
+      { pathname: "/wordx-icon-256.png", search: "?v=20260915" },
       { pathname: "/wordx-icon.png", search: "?v=20260915" },
     ],
   },

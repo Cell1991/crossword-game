@@ -41,14 +41,16 @@ export const GameHud: React.FC<GameHudProps> = ({
     {/* Left: Exit, logo, connection, room PIN */}
     <div className="flex min-w-0 items-center gap-2 sm:gap-3">
       <button
+        type="button"
         onClick={onExit}
         className="flex items-center gap-1.5 rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:bg-slate-800 hover:text-white"
         title={isSpectator ? 'Stop watching' : 'Exit game'}
+        aria-label={isSpectator ? 'Stop watching' : 'Exit game'}
       >
         <span>Exit</span>
       </button>
       <Image
-        src="/wordx-icon.png?v=20260915"
+        src="/wordx-icon-256.png?v=20260915"
         alt="WordX logo"
         width={30}
         height={30}

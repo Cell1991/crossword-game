@@ -125,7 +125,7 @@ export default function LobbyPage() {
         {/* Header */}
         <div className="text-center">
           <Image
-            src="/wordx-icon.png?v=20260915"
+            src="/wordx-icon-256.png?v=20260915"
             alt="WordX logo"
             width={72}
             height={72}
