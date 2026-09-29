@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Layers, X } from 'lucide-react';
+import { TILE_THEME_STYLE } from '@/lib/tileTheme';
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
@@ -35,6 +36,7 @@ export const TileBagDialog: React.FC<TileBagDialogProps> = ({ tileBagCount, tile
 
   return createPortal(
     <div
+      style={TILE_THEME_STYLE}
       className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-150 select-none"
       role="presentation"
       onMouseDown={(event) => {

@@ -75,6 +75,25 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --tile-face-gradient: linear-gradient(to bottom, #fbbf24, #e8a600, #664a01);
+  --tile-letter-color-desktop: #ffffff;
+  --tile-letter-stroke-desktop: #000000;
+  --tile-letter-shadow-desktop: 0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 4px 7px rgba(0, 0, 0, 0.72);
+  --tile-score-color-desktop: #ffffff;
+  --tile-score-stroke-desktop: #000000;
+  --tile-score-shadow-desktop: 0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 2px 4px rgba(0, 0, 0, 0.72);
+  --tile-blank-color-desktop: #ffffff;
+  --tile-blank-stroke-desktop: #000000;
+  --tile-blank-glow-desktop: rgba(0, 0, 0, 0.36);
+  --tile-letter-color-mobile: #ffffff;
+  --tile-letter-stroke-mobile: #000000;
+  --tile-letter-shadow-mobile: 0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 4px 7px rgba(0, 0, 0, 0.72);
+  --tile-score-color-mobile: #ffffff;
+  --tile-score-stroke-mobile: #000000;
+  --tile-score-shadow-mobile: 0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 2px 4px rgba(0, 0, 0, 0.72);
+  --tile-blank-color-mobile: #ffffff;
+  --tile-blank-stroke-mobile: #000000;
+  --tile-blank-glow-mobile: rgba(0, 0, 0, 0.36);
 }
 
 @theme inline {
