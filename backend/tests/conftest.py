@@ -79,7 +79,10 @@ class GameTable:
             f"/api/games/{self.game_id}/{action}", headers={"X-Player-ID": seat.id}, json=json
         )
 
-    async def place(self, seat: Seat, row: int, col: int, word: str, *, down: bool = False, validate: bool = False):
+    async def place(
+        self, seat: Seat, row: int, col: int, word: str, *,
+        down: bool = False, validate: bool = False, freeze_tile_id: str | None = None,
+    ):
         """Play `word` from the seat's rack starting at (row, col). A '.' skips a cell already on the board."""
         available = list((await self.player(seat))["rack"])
         placed = []
@@ -95,7 +98,10 @@ class GameTable:
                 "letter": letter,
                 "value": tile["value"],
             })
-        return await self.act(seat, "moves/validate" if validate else "moves", {"placed_tiles": placed})
+        body: dict[str, Any] = {"placed_tiles": placed}
+        if freeze_tile_id:
+            body["freeze_tile_id"] = freeze_tile_id
+        return await self.act(seat, "moves/validate" if validate else "moves", body)
 
     async def set_tiles(self, racks: dict[Seat, str] | None = None, bag: str | None = None) -> None:
         """Replace racks and/or the bag with known letters so a scenario is deterministic."""
@@ -180,6 +186,7 @@ async def open_table(client):
         turn_time_limit: int | None = None,
         game_mode: str = "HP",
         max_turns: int | None = None,
+        is_debug: bool = False,
     ) -> GameTable:
         host_name, *guest_names = names
         created = await client.post("/api/rooms", json={
@@ -187,6 +194,7 @@ async def open_table(client):
             "turn_time_limit": turn_time_limit,
             "game_mode": game_mode,
             "max_turns": max_turns,
+            "is_debug": is_debug,
         })
         assert created.status_code == 200, created.text
         room = created.json()

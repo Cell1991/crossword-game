@@ -811,6 +811,43 @@ async def test_cd07b_freeze_tile_blocks_every_opponent_until_it_wraps_back(open_
     assert (await table.state())["frozen_tile"] is None
 
 
+async def test_cd07c_freeze_tile_can_target_a_tile_placed_this_turn(open_table):
+    """FREEZE_TILE can target one of the tiles being placed in the current move itself, not just
+    an already-committed tile from a prior turn - it takes effect atomically with the commit."""
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.set_cards(alice, ["FREEZE_TILE"])
+    await table.set_tiles(racks={alice: "CATSEIO"})
+
+    a_tile = next(t for t in (await table.player(alice))["rack"] if t["letter"] == "A")
+    res = await table.place(alice, ROW, COL - 1, "CAT", freeze_tile_id=a_tile["id"])
+    assert res.status_code == 200, res.text
+
+    state = await table.state(alice)
+    assert (state["frozen_tile"]["row"], state["frozen_tile"]["col"]) == (ROW, COL)
+    assert me(state, alice)["cards"] == []
+
+    await table.set_tiles(racks={bob: "SEIOURN"})
+    blocked = await table.place(bob, ROW, COL + 2, "S")
+    assert blocked.status_code == 400
+    assert "frozen" in blocked.json()["detail"]
+
+
+async def test_cd07d_freeze_tile_target_must_be_part_of_the_move(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.set_cards(alice, ["FREEZE_TILE"])
+    await table.set_tiles(racks={alice: "CATSEIO"})
+
+    res = await table.place(alice, ROW, COL - 1, "CAT", freeze_tile_id="not-a-real-tile-id")
+
+    assert res.status_code == 400
+    assert "part of this move" in res.json()["detail"]
+    # A rejected commit must not have spent the card or the tiles.
+    assert (await table.state())["frozen_tile"] is None
+    assert me(await table.state(alice), alice)["cards"] == ["FREEZE_TILE"]
+
+
 async def test_cd08_shield_blocks_damage_for_the_blocker_only(open_table):
     table = await open_table("Alice", "Bob", "Carol")
     alice, bob, carol = table.seats
@@ -1195,3 +1232,45 @@ async def test_rt06_every_event_is_stamped_when_it_is_created():
     await asyncio.sleep(0.01)
 
     assert WebSocketEvent(type=EventType.TURN_PASSED, payload={}).timestamp != first
+
+
+# --- Debug mode room-scoping (DM) -----------------------------------------------------------------
+
+async def test_dm01_a_debug_room_reveals_every_players_rack_to_any_joiner(open_table):
+    """Anyone who joins a debug room is a debug player too - not just whoever set the flag."""
+    table = await open_table("Alice", "Bob", is_debug=True)
+    alice, bob = table.seats
+
+    state = await table.state(bob)  # Bob's own request, no special query param involved
+
+    assert state["is_debug"] is True
+    assert me(state, alice)["rack"] is not None
+
+
+async def test_dm02_a_normal_room_never_reveals_other_players_racks(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+
+    state = await table.state(bob)
+
+    assert state["is_debug"] is False
+    assert me(state, alice)["rack"] is None
+
+
+async def test_dm03_debug_endpoints_are_404_outside_a_debug_room(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, _ = table.seats
+
+    res = await table.client.post(f"/api/debug/games/{table.game_id}/players/{alice.id}/hp", json={"hp": 1})
+
+    assert res.status_code == 404
+
+
+async def test_dm04_debug_endpoints_work_inside_a_debug_room(open_table):
+    table = await open_table("Alice", "Bob", is_debug=True)
+    alice, _ = table.seats
+
+    res = await table.client.post(f"/api/debug/games/{table.game_id}/players/{alice.id}/hp", json={"hp": 1})
+
+    assert res.status_code == 200
+    assert me(res.json(), alice)["hp"] == 1
