@@ -294,7 +294,7 @@ export const TileRack = memo(function TileRack({
         <div className="order-2 relative flex w-full flex-row justify-center gap-0 lg:contents">
           {/* Mobile floating score badge */}
           {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
-            <div className="absolute -top-7 w-full flex justify-center lg:hidden pointer-events-none z-10">
+            <div className="absolute -top-8 right-2 flex lg:hidden pointer-events-none z-10">
               <span
                 className={`pointer-events-auto shadow-xl text-[12px] font-bold px-3 py-0.5 rounded-full border tracking-widest ${
                   placementValid === false
