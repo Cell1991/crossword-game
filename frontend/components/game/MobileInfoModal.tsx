@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { Trophy, X, Sparkles } from 'lucide-react';
+import { ScrollText, X, Sparkles } from 'lucide-react';
 import { Player, MoveHistoryEntry } from '@/lib/types';
 import { RightSidebar } from './RightSidebar';
 
@@ -63,13 +63,13 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-800/80 bg-slate-950/60 select-none">
           <div className="flex items-center gap-2.5">
-            {/* Glowing Trophy Icon Badge */}
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500/30 via-yellow-600/20 to-slate-900 border border-amber-400/50 shadow-[0_0_12px_rgba(251,191,36,0.35)] flex items-center justify-center shrink-0">
-              <Trophy className="w-4 h-4 text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]" />
+            {/* Glowing Scroll Icon Badge */}
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500/30 via-blue-600/20 to-slate-900 border border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.35)] flex items-center justify-center shrink-0">
+              <ScrollText className="w-4 h-4 text-cyan-300 drop-shadow-[0_0_6px_#38bdf8]" />
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-black tracking-wide text-white flex items-center gap-1.5 uppercase">
-                <span>Match Status</span>
+                <span>Match Log & Stats</span>
                 <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
               </h2>
               <p className="text-[10px] sm:text-[11px] font-mono font-semibold text-slate-400">

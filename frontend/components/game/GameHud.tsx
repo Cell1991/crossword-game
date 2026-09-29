@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Maximize, Minimize, Trophy } from 'lucide-react';
+import { Maximize, Minimize, ScrollText } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { TurnBanner } from './TurnBanner';
 
@@ -112,11 +112,11 @@ export const GameHud: React.FC<GameHudProps> = ({
         <button
           type="button"
           onClick={onOpenInfo}
-          className="lg:hidden rounded-lg border border-slate-700 p-1.5 text-amber-300 hover:bg-slate-800"
+          className="lg:hidden rounded-lg border border-cyan-500/30 bg-cyan-950/40 p-1.5 text-cyan-300 hover:bg-cyan-900/60 hover:text-white shadow-[0_0_8px_rgba(6,182,212,0.2)] transition-all cursor-pointer active:scale-95"
           title="Scores, history, and tile bag"
           aria-label="Open scores, history, and tile bag"
         >
-          <Trophy className="h-4 w-4" />
+          <ScrollText className="h-4 w-4 drop-shadow-[0_0_4px_#22d3ee]" />
         </button>
         <button
           type="button"
