@@ -7,6 +7,7 @@ import { Sparkles, Hourglass } from 'lucide-react';
 interface TurnBannerProps {
   isMyTurn: boolean;
   currentPlayer: Player | undefined;
+  nextPlayer?: Player | undefined;
   turnNumber: number;
   maxTurns: number | null;
 }
@@ -14,6 +15,7 @@ interface TurnBannerProps {
 export const TurnBanner: React.FC<TurnBannerProps> = ({
   isMyTurn,
   currentPlayer,
+  nextPlayer,
   turnNumber,
   maxTurns,
 }) => {
@@ -28,7 +30,9 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
       ) : (
         <div className="flex items-center gap-2 whitespace-nowrap rounded-full border border-indigo-300/20 bg-indigo-950/70 px-3 py-1 text-xs font-medium text-indigo-100 shadow-md shadow-indigo-950/20 sm:text-sm">
           <Hourglass className="w-3.5 h-3.5 text-slate-400 animate-spin" />
-          <span>NEXT: {currentPlayer?.display_name || 'opponent'}</span>
+          <span>TURN: {currentPlayer?.display_name || 'opponent'}</span>
+          <span className="text-indigo-300/50">|</span>
+          <span>NEXT: {nextPlayer?.display_name || 'opponent'}</span>
           <span className="font-mono text-xs text-indigo-300/70">TURN {turnNumber}{maxTurns ? ` / ${maxTurns}` : ''}</span>
         </div>
       )}

@@ -13,6 +13,7 @@ interface GameHudProps {
   spectatorCount: number;
   isMyTurn: boolean;
   currentPlayer: Player | undefined;
+  nextPlayer?: Player | undefined;
   turnNumber: number;
   maxTurns: number | null;
   onExit: () => void;
@@ -29,6 +30,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   spectatorCount,
   isMyTurn,
   currentPlayer,
+  nextPlayer,
   turnNumber,
   maxTurns,
   onExit,
@@ -87,7 +89,7 @@ export const GameHud: React.FC<GameHudProps> = ({
         <span className="whitespace-nowrap text-xs text-slate-400" title="Spectators watching">👁 {spectatorCount}</span>
       )}
       {timer}
-      <div className="hidden lg:block"><TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} turnNumber={turnNumber} maxTurns={maxTurns} /></div>
+      <div className="hidden lg:block"><TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} nextPlayer={nextPlayer} turnNumber={turnNumber} maxTurns={maxTurns} /></div>
     </div>
   </div>
 );
