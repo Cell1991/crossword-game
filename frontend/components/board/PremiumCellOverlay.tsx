@@ -160,7 +160,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
           .filter(([row, col]) => !isCellOccupied(row, col))
           .map(([row, col, isEcho]) => {
           const distance = isEcho ? getEchoDistance(row, col) : 0;
-          const isSolid = !isEcho || distance <= 2;
+          const isSolid = !isEcho || distance <= 5;
           const baseAlpha = getCellAlpha(row, col, occupiedPositions);
           const alpha = isSolid ? baseAlpha : baseAlpha * PREMIUM_ECHO_ALPHA;
           if (alpha <= 0.01) return null;
@@ -196,7 +196,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
           .filter(([row, col]) => !isCellOccupied(row, col))
           .map(([row, col, isEcho]) => {
           const distance = isEcho ? getEchoDistance(row, col) : 0;
-          const isSolid = !isEcho || distance <= 2;
+          const isSolid = !isEcho || distance <= 5;
           const baseAlpha = getCellAlpha(row, col, occupiedPositions);
           const alpha = isSolid ? baseAlpha : baseAlpha * PREMIUM_ECHO_ALPHA;
           if (alpha <= 0.01) return null;
@@ -220,7 +220,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
           .filter(([row, col]) => !isCellOccupied(row, col))
           .map(([row, col, isEcho]) => {
           const distance = isEcho ? getEchoDistance(row, col) : 0;
-          const isSolid = !isEcho || distance <= 2;
+          const isSolid = !isEcho || distance <= 5;
           const baseAlpha = getCellAlpha(row, col, occupiedPositions);
           const alpha = isSolid ? baseAlpha : baseAlpha * PREMIUM_ECHO_ALPHA;
           if (alpha <= 0.01) return null;
