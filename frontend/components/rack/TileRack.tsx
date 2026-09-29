@@ -199,6 +199,16 @@ export const TileRack = memo(function TileRack({
       <div className="flex w-full flex-row flex-wrap items-end justify-center gap-1.5 sm:gap-2 lg:flex-nowrap lg:gap-4">
         {/* CENTER POD: COSMIC BLUE TILE TRAY WITH NEON LED UNDER-LIGHTING */}
         <div className="relative order-1 flex w-full max-w-full shrink-0 flex-col items-center lg:order-2 lg:w-auto">
+          {/* Mobile Score Badge above Tray */}
+          {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
+            <div className="lg:hidden w-full flex justify-center mb-1.5 pointer-events-none">
+              <span className={`font-extrabold tracking-widest text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${
+                placementValid === false ? 'text-rose-400' : 'text-emerald-400 animate-pulse'
+              }`}>
+                {placementValid === false ? 'INVALID' : `+${estimatedScore} PTS`}
+              </span>
+            </div>
+          )}
           {/* LED under-lighting glow (Blue/Cyan Neon) */}
           <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-blue-600/30 via-cyan-500/40 to-blue-600/30 blur-md pointer-events-none opacity-90" />
 
@@ -386,20 +396,6 @@ export const TileRack = memo(function TileRack({
           </div>
 
           <div className="relative flex w-auto flex-wrap items-center justify-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-r-xl sm:rounded-r-2xl rounded-l-none lg:rounded-2xl border-l-0 lg:border-l lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-emerald-500/15 min-h-[52px] sm:min-h-[58px]">
-            {/* Mobile floating score badge */}
-            {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
-              <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 flex lg:hidden pointer-events-none z-10 whitespace-nowrap">
-                <span
-                  className={`pointer-events-auto shadow-xl text-[12px] font-bold px-3 py-1 rounded-full border tracking-widest ${
-                    placementValid === false
-                      ? 'bg-rose-950 border-rose-500/50 text-rose-300'
-                      : 'bg-emerald-950 border-emerald-500/50 text-emerald-300 animate-pulse'
-                  }`}
-                >
-                  {placementValid === false ? 'INVALID' : `+${estimatedScore} PTS`}
-                </span>
-              </div>
-            )}
             {isExchanging ? (
               <button
                 onClick={onConfirmExchange}
