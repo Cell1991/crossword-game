@@ -394,31 +394,6 @@ export default function GamePage() {
               hintCell={cards.hintCell}
               pendingArmedCell={cards.pendingArmedCell ?? deferredFreezeCell}
             />
-            <div className="pointer-events-none absolute left-2 right-16 top-2 z-20 lg:hidden">
-              <div
-                aria-label="Live scoreboard"
-                className="pointer-events-auto flex max-w-full items-center gap-3 overflow-x-auto touch-pan-x rounded-lg border border-slate-700/80 bg-slate-950/90 px-2.5 py-1.5 text-[11px] shadow-lg backdrop-blur-sm scroll-smooth"
-              >
-                <div className="flex shrink-0 items-center gap-1.5 border-r border-slate-700/80 pr-2.5">
-                  <span className="font-bold text-sky-400">T{gameState.turn_number}</span>
-                  <span className="font-mono text-slate-400">{tileBagCount} left</span>
-                </div>
-                <div className="flex shrink-0 items-center gap-3">
-                  {[...(gameState.players ?? [])].sort((a, b) => b.score - a.score).map(player => {
-                    const isCurrent = player.id === gameState.current_player_id;
-                    return (
-                      <span key={player.id} title={player.display_name} className="flex shrink-0 items-center gap-1">
-                        <span className={`max-w-[75px] truncate ${isCurrent ? 'text-amber-300 font-bold' : 'text-slate-300'}`}>
-                          {player.display_name}
-                        </span>
-                        <strong className="font-mono text-emerald-400">{player.score}</strong>
-                        {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#38bdf8] ml-0.5 animate-pulse" />}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
             {dragSession && (
               <FloatingTile
                 ref={dragGhostRef}

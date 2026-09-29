@@ -46,22 +46,22 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/30 backdrop-blur-[2px] animate-in fade-in duration-200"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label="Match Status and Scoreboard"
     >
-      {/* Modal Dialog Card */}
+      {/* Translucent Glassmorphism Modal Dialog Card */}
       <div
-        className="relative w-full max-w-md max-h-[88vh] flex flex-col rounded-3xl bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-950 border border-slate-700/80 shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_35px_rgba(6,182,212,0.18),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/30 overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-md max-h-[88vh] flex flex-col rounded-3xl bg-slate-950/75 backdrop-blur-xl border border-cyan-500/30 shadow-[0_16px_50px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.15),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20 overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Atmospheric Aura Highlight */}
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-cyan-400 to-purple-500 shadow-[0_0_12px_rgba(6,182,212,0.8)]" />
 
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-800/80 bg-slate-950/60 select-none">
+        <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md select-none">
           <div className="flex items-center gap-2.5">
             {/* Glowing Scroll Icon Badge */}
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500/30 via-blue-600/20 to-slate-900 border border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.35)] flex items-center justify-center shrink-0">
