@@ -49,6 +49,8 @@ export interface GameState {
   max_turns: number | null;
   pending_effect: PendingEffect | null;
   frozen_tile: { row: number; col: number; set_by: string; expires_turn: number } | null;
+  /** True when this game's room was created with debug mode on: every player in it gets it. */
+  is_debug: boolean;
   winner_id: string | null;
   /** The server's clock when this snapshot was taken; the turn timer runs on it. */
   server_time: string;
@@ -170,6 +172,7 @@ export interface RoomDetailResponse {
   turn_time_limit: TurnTimeLimit;
   game_mode: GameMode;
   max_turns: number | null;
+  is_debug: boolean;
 }
 
 export interface ExchangeTilesResponse {

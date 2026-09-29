@@ -4,7 +4,6 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Header, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.database.session import get_db
 from app.schemas.game import GameStateResponse
 from app.schemas.move import ExchangeTilesRequest
@@ -24,7 +23,6 @@ _rematch_locks: defaultdict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
 async def get_game(
     game_id: str,
     token: Optional[str] = Query(None),
-    debug: bool = Query(False),
     x_session_token: Optional[str] = Header(None, alias="X-Session-Token"),
     db: AsyncSession = Depends(get_db)
 ):
@@ -35,9 +33,9 @@ async def get_game(
         if player:
             requesting_player_id = player.id
 
-    state = await GameService.get_game_state(
-        db, game_id, requesting_player_id, reveal_all=debug and settings.DEBUG_MODE
-    )
+    # Whether racks are revealed comes from the room's own is_debug flag (see get_game_state),
+    # not from anything the client claims - a client can't ask its way into seeing opponents' tiles.
+    state = await GameService.get_game_state(db, game_id, requesting_player_id)
     state.spectator_count = manager.spectator_count(game_id)
     return state
 
