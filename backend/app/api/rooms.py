@@ -102,6 +102,7 @@ async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
         turn_time_limit=room.turn_time_limit,
         game_mode=room.game_mode,
         max_turns=room.max_turns,
+        is_debug=room.is_debug,
     )
 
 @router.post("/{game_pin}/start")

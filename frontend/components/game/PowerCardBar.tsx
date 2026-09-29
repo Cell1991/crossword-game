@@ -29,6 +29,7 @@ interface PowerCardBarProps {
   hasStagedMove: boolean;
   armedCard: BoardCard | null;
   pendingArmedCell: CellPosition | null;
+  deferredFreezeTileId: string | null;
   busy: boolean;
   onUseSimple: (card: SimpleCard) => void;
   onUseTargeted: (card: TargetedCard, targetPlayerId: string) => void;
@@ -38,6 +39,7 @@ interface PowerCardBarProps {
   onCancelArm: () => void;
   onConfirmArmedCell: () => void;
   onCancelArmedCell: () => void;
+  onCancelDeferredFreeze: () => void;
 }
 
 export const PowerCardBar = memo(function PowerCardBar({
@@ -48,6 +50,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   hasStagedMove,
   armedCard,
   pendingArmedCell,
+  deferredFreezeTileId,
   busy,
   onUseSimple,
   onUseTargeted,
@@ -57,6 +60,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   onCancelArm,
   onConfirmArmedCell,
   onCancelArmedCell,
+  onCancelDeferredFreeze,
 }: PowerCardBarProps) {
   const [pickingTargetFor, setPickingTargetFor] = useState<TargetedCard | null>(null);
   const [pickingLetter, setPickingLetter] = useState(false);
@@ -71,7 +75,21 @@ export const PowerCardBar = memo(function PowerCardBar({
   for (const card of cards) {
     if (CARD_META[card]) counts.set(card, (counts.get(card) ?? 0) + 1);
   }
-  if (counts.size === 0 && armedCard === null) return null;
+  if (counts.size === 0 && armedCard === null && !deferredFreezeTileId) return null;
+
+  if (deferredFreezeTileId) {
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-cyan-400/50 bg-cyan-950/60 px-3 py-1.5 text-xs text-cyan-200">
+        <span className="flex items-center gap-1.5">❄️ Freeze marked — takes effect when you confirm your move</span>
+        <button
+          onClick={onCancelDeferredFreeze}
+          className="rounded-full border border-cyan-300/40 px-2 py-0.5 text-[11px] hover:bg-cyan-900"
+        >
+          Unmark
+        </button>
+      </div>
+    );
+  }
 
   if (armedCard && pendingArmedCell) {
     const meta = CARD_META[armedCard];
@@ -106,7 +124,9 @@ export const PowerCardBar = memo(function PowerCardBar({
     const meta = CARD_META[armedCard];
     return (
       <div className="flex items-center gap-2 rounded-xl border border-cyan-400/50 bg-cyan-950/60 px-3 py-1.5 text-xs text-cyan-200">
-        <span className="flex items-center gap-1.5">{meta.icon} Pick a board tile{armedCard === 'DESTROY_TILE' ? ' to destroy' : ' to freeze'}</span>
+        <span className="flex items-center gap-1.5">
+          {meta.icon} {armedCard === 'DESTROY_TILE' ? 'Pick a board tile to destroy' : 'Pick a tile to freeze — an old one or one you just placed'}
+        </span>
         <button
           onClick={onCancelArm}
           className="rounded-full border border-cyan-300/40 px-2 py-0.5 text-[11px] hover:bg-cyan-900"
@@ -300,7 +320,7 @@ export const PowerCardBar = memo(function PowerCardBar({
           onClick={() => {
             const card = confirmingCard;
             setConfirmingCard(null);
-            if (card === 'FREEZE_TILE' || card === 'DESTROY_TILE') onArmBoardCard(card as BoardCard);
+            if (card === 'DESTROY_TILE') onArmBoardCard(card as BoardCard);
               else if (card === 'DOUBLE_DAMAGE') setPickingTargetFor(card);
               else if (card === 'SPY_SWAP') { setSpySwapStep('own'); setSpyOwnTileIds([]); }
             else if (card === 'BAN_LETTER') setPickingLetter(true);
@@ -331,7 +351,10 @@ export const PowerCardBar = memo(function PowerCardBar({
             disabled={disabled}
             title={meta.ownTurnOnly ? 'Use on your turn' : undefined}
             onClick={() => {
-              setConfirmingCard(card);
+              // FREEZE_TILE already stages its own target-tile pick (and, for a committed tile,
+              // a second "really do this?" confirm) - a "Use Freeze?" gate ahead of that is redundant.
+              if (card === 'FREEZE_TILE') onArmBoardCard(card as BoardCard);
+              else setConfirmingCard(card);
             }}
             className="flex items-center gap-1 rounded-full border border-indigo-400/40 bg-indigo-950/60 px-2.5 py-1 text-xs font-semibold text-indigo-100 hover:bg-indigo-900 disabled:opacity-40 disabled:hover:bg-indigo-950/60"
           >

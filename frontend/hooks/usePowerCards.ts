@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { playCard, UseCardPayload } from '@/lib/api';
-import { BoardCard, BoardCell, CellPosition } from '@/lib/types';
+import { BoardCard, BoardCell, CellPosition, PlacedTile } from '@/lib/types';
 import { isCellCommitted } from '@/lib/tiles';
 import { GameToasts } from './useGameToasts';
 
@@ -13,17 +13,28 @@ interface UsePowerCardsOptions {
   gameId: string;
   myPlayerId: string | null;
   boardState: Record<string, BoardCell>;
+  temporaryTiles: PlacedTile[];
   reload: () => Promise<void>;
   toasts: GameToasts;
 }
 
 /** Playing power cards: one request at a time, then a fresh snapshot. */
-export function usePowerCards({ gameId, myPlayerId, boardState, reload, toasts }: UsePowerCardsOptions) {
+export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, reload, toasts }: UsePowerCardsOptions) {
   const { flashError, flashInfo } = toasts;
   const [armedCard, setArmedCard] = useState<BoardCard | null>(null);
   const [pendingArmedCell, setPendingArmedCell] = useState<CellPosition | null>(null);
+  // FREEZE_TILE marked on a tile placed this turn (not yet committed): applied atomically with
+  // Confirm Move (see commitMove's freezeTileId). Recalling that tile clears it below - that
+  // recall *is* the cancel, so no extra confirmation step is needed for this path.
+  const [deferredFreezeTileId, setDeferredFreezeTileId] = useState<string | null>(null);
   const [hintCell, setHintCell] = useState<CellPosition | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (deferredFreezeTileId && !temporaryTiles.some(t => t.tile_id === deferredFreezeTileId)) {
+      setDeferredFreezeTileId(null);
+    }
+  }, [deferredFreezeTileId, temporaryTiles]);
 
   const runCard = useCallback(async (payload: UseCardPayload, failureMessage = 'Failed to use card') => {
     if (!myPlayerId || busy) return;
@@ -68,11 +79,26 @@ export function usePowerCards({ gameId, myPlayerId, boardState, reload, toasts }
   /** Blocks an incoming DAMAGE/SWAP while its window is open. */
   const playShield = useCallback(() => runCard({ card: 'SHIELD' }, 'Failed to use Shield'), [runCard]);
 
-  /** An armed board card (FREEZE/DESTROY) picks a committed tile first; it is only spent once confirmed. */
+  /**
+   * An armed board card picks a target. A committed tile (from a prior turn) stages a second
+   * confirm and is only spent once confirmed. FREEZE_TILE can also target one of this turn's own
+   * staged tiles - that mark takes effect with Confirm Move itself, no extra confirm needed here
+   * since recalling the tile is already how you'd cancel it.
+   */
   const playArmedCardAt = useCallback((row: number, col: number) => {
-    if (!armedCard || busy || !isCellCommitted(boardState, row, col)) return;
-    setPendingArmedCell({ row, col });
-  }, [armedCard, boardState, busy]);
+    if (!armedCard || busy) return;
+    if (isCellCommitted(boardState, row, col)) {
+      setPendingArmedCell({ row, col });
+      return;
+    }
+    if (armedCard === 'FREEZE_TILE') {
+      const staged = temporaryTiles.find(tile => tile.row === row && tile.col === col);
+      if (staged) {
+        setDeferredFreezeTileId(staged.tile_id);
+        setArmedCard(null);
+      }
+    }
+  }, [armedCard, boardState, busy, temporaryTiles]);
 
   const confirmArmedCardAt = useCallback(() => {
     if (!armedCard || !pendingArmedCell || !myPlayerId || busy) return;
@@ -87,6 +113,8 @@ export function usePowerCards({ gameId, myPlayerId, boardState, reload, toasts }
 
   const cancelArm = useCallback(() => { setArmedCard(null); setPendingArmedCell(null); }, []);
 
+  const cancelDeferredFreeze = useCallback(() => setDeferredFreezeTileId(null), []);
+
   return {
     armedCard,
     armBoardCard: setArmedCard,
@@ -94,6 +122,8 @@ export function usePowerCards({ gameId, myPlayerId, boardState, reload, toasts }
     pendingArmedCell,
     confirmArmedCardAt,
     cancelPendingArmedCell,
+    deferredFreezeTileId,
+    cancelDeferredFreeze,
     hintCell,
     busy,
     playSimpleCard,

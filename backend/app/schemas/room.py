@@ -58,3 +58,4 @@ class RoomDetailResponse(BaseModel):
     turn_time_limit: Optional[int] = None
     game_mode: Literal["HP", "TURNS"]
     max_turns: Optional[int] = None
+    is_debug: bool = False

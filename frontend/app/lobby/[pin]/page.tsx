@@ -31,6 +31,9 @@ export default function LobbyPage() {
   const [turnTimeLimit, setTurnTimeLimit] = useState<number | null>(null);
   const [gameMode, setGameMode] = useState<GameMode>('HP');
   const [maxTurns, setMaxTurns] = useState<number | null>(null);
+  // The room's own flag: everyone in a debug room lands in the game with debug tools, not only
+  // whoever created it.
+  const [isDebugRoom, setIsDebugRoom] = useState(false);
 
   // Load session
   useEffect(() => {
@@ -59,11 +62,12 @@ export default function LobbyPage() {
       setTurnTimeLimit(room.turn_time_limit);
       setGameMode(room.game_mode);
       setMaxTurns(room.max_turns);
+      setIsDebugRoom(room.is_debug);
       setLoading(false);
       // If game already started, redirect to game
       if (room.status === 'PLAYING' || room.status === 'ACTIVE') {
         const session = sessionStore.getLast();
-        if (session) router.replace(`/game/${session.gameId}`);
+        if (session) router.replace(`/game/${session.gameId}${room.is_debug ? '?debug=1' : ''}`);
       }
     } catch (error: unknown) {
       setLoading(false);
@@ -87,7 +91,7 @@ export default function LobbyPage() {
     setError('');
     try {
       await startGame(pin, myPlayerId);
-      router.push(`/game/${gameId}`);
+      router.push(`/game/${gameId}${isDebugRoom ? '?debug=1' : ''}`);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Failed to start game');
       setStarting(false);
@@ -142,6 +146,7 @@ export default function LobbyPage() {
         <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-sm text-slate-300 bg-slate-900/70 border border-slate-700/50 rounded-xl px-4 py-2">
           <span>Mode: <span className="font-semibold text-amber-300">{gameMode === 'HP' ? 'HP Battle' : `Turn Count (${maxTurns} turns)`}</span></span>
           <span>Turn Time: <span className="font-semibold text-amber-300">{turnTimeLimit === null ? 'Unlimited' : `${turnTimeLimit} sec`}</span></span>
+          {isDebugRoom && <span className="font-semibold text-rose-300">🐞 Debug room</span>}
         </div>
 
         {/* Player List */}

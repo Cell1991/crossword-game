@@ -22,6 +22,7 @@ export default function HomePage() {
   const [gameMode, setGameMode] = useState<GameMode>('HP');
   const [turnCountOption, setTurnCountOption] = useState('7');
   const [customTurnCount, setCustomTurnCount] = useState('28');
+  const [isDebugMode, setIsDebugMode] = useState(false);
 
   const handleCreate = async () => {
     if (!name.trim()) { setError('Please enter your name'); return; }
@@ -33,7 +34,7 @@ export default function HomePage() {
     setLoading(true);
     setError('');
     try {
-      const res = await createRoom(name.trim(), turnTimeLimit, gameMode, gameMode === 'TURNS' ? maxTurns : null);
+      const res = await createRoom(name.trim(), turnTimeLimit, gameMode, gameMode === 'TURNS' ? maxTurns : null, isDebugMode);
       sessionStore.save({
         gameId: res.game_id,
         playerId: res.host_player_id,
@@ -100,7 +101,8 @@ export default function HomePage() {
         gamePin: room.game_pin,
         isSpectator: true,
       });
-      router.push(room.status === 'WAITING' ? `/lobby/${room.game_pin}` : `/game/${room.id}`);
+      const debugParam = room.is_debug ? '?debug=1' : '';
+      router.push(room.status === 'WAITING' ? `/lobby/${room.game_pin}` : `/game/${room.id}${debugParam}`);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Failed to find room');
     } finally {
@@ -263,6 +265,18 @@ export default function HomePage() {
                   className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3.5 text-lg text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
                 />
               </div>
+              <label className="flex items-center gap-2.5 rounded-xl border border-rose-400/30 bg-rose-950/20 px-4 py-3 text-sm text-rose-200">
+                <input
+                  type="checkbox"
+                  checked={isDebugMode}
+                  onChange={e => setIsDebugMode(e.target.checked)}
+                  className="h-4 w-4 accent-rose-400"
+                />
+                <span>
+                  🐞 <span className="font-semibold">Debug room</span>
+                  <span className="block text-xs text-rose-300/70">Everyone who joins sees every rack and gets debug tools</span>
+                </span>
+              </label>
               {error && <p className="text-red-400 text-sm">{error}</p>}
               <button
                 onClick={handleCreate}

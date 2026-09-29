@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.database.models import Game, GamePlayer
+from app.database.models import Game, GamePlayer, GameRoom
 from app.database.session import get_db
 from app.database.state import player_cards, player_rack, replace_game_tiles, replace_player_cards
 from app.game.tiles import DEFAULT_LETTER_VALUES
@@ -15,8 +15,12 @@ from app.services.move_service import MoveService
 router = APIRouter(prefix="/debug/games/{game_id}/players/{player_id}", tags=["Debug"])
 
 
-def _require_debug_mode():
+async def _require_debug_mode(db: AsyncSession, game_id: str):
+    """These tools only exist inside a room actually created with is_debug=True - not any game."""
     if not settings.DEBUG_MODE:
+        raise HTTPException(status_code=404, detail="Not found")
+    room = (await db.execute(select(GameRoom).where(GameRoom.id == game_id))).scalar_one_or_none()
+    if not room or not room.is_debug:
         raise HTTPException(status_code=404, detail="Not found")
 
 
@@ -36,7 +40,7 @@ class SetHpRequest(BaseModel):
 
 @router.post("/hp", response_model=GameStateResponse)
 async def set_hp(game_id: str, player_id: str, request: SetHpRequest, db: AsyncSession = Depends(get_db)):
-    _require_debug_mode()
+    await _require_debug_mode(db, game_id)
     _, player = await _load_game_and_player(db, game_id, player_id)
     player.hp = max(0, request.hp)
     return await GameService.get_game_state(db, game_id, reveal_all=True)
@@ -49,7 +53,7 @@ class SetRackTileRequest(BaseModel):
 
 @router.post("/rack-tile", response_model=GameStateResponse)
 async def set_rack_tile(game_id: str, player_id: str, request: SetRackTileRequest, db: AsyncSession = Depends(get_db)):
-    _require_debug_mode()
+    await _require_debug_mode(db, game_id)
     game, player = await _load_game_and_player(db, game_id, player_id)
     rack = await player_rack(db, player_id)
     if request.slot >= len(rack):
@@ -72,7 +76,7 @@ class GrantCardRequest(BaseModel):
 
 @router.post("/cards", response_model=GameStateResponse)
 async def grant_card(game_id: str, player_id: str, request: GrantCardRequest, db: AsyncSession = Depends(get_db)):
-    _require_debug_mode()
+    await _require_debug_mode(db, game_id)
     _, player = await _load_game_and_player(db, game_id, player_id)
     card = request.card.upper()
     if card not in MoveService.CARD_TYPES:

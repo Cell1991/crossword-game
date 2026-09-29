@@ -218,6 +218,10 @@ class GameService:
             raise HTTPException(status_code=404, detail="Game not found")
 
         room = (await db.execute(select(GameRoom).where(GameRoom.id == game_id))).scalar_one_or_none()
+        # The room's own flag is authoritative: everyone in a debug room is a debug player, not just
+        # whoever asks nicely. A caller-supplied reveal_all (the debug/ endpoints) still works too.
+        room_is_debug = bool(room and room.is_debug) and settings.DEBUG_MODE
+        reveal_all = reveal_all or room_is_debug
 
         turn_started_at = game.turn_started_at
         if turn_started_at and turn_started_at.tzinfo is None:
@@ -271,6 +275,7 @@ class GameService:
             max_turns=game.max_turns,
             pending_effect=GameService._visible_pending_effect(game.pending_effect, requesting_player_id),
             frozen_tile=GameService._visible_frozen_tile(game.frozen_tile, game.turn_number),
+            is_debug=bool(room and room.is_debug),
             winner_id=game.winner_id,
             server_time=datetime.now(timezone.utc),
             game_pin=room.game_pin if room else None,
