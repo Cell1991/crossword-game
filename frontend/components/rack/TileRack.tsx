@@ -292,20 +292,6 @@ export const TileRack = memo(function TileRack({
 
         {/* MOBILE CONTROLS WRAPPER */}
         <div className="order-2 relative flex w-full flex-row justify-center gap-0 lg:contents">
-          {/* Mobile floating score badge */}
-          {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
-            <div className="absolute -top-8 right-2 flex lg:hidden pointer-events-none z-10">
-              <span
-                className={`pointer-events-auto shadow-xl text-[12px] font-bold px-3 py-0.5 rounded-full border tracking-widest ${
-                  placementValid === false
-                    ? 'bg-rose-950 border-rose-500/50 text-rose-300'
-                    : 'bg-emerald-950 border-emerald-500/50 text-emerald-300 animate-pulse'
-                }`}
-              >
-                {placementValid === false ? 'INVALID' : `+${estimatedScore} PTS`}
-              </span>
-            </div>
-          )}
 
         {/* LEFT POD: GAME MANAGEMENT */}
         <div className="flex shrink flex-col items-center lg:order-none lg:w-auto lg:items-start min-w-0">
@@ -399,7 +385,21 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
 
-          <div className="flex w-auto flex-wrap items-center justify-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-r-xl sm:rounded-r-2xl rounded-l-none lg:rounded-2xl border-l-0 lg:border-l lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-emerald-500/15 min-h-[52px] sm:min-h-[58px]">
+          <div className="relative flex w-auto flex-wrap items-center justify-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-r-xl sm:rounded-r-2xl rounded-l-none lg:rounded-2xl border-l-0 lg:border-l lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-emerald-500/15 min-h-[52px] sm:min-h-[58px]">
+            {/* Mobile floating score badge */}
+            {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
+              <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 flex lg:hidden pointer-events-none z-10 whitespace-nowrap">
+                <span
+                  className={`pointer-events-auto shadow-xl text-[12px] font-bold px-3 py-1 rounded-full border tracking-widest ${
+                    placementValid === false
+                      ? 'bg-rose-950 border-rose-500/50 text-rose-300'
+                      : 'bg-emerald-950 border-emerald-500/50 text-emerald-300 animate-pulse'
+                  }`}
+                >
+                  {placementValid === false ? 'INVALID' : `+${estimatedScore} PTS`}
+                </span>
+              </div>
+            )}
             {isExchanging ? (
               <button
                 onClick={onConfirmExchange}
