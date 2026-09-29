@@ -12,7 +12,7 @@ export const PendingEffectBanner: React.FC<{
   busy: boolean;
   onShield: () => void;
 }> = ({ effect, canShield, busy, onShield }) => (
-  <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-sky-950/90 border border-sky-500/50 text-sky-200 text-sm px-4 py-2 rounded-xl shadow-xl">
+  <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gradient-to-r from-sky-950/95 via-slate-950/95 to-sky-950/95 border border-sky-400/60 text-sky-200 text-sm font-semibold px-5 py-2.5 rounded-2xl shadow-[0_12px_36px_rgba(0,0,0,0.7),0_0_24px_rgba(56,189,248,0.35)] backdrop-blur-md">
     <span>{effect.type === 'SWAP' ? '🔄 A tile swap is pending…' : '⚔️ Damage is pending…'}</span>
     {canShield && (
       <button
@@ -59,21 +59,21 @@ export const ToastStack: React.FC<{ info: string | null; error: string }> = ({ i
   return (
     <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex w-full max-w-[calc(100%-2rem)] -translate-x-1/2 flex-col items-center gap-2 sm:top-4">
       {info && (
-        <div role="status" aria-live="polite" className="pointer-events-auto relative block w-fit max-w-[min(30rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-emerald-300/25 bg-slate-950/95 px-14 py-4 text-center text-sm text-emerald-50 shadow-[0_12px_36px_rgba(0,0,0,0.45),0_0_24px_rgba(16,185,129,0.12)] ring-1 ring-white/5 backdrop-blur-md animate-fadeIn">
-          <span className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/80 to-transparent" />
-          <span className="absolute left-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl border border-emerald-300/25 bg-emerald-400/10 text-emerald-300 shadow-[0_0_14px_rgba(52,211,153,0.16)]">
+        <div role="status" aria-live="polite" className="pointer-events-auto relative block w-fit max-w-[min(32rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-emerald-400/40 bg-gradient-to-r from-emerald-950/90 via-slate-950/95 to-emerald-950/90 px-12 py-3.5 sm:px-14 sm:py-4 text-center text-sm font-semibold tracking-wide text-emerald-100 shadow-[0_12px_36px_rgba(0,0,0,0.6),0_0_24px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/20 backdrop-blur-md animate-fadeIn">
+          <span className="absolute inset-x-8 top-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-90" />
+          <span className="absolute left-3.5 sm:left-4 top-1/2 flex h-8 w-8 sm:h-9 sm:w-9 -translate-y-1/2 items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-300 shadow-[0_0_16px_rgba(52,211,153,0.4)]">
             <CircleCheck className="h-5 w-5" aria-hidden="true" />
           </span>
-          <span className="block break-words leading-snug">{info}</span>
+          <span className="block break-words leading-snug drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{info}</span>
         </div>
       )}
       {error && (
-        <div role="alert" aria-live="assertive" className="pointer-events-auto relative block w-fit max-w-[min(30rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-rose-300/25 bg-slate-950/95 px-14 py-4 text-center text-sm text-rose-50 shadow-[0_12px_36px_rgba(0,0,0,0.45),0_0_24px_rgba(244,63,94,0.14)] ring-1 ring-white/5 backdrop-blur-md animate-fadeIn">
-          <span className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-rose-300/80 to-transparent" />
-          <span className="absolute left-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl border border-rose-300/25 bg-rose-400/10 text-rose-300 shadow-[0_0_14px_rgba(251,113,133,0.16)]">
-            <ShieldAlert className="h-5 w-5 fill-rose-300/15 stroke-[1.8] drop-shadow-[0_0_5px_rgba(251,113,133,0.55)]" aria-hidden="true" />
+        <div role="alert" aria-live="assertive" className="pointer-events-auto relative block w-fit max-w-[min(32rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-rose-500/50 bg-gradient-to-r from-rose-950/90 via-slate-950/95 to-rose-950/90 px-12 py-3.5 sm:px-14 sm:py-4 text-center text-sm font-semibold tracking-wide text-rose-100 shadow-[0_14px_40px_rgba(0,0,0,0.7),0_0_28px_rgba(244,63,94,0.4)] ring-1 ring-rose-400/30 backdrop-blur-md animate-fadeIn">
+          <span className="absolute inset-x-8 top-0 h-0.5 bg-gradient-to-r from-transparent via-rose-400 to-transparent opacity-90 shadow-[0_0_8px_#fb7185]" />
+          <span className="absolute left-3.5 sm:left-4 top-1/2 flex h-8 w-8 sm:h-9 sm:w-9 -translate-y-1/2 items-center justify-center rounded-xl border border-rose-400/50 bg-rose-500/25 text-rose-300 shadow-[0_0_18px_rgba(251,113,133,0.5)]">
+            <ShieldAlert className="h-5 w-5 fill-rose-400/20 stroke-[2] drop-shadow-[0_0_8px_rgba(251,113,133,0.8)]" aria-hidden="true" />
           </span>
-          <span className="block break-words leading-snug">{error}</span>
+          <span className="block break-words leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">{error}</span>
         </div>
       )}
     </div>

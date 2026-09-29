@@ -387,10 +387,10 @@ export const TileRack = memo(function TileRack({
             {/* Points / Validity preview badge */}
             {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-md border tracking-wider ${
+                className={`text-[11px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-lg border transition-all ${
                   placementValid === false
-                    ? 'bg-rose-950/70 border-rose-500/50 text-rose-300'
-                    : 'bg-emerald-950/70 border-emerald-500/50 text-emerald-300 animate-pulse'
+                    ? 'bg-gradient-to-r from-rose-950/90 to-rose-900/80 border-rose-500/70 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] animate-pulse'
+                    : 'bg-gradient-to-r from-emerald-950/90 to-emerald-900/80 border-emerald-500/70 text-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] animate-pulse'
                 }`}
               >
                 {placementValid === false ? 'INVALID' : `+${estimatedScore} PTS`}
