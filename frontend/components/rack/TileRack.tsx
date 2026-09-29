@@ -197,75 +197,6 @@ export const TileRack = memo(function TileRack({
 
       {/* Premium Player Control Hub: 3-column layout (Left Pod, Center Tray, Right Pod) */}
       <div className="flex w-full flex-row flex-wrap items-end justify-center gap-1.5 sm:gap-2 lg:flex-nowrap lg:gap-4">
-        {/* LEFT POD: GAME MANAGEMENT */}
-        <div className="order-2 flex shrink-0 flex-col items-center lg:order-none lg:w-auto lg:items-start">
-          <div className="mb-1.5 flex items-center gap-1.5 px-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8]" />
-            <span className="hidden text-[10px] font-bold tracking-widest text-slate-400 uppercase sm:inline">
-              {isExchanging ? 'Exchange Mode' : 'Game Management'}
-            </span>
-          </div>
-
-          <div className="flex max-w-full items-center gap-1.5 p-1.5 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-cyan-500/15 min-h-[52px] sm:min-h-[58px]">
-            {isExchanging ? (
-              <div className="flex items-center gap-2 px-1">
-                <button
-                  onClick={onCancelExchange}
-                  disabled={isSubmitting}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all bg-rose-950/80 text-rose-300 hover:bg-rose-900 border border-rose-700/60 cursor-pointer shadow-md shadow-rose-950/50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <X className="w-4 h-4 text-rose-400" />
-                  <span>Cancel</span>
-                </button>
-                <span className="text-xs text-slate-400 max-w-[150px] leading-tight">
-                  {exchangeCount > tileBagCount
-                    ? `Only ${tileBagCount} left`
-                    : 'Tap tiles to return'}
-                </span>
-              </div>
-            ) : (
-              <>
-                {/* Cancel Move */}
-                <button
-                  onClick={onCancelMove}
-                  disabled={!hasTemporaryTiles || isSubmitting}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
-                    hasTemporaryTiles
-                      ? 'bg-rose-950/70 text-rose-300 hover:bg-rose-900/90 border border-rose-600/60 cursor-pointer shadow-md shadow-rose-950/40 active:scale-95'
-                      : 'bg-slate-800/40 text-slate-600 border border-slate-800/60 cursor-not-allowed'
-                  }`}
-                  title="Recall placed tiles to rack"
-                >
-                  <RotateCcw className={`w-4 h-4 ${hasTemporaryTiles ? 'text-rose-400' : 'text-slate-600'}`} />
-                  <span>Cancel</span>
-                </button>
-
-                {/* Shuffle */}
-                <button
-                  onClick={onShuffleRack}
-                  disabled={tileCount < 2 || isSubmitting}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
-                  title="Shuffle rack tiles"
-                >
-                  <Shuffle className="w-4 h-4 text-amber-400" />
-                  <span>Shuffle</span>
-                </button>
-
-                {/* Exchange */}
-                <button
-                  onClick={onStartExchange}
-                  disabled={!canStartExchange}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
-                  title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
-                >
-                  <ArrowLeftRight className="w-4 h-4 text-sky-400" />
-                  <span>Exchange</span>
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-
         {/* CENTER POD: COSMIC BLUE TILE TRAY WITH NEON LED UNDER-LIGHTING */}
         <div className="relative order-1 flex w-full max-w-full shrink-0 flex-col items-center lg:order-none lg:w-auto">
           {/* LED under-lighting glow (Blue/Cyan Neon) */}
@@ -358,8 +289,80 @@ export const TileRack = memo(function TileRack({
           </div>
         </div>
 
+
+        {/* MOBILE CONTROLS WRAPPER */}
+        <div className="order-2 flex w-full flex-row justify-center gap-1 sm:gap-2 lg:contents">
+        {/* LEFT POD: GAME MANAGEMENT */}
+        <div className="flex flex-1 shrink flex-col items-center lg:order-none lg:w-auto lg:items-start min-w-0">
+          <div className="mb-1.5 flex items-center gap-1.5 px-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8]" />
+            <span className="hidden text-[10px] font-bold tracking-widest text-slate-400 uppercase sm:inline">
+              {isExchanging ? 'Exchange Mode' : 'Game Management'}
+            </span>
+          </div>
+
+          <div className="flex max-w-full items-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-xl sm:rounded-2xl shadow-xl shadow-black/60 ring-1 ring-cyan-500/15 min-h-[48px] sm:min-h-[58px]">
+            {isExchanging ? (
+              <div className="flex items-center gap-2 px-1">
+                <button
+                  onClick={onCancelExchange}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-semibold text-[11px] sm:text-sm transition-all bg-rose-950/80 text-rose-300 hover:bg-rose-900 border border-rose-700/60 cursor-pointer shadow-md shadow-rose-950/50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <X className="w-3 h-3 sm:w-4 sm:h-4 text-rose-400" />
+                  <span className="hidden xs:inline sm:inline">Cancel</span>
+                </button>
+                <span className="text-xs text-slate-400 max-w-[150px] leading-tight">
+                  {exchangeCount > tileBagCount
+                    ? `Only ${tileBagCount} left`
+                    : 'Tap tiles to return'}
+                </span>
+              </div>
+            ) : (
+              <>
+                {/* Cancel Move */}
+                <button
+                  onClick={onCancelMove}
+                  disabled={!hasTemporaryTiles || isSubmitting}
+                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-medium text-[11px] sm:text-sm transition-all ${
+                    hasTemporaryTiles
+                      ? 'bg-rose-950/70 text-rose-300 hover:bg-rose-900/90 border border-rose-600/60 cursor-pointer shadow-md shadow-rose-950/40 active:scale-95'
+                      : 'bg-slate-800/40 text-slate-600 border border-slate-800/60 cursor-not-allowed'
+                  }`}
+                  title="Recall placed tiles to rack"
+                >
+                  <RotateCcw className={`w-3 h-3 sm:w-4 sm:h-4 ${hasTemporaryTiles ? 'text-rose-400' : 'text-slate-600'}`} />
+                  <span className="hidden xs:inline sm:inline">Cancel</span>
+                </button>
+
+                {/* Shuffle */}
+                <button
+                  onClick={onShuffleRack}
+                  disabled={tileCount < 2 || isSubmitting}
+                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-medium text-[11px] sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
+                  title="Shuffle rack tiles"
+                >
+                  <Shuffle className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400" />
+                  <span className="hidden xs:inline sm:inline">Shuffle</span>
+                </button>
+
+                {/* Exchange */}
+                <button
+                  onClick={onStartExchange}
+                  disabled={!canStartExchange}
+                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-medium text-[11px] sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
+                  title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
+                >
+                  <ArrowLeftRight className="w-3 h-3 sm:w-4 sm:h-4 text-sky-400" />
+                  <span className="hidden xs:inline sm:inline">Swap</span>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
         {/* RIGHT POD: TURN ACTIONS */}
-        <div className="order-3 flex shrink-0 flex-col items-center lg:order-none lg:w-auto lg:items-end">
+        <div className="flex flex-1 shrink flex-col items-center lg:order-none lg:w-auto lg:items-end min-w-0">
           <div className="mb-1.5 flex w-full items-center justify-between gap-2 px-2">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
@@ -381,7 +384,7 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
 
-          <div className="flex max-w-full flex-wrap items-center justify-center gap-1.5 p-1.5 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/60 ring-1 ring-emerald-500/15 min-h-[52px] sm:min-h-[58px]">
+          <div className="flex max-w-full flex-wrap items-center justify-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-xl sm:rounded-2xl shadow-xl shadow-black/60 ring-1 ring-emerald-500/15 min-h-[48px] sm:min-h-[58px]">
             {isExchanging ? (
               <button
                 onClick={onConfirmExchange}
@@ -392,7 +395,7 @@ export const TileRack = memo(function TileRack({
                     : 'bg-slate-800/40 text-slate-600 border border-slate-800/60 cursor-not-allowed'
                 }`}
               >
-                <ArrowLeftRight className="w-4 h-4" />
+                <ArrowLeftRight className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>{isSubmitting ? 'Exchanging...' : `Exchange ${exchangeCount} Tile${exchangeCount === 1 ? '' : 's'}`}</span>
               </button>
             ) : (
@@ -406,18 +409,18 @@ export const TileRack = memo(function TileRack({
                     <button
                       onClick={() => { setPassConfirming(false); onPassTurn(); }}
                       disabled={isSubmitting}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all bg-slate-700 hover:bg-slate-600 text-white border border-slate-500/70 cursor-pointer shadow-sm active:scale-95"
+                      className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold text-[11px] sm:text-sm transition-all bg-slate-700 hover:bg-slate-600 text-white border border-slate-500/70 cursor-pointer shadow-sm active:scale-95"
                       title="Confirm pass"
                     >
-                      <Check className="w-4 h-4 text-sky-400" />
+                      <Check className="w-3 h-3 sm:w-4 sm:h-4 text-sky-400" />
                       <span>Confirm</span>
                     </button>
                     <button
                       onClick={() => setPassConfirming(false)}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all bg-slate-800/60 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 border border-slate-700/50 cursor-pointer active:scale-95"
+                      className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-medium text-[11px] sm:text-sm transition-all bg-slate-800/60 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 border border-slate-700/50 cursor-pointer active:scale-95"
                       title="Cancel"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span>Cancel</span>
                     </button>
                   </>
@@ -425,15 +428,15 @@ export const TileRack = memo(function TileRack({
                   <button
                     onClick={() => setPassConfirming(true)}
                     disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
+                    className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-medium text-[11px] sm:text-sm transition-all ${
                       isMyTurn && !hasTemporaryTiles
                         ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/60 cursor-pointer shadow-sm active:scale-95'
                         : 'bg-slate-800/30 text-slate-600 border border-slate-800/60 cursor-not-allowed'
                     }`}
                     title="Pass your turn"
                   >
-                    <SkipForward className="w-4 h-4" />
-                    <span>Pass</span>
+                    <SkipForward className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden xs:inline sm:inline">Pass</span>
                   </button>
                 )}
 
@@ -441,18 +444,19 @@ export const TileRack = memo(function TileRack({
                 <button
                   onClick={onConfirmMove}
                   disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
-                  className={`flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all ${
+                  className={`flex items-center gap-2 px-2 sm:px-6 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-[11px] sm:text-base transition-all ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
                       ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.65)] border-2 border-emerald-300 ring-2 ring-emerald-400/40 animate-pulse hover:brightness-110 active:scale-95 cursor-pointer'
                       : 'bg-slate-800/40 text-slate-600 border border-slate-700/30 cursor-not-allowed'
                   }`}
                 >
-                  <Check className={`w-5 h-5 ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]' : 'text-slate-600'}`} />
-                  <span>{isSubmitting ? 'Confirming...' : 'Confirm Move'}</span>
+                  <Check className={`w-3 h-3 sm:w-5 sm:h-5 ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]' : 'text-slate-600'}`} />
+                  <span className="hidden xs:inline sm:inline">{isSubmitting ? 'Confirming...' : 'Confirm'}</span>
                 </button>
               </>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>
