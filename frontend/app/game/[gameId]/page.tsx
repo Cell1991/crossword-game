@@ -295,6 +295,9 @@ export default function GamePage() {
 
   const tileBagCount = gameState.tile_bag_count ?? 0;
   const currentPlayer = gameState.players.find(p => p.id === gameState.current_player_id);
+  const sortedPlayers = [...(gameState.players ?? [])].sort((a, b) => a.turn_order - b.turn_order);
+  const currentPlayerIndex = sortedPlayers.findIndex(p => p.id === gameState.current_player_id);
+  const nextPlayer = currentPlayerIndex >= 0 ? sortedPlayers[(currentPlayerIndex + 1) % sortedPlayers.length] : undefined;
 
   const handleExit = () => {
     if (isSpectator) {
@@ -321,6 +324,7 @@ export default function GamePage() {
         spectatorCount={gameState.spectator_count ?? 0}
         isMyTurn={isMyTurn}
         currentPlayer={currentPlayer}
+        nextPlayer={nextPlayer}
         turnNumber={gameState.turn_number ?? 1}
         maxTurns={gameState.max_turns}
         onExit={handleExit}
