@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Layers, X } from 'lucide-react';
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -11,22 +12,30 @@ interface TileBagDialogProps {
   onClose: () => void;
 }
 
-/** How many of each letter are still in the bag. Escape, the close button or a backdrop click closes it. */
+/** How many of each letter are still in the bag. Portal mounted to document.body to avoid CSS transform clipping. */
 export const TileBagDialog: React.FC<TileBagDialogProps> = ({ tileBagCount, tileBagCounts, onClose }) => {
+  const [mounted, setMounted] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     closeButtonRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [mounted, onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-150 select-none"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
@@ -42,68 +51,84 @@ export const TileBagDialog: React.FC<TileBagDialogProps> = ({ tileBagCount, tile
             closeButtonRef.current?.focus();
           }
         }}
-        className="flex max-h-[min(720px,calc(100vh-2rem))] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-cyan-500/40 bg-slate-950/95 shadow-[0_0_35px_rgba(6,182,212,0.2),inset_0_1px_1px_rgba(255,255,255,0.1)]"
+        className="flex max-h-[88vh] sm:max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-amber-500/40 bg-slate-950/95 shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_35px_rgba(251,191,36,0.2),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-amber-400/20 animate-in zoom-in-95 duration-150"
       >
-        <div className="flex items-start justify-between border-b border-slate-800/80 bg-slate-900/60 p-4">
+        {/* Top Atmospheric Aura */}
+        <div className="h-1 w-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
+
+        {/* Dialog Header */}
+        <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-900/70 px-4 py-3 sm:px-5 sm:py-3.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-400/50 bg-gradient-to-br from-cyan-500/30 via-blue-600/40 to-slate-900 shadow-[0_0_12px_rgba(6,182,212,0.35)]">
-              <Layers className="h-5 w-5 text-cyan-300" aria-hidden="true" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-400/60 bg-gradient-to-br from-amber-500/30 via-yellow-600/40 to-slate-900 shadow-[0_0_12px_rgba(251,191,36,0.4)]">
+              <Layers className="h-5 w-5 text-amber-300 drop-shadow-[0_0_4px_rgba(251,191,36,0.8)]" aria-hidden="true" />
             </div>
             <div>
-              <h2 id="remaining-letters-title" className="text-sm font-bold tracking-wide text-white">Remaining Letters</h2>
-              <p className="mt-0.5 text-xs font-mono text-cyan-300">{tileBagCount} tiles remaining</p>
+              <h2 id="remaining-letters-title" className="text-sm sm:text-base font-black tracking-wide text-white uppercase">
+                Remaining Tiles
+              </h2>
+              <p className="text-xs font-mono font-bold text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]">
+                {tileBagCount} <span className="text-[11px] font-normal text-slate-400">tiles left in bag</span>
+              </p>
             </div>
           </div>
           <button
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-700/80 p-1.5 text-slate-400 hover:border-cyan-400/50 hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-400/60"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/90 text-slate-400 hover:border-slate-500 hover:bg-slate-800 hover:text-white transition-all cursor-pointer active:scale-90 shadow-sm"
             aria-label="Close remaining letters"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
 
-        <div className="overflow-y-auto p-4">
+        {/* Tiles Grid List */}
+        <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-3">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-5">
             {LETTERS.map((letter) => {
               const count = tileBagCounts[letter] ?? 0;
               return (
                 <div
                   key={letter}
-                  className={`flex items-center justify-between gap-2 rounded-xl border p-2.5 ${
+                  className={`flex items-center justify-between gap-2 rounded-xl border p-2 sm:p-2.5 transition-all ${
                     count === 0
-                      ? 'border-slate-800/60 bg-slate-950/60 opacity-45'
-                      : 'border-blue-500/30 bg-slate-900/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]'
+                      ? 'border-slate-800/60 bg-slate-950/60 opacity-35'
+                      : 'border-slate-700/80 bg-slate-900/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] hover:border-amber-400/50 hover:bg-slate-850'
                   }`}
                   aria-label={`${letter}, ${count} remaining`}
                 >
-                  <span className="tile-face tile-letter tile-letter-orange flex h-9 w-9 items-center justify-center rounded-lg border border-amber-100/80 font-maple text-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_4px_8px_rgba(0,0,0,0.35)]">
+                  <span className="tile-face tile-letter tile-letter-orange flex h-9 w-9 items-center justify-center rounded-lg border border-amber-100/80 font-maple text-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_4px_8px_rgba(0,0,0,0.35)] shrink-0">
                     {letter}
                   </span>
-                  <span className="min-w-5 text-right font-mono text-sm font-bold text-amber-400">{count}</span>
+                  <span className={`min-w-5 text-right font-mono text-sm font-black ${count === 0 ? 'text-slate-600' : 'text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]'}`}>
+                    {count}
+                  </span>
                 </div>
               );
             })}
           </div>
-          <div className={`mt-3 flex items-center justify-between rounded-xl border p-3 ${
+
+          {/* Blank Wildcard Tiles Row */}
+          <div className={`flex items-center justify-between rounded-xl border p-2.5 sm:p-3 transition-all ${
             (tileBagCounts.BLANK ?? 0) === 0
-              ? 'border-slate-800/60 bg-slate-950/60 opacity-45'
-              : 'border-blue-500/30 bg-slate-900/80'
+              ? 'border-slate-800/60 bg-slate-950/60 opacity-35'
+              : 'border-amber-500/30 bg-slate-900/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]'
           }`}>
             <div className="flex items-center gap-3">
-              <span className="tile-face flex h-9 w-9 items-center justify-center rounded-lg border border-amber-100/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
-                <svg viewBox="0 0 24 24" className="tile-blank-star h-5 w-5" fill="currentColor" aria-hidden="true">
+              <span className="tile-face flex h-9 w-9 items-center justify-center rounded-lg border border-amber-100/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] shrink-0">
+                <svg viewBox="0 0 24 24" className="tile-blank-star h-5 w-5 text-amber-300" fill="currentColor" aria-hidden="true">
                   <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
                 </svg>
               </span>
-              <span className="text-sm font-medium text-slate-200">Blank Tiles</span>
+              <span className="text-sm font-bold text-slate-200">Wildcard Blank Tiles</span>
             </div>
-            <span className="font-mono text-sm font-bold text-amber-400">{tileBagCounts.BLANK ?? 0}</span>
+            <span className="font-mono text-sm font-black text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]">
+              {tileBagCounts.BLANK ?? 0}
+            </span>
           </div>
         </div>
       </section>
-    </div>
+    </div>,
+    document.body
   );
 };
