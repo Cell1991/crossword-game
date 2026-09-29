@@ -360,7 +360,7 @@ async def test_hp01_score_is_dealt_as_damage_to_every_opponent(open_table):
     await resolve_damage(table)
 
     state = await table.state()
-    assert [me(state, seat)["hp"] for seat in (alice, bob, carol)] == [100, 95, 95]
+    assert [me(state, seat)["hp"] for seat in (alice, bob, carol)] == [120, 115, 115]
 
 
 async def test_hp02_knocking_out_the_last_opponent_wins_the_game(open_table, broadcasts):
@@ -797,7 +797,7 @@ async def test_cd08_shield_blocks_damage_for_the_blocker_only(open_table):
     await resolve_damage(table)
 
     state = await table.state()
-    assert [me(state, seat)["hp"] for seat in (alice, bob, carol)] == [100, 100, 95]
+    assert [me(state, seat)["hp"] for seat in (alice, bob, carol)] == [120, 120, 115]
 
 
 async def test_cd09_shield_without_an_incoming_effect_is_rejected(open_table):
