@@ -34,19 +34,17 @@ function clampOffset(
   viewportWidth: number,
   viewportHeight: number
 ): Offset {
-  const boardWidth = BOARD_COLS * BASE_CELL_SIZE * scale;
-  const boardHeight = BOARD_ROWS * BASE_CELL_SIZE * scale;
+  const cellSize = BASE_CELL_SIZE * scale;
+  // Dynamic buffer allowing panning across extended coordinates
+  const minBoardCol = -25;
+  const maxBoardCol = BOARD_COLS + 25;
+  const minBoardRow = -25;
+  const maxBoardRow = BOARD_ROWS + 25;
 
-  // Minimum pixels of board that must remain visible on screen
-  const marginX = Math.min(viewportWidth * 0.35, boardWidth * 0.5);
-  const marginY = Math.min(viewportHeight * 0.35, boardHeight * 0.5);
-
-  // board left edge (offset.x) can go as far right as (viewport - margin)
-  // board right edge (offset.x + boardWidth) must stay at least marginX from left
-  const minX = marginX - boardWidth;
-  const maxX = viewportWidth - marginX;
-  const minY = marginY - boardHeight;
-  const maxY = viewportHeight - marginY;
+  const minX = viewportWidth * 0.1 - maxBoardCol * cellSize;
+  const maxX = viewportWidth * 0.9 - minBoardCol * cellSize;
+  const minY = viewportHeight * 0.1 - maxBoardRow * cellSize;
+  const maxY = viewportHeight * 0.9 - minBoardRow * cellSize;
 
   return {
     x: Math.min(maxX, Math.max(minX, offset.x)),
@@ -156,10 +154,7 @@ export function useBoardCamera() {
       const cellSize = BASE_CELL_SIZE * scale;
       const col = Math.floor((screenX - offset.x) / cellSize);
       const row = Math.floor((screenY - offset.y) / cellSize);
-      if (row >= 0 && row < BOARD_ROWS && col >= 0 && col < BOARD_COLS) {
-        return { row, col };
-      }
-      return null;
+      return { row, col };
     };
 
     return {

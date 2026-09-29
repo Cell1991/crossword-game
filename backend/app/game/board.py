@@ -1,19 +1,28 @@
 from typing import Any, Optional
 from app.core.config import settings
 
+def mirror_row(r: int) -> int:
+    period = 2 * (settings.BOARD_ROWS - 1)  # 2 * 18 = 36
+    m = r % period
+    return period - m if m > settings.BOARD_ROWS - 1 else m
+
+def mirror_col(c: int) -> int:
+    period = 2 * (settings.BOARD_COLS - 1)  # 2 * 26 = 52
+    m = c % period
+    return period - m if m > settings.BOARD_COLS - 1 else m
+
 class Board:
-    """Logical game board (19 rows x 27 columns) with sparse cell storage."""
+    """Logical game board with sparse cell storage and infinite mirror expansion."""
 
     ROWS = settings.BOARD_ROWS
     COLS = settings.BOARD_COLS
     CENTER = (settings.CENTER_ROW, settings.CENTER_COL)
-    # Premium squares: the classic 15x15 layout spread proportionally over the larger board.
-    # Keep in sync with frontend/lib/board.ts.
+
+    # Base premium squares (starter 19x27 board)
     TRIPLE_LETTER = frozenset({
         (0, 13), (1, 2), (1, 24), (8, 0),
         (8, 26), (10, 0), (10, 26),
         (17, 2), (17, 24), (18, 13),
-        # Requested side 3L anchors, one more cell away from the center star.
         (9, 10), (9, 16),
     })
     DOUBLE_LETTER = frozenset({
@@ -21,12 +30,8 @@ class Board:
         (5, 13), (13, 13),
         (6, 4), (6, 22), (12, 4), (12, 22),
         (8, 7), (8, 19), (10, 7), (10, 19),
-        # Center cluster from the reference layout: four diagonal 2L cells around the star.
         (8, 12), (8, 14), (10, 12), (10, 14),
     })
-    # Lightning tiles replace word multipliers in this build: the pattern is mirrored
-    # by row/column around the center star, so the vertical and horizontal center-cross
-    # remain visually balanced on both halves of the board.
     SECRET_POWER = frozenset({
         (3, 4), (3, 22),
         (5, 7), (5, 19),
@@ -36,8 +41,8 @@ class Board:
         (15, 4), (15, 22),
     })
 
+
     def __init__(self, sparse_state: Optional[dict[str, Any]] = None):
-        # sparse_state format: {"row_col": {"row": r, "col": c, "letter": "A", "value": 1, ...}}
         self.cells: dict[str, dict[str, Any]] = sparse_state.copy() if sparse_state else {}
 
     @staticmethod
@@ -46,7 +51,7 @@ class Board:
 
     @classmethod
     def is_valid_coord(cls, row: int, col: int) -> bool:
-        return 0 <= row < cls.ROWS and 0 <= col < cls.COLS
+        return isinstance(row, int) and isinstance(col, int)
 
     @classmethod
     def is_center(cls, row: int, col: int) -> bool:
@@ -54,11 +59,17 @@ class Board:
 
     @classmethod
     def multiplier_at(cls, row: int, col: int) -> int:
-        if (row, col) in cls.TRIPLE_LETTER:
+        mr, mc = mirror_row(row), mirror_col(col)
+        if (mr, mc) in cls.TRIPLE_LETTER:
             return 3
-        if (row, col) in cls.DOUBLE_LETTER:
+        if (mr, mc) in cls.DOUBLE_LETTER:
             return 2
         return 1
+
+    @classmethod
+    def is_power_cell(cls, row: int, col: int) -> bool:
+        mr, mc = mirror_row(row), mirror_col(col)
+        return (mr, mc) in cls.SECRET_POWER
 
     def is_empty(self, row: int, col: int) -> bool:
         return self.key(row, col) not in self.cells
@@ -67,8 +78,6 @@ class Board:
         return self.cells.get(self.key(row, col))
 
     def set_cell(self, row: int, col: int, cell_data: dict[str, Any]) -> None:
-        if not self.is_valid_coord(row, col):
-            raise ValueError(f"Coordinates ({row}, {col}) out of bounds")
         self.cells[self.key(row, col)] = cell_data
 
     def is_board_empty(self) -> bool:

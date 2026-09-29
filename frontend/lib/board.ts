@@ -35,3 +35,35 @@ export const SECRET_POWER = cellKeys([
   [13, 7], [13, 19],
   [15, 4], [15, 22],
 ]);
+
+export function mirrorRow(r: number): number {
+  const period = 2 * (BOARD_ROWS - 1); // 36
+  const m = ((r % period) + period) % period;
+  return m > BOARD_ROWS - 1 ? period - m : m;
+}
+
+export function mirrorCol(c: number): number {
+  const period = 2 * (BOARD_COLS - 1); // 52
+  const m = ((c % period) + period) % period;
+  return m > BOARD_COLS - 1 ? period - m : m;
+}
+
+export function isTripleLetterCell(row: number, col: number): boolean {
+  return TRIPLE_LETTER.has(`${mirrorRow(row)}_${mirrorCol(col)}`);
+}
+
+export function isDoubleLetterCell(row: number, col: number): boolean {
+  return DOUBLE_LETTER.has(`${mirrorRow(row)}_${mirrorCol(col)}`);
+}
+
+export function isPowerCell(row: number, col: number): boolean {
+  return SECRET_POWER.has(`${mirrorRow(row)}_${mirrorCol(col)}`);
+}
+
+export function cellMultiplier(row: number, col: number): number {
+  if (isTripleLetterCell(row, col)) return 3;
+  if (isDoubleLetterCell(row, col)) return 2;
+  return 1;
+}
+
+
