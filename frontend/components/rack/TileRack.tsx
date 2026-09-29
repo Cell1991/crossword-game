@@ -301,7 +301,7 @@ export const TileRack = memo(function TileRack({
             </span>
           </div>
 
-          <div className="flex w-full justify-center items-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-l-xl sm:rounded-l-2xl rounded-r-none lg:rounded-2xl border-r-0 lg:border-r lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-cyan-500/15 min-h-[48px] sm:min-h-[58px]">
+          <div className="flex w-full justify-end lg:justify-center items-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-l-xl sm:rounded-l-2xl rounded-r-none lg:rounded-2xl border-r-0 lg:border-r lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-cyan-500/15 min-h-[48px] sm:min-h-[58px]">
             {isExchanging ? (
               <div className="flex items-center gap-2 px-1">
                 <button
@@ -384,7 +384,7 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
 
-          <div className="flex w-full flex-wrap items-center justify-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-r-xl sm:rounded-r-2xl rounded-l-none lg:rounded-2xl border-l-0 lg:border-l lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-emerald-500/15 min-h-[48px] sm:min-h-[58px]">
+          <div className="flex w-full flex-wrap items-center justify-start lg:justify-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-r-xl sm:rounded-r-2xl rounded-l-none lg:rounded-2xl border-l-0 lg:border-l lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-emerald-500/15 min-h-[48px] sm:min-h-[58px]">
             {isExchanging ? (
               <button
                 onClick={onConfirmExchange}
