@@ -270,7 +270,7 @@ class GameService:
             turn_started_at=turn_started_at,
             max_turns=game.max_turns,
             pending_effect=GameService._visible_pending_effect(game.pending_effect, requesting_player_id),
-            frozen_tile=game.frozen_tile,
+            frozen_tile=GameService._visible_frozen_tile(game.frozen_tile, game.turn_number),
             winner_id=game.winner_id,
             server_time=datetime.now(timezone.utc),
             game_pin=room.game_pin if room else None,
@@ -294,6 +294,14 @@ class GameService:
         if effect["type"] == "SWAP" and requesting_player_id not in (effect.get("source_player_id"), effect.get("target_player_id")):
             return {"type": "SWAP", "expires_at": effect["expires_at"]}
         return effect
+
+    @staticmethod
+    def _visible_frozen_tile(frozen_tile: Optional[dict[str, Any]], turn_number: int) -> Optional[dict[str, Any]]:
+        """Stop showing a FREEZE_TILE marker once its blocking window (checked the same way in
+        MoveService) has passed — the stored value on Game is never cleared on its own."""
+        if not frozen_tile or turn_number > frozen_tile["expires_turn"]:
+            return None
+        return frozen_tile
 
     @staticmethod
     async def pass_turn(db: AsyncSession, game_id: str, player_id: str) -> tuple[Game, bool, str | None, str | None]:
