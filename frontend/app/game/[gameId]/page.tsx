@@ -29,6 +29,7 @@ import { GameOverScreen } from '@/components/game/GameOverScreen';
 import { CardRevealOverlay, PendingEffectBanner, ToastStack } from '@/components/game/GameOverlays';
 import { BlankTilePickerModal } from '@/components/game/BlankTilePickerModal';
 import { ConfirmExitModal } from '@/components/game/ConfirmExitModal';
+import { MobileInfoModal } from '@/components/game/MobileInfoModal';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 
 const EMPTY_TILES: Tile[] = [];
@@ -445,36 +446,20 @@ export default function GamePage() {
         </div>
       </div>
 
-      {isMobileInfoOpen && (
-        <div
-          className="fixed inset-x-2 top-14 z-40 flex min-h-0 flex-col gap-1 [@media(min-height:640px)]:top-20 bottom-[max(1rem,env(safe-area-inset-bottom))] lg:hidden"
-          onClick={() => setIsMobileInfoOpen(false)}
-        >
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={() => setIsMobileInfoOpen(false)}
-              className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-slate-200"
-              aria-label="Close game information"
-            >
-              Close
-            </button>
-          </div>
-          <div className="min-h-0 flex-1" onClick={event => event.stopPropagation()}>
-            <RightSidebar
-              mobile
-              players={gameState.players ?? []}
-              showHealth={gameState.max_turns === null}
-              myPlayerId={myPlayerId}
-              currentPlayerId={gameState.current_player_id ?? null}
-              tileBagCount={tileBagCount}
-              tileBagCounts={gameState.tile_bag_counts ?? {}}
-              moveHistory={sync.moveHistory}
-              cardUseEffects={sync.cardUseEffects}
-            />
-          </div>
-        </div>
-      )}
+      {/* Mobile Info, Scoreboard & History Sheet Modal */}
+      <MobileInfoModal
+        isOpen={isMobileInfoOpen}
+        onClose={() => setIsMobileInfoOpen(false)}
+        turnNumber={gameState.turn_number}
+        players={gameState.players ?? []}
+        showHealth={gameState.max_turns === null}
+        myPlayerId={myPlayerId}
+        currentPlayerId={gameState.current_player_id ?? null}
+        tileBagCount={tileBagCount}
+        tileBagCounts={gameState.tile_bag_counts ?? {}}
+        moveHistory={sync.moveHistory}
+        cardUseEffects={sync.cardUseEffects}
+      />
 
       {/* Bottom: Tile rack (spectators have no seat and never see a rack) */}
       <div className="relative z-10 shrink-0 px-1.5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1.5 sm:p-3">
