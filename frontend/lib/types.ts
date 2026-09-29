@@ -58,6 +58,7 @@ export interface GameState {
   /** Once the game is over: the PIN of the lobby its players are gathering in for another round. */
   rematch_pin: string | null;
   spectator_count: number;
+  move_history?: MoveHistoryEntry[];
 }
 
 /** A DAMAGE/SWAP effect waiting out its SHIELD window. SWAP tile letters are only
@@ -88,7 +89,7 @@ export interface WordDefinition {
   meanings: WordDefinitionMeaning[];
 }
 
-/** One line of the sidebar's move history, built on this device from socket events. */
+/** One line of the sidebar's move history, built on this device from socket events or fetched on reload. */
 export interface MoveHistoryEntry {
   id: string;
   text: string;
@@ -96,6 +97,9 @@ export interface MoveHistoryEntry {
   score?: number;
   type?: 'move' | 'exchange' | 'pass' | 'card';
   words?: string[];
+  player_id?: string;
+  display_name?: string;
+  turn_number?: number;
 }
 
 export type BoardCard = 'FREEZE_TILE' | 'DESTROY_TILE';

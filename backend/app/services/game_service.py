@@ -10,7 +10,7 @@ from app.database.models import Game, GamePlayer, Move, GameRoom, GameTile, get_
 from app.game.game_end import GameEndService
 from app.game.tiles import TileService, NotEnoughTilesInBag
 from app.schemas.player import PlayerOut, TileSchema
-from app.schemas.game import GameStateResponse
+from app.schemas.game import GameStateResponse, MoveHistoryItem
 from app.database.state import bag_tiles, board_state, player_rack, player_cards, replace_game_tiles
 from app.services.room_service import RoomService
 
@@ -260,6 +260,46 @@ class GameService:
             letter = tile["letter"].upper()
             tile_bag_counts[letter] = tile_bag_counts.get(letter, 0) + 1
 
+        stmt_moves = select(Move).where(Move.game_id == game_id).order_by(Move.created_at.asc(), Move.turn_number.asc())
+        db_moves = (await db.execute(stmt_moves)).scalars().all()
+        player_name_map = {p.id: p.display_name for p in players}
+
+        move_history_outs = []
+        for m in db_moves:
+            p_name = player_name_map.get(m.player_id, "Player")
+            words_list = []
+            if m.words_formed and isinstance(m.words_formed, list):
+                for w in m.words_formed:
+                    if isinstance(w, dict) and "word" in w:
+                        words_list.append(str(w["word"]).upper())
+                    elif isinstance(w, str):
+                        words_list.append(w.upper())
+
+            m_type = "move"
+            if m.move_type == "PASS":
+                m_type = "pass"
+                text = f"{p_name} passed turn"
+            elif m.move_type == "EXCHANGE":
+                m_type = "exchange"
+                text = f"{p_name} swapped tiles"
+            else:
+                m_type = "move"
+                words_str = ", ".join(words_list)
+                text = f"{p_name}: {words_str}" if words_str else f"{p_name} placed tiles"
+
+            move_history_outs.append(MoveHistoryItem(
+                id=m.id,
+                player_id=m.player_id,
+                display_name=p_name,
+                turn_number=m.turn_number,
+                move_type=m.move_type,
+                text=text,
+                score=m.score_earned or 0,
+                words=words_list,
+                type=m_type,
+                created_at=m.created_at,
+            ))
+
         return GameStateResponse(
             game_id=game.id,
             status=game.status,
@@ -280,6 +320,7 @@ class GameService:
             server_time=datetime.now(timezone.utc),
             game_pin=room.game_pin if room else None,
             rematch_pin=rematch_room.game_pin if rematch_room else None,
+            move_history=move_history_outs,
         )
 
     @staticmethod

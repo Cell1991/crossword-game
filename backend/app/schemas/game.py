@@ -11,6 +11,18 @@ class BoardCellOut(BaseModel):
     player_id: str
     turn_number: int
 
+class MoveHistoryItem(BaseModel):
+    id: str
+    player_id: str
+    display_name: Optional[str] = None
+    turn_number: int
+    move_type: str
+    text: str
+    score: int = 0
+    words: list[str] = []
+    type: str = "move"
+    created_at: Optional[datetime] = None
+
 class GameStateResponse(BaseModel):
     game_id: str
     status: str
@@ -36,3 +48,5 @@ class GameStateResponse(BaseModel):
     # Once the game is over: the PIN of the lobby its players are gathering in for another round.
     rematch_pin: Optional[str] = None
     spectator_count: int = 0
+    move_history: list[MoveHistoryItem] = []
+

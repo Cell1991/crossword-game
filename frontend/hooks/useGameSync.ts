@@ -61,6 +61,32 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       if (snapshot === lastSnapshotRef.current) return;
       lastSnapshotRef.current = snapshot;
       setGameState(state);
+      if (state.move_history && Array.isArray(state.move_history)) {
+        const formattedHistory: MoveHistoryEntry[] = state.move_history.map(m => {
+          const isMe = m.player_id === myPlayerId;
+          const pName = isMe ? 'You' : (m.display_name || 'Player');
+          let text = m.text;
+          if (m.type === 'move') {
+            const wordsStr = (m.words || []).join(', ');
+            text = wordsStr ? `${pName}: ${wordsStr}` : `${pName} placed tiles`;
+          } else if (m.type === 'pass') {
+            text = `${pName} passed turn`;
+          } else if (m.type === 'exchange') {
+            text = `${pName} swapped tiles`;
+          }
+          return {
+            id: m.id,
+            text,
+            score: m.score,
+            type: m.type,
+            words: m.words,
+            player_id: m.player_id,
+            display_name: m.display_name,
+            turn_number: m.turn_number,
+          };
+        });
+        setMoveHistory(formattedHistory);
+      }
       setSyncedAt(Date.now() + clockOffsetRef.current);
       onSnapshotRef.current?.(state);
       setLoading(false);
@@ -68,7 +94,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       setError(error instanceof Error ? error.message : 'Failed to load game state');
       setLoading(false);
     }
-  }, [gameId, isSpectator, myToken, isDebug, setError]);
+  }, [gameId, isSpectator, myToken, isDebug, myPlayerId, setError]);
 
   useEffect(() => {
     if (!hydrated || !session) return;
