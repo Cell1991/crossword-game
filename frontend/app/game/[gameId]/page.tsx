@@ -484,7 +484,7 @@ export default function GamePage() {
           </p>
         ) : (
           <>
-            <div className="mb-1 sm:mb-2">
+            <div className="flex justify-center items-center w-full mb-1 sm:mb-2.5">
               <PowerCardBar
                 cards={myPlayer?.cards ?? []}
                 opponents={opponents}

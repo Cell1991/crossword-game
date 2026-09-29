@@ -4,21 +4,94 @@ import React, { memo, useState } from 'react';
 import { BoardCard, CellPosition, Player, Tile } from '@/lib/types';
 import { isBlankLetter } from '@/lib/tiles';
 import { cardIcon } from './cardIcons';
+import { Sparkles, X, Check, ArrowRight, Shield, Zap, AlertTriangle } from 'lucide-react';
 
 type SimpleCard = 'HINT' | 'HEAL' | 'SHIELD';
 type TargetedCard = 'DOUBLE_DAMAGE';
 type SpySwapStep = 'own' | 'opponent' | 'tiles';
 
-const cardMeta = (card: string, label: string, ownTurnOnly: boolean) => ({ icon: cardIcon(card, 'h-4 w-4', '×2'), label, ownTurnOnly });
+interface CardStyleConfig {
+  icon: React.ReactNode;
+  label: string;
+  ownTurnOnly: boolean;
+  bgGradient: string;
+  borderColor: string;
+  textColor: string;
+  glowClass: string;
+  badgeBg: string;
+}
 
-const CARD_META: Record<string, { icon: React.ReactNode; label: string; ownTurnOnly: boolean }> = {
-  HINT: cardMeta('HINT', 'Spell Word', true),
-  SPY_SWAP: cardMeta('SPY_SWAP', 'Swap Word', false),
-  DESTROY_TILE: cardMeta('DESTROY_TILE', 'Clear Word', false),
-  HEAL: cardMeta('HEAL', 'Heal', false),
-  DOUBLE_DAMAGE: cardMeta('DOUBLE_DAMAGE', 'Word x2', true),
-  SHIELD: cardMeta('SHIELD', 'Shield', false),
-  FREEZE_TILE: cardMeta('FREEZE_TILE', 'Freeze Word', true),
+const CARD_META: Record<string, CardStyleConfig> = {
+  HEAL: {
+    icon: cardIcon('HEAL', 'h-4 w-4 text-pink-300', '×2'),
+    label: 'Heal',
+    ownTurnOnly: false,
+    bgGradient: 'from-rose-950/90 via-pink-950/70 to-slate-950/90',
+    borderColor: 'border-rose-500/50 hover:border-pink-400/90',
+    textColor: 'text-rose-200 group-hover:text-white',
+    glowClass: 'hover:shadow-[0_0_18px_rgba(244,63,94,0.45)] hover:ring-1 hover:ring-pink-400/40',
+    badgeBg: 'bg-rose-500/30 border border-rose-400/50 text-rose-200',
+  },
+  FREEZE_TILE: {
+    icon: cardIcon('FREEZE_TILE', 'h-4 w-4 text-cyan-300', '×2'),
+    label: 'Freeze Word',
+    ownTurnOnly: true,
+    bgGradient: 'from-sky-950/90 via-cyan-950/70 to-slate-950/90',
+    borderColor: 'border-cyan-500/50 hover:border-cyan-400/90',
+    textColor: 'text-cyan-200 group-hover:text-white',
+    glowClass: 'hover:shadow-[0_0_18px_rgba(6,182,212,0.45)] hover:ring-1 hover:ring-cyan-400/40',
+    badgeBg: 'bg-cyan-500/30 border border-cyan-400/50 text-cyan-200',
+  },
+  DOUBLE_DAMAGE: {
+    icon: cardIcon('DOUBLE_DAMAGE', 'h-4 w-4 text-purple-300', '×2'),
+    label: 'Word ×2',
+    ownTurnOnly: true,
+    bgGradient: 'from-purple-950/90 via-indigo-950/70 to-slate-950/90',
+    borderColor: 'border-purple-500/50 hover:border-purple-400/90',
+    textColor: 'text-purple-200 group-hover:text-white',
+    glowClass: 'hover:shadow-[0_0_18px_rgba(168,85,247,0.45)] hover:ring-1 hover:ring-purple-400/40',
+    badgeBg: 'bg-purple-500/30 border border-purple-400/50 text-purple-200',
+  },
+  SHIELD: {
+    icon: cardIcon('SHIELD', 'h-4 w-4 text-blue-300', '×2'),
+    label: 'Shield',
+    ownTurnOnly: false,
+    bgGradient: 'from-blue-950/90 via-indigo-950/70 to-slate-950/90',
+    borderColor: 'border-blue-500/50 hover:border-blue-400/90',
+    textColor: 'text-blue-200 group-hover:text-white',
+    glowClass: 'hover:shadow-[0_0_18px_rgba(59,130,246,0.45)] hover:ring-1 hover:ring-blue-400/40',
+    badgeBg: 'bg-blue-500/30 border border-blue-400/50 text-blue-200',
+  },
+  HINT: {
+    icon: cardIcon('HINT', 'h-4 w-4 text-amber-300', '×2'),
+    label: 'Spell Word',
+    ownTurnOnly: true,
+    bgGradient: 'from-amber-950/90 via-yellow-950/70 to-slate-950/90',
+    borderColor: 'border-amber-500/50 hover:border-amber-400/90',
+    textColor: 'text-amber-200 group-hover:text-white',
+    glowClass: 'hover:shadow-[0_0_18px_rgba(245,158,11,0.45)] hover:ring-1 hover:ring-amber-400/40',
+    badgeBg: 'bg-amber-500/30 border border-amber-400/50 text-amber-200',
+  },
+  SPY_SWAP: {
+    icon: cardIcon('SPY_SWAP', 'h-4 w-4 text-emerald-300', '×2'),
+    label: 'Swap Word',
+    ownTurnOnly: false,
+    bgGradient: 'from-emerald-950/90 via-teal-950/70 to-slate-950/90',
+    borderColor: 'border-emerald-500/50 hover:border-emerald-400/90',
+    textColor: 'text-emerald-200 group-hover:text-white',
+    glowClass: 'hover:shadow-[0_0_18px_rgba(16,185,129,0.45)] hover:ring-1 hover:ring-emerald-400/40',
+    badgeBg: 'bg-emerald-500/30 border border-emerald-400/50 text-emerald-200',
+  },
+  DESTROY_TILE: {
+    icon: cardIcon('DESTROY_TILE', 'h-4 w-4 text-orange-300', '×2'),
+    label: 'Clear Word',
+    ownTurnOnly: false,
+    bgGradient: 'from-orange-950/90 via-red-950/70 to-slate-950/90',
+    borderColor: 'border-orange-500/50 hover:border-orange-400/90',
+    textColor: 'text-orange-200 group-hover:text-white',
+    glowClass: 'hover:shadow-[0_0_18px_rgba(249,115,22,0.45)] hover:ring-1 hover:ring-orange-400/40',
+    badgeBg: 'bg-orange-500/30 border border-orange-400/50 text-orange-200',
+  },
 };
 
 interface PowerCardBarProps {
@@ -79,13 +152,17 @@ export const PowerCardBar = memo(function PowerCardBar({
 
   if (deferredFreezeTileId) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-cyan-400/50 bg-cyan-950/60 px-3 py-1.5 text-xs text-cyan-200">
-        <span className="flex items-center gap-1.5">❄️ Freeze marked — takes effect when you confirm your move</span>
+      <div className="flex items-center gap-3 rounded-2xl border border-cyan-400/60 bg-gradient-to-r from-cyan-950/90 via-slate-900/90 to-slate-950/90 px-4 py-2 text-xs text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.25)] ring-1 ring-cyan-500/30">
+        <span className="flex items-center gap-2 font-medium">
+          ❄️ <strong className="text-cyan-300">Freeze Marked</strong> — takes effect on move confirm
+        </span>
         <button
+          type="button"
           onClick={onCancelDeferredFreeze}
-          className="rounded-full border border-cyan-300/40 px-2 py-0.5 text-[11px] hover:bg-cyan-900"
+          className="flex items-center gap-1 rounded-lg border border-cyan-400/50 bg-cyan-950/80 px-2.5 py-1 text-[11px] font-bold text-cyan-200 hover:bg-cyan-900 transition-colors cursor-pointer"
         >
-          Unmark
+          <X className="w-3.5 h-3.5" />
+          <span>Unmark</span>
         </button>
       </div>
     );
@@ -93,29 +170,37 @@ export const PowerCardBar = memo(function PowerCardBar({
 
   if (armedCard && pendingArmedCell) {
     const meta = CARD_META[armedCard];
-    const verb = armedCard === 'DESTROY_TILE' ? 'destroy' : 'freeze';
+    const verb = armedCard === 'DESTROY_TILE' ? 'Destroy' : 'Freeze';
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-rose-400/60 bg-rose-950/60 px-3 py-1.5 text-xs text-rose-200">
-        <span className="flex items-center gap-1.5">{meta.icon} Really {verb} this tile? This can&apos;t be undone.</span>
-        <button
-          disabled={busy}
-          onClick={onConfirmArmedCell}
-          className="rounded-full bg-rose-500 px-3 py-1 font-bold text-slate-950 hover:bg-rose-300 disabled:opacity-50"
-        >
-          {verb === 'destroy' ? 'Destroy' : 'Freeze'}
-        </button>
-        <button
-          onClick={onCancelArmedCell}
-          className="rounded-full border border-rose-300/40 px-2 py-0.5 text-[11px] hover:bg-rose-900"
-        >
-          Pick another tile
-        </button>
-        <button
-          onClick={onCancelArm}
-          className="rounded-full border border-rose-300/20 px-2 py-0.5 text-rose-300/70 hover:bg-rose-900"
-        >
-          Cancel
-        </button>
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-rose-500/60 bg-gradient-to-r from-rose-950/95 via-slate-900/95 to-slate-950/95 px-4 py-2 text-xs text-rose-200 shadow-[0_0_24px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/40">
+        <span className="flex items-center gap-2 font-medium">
+          {meta?.icon} <strong className="text-rose-300">{verb} this tile?</strong> Cannot be undone.
+        </span>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onConfirmArmedCell}
+            className="flex items-center gap-1 rounded-xl bg-gradient-to-r from-rose-600 to-red-500 px-3.5 py-1.5 font-bold text-white shadow-[0_0_12px_rgba(244,63,94,0.6)] hover:brightness-110 disabled:opacity-50 transition-all cursor-pointer"
+          >
+            <Check className="w-3.5 h-3.5" />
+            <span>Confirm {verb}</span>
+          </button>
+          <button
+            type="button"
+            onClick={onCancelArmedCell}
+            className="rounded-xl border border-rose-400/40 bg-rose-950/60 px-3 py-1.5 text-xs text-rose-200 hover:bg-rose-900/80 transition-colors cursor-pointer"
+          >
+            Pick Another
+          </button>
+          <button
+            type="button"
+            onClick={onCancelArm}
+            className="rounded-xl border border-slate-700 bg-slate-900/80 px-2.5 py-1.5 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     );
   }
@@ -123,15 +208,20 @@ export const PowerCardBar = memo(function PowerCardBar({
   if (armedCard) {
     const meta = CARD_META[armedCard];
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-cyan-400/50 bg-cyan-950/60 px-3 py-1.5 text-xs text-cyan-200">
-        <span className="flex items-center gap-1.5">
-          {meta.icon} {armedCard === 'DESTROY_TILE' ? 'Pick a board tile to destroy' : 'Pick a tile to freeze — an old one or one you just placed'}
+      <div className="flex items-center gap-3 rounded-2xl border border-cyan-400/60 bg-gradient-to-r from-cyan-950/90 via-slate-900/90 to-slate-950/90 px-4 py-2 text-xs text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.25)] ring-1 ring-cyan-500/30">
+        <span className="flex items-center gap-2 font-medium">
+          {meta?.icon}
+          <span>
+            {armedCard === 'DESTROY_TILE' ? 'Select a tile on the board to clear' : 'Select a tile to freeze (board or staged)'}
+          </span>
         </span>
         <button
+          type="button"
           onClick={onCancelArm}
-          className="rounded-full border border-cyan-300/40 px-2 py-0.5 text-[11px] hover:bg-cyan-900"
+          className="flex items-center gap-1 rounded-lg border border-cyan-400/50 bg-cyan-950/80 px-2.5 py-1 text-[11px] font-bold text-cyan-200 hover:bg-cyan-900 transition-colors cursor-pointer"
         >
-          Cancel
+          <X className="w-3.5 h-3.5" />
+          <span>Cancel</span>
         </button>
       </div>
     );
@@ -157,11 +247,11 @@ export const PowerCardBar = memo(function PowerCardBar({
     };
 
     return (
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-cyan-400/50 bg-slate-950/90 px-3 py-2 text-xs text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.16)]">
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-emerald-400/60 bg-gradient-to-r from-emerald-950/95 via-slate-900/95 to-slate-950/95 p-3 text-xs text-emerald-100 shadow-[0_0_24px_rgba(16,185,129,0.3)] ring-1 ring-emerald-500/30">
         {spySwapStep === 'own' && (
           <>
-            <span className="font-semibold">SPY_SWAP: Select your tiles (up to 3)</span>
-            <div className="flex flex-wrap gap-1">
+            <span className="font-bold text-emerald-300">SPY_SWAP: Pick up to 3 tiles to give:</span>
+            <div className="flex flex-wrap gap-1.5">
               {ownRack.map(tile => {
                 const selected = spyOwnTileIds.includes(tile.id);
                 return (
@@ -170,70 +260,75 @@ export const PowerCardBar = memo(function PowerCardBar({
                     type="button"
                     aria-pressed={selected}
                     onClick={() => toggleOwnTile(tile.id)}
-                    className={`tile-face group relative flex shrink-0 h-[46px] w-[40px] flex-col items-center justify-center overflow-hidden rounded-lg border font-sans select-none sm:h-[56px] sm:w-[50px] sm:rounded-xl ${selected ? 'border-cyan-200 ring-2 ring-cyan-300' : 'border-amber-100/80'}`}
+                    className={`tile-face relative flex shrink-0 h-[46px] w-[40px] flex-col items-center justify-center overflow-hidden rounded-xl border font-sans cursor-pointer transition-all ${
+                      selected ? 'border-emerald-300 ring-2 ring-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.6)] scale-105' : 'border-amber-100/80 hover:brightness-105'
+                    }`}
                   >
-                    <div className="pointer-events-none absolute inset-x-1 top-0.5 z-10 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent" />
-                    {isBlankLetter(tile.letter) ? (
-                      <svg viewBox="0 0 24 24" className="tile-blank-star relative z-20 h-6 w-6 sm:h-8 sm:w-8" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
-                      </svg>
-                    ) : (
-                      <span className="tile-letter tile-letter-orange relative z-20 text-[26px] leading-none font-maple sm:text-[36px]">
-                        {tile.letter}
-                      </span>
-                    )}
-                    <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[10px] font-maple sm:bottom-1 sm:right-1.5 sm:text-[13px] lg:text-[18px] leading-none">
+                    <span className="tile-letter tile-letter-orange text-[26px] leading-none font-maple">
+                      {tile.letter}
+                    </span>
+                    <span className="tile-score-blue absolute bottom-0.5 right-1 text-[10px] font-maple">
                       {tile.value}
                     </span>
                   </button>
                 );
               })}
             </div>
-            <span className="text-cyan-200/70">{spyOwnTileIds.length}/3</span>
+            <span className="font-mono font-bold text-emerald-400">{spyOwnTileIds.length}/3 Selected</span>
             <button
               type="button"
               disabled={!spyOwnTileIds.length || busy || !opponents.length}
               onClick={() => setSpySwapStep('opponent')}
-              className="rounded-full bg-cyan-500 px-3 py-1 font-bold text-slate-950 hover:bg-cyan-300 disabled:opacity-40"
-            >Continue</button>
+              className="flex items-center gap-1 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-1.5 font-bold text-slate-950 hover:brightness-110 disabled:opacity-40 transition-all cursor-pointer"
+            >
+              <span>Next</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </>
         )}
         {spySwapStep === 'opponent' && (
           <>
-            <span className="font-semibold">Select a target player:</span>
-            {opponents.map(opponent => (
-              <button
-                key={opponent.id}
-                type="button"
-                disabled={busy || opponent.rack_count < spyOwnTileIds.length}
-                onClick={() => { setSpyTargetPlayerId(opponent.id); setSpyTargetTileIndices([]); setSpySwapStep('tiles'); }}
-                className="rounded-full border border-cyan-300/40 px-3 py-1 hover:bg-cyan-900 disabled:opacity-40"
-              >
-                {opponent.display_name}
-              </button>
-            ))}
+            <span className="font-bold text-emerald-300">Select target player:</span>
+            <div className="flex flex-wrap gap-1.5">
+              {opponents.map(opponent => (
+                <button
+                  key={opponent.id}
+                  type="button"
+                  disabled={busy || opponent.rack_count < spyOwnTileIds.length}
+                  onClick={() => { setSpyTargetPlayerId(opponent.id); setSpyTargetTileIndices([]); setSpySwapStep('tiles'); }}
+                  className="rounded-xl border border-emerald-400/50 bg-emerald-950/60 px-3.5 py-1.5 font-semibold text-emerald-200 hover:bg-emerald-800/80 disabled:opacity-40 transition-colors cursor-pointer"
+                >
+                  {opponent.display_name}
+                </button>
+              ))}
+            </div>
           </>
         )}
         {spySwapStep === 'tiles' && selectedOpponent && (
           <>
-            <span className="font-semibold">Select hidden tiles {spyTargetTileIndices.length}/{spyOwnTileIds.length}</span>
-            <div className="flex flex-wrap gap-1">
+            <span className="font-bold text-emerald-300">
+              Pick {spyOwnTileIds.length} hidden tiles from {selectedOpponent.display_name}:
+            </span>
+            <div className="flex flex-wrap gap-1.5">
               {Array.from({ length: selectedOpponent.rack_count }, (_, index) => {
                 const selected = spyTargetTileIndices.includes(index);
                 return (
                   <button
                     key={index}
                     type="button"
-                    aria-label={`Hidden tile ${index + 1}${selected ? ', selected' : ''}`}
-                    aria-pressed={selected}
                     disabled={!selected && spyTargetTileIndices.length >= spyOwnTileIds.length}
                     onClick={() => toggleTargetSlot(index)}
-                    className={`h-10 w-8 rounded-md border bg-slate-800 text-sm font-bold ${selected ? 'border-cyan-200 bg-cyan-800 ring-2 ring-cyan-300' : 'border-slate-500 hover:border-cyan-300'}`}
-                  >?</button>
+                    className={`h-11 w-9 rounded-xl border font-bold text-sm transition-all cursor-pointer ${
+                      selected
+                        ? 'border-emerald-300 bg-emerald-700 text-white ring-2 ring-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.6)] scale-105'
+                        : 'border-slate-700 bg-slate-800/90 text-slate-300 hover:border-emerald-400 hover:text-white'
+                    }`}
+                  >
+                    ?
+                  </button>
                 );
               })}
             </div>
-            <span className="text-cyan-200/70">{selectedOpponent.display_name}</span>
             <button
               type="button"
               disabled={busy || spyTargetTileIndices.length !== spyOwnTileIds.length}
@@ -241,12 +336,18 @@ export const PowerCardBar = memo(function PowerCardBar({
                 onUseSpySwap(spyTargetPlayerId!, spyOwnTileIds, spyTargetTileIndices);
                 cancelSpySwap();
               }}
-              className="rounded-full bg-cyan-500 px-3 py-1 font-bold text-slate-950 hover:bg-cyan-300 disabled:opacity-40"
-            >Swap</button>
-            <button type="button" onClick={() => setSpySwapStep('opponent')} className="rounded-full border border-slate-500/60 px-3 py-1 text-slate-300 hover:bg-slate-800">Back</button>
+              className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-1.5 font-bold text-slate-950 hover:brightness-110 disabled:opacity-40 transition-all cursor-pointer"
+            >
+              Complete Swap
+            </button>
+            <button type="button" onClick={() => setSpySwapStep('opponent')} className="rounded-xl border border-slate-700 px-3 py-1.5 text-slate-300 hover:bg-slate-800 cursor-pointer">
+              Back
+            </button>
           </>
         )}
-        <button type="button" onClick={cancelSpySwap} className="rounded-full border border-slate-500/60 px-3 py-1 text-slate-300 hover:bg-slate-800">Cancel</button>
+        <button type="button" onClick={cancelSpySwap} className="rounded-xl border border-slate-700 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
+          Cancel
+        </button>
       </div>
     );
   }
@@ -254,21 +355,26 @@ export const PowerCardBar = memo(function PowerCardBar({
   if (pickingTargetFor) {
     const meta = CARD_META[pickingTargetFor];
     return (
-      <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-amber-400/50 bg-amber-950/60 px-3 py-1.5 text-xs text-amber-200">
-        <span className="flex items-center gap-1.5">{meta.icon} Target:</span>
-        {opponents.map(opponent => (
-          <button
-            key={opponent.id}
-            disabled={busy}
-            onClick={() => { onUseTargeted(pickingTargetFor, opponent.id); setPickingTargetFor(null); }}
-            className="rounded-full border border-amber-300/40 px-2 py-0.5 hover:bg-amber-900 disabled:opacity-50"
-          >
-            {opponent.display_name}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-2.5 rounded-2xl border border-purple-400/60 bg-gradient-to-r from-purple-950/95 via-slate-900/95 to-slate-950/95 px-4 py-2 text-xs text-purple-200 shadow-[0_0_24px_rgba(168,85,247,0.3)] ring-1 ring-purple-500/30">
+        <span className="flex items-center gap-2 font-bold text-purple-300">
+          {meta?.icon} Select target for {meta?.label}:
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {opponents.map(opponent => (
+            <button
+              key={opponent.id}
+              disabled={busy}
+              onClick={() => { onUseTargeted(pickingTargetFor, opponent.id); setPickingTargetFor(null); }}
+              className="rounded-xl border border-purple-400/50 bg-purple-950/60 px-3 py-1.5 font-semibold text-purple-200 hover:bg-purple-800/80 disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              {opponent.display_name}
+            </button>
+          ))}
+        </div>
         <button
+          type="button"
           onClick={() => setPickingTargetFor(null)}
-          className="rounded-full border border-amber-300/20 px-2 py-0.5 text-amber-300/70 hover:bg-amber-900"
+          className="rounded-xl border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
         >
           Cancel
         </button>
@@ -278,8 +384,8 @@ export const PowerCardBar = memo(function PowerCardBar({
 
   if (pickingLetter) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-fuchsia-400/50 bg-fuchsia-950/60 px-3 py-1.5 text-xs text-fuchsia-200">
-        <span>🚫 Letter to ban:</span>
+      <div className="flex items-center gap-3 rounded-2xl border border-fuchsia-400/60 bg-gradient-to-r from-fuchsia-950/95 via-slate-900/95 to-slate-950/95 px-4 py-2 text-xs text-fuchsia-200 shadow-[0_0_24px_rgba(217,70,239,0.3)] ring-1 ring-fuchsia-500/30">
+        <span className="font-bold text-fuchsia-300">🚫 Choose letter to ban:</span>
         <input
           autoFocus
           maxLength={1}
@@ -290,18 +396,20 @@ export const PowerCardBar = memo(function PowerCardBar({
             const letter = letterDraft.trim();
             if (/^[A-Za-z]$/.test(letter)) { onUseBanLetter(letter); setPickingLetter(false); setLetterDraft(''); }
           }}
-          className="w-8 rounded border border-fuchsia-300/40 bg-fuchsia-900/60 px-1 py-0.5 text-center uppercase text-white outline-none"
+          className="w-9 h-8 rounded-lg border border-fuchsia-400/60 bg-fuchsia-900/80 text-center uppercase text-base font-bold text-white outline-none focus:ring-2 focus:ring-fuchsia-400 shadow-inner"
         />
         <button
+          type="button"
           disabled={busy || !/^[A-Za-z]$/.test(letterDraft.trim())}
           onClick={() => { onUseBanLetter(letterDraft.trim()); setPickingLetter(false); setLetterDraft(''); }}
-          className="rounded-full border border-fuchsia-300/40 px-2 py-0.5 hover:bg-fuchsia-900 disabled:opacity-40"
+          className="rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-500 px-3.5 py-1.5 font-bold text-white hover:brightness-110 disabled:opacity-40 transition-all cursor-pointer"
         >
-          Ban
+          Confirm Ban
         </button>
         <button
+          type="button"
           onClick={() => { setPickingLetter(false); setLetterDraft(''); }}
-          className="rounded-full border border-fuchsia-300/20 px-2 py-0.5 text-fuchsia-300/70 hover:bg-fuchsia-900"
+          className="rounded-xl border border-slate-700 px-2.5 py-1 text-slate-400 hover:text-white cursor-pointer"
         >
           Cancel
         </button>
@@ -312,27 +420,30 @@ export const PowerCardBar = memo(function PowerCardBar({
   if (confirmingCard) {
     const meta = CARD_META[confirmingCard];
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-cyan-400/60 bg-slate-950/90 px-3 py-1.5 text-xs text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.2)]">
-        <span className="flex items-center">{meta.icon}</span>
-        <span>Use {meta.label}?</span>
+      <div className="flex items-center gap-3 rounded-2xl border border-cyan-400/70 bg-gradient-to-r from-cyan-950/95 via-slate-900/95 to-slate-950/95 px-4 py-2 text-xs text-cyan-100 shadow-[0_0_24px_rgba(6,182,212,0.35)] ring-1 ring-cyan-500/40">
+        <span className="flex items-center gap-1.5">{meta?.icon}</span>
+        <span className="font-semibold text-slate-100">Activate <strong className="text-cyan-300">{meta?.label}</strong>?</span>
         <button
+          type="button"
           disabled={busy}
           onClick={() => {
             const card = confirmingCard;
             setConfirmingCard(null);
             if (card === 'DESTROY_TILE') onArmBoardCard(card as BoardCard);
-              else if (card === 'DOUBLE_DAMAGE') setPickingTargetFor(card);
-              else if (card === 'SPY_SWAP') { setSpySwapStep('own'); setSpyOwnTileIds([]); }
+            else if (card === 'DOUBLE_DAMAGE') setPickingTargetFor(card);
+            else if (card === 'SPY_SWAP') { setSpySwapStep('own'); setSpyOwnTileIds([]); }
             else if (card === 'BAN_LETTER') setPickingLetter(true);
             else onUseSimple(card as SimpleCard);
           }}
-          className="rounded-full bg-cyan-500 px-3 py-1 font-bold text-slate-950 hover:bg-cyan-300 disabled:opacity-50"
+          className="flex items-center gap-1 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-1.5 font-bold text-slate-950 hover:brightness-110 shadow-[0_0_12px_rgba(6,182,212,0.6)] disabled:opacity-50 transition-all cursor-pointer"
         >
-          Use
+          <Check className="w-3.5 h-3.5" />
+          <span>Use Card</span>
         </button>
         <button
+          type="button"
           onClick={() => setConfirmingCard(null)}
-          className="rounded-full border border-slate-500/60 px-3 py-1 text-slate-300 hover:bg-slate-800"
+          className="rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
         >
           Cancel
         </button>
@@ -341,29 +452,59 @@ export const PowerCardBar = memo(function PowerCardBar({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {[...counts.entries()].map(([card, count]) => {
-        const meta = CARD_META[card];
-        const disabled = busy || (meta.ownTurnOnly && !isMyTurn) || (card === 'MOVE_HEAL' && !hasStagedMove);
-        return (
-          <button
-            key={card}
-            disabled={disabled}
-            title={meta.ownTurnOnly ? 'Use on your turn' : undefined}
-            onClick={() => {
-              // FREEZE_TILE already stages its own target-tile pick (and, for a committed tile,
-              // a second "really do this?" confirm) - a "Use Freeze?" gate ahead of that is redundant.
-              if (card === 'FREEZE_TILE') onArmBoardCard(card as BoardCard);
-              else setConfirmingCard(card);
-            }}
-            className="flex items-center gap-1 rounded-full border border-indigo-400/40 bg-indigo-950/60 px-2.5 py-1 text-xs font-semibold text-indigo-100 hover:bg-indigo-900 disabled:opacity-40 disabled:hover:bg-indigo-950/60"
-          >
-            <span className="flex items-center">{meta.icon}</span>
-            <span>{meta.label}</span>
-            {count > 1 && <span className="text-indigo-300/70">×{count}</span>}
-          </button>
-        );
-      })}
+    <div className="flex flex-col items-center justify-center gap-1.5">
+      {/* Sleek Header Badge */}
+      <div className="flex items-center gap-1.5 text-[10px] font-extrabold tracking-widest text-slate-400 uppercase select-none">
+        <Sparkles className="w-3 h-3 text-cyan-400 drop-shadow-[0_0_4px_#22d3ee]" />
+        <span>Power Cards Available</span>
+      </div>
+
+      {/* Card Items Dock */}
+      <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 px-2.5 rounded-2xl bg-slate-950/85 backdrop-blur-xl border border-slate-700/70 shadow-[0_4px_24px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.1)] ring-1 ring-cyan-500/20">
+        {[...counts.entries()].map(([card, count]) => {
+          const meta = CARD_META[card];
+          if (!meta) return null;
+          const disabled = busy || (meta.ownTurnOnly && !isMyTurn) || (card === 'MOVE_HEAL' && !hasStagedMove);
+
+          return (
+            <button
+              key={card}
+              type="button"
+              disabled={disabled}
+              title={meta.ownTurnOnly && !isMyTurn ? 'Available only during your turn' : `Click to use ${meta.label}`}
+              onClick={() => {
+                if (card === 'FREEZE_TILE') onArmBoardCard(card as BoardCard);
+                else setConfirmingCard(card);
+              }}
+              className={`group relative flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border bg-gradient-to-r transition-all duration-200 cursor-pointer select-none active:scale-95 ${
+                disabled
+                  ? 'opacity-40 border-slate-800 bg-slate-900/60 text-slate-500 cursor-not-allowed'
+                  : `${meta.bgGradient} ${meta.borderColor} ${meta.textColor} ${meta.glowClass} shadow-md hover:-translate-y-0.5`
+              }`}
+            >
+              {/* Card Specular Top Highlight */}
+              <div className="pointer-events-none absolute inset-x-2 top-0.5 h-1/3 rounded-t-lg bg-gradient-to-b from-white/15 to-transparent" />
+
+              {/* Glowing Icon */}
+              <div className="relative z-10 flex items-center shrink-0 drop-shadow-[0_0_6px_currentColor]">
+                {meta.icon}
+              </div>
+
+              {/* Card Label */}
+              <span className="relative z-10 text-xs sm:text-sm font-bold tracking-wide">
+                {meta.label}
+              </span>
+
+              {/* Quantity Count Pill */}
+              {count > 1 && (
+                <span className={`relative z-10 px-1.5 py-0.2 rounded-full text-[10px] font-black font-mono shadow-sm ${meta.badgeBg}`}>
+                  ×{count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 });
