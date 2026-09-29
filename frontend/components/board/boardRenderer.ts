@@ -1,12 +1,12 @@
 import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
 import {
+  ALL_DOUBLE_LETTER,
+  ALL_SECRET_POWER,
+  ALL_TRIPLE_LETTER,
   BOARD_COLS,
   BOARD_ROWS,
   CENTER_COL,
   CENTER_ROW,
-  DOUBLE_LETTER,
-  SECRET_POWER,
-  TRIPLE_LETTER,
 } from '@/lib/board';
 import { cellKey, isBlankLetter } from '@/lib/tiles';
 import { TILE_THEME, type TilePalette } from '@/lib/tileTheme';
@@ -39,49 +39,45 @@ export interface BoardScene {
   tilePalette: TilePalette;
 }
 
-/** Extended grid lines reach this many cells past the playable board before fading out. */
-const EXTEND_MARGIN_COLS = 16;
-const EXTEND_MARGIN_ROWS = 12;
 const LOW_POWER_GRID_ALPHA_BUCKETS = 24;
 
-export interface BoardVisualExpansion {
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
+export interface BoardVisualBounds {
+  minRow: number;
+  maxRow: number;
+  minCol: number;
+  maxCol: number;
 }
 
-const NO_BOARD_EXPANSION: BoardVisualExpansion = { top: 0, bottom: 0, left: 0, right: 0 };
+export function getActiveBoardBounds(tiles: CellPosition[]): BoardVisualBounds {
+  let minRow = 0;
+  let maxRow = BOARD_ROWS - 1;
+  let minCol = 0;
+  let maxCol = BOARD_COLS - 1;
 
-/** Let the full-opacity grid edge ease outward on sides where tiles approach the playable edge. */
-export function getBoardVisualExpansion(tiles: CellPosition[]): BoardVisualExpansion {
-  if (tiles.length === 0) return NO_BOARD_EXPANSION;
-  const rows = tiles.map(tile => tile.row);
-  const cols = tiles.map(tile => tile.col);
-  const edgeGrowth = (distance: number) => distance <= 2 ? ((3 - distance) / 3) * 5 : 0;
-  return {
-    top: edgeGrowth(Math.min(...rows)),
-    bottom: edgeGrowth(BOARD_ROWS - 1 - Math.max(...rows)),
-    left: edgeGrowth(Math.min(...cols)),
-    right: edgeGrowth(BOARD_COLS - 1 - Math.max(...cols)),
-  };
+  for (const t of tiles) {
+    if (t.row < minRow) minRow = t.row;
+    if (t.row > maxRow) maxRow = t.row;
+    if (t.col < minCol) minCol = t.col;
+    if (t.col > maxCol) maxCol = t.col;
+  }
+  return { minRow, maxRow, minCol, maxCol };
 }
 
-/** 1 across the playable 27×19 board, fading smoothly to 0 for the extended grid beyond it. */
-export function getCellAlpha(row: number, col: number, expansion = NO_BOARD_EXPANSION): number {
-  const horizontalRadius = 13 + (col < CENTER_COL ? expansion.left : expansion.right);
-  const verticalRadius = 9 + (row < CENTER_ROW ? expansion.top : expansion.bottom);
-  const dx = (col - CENTER_COL) / horizontalRadius;
-  const dy = (row - CENTER_ROW) / verticalRadius;
-  const norm = Math.hypot(dx, dy); // 0 at center (9,13), 1.0 at 27x19 board edge midpoints
+/** 1.0 across the active board bounding box, fading smoothly outward for extended grid lines. */
+export function getCellAlpha(row: number, col: number, bounds?: BoardVisualBounds): number {
+  const b = bounds ?? { minRow: 0, maxRow: BOARD_ROWS - 1, minCol: 0, maxCol: BOARD_COLS - 1 };
+  const dRow = row < b.minRow ? b.minRow - row : row > b.maxRow ? row - b.maxRow : 0;
+  const dCol = col < b.minCol ? b.minCol - col : col > b.maxCol ? col - b.maxCol : 0;
 
-  // Playable 27x19 board area is 100% solid visible
-  if (norm <= 0.95) return 1.0;
+  if (dRow === 0 && dCol === 0) return 1.0;
 
-  // Extended grid lines beyond 27x19 fade out smoothly into space
-  const t = (norm - 0.95) / 1.15;
-  return Math.max(0, Math.min(1, 1 - Math.pow(Math.max(0, t), 1.4)));
+  const norm = Math.hypot(dCol / 12, dRow / 9);
+  if (norm <= 0.08) return 1.0;
+
+  const t = norm;
+  return Math.max(0, Math.min(1, 1 - Math.pow(t, 1.35)));
 }
+
 
 function drawRoundedRect(
   ctx: CanvasRenderingContext2D,
@@ -129,7 +125,8 @@ function drawTile(
   value: number,
   isTemporary: boolean,
   showLetter = true,
-  isRemote = false
+  isRemote = false,
+  isFrozen = false
 ) {
   const { offset, cellSize, temporaryTilesValid, lowPower } = scene;
   const x = offset.x + col * cellSize;
@@ -139,25 +136,44 @@ function drawTile(
   const radius = Math.max(2, cellSize * 0.12);
 
   // Keep placement status on the outline; the tile face itself stays consistent.
-  const isGolden = !isRemote && (!isTemporary || temporaryTilesValid === true);
+  const isGolden = !isRemote && !isFrozen && (!isTemporary || temporaryTilesValid === true);
   const isCorrectPlacement = !isRemote && isTemporary && temporaryTilesValid === true;
 
-  // Shadow layer
-  const shadowFill = isRemote ? TILE_THEME.remoteFace.shadow : TILE_THEME.face.shadow;
-  if (!lowPower || isCorrectPlacement) {
+  // 1. Shadow layer & Outer Aura
+  const shadowFill = isFrozen
+    ? 'rgba(4, 28, 56, 0.75)'
+    : isRemote
+    ? TILE_THEME.remoteFace.shadow
+    : TILE_THEME.face.shadow;
+
+  if (!lowPower || isCorrectPlacement || isFrozen) {
     ctx.save();
-    ctx.shadowColor = isCorrectPlacement ? 'rgba(52, 211, 153, 0.9)' : shadowFill;
+    ctx.shadowColor = isCorrectPlacement
+      ? 'rgba(52, 211, 153, 0.9)'
+      : isFrozen
+      ? 'rgba(6, 182, 212, 0.95)'
+      : shadowFill;
     ctx.shadowBlur = isCorrectPlacement
       ? Math.max(8, cellSize * 0.22)
+      : isFrozen
+      ? Math.max(10, cellSize * 0.28)
       : Math.max(4, cellSize * 0.1);
   }
   ctx.fillStyle = shadowFill;
   drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
   ctx.fill();
-  if (!lowPower || isCorrectPlacement) ctx.restore();
+  if (!lowPower || isCorrectPlacement || isFrozen) ctx.restore();
 
-  // Tile face fill
-  if (isRemote) {
+  // 2. Tile face fill
+  if (isFrozen) {
+    // 3D Ice Cube Face Gradient
+    const iceGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
+    iceGrad.addColorStop(0, '#7dd3fc');    // Light frost cyan top
+    iceGrad.addColorStop(0.25, '#38bdf8'); // Vivid azure crystal
+    iceGrad.addColorStop(0.68, '#0284c7'); // Deep glacial blue
+    iceGrad.addColorStop(1, '#075985');    // Arctic bottom base
+    ctx.fillStyle = iceGrad;
+  } else if (isRemote) {
     const ghostGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
     ghostGrad.addColorStop(0, TILE_THEME.remoteFace.top);
     ghostGrad.addColorStop(0.35, TILE_THEME.remoteFace.middle);
@@ -173,8 +189,63 @@ function drawTile(
   drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
   ctx.fill();
 
-  // Stroke
-  if (isRemote) {
+  // 3. 3D Ice Cube Inner Depth, Specular Sheen & Chiseled Facets
+  if (isFrozen) {
+    ctx.save();
+    ctx.beginPath();
+    drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+    ctx.clip();
+
+    // Diagonal glassy light glare across the top-left quadrant
+    const sheenGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW * 0.75, y + pad + tileW * 0.75);
+    sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
+    sheenGrad.addColorStop(0.35, 'rgba(255, 255, 255, 0.15)');
+    sheenGrad.addColorStop(0.65, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = sheenGrad;
+    ctx.fillRect(x + pad, y + pad, tileW, tileW);
+
+    // Inner 3D ice depth rim
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+    ctx.lineWidth = Math.max(1, cellSize * 0.025);
+    drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW - 2, Math.max(1, radius - 1));
+    ctx.stroke();
+
+    // Delicate frozen frost crystal sparkle in top-left corner
+    if (cellSize >= 16) {
+      ctx.fillStyle = '#ffffff';
+      if (!lowPower) {
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 4;
+      }
+      const starX = x + pad + tileW * 0.2;
+      const starY = y + pad + tileW * 0.2;
+      const sr = Math.max(1.5, cellSize * 0.035);
+      ctx.beginPath();
+      ctx.moveTo(starX, starY - sr * 1.6);
+      ctx.lineTo(starX + sr * 0.4, starY - sr * 0.4);
+      ctx.lineTo(starX + sr * 1.6, starY);
+      ctx.lineTo(starX + sr * 0.4, starY + sr * 0.4);
+      ctx.lineTo(starX, starY + sr * 1.6);
+      ctx.lineTo(starX - sr * 0.4, starY + sr * 0.4);
+      ctx.lineTo(starX - sr * 1.6, starY);
+      ctx.lineTo(starX - sr * 0.4, starY - sr * 0.4);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // 4. Stroke
+  if (isFrozen) {
+    ctx.save();
+    ctx.shadowColor = '#00f0ff';
+    ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.1);
+    ctx.strokeStyle = '#67e8f9';
+    ctx.lineWidth = Math.max(1.8, cellSize * 0.045);
+    drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+    ctx.stroke();
+    ctx.restore();
+  } else if (isRemote) {
     ctx.save();
     ctx.shadowColor = 'rgba(96, 165, 250, 0.28)';
     ctx.shadowBlur = lowPower ? 0 : Math.max(1, cellSize * 0.03);
@@ -189,23 +260,28 @@ function drawTile(
     ctx.shadowBlur = Math.max(12, cellSize * 0.32);
     ctx.strokeStyle = '#6ee7b7';
     ctx.lineWidth = Math.max(2.5, cellSize * 0.055);
+    drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+    ctx.stroke();
+    ctx.restore();
   } else if (isGolden) {
     ctx.strokeStyle = isTemporary ? '#f5d98a' : 'rgba(226, 184, 93, 0.9)';
     ctx.lineWidth = isTemporary ? 1.8 : 1.3;
+    drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+    ctx.stroke();
   } else {
     ctx.strokeStyle = 'rgba(96, 165, 250, 0.45)';
     ctx.lineWidth = 1.5;
+    drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+    ctx.stroke();
   }
-  drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-  ctx.stroke();
-  if (isCorrectPlacement) ctx.restore();
 
   const key = cellKey(row, col);
-  const multiplier = (!isRemote && isGolden)
-    ? (DOUBLE_LETTER.has(key) ? 2 : TRIPLE_LETTER.has(key) ? 3 : 1)
+  const multiplier = (!isRemote && (isGolden || isFrozen))
+    ? (ALL_DOUBLE_LETTER.has(key) ? 2 : ALL_TRIPLE_LETTER.has(key) ? 3 : 1)
     : 1;
   const effectiveValue = value * multiplier;
 
+  // 5. Letter & Score Rendering (Always 100% Bold and Crystal Clear)
   if (showLetter && cellSize >= 12) {
     ctx.save();
     if (isBlankLetter(letter)) {
@@ -213,7 +289,7 @@ function drawTile(
       const cx = x + cellSize / 2;
       const cy = y + cellSize / 2;
       const starSize = Math.max(6, cellSize * 0.28);
-      ctx.shadowColor = scene.tilePalette.blank.glow;
+      ctx.shadowColor = isFrozen ? '#38bdf8' : scene.tilePalette.blank.glow;
       ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.12);
       ctx.fillStyle = scene.tilePalette.blank.color;
       drawStarburst(ctx, cx, cy, starSize, starSize * 0.4);
@@ -243,19 +319,14 @@ function drawTile(
       const textX = x + cellSize / 2 + (metrics.actualBoundingBoxLeft - metrics.actualBoundingBoxRight) / 2;
       const textY = y + cellSize / 2 + (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) / 2;
       
-      // Use offset fills instead of strokeText to avoid font overlap issues
       if (!isRemote) {
-        const offset = Math.max(1.6, fontSize * 0.08) / 2;
-        ctx.fillStyle = scene.tilePalette.letter.stroke;
-        const offsets = [[-1,-1],[1,-1],[-1,1],[1,1],[0,-1],[0,1],[-1,0],[1,0]];
-        for (const [dx, dy] of offsets) {
-          ctx.fillText(letter, textX + dx * offset, textY + dy * offset);
-        }
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = Math.max(1.8, fontSize * 0.09);
+        ctx.strokeStyle = isFrozen ? '#020617' : scene.tilePalette.letter.stroke;
+        ctx.strokeText(letter, textX, textY);
       }
-      
-      ctx.fillStyle = letterFill; // Restore original fill for the main letter
-      ctx.shadowColor = isRemote ? 'transparent' : scene.tilePalette.letter.shadow;
-      ctx.shadowBlur = isRemote ? 0 : Math.max(2, cellSize * 0.06);
+      ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(0, 0, 0, 0.95)' : scene.tilePalette.letter.shadow;
+      ctx.shadowBlur = isRemote ? 0 : isFrozen ? Math.max(3, cellSize * 0.06) : Math.max(2, cellSize * 0.06);
       ctx.shadowOffsetY = isRemote ? 0 : Math.max(1, cellSize * 0.035);
       ctx.fillText(letter, textX, textY);
     }
@@ -270,20 +341,99 @@ function drawTile(
       const numY = y + cellSize - pad * 1.5;
 
       ctx.save();
-      ctx.shadowColor = scene.tilePalette.score.glow;
+      ctx.shadowColor = isFrozen ? 'rgba(250, 204, 21, 0.9)' : scene.tilePalette.score.glow;
       ctx.shadowBlur = lowPower ? 2 : Math.max(4, numFontSize * 0.6);
-      
-      const offset = Math.max(0.5, numFontSize * 0.05) / 2;
-      ctx.fillStyle = scene.tilePalette.score.stroke;
-      const offsets = [[-1,-1],[1,-1],[-1,1],[1,1],[0,-1],[0,1],[-1,0],[1,0]];
-      for (const [dx, dy] of offsets) {
-        ctx.fillText(`${effectiveValue}`, numX + dx * offset, numY + dy * offset);
-      }
-      
+      ctx.lineWidth = Math.max(0.6, numFontSize * 0.06);
+      ctx.strokeStyle = isFrozen ? '#020617' : scene.tilePalette.score.stroke;
+      ctx.strokeText(`${effectiveValue}`, numX, numY);
       ctx.fillStyle = scene.tilePalette.score.color;
       ctx.fillText(`${effectiveValue}`, numX, numY);
       ctx.restore();
     }
+  }
+
+  // 6. Frost Mist & Freezing Cold Vapor (หมอกน้ำแข็งพาดผ่านหน้าเบี้ย)
+  if (isFrozen) {
+    ctx.save();
+
+    // Ambient cold vapor billowing around the tile perimeter
+    if (!lowPower) {
+      const outerMist = ctx.createRadialGradient(
+        x + cellSize / 2, y + cellSize / 2, tileW * 0.4,
+        x + cellSize / 2, y + cellSize / 2, tileW * 0.75
+      );
+      outerMist.addColorStop(0, 'rgba(56, 189, 248, 0.25)');
+      outerMist.addColorStop(0.5, 'rgba(186, 230, 253, 0.18)');
+      outerMist.addColorStop(1, 'rgba(56, 189, 248, 0)');
+      ctx.fillStyle = outerMist;
+      ctx.beginPath();
+      ctx.arc(x + cellSize / 2, y + cellSize / 2, tileW * 0.75, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Clip to the tile rounded bounds for the internal swirling frost fog
+    ctx.beginPath();
+    drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+    ctx.clip();
+
+    // Mist Cloud 1: Bottom-left rolling cold fog
+    const mist1 = ctx.createRadialGradient(
+      x + pad + tileW * 0.25, y + pad + tileW * 0.8, 0,
+      x + pad + tileW * 0.25, y + pad + tileW * 0.8, tileW * 0.55
+    );
+    mist1.addColorStop(0, 'rgba(240, 249, 255, 0.52)');
+    mist1.addColorStop(0.45, 'rgba(186, 230, 253, 0.32)');
+    mist1.addColorStop(1, 'rgba(56, 189, 248, 0)');
+    ctx.fillStyle = mist1;
+    ctx.beginPath();
+    ctx.arc(x + pad + tileW * 0.25, y + pad + tileW * 0.8, tileW * 0.55, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Mist Cloud 2: Top-right drifting frost vapor
+    const mist2 = ctx.createRadialGradient(
+      x + pad + tileW * 0.78, y + pad + tileW * 0.25, 0,
+      x + pad + tileW * 0.78, y + pad + tileW * 0.25, tileW * 0.5
+    );
+    mist2.addColorStop(0, 'rgba(240, 249, 255, 0.45)');
+    mist2.addColorStop(0.5, 'rgba(125, 211, 252, 0.25)');
+    mist2.addColorStop(1, 'rgba(14, 165, 233, 0)');
+    ctx.fillStyle = mist2;
+    ctx.beginPath();
+    ctx.arc(x + pad + tileW * 0.78, y + pad + tileW * 0.25, tileW * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Wispy curved mist streak billowing diagonally across the tile
+    ctx.beginPath();
+    ctx.moveTo(x + pad, y + pad + tileW * 0.55);
+    ctx.bezierCurveTo(
+      x + pad + tileW * 0.3, y + pad + tileW * 0.4,
+      x + pad + tileW * 0.6, y + pad + tileW * 0.65,
+      x + pad + tileW, y + pad + tileW * 0.45
+    );
+    ctx.bezierCurveTo(
+      x + pad + tileW * 0.7, y + pad + tileW * 0.75,
+      x + pad + tileW * 0.35, y + pad + tileW * 0.6,
+      x + pad, y + pad + tileW * 0.72
+    );
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(224, 242, 254, 0.30)';
+    ctx.fill();
+
+    // Tiny frost specks / ice dust in the mist
+    if (cellSize >= 16) {
+      const drawSpeck = (sx: number, sy: number, sr: number, alpha: number) => {
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+        ctx.fill();
+      };
+      drawSpeck(x + pad + tileW * 0.3, y + pad + tileW * 0.72, Math.max(0.8, cellSize * 0.018), 0.85);
+      drawSpeck(x + pad + tileW * 0.48, y + pad + tileW * 0.65, Math.max(0.7, cellSize * 0.015), 0.75);
+      drawSpeck(x + pad + tileW * 0.72, y + pad + tileW * 0.35, Math.max(0.9, cellSize * 0.02), 0.8);
+      drawSpeck(x + pad + tileW * 0.82, y + pad + tileW * 0.5, Math.max(0.6, cellSize * 0.014), 0.65);
+    }
+
+    ctx.restore();
   }
 }
 
@@ -298,7 +448,7 @@ function drawGrid(
   ctx: CanvasRenderingContext2D,
   scene: BoardScene,
   bounds: { minRow: number; maxRow: number; minCol: number; maxCol: number },
-  expansion: BoardVisualExpansion
+  visualBounds: BoardVisualBounds
 ) {
   const { offset, cellSize, lowPower } = scene;
   const gridPaths = lowPower
@@ -310,54 +460,52 @@ function drawGrid(
     for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
       const x = offset.x + c * cellSize;
       const y = offset.y + r * cellSize;
-      const lineAlpha = getCellAlpha(r, c, expansion);
+      const lineAlpha = getCellAlpha(r, c, visualBounds);
 
       if (lineAlpha <= 0.005) continue;
 
       ctx.globalAlpha = lineAlpha;
 
-      // Special cell fills and Center Star (only for 27x19 playable board cells)
-      if (r >= 0 && r < BOARD_ROWS && c >= 0 && c < BOARD_COLS) {
-        const key = cellKey(r, c);
-        const isCenter = r === CENTER_ROW && c === CENTER_COL;
-        const isTriple = TRIPLE_LETTER.has(key);
-        const isDouble = DOUBLE_LETTER.has(key);
-        const isPower = SECRET_POWER.has(key);
-        const specialRadius = Math.max(3, cellSize * 0.12);
+      // Special cell fills and Center Star
+      const key = cellKey(r, c);
+      const isCenter = r === CENTER_ROW && c === CENTER_COL;
+      const isTriple = ALL_TRIPLE_LETTER.has(key);
+      const isDouble = ALL_DOUBLE_LETTER.has(key);
+      const isPower = ALL_SECRET_POWER.has(key);
+      const specialRadius = Math.max(3, cellSize * 0.12);
 
-        if (isTriple) {
-          ctx.fillStyle = '#7f1d1d';
-          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-          ctx.fill();
-        } else if (isDouble) {
-          ctx.fillStyle = '#166534';
-          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-          ctx.fill();
-        } else if (isPower) {
-          ctx.fillStyle = '#0e7490';
-          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-          ctx.fill();
-        }
-        if (isCenter) {
-          ctx.fillStyle = '#1e1b4b'; // Soft indigo center
-          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-          ctx.fill();
-          ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
-          ctx.lineWidth = 1.2;
-          ctx.stroke();
+      if (isTriple) {
+        ctx.fillStyle = '#7f1d1d';
+        drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+        ctx.fill();
+      } else if (isDouble) {
+        ctx.fillStyle = '#166534';
+        drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+        ctx.fill();
+      } else if (isPower) {
+        ctx.fillStyle = '#0e7490';
+        drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+        ctx.fill();
+      }
+      if (isCenter) {
+        ctx.fillStyle = '#1e1b4b'; // Soft indigo center
+        drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
 
-          if (cellSize >= 12) {
-            ctx.save();
-            ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
-            ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.2);
-            ctx.fillStyle = '#fbbf24';
-            const starSize = Math.max(12, Math.round(cellSize * 0.72));
-            ctx.font = `${starSize}px sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);
-            ctx.restore();
-          }
+        if (cellSize >= 12) {
+          ctx.save();
+          ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
+          ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.2);
+          ctx.fillStyle = '#fbbf24';
+          const starSize = Math.max(12, Math.round(cellSize * 0.72));
+          ctx.font = `${starSize}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);
+          ctx.restore();
         }
       }
 
@@ -406,11 +554,11 @@ export function drawBoard(ctx: CanvasRenderingContext2D, dpr: number, scene: Boa
   // Clear background transparently to reveal background ParticleField (floating letters)
   ctx.clearRect(0, 0, width, height);
 
-  // Viewport bounds in cell coordinates (extending grid lines far beyond 27x19 board)
-  const minCol = Math.max(-EXTEND_MARGIN_COLS, Math.floor(-offset.x / cellSize));
-  const maxCol = Math.min(BOARD_COLS + EXTEND_MARGIN_COLS, Math.ceil((width - offset.x) / cellSize));
-  const minRow = Math.max(-EXTEND_MARGIN_ROWS, Math.floor(-offset.y / cellSize));
-  const maxRow = Math.min(BOARD_ROWS + EXTEND_MARGIN_ROWS, Math.ceil((height - offset.y) / cellSize));
+  // Viewport bounds in cell coordinates (with seamless support for infinite pan)
+  const minCol = Math.floor(-offset.x / cellSize) - 1;
+  const maxCol = Math.ceil((width - offset.x) / cellSize) + 1;
+  const minRow = Math.floor(-offset.y / cellSize) - 1;
+  const maxRow = Math.ceil((height - offset.y) / cellSize) + 1;
   const visible = (cell: CellPosition) => (
     cell.row >= minRow && cell.row <= maxRow && cell.col >= minCol && cell.col <= maxCol
   );
@@ -420,32 +568,20 @@ export function drawBoard(ctx: CanvasRenderingContext2D, dpr: number, scene: Boa
     ...scene.temporaryTiles,
     ...scene.remotePlacements,
   ];
-  const expansion = getBoardVisualExpansion(occupiedTiles);
-  drawGrid(ctx, scene, { minRow, maxRow, minCol, maxCol }, expansion);
+  const visualBounds = getActiveBoardBounds(occupiedTiles);
+  drawGrid(ctx, scene, { minRow, maxRow, minCol, maxCol }, visualBounds);
 
   // Draw Committed Tiles
   for (const key in scene.boardState) {
     const cell = scene.boardState[key];
     if (visible(cell)) {
-      drawTile(ctx, scene, cell.row, cell.col, cell.letter, cell.value, false);
+      const isFrozen = scene.frozenTile?.row === cell.row && scene.frozenTile?.col === cell.col;
+      drawTile(ctx, scene, cell.row, cell.col, cell.letter, cell.value, false, true, false, isFrozen);
     }
   }
 
-  // Freeze/Hint overlays
-  const { frozenTile, hintCell } = scene;
-  if (frozenTile && visible(frozenTile)) {
-    const x = offset.x + frozenTile.col * cellSize;
-    const y = offset.y + frozenTile.row * cellSize;
-    ctx.strokeStyle = '#22d3ee';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(x + 1.5, y + 1.5, cellSize - 3, cellSize - 3);
-    if (cellSize >= 16) {
-      ctx.font = `${Math.max(10, cellSize * 0.4)}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('❄️', x + cellSize / 2, y + cellSize * 0.24);
-    }
-  }
+  // Hint overlays
+  const { hintCell } = scene;
   if (hintCell && visible(hintCell)) {
     const x = offset.x + hintCell.col * cellSize;
     const y = offset.y + hintCell.row * cellSize;

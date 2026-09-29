@@ -4,8 +4,8 @@ from typing import Optional
 from app.core.config import settings
 
 class PlacedTileInput(BaseModel):
-    row: int = Field(..., ge=0, le=settings.BOARD_ROWS - 1)
-    col: int = Field(..., ge=0, le=settings.BOARD_COLS - 1)
+    row: int
+    col: int
     tile_id: str
     letter: str = Field(..., min_length=1, max_length=1)
     value: int = Field(..., ge=0)

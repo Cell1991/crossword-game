@@ -1,50 +1,32 @@
-'use client';
-
 import React, { memo, useLayoutEffect, useMemo, useRef } from 'react';
 import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
-import { BOARD_COLS, BOARD_ROWS, CENTER_COL, CENTER_ROW, DOUBLE_LETTER, SECRET_POWER, TRIPLE_LETTER } from '@/lib/board';
+import {
+  ALL_DOUBLE_LETTER,
+  ALL_SECRET_POWER,
+  ALL_TRIPLE_LETTER,
+  BOARD_COLS,
+  BOARD_ROWS,
+  CENTER_COL,
+  CENTER_ROW,
+  DOUBLE_LETTER,
+  generateEchoes,
+  SECRET_POWER,
+  TRIPLE_LETTER,
+} from '@/lib/board';
 import { BoardCamera } from '@/hooks/useBoardCamera';
 import { cellKey } from '@/lib/tiles';
-import { getBoardVisualExpansion, getCellAlpha } from './boardRenderer';
+import { getActiveBoardBounds, getCellAlpha } from './boardRenderer';
 
 const toCells = (keys: Set<string>) => [...keys].map((key) => key.split('_').map(Number) as [number, number]);
 const POWER_CELLS = toCells(SECRET_POWER);
 const DOUBLE_CELLS = toCells(DOUBLE_LETTER);
 const TRIPLE_CELLS = toCells(TRIPLE_LETTER);
 const PREMIUM_ECHO_ALPHA = 0.28;
-const PREMIUM_ECHO_APPROACH_ALPHA = 0.68;
-const PREMIUM_EXTENSION_RINGS = [1.25, 1.5, 1.75];
-const MAX_PREMIUM_EXTENSION_CELLS = 5;
-const MAX_VERTICAL_PREMIUM_EXTENSION_CELLS = 2;
 
-function extendPremiumCells(cells: [number, number][]) {
-  const echoes = new Map<string, [number, number]>();
-  const roundFromCenter = (value: number) => Math.sign(value) * Math.round(Math.abs(value));
-  for (const [row, col] of cells) {
-    for (const scale of PREMIUM_EXTENSION_RINGS) {
-      const echo: [number, number] = [
-        CENTER_ROW + roundFromCenter((row - CENTER_ROW) * scale),
-        CENTER_COL + roundFromCenter((col - CENTER_COL) * scale),
-      ];
-      const isOutsideBoard = echo[0] < 0 || echo[0] >= 19 || echo[1] < 0 || echo[1] >= 27;
-      const verticalDistance = Math.max(0, -echo[0], echo[0] - (BOARD_ROWS - 1));
-      const horizontalDistance = Math.max(0, -echo[1], echo[1] - (BOARD_COLS - 1));
-      if (
-        isOutsideBoard &&
-        verticalDistance <= MAX_VERTICAL_PREMIUM_EXTENSION_CELLS &&
-        horizontalDistance <= MAX_PREMIUM_EXTENSION_CELLS &&
-        getCellAlpha(echo[0], echo[1]) > 0.03
-      ) {
-        echoes.set(`${echo[0]}_${echo[1]}`, echo);
-      }
-    }
-  }
-  return [...echoes.values()];
-}
+const POWER_ECHOES = generateEchoes(SECRET_POWER);
+const DOUBLE_ECHOES = generateEchoes(DOUBLE_LETTER);
+const TRIPLE_ECHOES = generateEchoes(TRIPLE_LETTER);
 
-const POWER_ECHOES = extendPremiumCells(POWER_CELLS);
-const DOUBLE_ECHOES = extendPremiumCells(DOUBLE_CELLS);
-const TRIPLE_ECHOES = extendPremiumCells(TRIPLE_CELLS);
 
 /**
  * Follows the camera without React. Panning only translates the layer (the squares sit in board
@@ -115,14 +97,14 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
     ...temporaryTiles.map(({ row, col }) => ({ row, col })),
     ...remotePlacements,
   ], [boardState, remotePlacements, temporaryTiles]);
-  const boardExpansion = getBoardVisualExpansion(occupiedPositions);
+  const visualBounds = getActiveBoardBounds(occupiedPositions);
   const isCellOccupied = (row: number, col: number) => occupied.has(cellKey(row, col));
-  const getEchoApproach = (row: number, col: number) => {
-    const nearestDistance = occupiedPositions.reduce((nearest, tile) => Math.min(
+  const getEchoDistance = (row: number, col: number) => {
+    if (occupiedPositions.length === 0) return Infinity;
+    return occupiedPositions.reduce((nearest, tile) => Math.min(
       nearest,
       Math.max(Math.abs(tile.row - row), Math.abs(tile.col - col))
     ), Infinity);
-    return nearestDistance <= 2 ? Math.max(0, 1 - (nearestDistance - 1) * 0.5) : 0;
   };
 
   return (
@@ -131,20 +113,23 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
         {[...POWER_CELLS.map(cell => [...cell, false] as const), ...POWER_ECHOES.map(cell => [...cell, true] as const)]
           .filter(([row, col]) => !isCellOccupied(row, col))
           .map(([row, col, isEcho]) => {
-          const approach = isEcho ? getEchoApproach(row, col) : 0;
-          const alpha = getCellAlpha(row, col, boardExpansion) * (isEcho ? PREMIUM_ECHO_ALPHA + approach * PREMIUM_ECHO_APPROACH_ALPHA : 1);
+          const distance = isEcho ? getEchoDistance(row, col) : 0;
+          const isApproached = isEcho && distance <= 2;
+          const isSolid = !isEcho || isApproached;
+          const baseAlpha = getCellAlpha(row, col, visualBounds);
+          const alpha = isSolid ? baseAlpha : baseAlpha * PREMIUM_ECHO_ALPHA;
           if (alpha <= 0.01) return null;
           return (
             <span
               key={`power-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
               data-row={row}
               data-col={col}
-              data-echo={isEcho || undefined}
-              className={`absolute rounded-sm border border-cyan-200/75 bg-cyan-400/20 shadow-[inset_0_0_10px_rgba(165,243,252,0.18),0_0_22px_rgba(34,211,238,0.55)] transition-[opacity,filter] duration-300 ${isEcho ? '' : 'board-power-pulse'}`}
+              data-echo={(!isSolid) || undefined}
+              className={`absolute rounded-sm border border-cyan-200/75 bg-cyan-400/20 shadow-[inset_0_0_10px_rgba(165,243,252,0.18),0_0_22px_rgba(34,211,238,0.55)] transition-[opacity,filter] duration-300 ${isSolid ? 'board-power-pulse' : ''}`}
               style={{
                 animationDelay: `${-((row * 5 + col * 3) % 13) / 10}s`,
                 opacity: alpha,
-                filter: isEcho ? `brightness(${1 + approach * 0.55})` : undefined,
+                filter: isSolid ? 'brightness(1.15)' : undefined,
               }}
             >
               <span className="board-lightning-halo absolute left-1/2 top-1/2 h-[64%] w-[64%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
@@ -165,17 +150,20 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
         {[...TRIPLE_CELLS.map(cell => [...cell, false] as const), ...TRIPLE_ECHOES.map(cell => [...cell, true] as const)]
           .filter(([row, col]) => !isCellOccupied(row, col))
           .map(([row, col, isEcho]) => {
-          const approach = isEcho ? getEchoApproach(row, col) : 0;
-          const alpha = getCellAlpha(row, col, boardExpansion) * (isEcho ? PREMIUM_ECHO_ALPHA + approach * PREMIUM_ECHO_APPROACH_ALPHA : 1);
+          const distance = isEcho ? getEchoDistance(row, col) : 0;
+          const isApproached = isEcho && distance <= 2;
+          const isSolid = !isEcho || isApproached;
+          const baseAlpha = getCellAlpha(row, col, visualBounds);
+          const alpha = isSolid ? baseAlpha : baseAlpha * PREMIUM_ECHO_ALPHA;
           if (alpha <= 0.01) return null;
           return (
             <span
               key={`triple-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
               data-row={row}
               data-col={col}
-              data-echo={isEcho || undefined}
-              className={`absolute rounded-sm border border-red-300/60 bg-red-950/20 transition-[opacity,filter] duration-300 ${isEcho ? '' : 'board-triple-aura'}`}
-              style={{ opacity: alpha, filter: isEcho ? `brightness(${1 + approach * 0.55})` : undefined }}
+              data-echo={(!isSolid) || undefined}
+              className={`absolute rounded-sm border border-red-300/60 bg-red-950/20 transition-[opacity,filter] duration-300 ${isSolid ? 'board-triple-aura' : ''}`}
+              style={{ opacity: alpha, filter: isSolid ? 'brightness(1.1)' : undefined }}
             >
               <span className="board-fire-core absolute inset-[18%] rounded-full bg-red-400/40" />
               <span className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white">
@@ -187,17 +175,20 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
         {[...DOUBLE_CELLS.map(cell => [...cell, false] as const), ...DOUBLE_ECHOES.map(cell => [...cell, true] as const)]
           .filter(([row, col]) => !isCellOccupied(row, col))
           .map(([row, col, isEcho]) => {
-          const approach = isEcho ? getEchoApproach(row, col) : 0;
-          const alpha = getCellAlpha(row, col, boardExpansion) * (isEcho ? PREMIUM_ECHO_ALPHA + approach * PREMIUM_ECHO_APPROACH_ALPHA : 1);
+          const distance = isEcho ? getEchoDistance(row, col) : 0;
+          const isApproached = isEcho && distance <= 2;
+          const isSolid = !isEcho || isApproached;
+          const baseAlpha = getCellAlpha(row, col, visualBounds);
+          const alpha = isSolid ? baseAlpha : baseAlpha * PREMIUM_ECHO_ALPHA;
           if (alpha <= 0.01) return null;
           return (
             <span
               key={`double-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
               data-row={row}
               data-col={col}
-              data-echo={isEcho || undefined}
-              className={`absolute rounded-sm border border-orange-300/45 bg-orange-400/10 transition-[opacity,filter] duration-300 ${isEcho ? '' : 'board-double-aura'}`}
-              style={{ opacity: alpha, filter: isEcho ? `brightness(${1 + approach * 0.55})` : undefined }}
+              data-echo={(!isSolid) || undefined}
+              className={`absolute rounded-sm border border-orange-300/45 bg-orange-400/10 transition-[opacity,filter] duration-300 ${isSolid ? 'board-double-aura' : ''}`}
+              style={{ opacity: alpha, filter: isSolid ? 'brightness(1.1)' : undefined }}
             >
               <span className="board-earth-glow absolute inset-[12%] rounded-full" />
               <span className="board-earth-mountain board-earth-mountain-back absolute inset-x-0 bottom-0 h-[70%]" />

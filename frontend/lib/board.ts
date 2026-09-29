@@ -35,3 +35,36 @@ export const SECRET_POWER = cellKeys([
   [13, 7], [13, 19],
   [15, 4], [15, 22],
 ]);
+
+export function generateEchoes(baseKeys: Set<string>, maxRing = 16): [number, number][] {
+  const echoes = new Map<string, [number, number]>();
+  const roundFromCenter = (value: number) => Math.sign(value) * Math.round(Math.abs(value));
+  for (const key of baseKeys) {
+    const [row, col] = key.split('_').map(Number);
+    for (let ring = 1; ring <= maxRing; ring++) {
+      const scale = 1.0 + ring * 0.25;
+      const echoR = CENTER_ROW + roundFromCenter((row - CENTER_ROW) * scale);
+      const echoC = CENTER_COL + roundFromCenter((col - CENTER_COL) * scale);
+      if (echoR < 0 || echoR >= BOARD_ROWS || echoC < 0 || echoC >= BOARD_COLS) {
+        echoes.set(`${echoR}_${echoC}`, [echoR, echoC]);
+      }
+    }
+  }
+  return [...echoes.values()];
+}
+
+export const ALL_DOUBLE_LETTER = new Set([
+  ...DOUBLE_LETTER,
+  ...generateEchoes(DOUBLE_LETTER).map(([r, c]) => `${r}_${c}`),
+]);
+
+export const ALL_TRIPLE_LETTER = new Set([
+  ...TRIPLE_LETTER,
+  ...generateEchoes(TRIPLE_LETTER).map(([r, c]) => `${r}_${c}`),
+]);
+
+export const ALL_SECRET_POWER = new Set([
+  ...SECRET_POWER,
+  ...generateEchoes(SECRET_POWER).map(([r, c]) => `${r}_${c}`),
+]);
+

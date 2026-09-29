@@ -14,9 +14,9 @@ def test_board_initialization_and_boundaries():
     assert board.is_board_empty()
     assert Board.is_valid_coord(0, 0)
     assert Board.is_valid_coord(18, 26)
-    assert not Board.is_valid_coord(19, 0)
-    assert not Board.is_valid_coord(0, 27)
-    assert not Board.is_valid_coord(-1, 0)
+    assert Board.is_valid_coord(19, 0)
+    assert Board.is_valid_coord(0, 27)
+    assert Board.is_valid_coord(-5, -10)
     assert Board.is_center(9, 13)
     assert not Board.is_center(7, 7)
 
@@ -250,10 +250,9 @@ def test_en02_drawing_more_than_the_bag_holds_returns_what_is_left():
 
 @pytest.mark.parametrize("placed, message", [
     ([(7, 7, "A"), (8, 8, "T")], "same row or column"),
-    ([(9, 26, "A"), (9, 27, "T")], "out of board"),
     ([(7, 7, "A"), (7, 7, "T")], "Duplicate"),
     ([(7, 8, "A"), (7, 9, "T")], "already occupied"),
-], ids=["not-in-a-line", "off-the-board", "same-cell-twice", "occupied-cell"])
+], ids=["not-in-a-line", "same-cell-twice", "occupied-cell"])
 def test_en03_malformed_placements_are_rejected(placed, message):
     board_cells = {"7_8": {"row": 7, "col": 8, "letter": "C", "value": 3}}
     tiles = [{"row": row, "col": col, "letter": letter, "value": 1} for row, col, letter in placed]
@@ -319,3 +318,22 @@ def test_en08_a_short_bag_is_reported_separately_from_other_exchange_errors():
 
     with pytest.raises(NotEnoughTilesInBag):
         TileService.exchange_tiles(rack, bag, [tile["id"] for tile in rack])
+
+
+def test_infinite_board_expansion_and_echo_multipliers():
+    # Verify move placed beyond the starter board connects and validates
+    board_cells = {
+        "9_26": {"row": 9, "col": 26, "letter": "A", "value": 1},
+    }
+    placed = [
+        {"row": 9, "col": 27, "letter": "T", "value": 1},
+    ]
+    custom_dict = DictionaryService(custom_words={"AT"})
+    valid, err, words, score, _ = RuleEngine.validate_move(board_cells, placed, custom_dict, is_first_move=False)
+    assert valid
+    assert len(words) == 1
+    assert words[0].word == "AT"
+    assert Board.ALL_TRIPLE_LETTER.issuperset(Board.TRIPLE_LETTER)
+    assert Board.ALL_DOUBLE_LETTER.issuperset(Board.DOUBLE_LETTER)
+    assert Board.ALL_SECRET_POWER.issuperset(Board.SECRET_POWER)
+
