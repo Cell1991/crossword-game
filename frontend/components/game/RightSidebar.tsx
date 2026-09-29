@@ -125,24 +125,24 @@ export const RightSidebar = memo(function RightSidebar({
       {/* Sleek Vertical Glassmorphism Panel */}
       <div className={`flex flex-col h-full ${mobile ? 'bg-transparent border-0 rounded-none shadow-none ring-0' : 'bg-slate-950/90 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20'} overflow-hidden`}>
         {/* TOP SECTION: COMPACT TILES STATUS CARD */}
-        <div className="p-3 border-b border-slate-800/80 bg-gradient-to-r from-blue-950/30 via-slate-900/30 to-slate-950/30">
+        <div className="p-3 border-b border-slate-800/80 bg-gradient-to-r from-amber-950/30 via-slate-900/30 to-slate-950/30">
           <button
             ref={tileBagButtonRef}
             type="button"
             onClick={() => setIsTileBagOpen(true)}
-            className="group w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-900/70 border border-blue-500/20 hover:border-cyan-400/50 hover:bg-slate-800/80 active:scale-[0.99] shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_0_14px_rgba(6,182,212,0.16)] transition-all cursor-pointer text-left"
+            className="group w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-900/70 border border-amber-500/30 hover:border-amber-400/70 hover:bg-slate-800/80 active:scale-[0.99] shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_0_16px_rgba(251,191,36,0.25)] transition-all cursor-pointer text-left"
             aria-label={`Show remaining letters, ${tileBagCount} tiles remaining`}
           >
             <div className="flex items-center gap-2.5">
-              {/* Cosmic Tile Stack Icon */}
+              {/* Golden Tile Stack Icon */}
               <div className="relative w-6 h-6 flex items-center justify-center shrink-0">
-                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-500/30 via-blue-600/40 to-slate-900 border border-cyan-400/50 shadow-[0_0_10px_rgba(6,182,212,0.4)] flex items-center justify-center">
-                  <Layers className="w-3.5 h-3.5 text-cyan-300 drop-shadow-[0_0_4px_#38bdf8]" />
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500/30 via-yellow-600/40 to-slate-900 border border-amber-400/60 shadow-[0_0_10px_rgba(251,191,36,0.45)] flex items-center justify-center">
+                  <Layers className="w-3.5 h-3.5 text-amber-300 drop-shadow-[0_0_4px_rgba(251,191,36,0.8)]" />
                 </div>
               </div>
-              <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Tiles Remaining</span>
+              <span className="text-xs font-bold text-amber-200/90 group-hover:text-amber-100 transition-colors">Tiles Remaining</span>
             </div>
-            <span className="text-sm font-bold font-mono text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]">
+            <span className="text-sm font-black font-mono text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]">
               {tileBagCount}
             </span>
           </button>

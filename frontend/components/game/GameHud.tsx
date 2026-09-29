@@ -119,24 +119,24 @@ export const GameHud: React.FC<GameHudProps> = ({
           <ScrollText className="h-3.5 w-3.5 text-cyan-300 drop-shadow-[0_0_4px_#22d3ee] shrink-0" />
           <span className="tracking-wide font-extrabold text-[11px] sm:text-xs">Log & Stats</span>
         </button>
-        <button
-          type="button"
-          onClick={toggleFullscreen}
-          className="rounded-lg border border-slate-700 p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-          title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-          aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-        >
-          {isFullscreen ? <Minimize className="h-4 w-4 text-cyan-300" /> : <Maximize className="h-4 w-4" />}
-        </button>
       </div>
 
-      {/* Right: spectators, timer, and TurnBanner */}
+      {/* Right: spectators, timer, TurnBanner, and Fullscreen button */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
         {spectatorCount > 0 && (
           <span className="whitespace-nowrap text-xs text-slate-400" title="Spectators watching">👁 {spectatorCount}</span>
         )}
         {timer}
         <div className="hidden lg:block"><TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} nextPlayer={nextPlayer} turnNumber={turnNumber} maxTurns={maxTurns} /></div>
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="rounded-lg border border-slate-700 p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer active:scale-95"
+          title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+          aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+        >
+          {isFullscreen ? <Minimize className="h-4 w-4 text-cyan-300" /> : <Maximize className="h-4 w-4" />}
+        </button>
       </div>
     </div>
   );
