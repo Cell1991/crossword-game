@@ -384,7 +384,7 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
 
-          <div className="flex max-w-full flex-wrap items-center justify-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-r-xl sm:rounded-r-2xl rounded-l-none lg:rounded-2xl border-l-0 lg:border-l lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-emerald-500/15 min-h-[48px] sm:min-h-[58px]">
+          <div className="flex w-full flex-wrap items-center justify-center gap-1 p-1 sm:gap-2 sm:p-2 bg-slate-900/85 lg:backdrop-blur-xl border border-slate-700/60 rounded-r-xl sm:rounded-r-2xl rounded-l-none lg:rounded-2xl border-l-0 lg:border-l lg:border-slate-700/60 shadow-xl shadow-black/60 lg:ring-1 lg:ring-emerald-500/15 min-h-[48px] sm:min-h-[58px]">
             {isExchanging ? (
               <button
                 onClick={onConfirmExchange}
