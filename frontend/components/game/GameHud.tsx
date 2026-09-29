@@ -112,11 +112,12 @@ export const GameHud: React.FC<GameHudProps> = ({
         <button
           type="button"
           onClick={onOpenInfo}
-          className="lg:hidden rounded-lg border border-cyan-500/30 bg-cyan-950/40 p-1.5 text-cyan-300 hover:bg-cyan-900/60 hover:text-white shadow-[0_0_8px_rgba(6,182,212,0.2)] transition-all cursor-pointer active:scale-95"
-          title="Scores, history, and tile bag"
-          aria-label="Open scores, history, and tile bag"
+          className="lg:hidden flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-gradient-to-r from-cyan-950/70 to-slate-900/80 px-2.5 py-1 text-xs font-bold text-cyan-300 hover:from-cyan-900/80 hover:to-slate-800 hover:text-white shadow-[0_0_10px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/20 transition-all cursor-pointer active:scale-95 select-none"
+          title="Match stats, word history, and tile bag"
+          aria-label="Open match stats, word history, and tile bag"
         >
-          <ScrollText className="h-4 w-4 drop-shadow-[0_0_4px_#22d3ee]" />
+          <ScrollText className="h-3.5 w-3.5 text-cyan-300 drop-shadow-[0_0_4px_#22d3ee] shrink-0" />
+          <span className="tracking-wide font-extrabold text-[11px] sm:text-xs">Log & Stats</span>
         </button>
         <button
           type="button"
