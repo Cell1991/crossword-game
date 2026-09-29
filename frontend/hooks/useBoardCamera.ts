@@ -123,19 +123,26 @@ export function useBoardCamera() {
       setView({ scale: DEFAULT_SCALE, offset: clampOffset(rawOffset, DEFAULT_SCALE, width, height) });
     };
 
-    /** Multiplies the zoom by `factor`, keeping the board point under (clientX, clientY) under it. */
-    const zoomBy = (factor: number, clientX: number, clientY: number) => {
-      if (!Number.isFinite(factor) || factor <= 0 || factor === 1) return;
+    /** Sets the zoom directly to a target scale, keeping the board point under (clientX, clientY) pinned. */
+    const zoomToScale = (targetScale: number, clientX: number, clientY: number) => {
+      if (!Number.isFinite(targetScale) || targetScale <= 0) return;
       const previous = viewRef.current;
-      const newScale = clampScale(previous.scale * factor, minScaleRef.current);
+      const newScale = clampScale(targetScale, minScaleRef.current);
+      if (Math.abs(newScale - previous.scale) < 0.00001) return;
       const ratio = newScale / previous.scale;
-      if (ratio === 1) return;
       const rawOffset = {
         x: clientX - (clientX - previous.offset.x) * ratio,
         y: clientY - (clientY - previous.offset.y) * ratio,
       };
       const { width, height } = viewportRef.current;
       setView({ scale: newScale, offset: clampOffset(rawOffset, newScale, width, height) });
+    };
+
+    /** Multiplies the zoom by `factor`, keeping the board point under (clientX, clientY) under it. */
+    const zoomBy = (factor: number, clientX: number, clientY: number) => {
+      if (!Number.isFinite(factor) || factor <= 0 || factor === 1) return;
+      const previous = viewRef.current;
+      zoomToScale(previous.scale * factor, clientX, clientY);
     };
 
     /** The zoom buttons zoom around the middle of the board area. */
@@ -168,6 +175,7 @@ export function useBoardCamera() {
       centerBoard,
       resetCamera,
       zoomBy,
+      zoomToScale,
       zoomAtCenter,
       zoomAtPoint,
       screenToCell,

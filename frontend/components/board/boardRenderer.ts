@@ -314,10 +314,9 @@ function drawTile(
       const fontSize = Math.max(12, Math.round(cellSize * 0.70));
       ctx.font = `italic 900 ${fontSize}px 'Inter Black Italic', sans-serif`;
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'alphabetic';
-      const metrics = ctx.measureText(letter);
-      const textX = x + cellSize / 2 + (metrics.actualBoundingBoxLeft - metrics.actualBoundingBoxRight) / 2;
-      const textY = y + cellSize / 2 + (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) / 2;
+      ctx.textBaseline = 'middle';
+      const textX = x + cellSize / 2;
+      const textY = y + cellSize / 2 + fontSize * 0.04;
       
       if (!isRemote) {
         ctx.lineJoin = 'round';
@@ -451,10 +450,10 @@ function drawGrid(
   occupiedTiles: CellPosition[]
 ) {
   const { offset, cellSize, lowPower } = scene;
-  const gridPaths = lowPower
-    ? Array.from({ length: LOW_POWER_GRID_ALPHA_BUCKETS }, () => new Path2D())
-    : null;
-  const gridPathCounts = lowPower ? new Uint16Array(LOW_POWER_GRID_ALPHA_BUCKETS) : null;
+  const numBuckets = 24;
+  const gridPaths: Path2D[] = Array.from({ length: numBuckets }, () => new Path2D());
+  const gridPathCounts = new Uint16Array(numBuckets);
+
   ctx.save();
   for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
     for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
@@ -464,8 +463,6 @@ function drawGrid(
       const x = offset.x + c * cellSize;
       const y = offset.y + r * cellSize;
 
-      ctx.globalAlpha = lineAlpha;
-
       // Special cell fills and Center Star (100% mirrored)
       const isCenter = r === CENTER_ROW && c === CENTER_COL;
       const isTriple = isTripleLetterCell(r, c);
@@ -473,73 +470,65 @@ function drawGrid(
       const isPower = isPowerCell(r, c);
       const specialRadius = Math.max(3, cellSize * 0.12);
 
-      if (isTriple) {
-        ctx.fillStyle = '#7f1d1d';
-        drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-        ctx.fill();
-      } else if (isDouble) {
-        ctx.fillStyle = '#166534';
-        drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-        ctx.fill();
-      } else if (isPower) {
-        ctx.fillStyle = '#0e7490';
-        drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-        ctx.fill();
-      }
-      if (isCenter) {
-        ctx.fillStyle = '#1e1b4b'; // Soft indigo center
-        drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
+      if (isTriple || isDouble || isPower || isCenter) {
+        ctx.globalAlpha = lineAlpha;
+        if (isTriple) {
+          ctx.fillStyle = '#7f1d1d';
+          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+          ctx.fill();
+        } else if (isDouble) {
+          ctx.fillStyle = '#166534';
+          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+          ctx.fill();
+        } else if (isPower) {
+          ctx.fillStyle = '#0e7490';
+          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+          ctx.fill();
+        }
+        if (isCenter) {
+          ctx.fillStyle = '#1e1b4b'; // Soft indigo center
+          drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
 
-        if (cellSize >= 12) {
-          ctx.save();
-          ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
-          ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.2);
-          ctx.fillStyle = '#fbbf24';
-          const starSize = Math.max(12, Math.round(cellSize * 0.72));
-          ctx.font = `${starSize}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);
-          ctx.restore();
+          if (cellSize >= 12) {
+            ctx.save();
+            ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
+            ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.2);
+            ctx.fillStyle = '#fbbf24';
+            const starSize = Math.max(12, Math.round(cellSize * 0.72));
+            ctx.font = `${starSize}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);
+            ctx.restore();
+          }
         }
       }
 
-      // Batch low-power grid strokes by opacity; desktop keeps per-cell alpha unchanged.
-      if (gridPaths && gridPathCounts) {
-        const bucket = Math.min(
-          LOW_POWER_GRID_ALPHA_BUCKETS - 1,
-          Math.floor(lineAlpha * LOW_POWER_GRID_ALPHA_BUCKETS)
-        );
-        const path = gridPaths[bucket];
-        path.moveTo(x, y);
-        path.lineTo(x + cellSize, y);
-        path.moveTo(x, y);
-        path.lineTo(x, y + cellSize);
-        gridPathCounts[bucket]++;
-      } else {
-        ctx.strokeStyle = 'rgba(245, 190, 72, 0.24)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + cellSize, y);
-        ctx.moveTo(x, y);
-        ctx.lineTo(x, y + cellSize);
-        ctx.stroke();
-      }
+      // Batch grid strokes by opacity bucket
+      const bucket = Math.min(
+        numBuckets - 1,
+        Math.floor(lineAlpha * numBuckets)
+      );
+      const path = gridPaths[bucket];
+      path.moveTo(x, y);
+      path.lineTo(x + cellSize, y);
+      path.moveTo(x, y);
+      path.lineTo(x, y + cellSize);
+      gridPathCounts[bucket]++;
     }
   }
-  if (gridPaths && gridPathCounts) {
-    ctx.strokeStyle = 'rgba(245, 190, 72, 0.24)';
-    ctx.lineWidth = 1;
-    for (let bucket = 0; bucket < gridPaths.length; bucket++) {
-      if (gridPathCounts[bucket] === 0) continue;
-      ctx.globalAlpha = (bucket + 0.5) / LOW_POWER_GRID_ALPHA_BUCKETS;
-      ctx.stroke(gridPaths[bucket]);
-    }
+
+  // Single batched stroke per alpha bucket
+  ctx.strokeStyle = 'rgba(245, 190, 72, 0.24)';
+  ctx.lineWidth = 1;
+  for (let bucket = 0; bucket < numBuckets; bucket++) {
+    if (gridPathCounts[bucket] === 0) continue;
+    ctx.globalAlpha = (bucket + 0.5) / numBuckets;
+    ctx.stroke(gridPaths[bucket]);
   }
   ctx.restore();
 }

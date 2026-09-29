@@ -25,26 +25,10 @@ const TRIPLE_CELLS = toCells(TRIPLE_LETTER);
 const PREMIUM_ECHO_ALPHA = 0.28;
 
 /**
- * Follows the camera without React. Panning only translates the layer (the squares sit in board
- * coordinates inside it). Zooming writes each square's box and label size directly.
+ * Follows the camera with pure GPU transform (translate3d + scale).
+ * Base elements sit at fixed base grid coordinates (40px per cell),
+ * eliminating all DOM reflow and layout recalculations during zoom & pan.
  */
-function layoutSquares(layer: HTMLElement, cellSize: number) {
-  const size = `${cellSize - 2}px`;
-  const radius = `${Math.max(3, cellSize * 0.12)}px`;
-  for (const square of layer.children as HTMLCollectionOf<HTMLElement>) {
-    const style = square.style;
-    style.left = `${Number(square.dataset.col) * cellSize + 1}px`;
-    style.top = `${Number(square.dataset.row) * cellSize + 1}px`;
-    style.width = size;
-    style.height = size;
-    style.borderRadius = square.dataset.echo === 'true' ? `${Math.max(5, cellSize * 0.24)}px` : radius;
-  }
-  const fontSize = `${Math.max(10, Math.min(20, cellSize * 0.32))}px`;
-  for (const label of layer.querySelectorAll<HTMLElement>('.board-premium-label')) {
-    label.style.fontSize = fontSize;
-  }
-}
-
 interface PremiumCellOverlayProps {
   camera: BoardCamera;
   boardState: Record<string, BoardCell>;
@@ -54,7 +38,7 @@ interface PremiumCellOverlayProps {
 
 /**
  * The animated premium squares (lightning, 3L fire, 2L earth, centre pulse).
- * Renders base starter squares + local mirrored echoes within 2-3 cells of active words/borders.
+ * Renders base starter squares + local mirrored echoes within active words/borders.
  */
 export const PremiumCellOverlay = memo(function PremiumCellOverlay({
   camera,
@@ -64,21 +48,20 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
 }: PremiumCellOverlayProps) {
   const layerRef = useRef<HTMLDivElement>(null);
 
-  // Runs after every render, then on each camera move.
+  // Runs after every render, then on each camera move (zero DOM reflow / zero layout thrash)
   useLayoutEffect(() => {
-    let laidOutScale = NaN;
+    const layer = layerRef.current;
+    if (!layer) return;
+    layer.style.transformOrigin = '0 0';
+    layer.style.willChange = 'transform';
+
     const applyCamera = () => {
-      const layer = layerRef.current;
-      if (!layer) return;
       const { scale, offset } = camera.getView();
-      layer.style.transform = `translate(${offset.x}px, ${offset.y}px)`;
-      if (scale === laidOutScale) return;
-      laidOutScale = scale;
-      layoutSquares(layer, camera.baseCellSize * scale);
+      layer.style.transform = `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${scale})`;
     };
     applyCamera();
     return camera.subscribe(applyCamera);
-  });
+  }, [camera]);
 
   const occupied = useMemo(() => {
     const keys = new Set(Object.keys(boardState));
@@ -153,6 +136,10 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
   const tripleEchoes = useMemo(() => candidateEchoes.filter(e => e.type === 'triple').map(e => [e.row, e.col] as [number, number]), [candidateEchoes]);
   const doubleEchoes = useMemo(() => candidateEchoes.filter(e => e.type === 'double').map(e => [e.row, e.col] as [number, number]), [candidateEchoes]);
 
+  const baseCellSize = camera.baseCellSize;
+  const squareSize = baseCellSize - 2;
+  const baseFontSize = 13;
+
   return (
     <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
       <div ref={layerRef} className="absolute left-0 top-0">
@@ -167,11 +154,13 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
           return (
             <span
               key={`power-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              data-row={row}
-              data-col={col}
-              data-echo={(!isSolid) || undefined}
-              className={`absolute rounded-sm border border-cyan-200/75 bg-cyan-400/20 shadow-[inset_0_0_10px_rgba(165,243,252,0.18),0_0_22px_rgba(34,211,238,0.55)] transition-[opacity,filter] duration-300 ${isSolid ? 'board-power-pulse' : ''}`}
+              className={`absolute border border-cyan-200/75 bg-cyan-400/20 shadow-[inset_0_0_10px_rgba(165,243,252,0.18),0_0_22px_rgba(34,211,238,0.55)] transition-[opacity,filter] duration-300 ${isSolid ? 'board-power-pulse' : ''}`}
               style={{
+                left: `${col * baseCellSize + 1}px`,
+                top: `${row * baseCellSize + 1}px`,
+                width: `${squareSize}px`,
+                height: `${squareSize}px`,
+                borderRadius: isEcho ? '6px' : '4px',
                 animationDelay: `${-((row * 5 + col * 3) % 13) / 10}s`,
                 opacity: alpha,
                 filter: isSolid ? 'brightness(1.15)' : undefined,
@@ -203,14 +192,22 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
           return (
             <span
               key={`triple-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              data-row={row}
-              data-col={col}
-              data-echo={(!isSolid) || undefined}
-              className={`absolute rounded-sm border border-red-300/60 bg-red-950/20 transition-[opacity,filter] duration-300 ${isSolid ? 'board-triple-aura' : ''}`}
-              style={{ opacity: alpha, filter: isSolid ? 'brightness(1.1)' : undefined }}
+              className={`absolute border border-red-300/60 bg-red-950/20 transition-[opacity,filter] duration-300 ${isSolid ? 'board-triple-aura' : ''}`}
+              style={{
+                left: `${col * baseCellSize + 1}px`,
+                top: `${row * baseCellSize + 1}px`,
+                width: `${squareSize}px`,
+                height: `${squareSize}px`,
+                borderRadius: isEcho ? '6px' : '4px',
+                opacity: alpha,
+                filter: isSolid ? 'brightness(1.1)' : undefined,
+              }}
             >
               <span className="board-fire-core absolute inset-[18%] rounded-full bg-red-400/40" />
-              <span className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white">
+              <span
+                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white font-bold"
+                style={{ fontSize: `${baseFontSize}px` }}
+              >
                 3<span className="board-premium-letter">L</span>
               </span>
             </span>
@@ -227,18 +224,26 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
           return (
             <span
               key={`double-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              data-row={row}
-              data-col={col}
-              data-echo={(!isSolid) || undefined}
-              className={`absolute rounded-sm border border-orange-300/45 bg-orange-400/10 transition-[opacity,filter] duration-300 ${isSolid ? 'board-double-aura' : ''}`}
-              style={{ opacity: alpha, filter: isSolid ? 'brightness(1.1)' : undefined }}
+              className={`absolute border border-orange-300/45 bg-orange-400/10 transition-[opacity,filter] duration-300 ${isSolid ? 'board-double-aura' : ''}`}
+              style={{
+                left: `${col * baseCellSize + 1}px`,
+                top: `${row * baseCellSize + 1}px`,
+                width: `${squareSize}px`,
+                height: `${squareSize}px`,
+                borderRadius: isEcho ? '6px' : '4px',
+                opacity: alpha,
+                filter: isSolid ? 'brightness(1.1)' : undefined,
+              }}
             >
               <span className="board-earth-glow absolute inset-[12%] rounded-full" />
               <span className="board-earth-mountain board-earth-mountain-back absolute inset-x-0 bottom-0 h-[70%]" />
               <span className="board-earth-mountain board-earth-mountain-front absolute inset-x-0 bottom-0 h-[62%]" />
               <i className="board-earth-speck absolute left-[22%] top-[27%] h-1 w-1 rounded-full" />
               <i className="board-earth-speck absolute right-[20%] top-[38%] h-1 w-1 rounded-full [animation-delay:0.7s]" />
-              <span className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white">
+              <span
+                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white font-bold"
+                style={{ fontSize: `${baseFontSize}px` }}
+              >
                 2<span className="board-premium-letter">L</span>
               </span>
             </span>
@@ -246,9 +251,14 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
         })}
         {!isCellOccupied(CENTER_ROW, CENTER_COL) && (
           <span
-            data-row={CENTER_ROW}
-            data-col={CENTER_COL}
-            className="absolute rounded-sm border border-amber-300/35 shadow-[0_0_18px_rgba(251,191,36,0.25)] board-center-pulse"
+            className="absolute border border-amber-300/35 shadow-[0_0_18px_rgba(251,191,36,0.25)] board-center-pulse"
+            style={{
+              left: `${CENTER_COL * baseCellSize + 1}px`,
+              top: `${CENTER_ROW * baseCellSize + 1}px`,
+              width: `${squareSize}px`,
+              height: `${squareSize}px`,
+              borderRadius: '4px',
+            }}
           />
         )}
       </div>
