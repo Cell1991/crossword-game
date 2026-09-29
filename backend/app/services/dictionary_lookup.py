@@ -1,0 +1,123 @@
+"""Hybrid Dictionary Definition Lookup Service.
+
+Combines offline database definitions for rapid instant access with
+asynchronous online API fallback and memory caching.
+"""
+
+from __future__ import annotations
+import logging
+from typing import Any, Optional
+import httpx
+
+from app.game.offline_definitions import OFFLINE_DEFINITIONS
+
+logger = logging.getLogger(__name__)
+
+POS_MAP = {
+    "n": "noun",
+    "v": "verb",
+    "adj": "adjective",
+    "adv": "adverb",
+    "u": "interjection",
+    "pron": "pronoun",
+    "prep": "preposition",
+    "conj": "conjunction",
+    "art": "article",
+}
+
+
+class DictionaryLookupService:
+    """Service to resolve English definitions for words with caching."""
+
+    def __init__(self) -> None:
+        self._cache: dict[str, dict[str, Any]] = {}
+        # Pre-seed cache with offline definitions
+        for word, data in OFFLINE_DEFINITIONS.items():
+            self._cache[word] = {
+                "word": word,
+                "found": True,
+                "phonetic": data.get("phonetic"),
+                "meanings": data.get("meanings", []),
+            }
+
+    async def lookup_word(self, raw_word: str) -> dict[str, Any]:
+        """Look up definition of a word using hybrid offline + online strategy."""
+        if not raw_word or not isinstance(raw_word, str):
+            return {
+                "word": "",
+                "found": False,
+                "phonetic": None,
+                "meanings": [],
+                "message": "Invalid word.",
+            }
+
+        word = raw_word.strip().upper()
+
+        # 1. In-memory cache check (includes pre-seeded offline definitions)
+        if word in self._cache:
+            return self._cache[word]
+
+        # 2. Async online API query (Datamuse dictionary with definition metadata)
+        try:
+            async with httpx.AsyncClient(timeout=3.5) as client:
+                resp = await client.get(
+                    f"https://api.datamuse.com/words?sp={word.lower()}&md=dp&max=1"
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if data and isinstance(data, list) and len(data) > 0:
+                        entry = data[0]
+                        defs_raw: list[str] = entry.get("defs", [])
+                        if defs_raw:
+                            meanings_map: dict[str, list[str]] = {}
+                            for d_str in defs_raw:
+                                if "\t" in d_str:
+                                    tag, def_text = d_str.split("\t", 1)
+                                    pos = POS_MAP.get(tag.strip().lower(), tag.strip().lower())
+                                else:
+                                    pos = "general"
+                                    def_text = d_str
+                                
+                                clean_def = def_text.strip()
+                                if clean_def:
+                                    if pos not in meanings_map:
+                                        meanings_map[pos] = []
+                                    if clean_def not in meanings_map[pos]:
+                                        meanings_map[pos].append(clean_def)
+
+                            meanings = [
+                                {
+                                    "partOfSpeech": pos,
+                                    "definitions": defs_list[:3],  # top 3 per part of speech
+                                }
+                                for pos, defs_list in meanings_map.items()
+                            ]
+
+                            result = {
+                                "word": word,
+                                "found": True,
+                                "phonetic": None,
+                                "meanings": meanings,
+                            }
+                            self._cache[word] = result
+                            return result
+        except Exception as exc:
+            logger.warning(f"Online definition lookup failed for '{word}': {exc}")
+
+        # 3. Not found fallback
+        fallback = {
+            "word": word,
+            "found": False,
+            "phonetic": None,
+            "meanings": [
+                {
+                    "partOfSpeech": "word",
+                    "definitions": [f"Valid game word '{word}'."],
+                }
+            ],
+        }
+        self._cache[word] = fallback
+        return fallback
+
+
+dictionary_lookup_service = DictionaryLookupService()

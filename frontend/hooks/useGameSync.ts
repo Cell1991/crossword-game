@@ -106,11 +106,12 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
             window.setTimeout(() => setCardReveal({ ...reveal, phase: 'reveal' }), 1000);
             window.setTimeout(() => setCardReveal(null), 2600);
           }
-          const words = wordsFormed.map((word) => word.word).join(', ');
+          const wordList = wordsFormed.map((word) => word.word.toUpperCase());
+          const words = wordList.join(', ');
           const score = event.payload.scoreEarned ?? 0;
           const name = nameOf(event.payload?.playerId, 'Player');
           flashInfo(`${words} (+${score} pts)`);
-          addHistory({ text: `${name}: ${words}`, score, type: 'move' });
+          addHistory({ text: `${name}: ${words}`, score, type: 'move', words: wordList });
         } else if (event.type === 'TURN_PASSED') {
           const name = nameOf(event.payload?.playerId, 'Player');
           addHistory({ text: `${name} passed turn`, type: 'pass' });

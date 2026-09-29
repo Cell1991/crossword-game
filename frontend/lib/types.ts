@@ -75,6 +75,19 @@ export interface PendingEffect {
 export type TurnTimeLimit = null | 30 | 60 | 90 | 120;
 export type GameMode = 'HP' | 'TURNS';
 
+export interface WordDefinitionMeaning {
+  partOfSpeech: string;
+  definitions: string[];
+  example?: string;
+}
+
+export interface WordDefinition {
+  word: string;
+  phonetic?: string | null;
+  found: boolean;
+  meanings: WordDefinitionMeaning[];
+}
+
 /** One line of the sidebar's move history, built on this device from socket events. */
 export interface MoveHistoryEntry {
   id: string;
@@ -82,6 +95,7 @@ export interface MoveHistoryEntry {
   timestamp?: string;
   score?: number;
   type?: 'move' | 'exchange' | 'pass' | 'card';
+  words?: string[];
 }
 
 export type BoardCard = 'FREEZE_TILE' | 'DESTROY_TILE';

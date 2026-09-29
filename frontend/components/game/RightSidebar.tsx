@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo, useCallback, useRef, useState } from 'react';
-import { MoveHistoryEntry, Player } from '@/lib/types';
+import { MoveHistoryEntry, Player, WordDefinition } from '@/lib/types';
 import {
   Trophy,
   Crown,
@@ -11,9 +11,12 @@ import {
   ChevronDown,
   ChevronUp,
   Layers,
+  BookOpen,
+  Loader2,
 } from 'lucide-react';
 import { cardIcon } from './cardIcons';
 import { TileBagDialog } from './TileBagDialog';
+import { getWordDefinition } from '@/lib/api';
 
 interface RightSidebarProps {
   players: Player[];
@@ -40,6 +43,11 @@ export const RightSidebar = memo(function RightSidebar({
 }: RightSidebarProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(!mobile);
   const [isTileBagOpen, setIsTileBagOpen] = useState(false);
+  const [expandedMoveId, setExpandedMoveId] = useState<string | null>(null);
+  const [definitionsCache, setDefinitionsCache] = useState<Record<string, WordDefinition | null>>({});
+  const [loadingWords, setLoadingWords] = useState<Record<string, boolean>>({});
+  const [selectedWordByMove, setSelectedWordByMove] = useState<Record<string, string>>({});
+
   const tileBagButtonRef = useRef<HTMLButtonElement>(null);
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
   // Starting HP scales with the roster (see RoomService.start_game); the bar must scale with it too.
@@ -49,6 +57,52 @@ export const RightSidebar = memo(function RightSidebar({
     setIsTileBagOpen(false);
     tileBagButtonRef.current?.focus();
   }, []);
+
+  const fetchDefinition = useCallback(async (word: string) => {
+    const cleanWord = word.trim().toUpperCase();
+    if (!cleanWord || definitionsCache[cleanWord] !== undefined || loadingWords[cleanWord]) return;
+
+    setLoadingWords(prev => ({ ...prev, [cleanWord]: true }));
+    try {
+      const def = await getWordDefinition(cleanWord);
+      setDefinitionsCache(prev => ({ ...prev, [cleanWord]: def }));
+    } catch {
+      setDefinitionsCache(prev => ({ ...prev, [cleanWord]: null }));
+    } finally {
+      setLoadingWords(prev => ({ ...prev, [cleanWord]: false }));
+    }
+  }, [definitionsCache, loadingWords]);
+
+  const toggleMoveAccordion = useCallback((entry: MoveHistoryEntry) => {
+    if (expandedMoveId === entry.id) {
+      setExpandedMoveId(null);
+      return;
+    }
+
+    setExpandedMoveId(entry.id);
+
+    // Determine words formed in this entry
+    let words = entry.words;
+    if (!words || words.length === 0) {
+      if (entry.type === 'move' && entry.text.includes(':')) {
+        const parts = entry.text.split(':');
+        if (parts[1]) {
+          words = parts[1].split(',').map(w => w.trim().toUpperCase()).filter(w => /^[A-Z]+$/.test(w));
+        }
+      }
+    }
+
+    if (words && words.length > 0) {
+      const initialWord = selectedWordByMove[entry.id] || words[0];
+      setSelectedWordByMove(prev => ({ ...prev, [entry.id]: initialWord }));
+      fetchDefinition(initialWord);
+    }
+  }, [expandedMoveId, selectedWordByMove, fetchDefinition]);
+
+  const selectWordForMove = useCallback((moveId: string, word: string) => {
+    setSelectedWordByMove(prev => ({ ...prev, [moveId]: word }));
+    fetchDefinition(word);
+  }, [fetchDefinition]);
 
   return (
     <aside className={`flex h-full shrink-0 flex-col select-none ${mobile ? 'w-full p-0' : 'w-72 p-3'}`}>
@@ -193,7 +247,7 @@ export const RightSidebar = memo(function RightSidebar({
           </div>
         </div>
 
-        {/* BOTTOM SECTION: COLLAPSIBLE WORD HISTORY FEED */}
+        {/* BOTTOM SECTION: COLLAPSIBLE MOVE HISTORY & DEFINITION ACCORDION */}
         <div className="border-t border-slate-800/80 bg-slate-900/40">
           <button
             onClick={() => setIsHistoryOpen(prev => !prev)}
@@ -211,27 +265,151 @@ export const RightSidebar = memo(function RightSidebar({
           </button>
 
           {isHistoryOpen && (
-            <div className="p-2.5 pt-0 max-h-32 overflow-y-auto space-y-1.5">
+            <div className="p-2.5 pt-0 max-h-56 overflow-y-auto space-y-1.5">
               {moveHistory.length === 0 ? (
                 <div className="py-2 text-center text-[11px] text-slate-500 italic">
                   No moves recorded yet
                 </div>
               ) : (
-                moveHistory.slice(-5).reverse().map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="flex items-center justify-between p-1.5 rounded-lg bg-slate-900/60 border border-slate-800/60 text-xs"
-                  >
-                    <span className="text-slate-300 truncate max-w-[170px]">
-                      {entry.text}
-                    </span>
-                    {entry.score !== undefined && entry.score > 0 && (
-                      <span className="font-mono font-bold text-emerald-400 shrink-0">
-                        +{entry.score}
-                      </span>
-                    )}
-                  </div>
-                ))
+                moveHistory.slice(-8).reverse().map((entry) => {
+                  const isExpanded = expandedMoveId === entry.id;
+                  
+                  // Extract words for this move
+                  let words = entry.words;
+                  if (!words || words.length === 0) {
+                    if (entry.type === 'move' && entry.text.includes(':')) {
+                      const parts = entry.text.split(':');
+                      if (parts[1]) {
+                        words = parts[1].split(',').map(w => w.trim().toUpperCase()).filter(w => /^[A-Z]+$/.test(w));
+                      }
+                    }
+                  }
+                  const hasWords = Boolean(words && words.length > 0);
+                  const activeWord = selectedWordByMove[entry.id] || (words && words[0]) || '';
+                  const definition = activeWord ? definitionsCache[activeWord] : null;
+                  const isLoading = activeWord ? loadingWords[activeWord] : false;
+
+                  return (
+                    <div
+                      key={entry.id}
+                      className={`rounded-lg border transition-all duration-200 overflow-hidden ${
+                        isExpanded
+                          ? 'bg-slate-900/90 border-cyan-500/50 shadow-[0_0_12px_rgba(6,182,212,0.15)]'
+                          : 'bg-slate-900/60 border-slate-800/60 hover:border-slate-700/80'
+                      }`}
+                    >
+                      {/* Move Row Header (Clickable to expand/collapse) */}
+                      <div
+                        onClick={() => hasWords && toggleMoveAccordion(entry)}
+                        className={`flex items-center justify-between p-2 text-xs transition-colors ${
+                          hasWords ? 'cursor-pointer hover:bg-slate-800/40' : ''
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 min-w-0 pr-1">
+                          {hasWords && (
+                            <BookOpen className={`w-3.5 h-3.5 shrink-0 transition-colors ${
+                              isExpanded ? 'text-cyan-400' : 'text-slate-500 group-hover:text-slate-400'
+                            }`} />
+                          )}
+                          <span className="text-slate-300 truncate font-medium">
+                            {entry.text}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {entry.score !== undefined && entry.score > 0 && (
+                            <span className="font-mono font-bold text-emerald-400">
+                              +{entry.score}
+                            </span>
+                          )}
+                          {hasWords && (
+                            <div className="text-slate-500">
+                              {isExpanded ? (
+                                <ChevronUp className="w-3.5 h-3.5 text-cyan-400" />
+                              ) : (
+                                <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Accordion Definition Content */}
+                      {isExpanded && hasWords && words && (
+                        <div className="p-2.5 pt-1 border-t border-slate-800/80 bg-slate-950/60 space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                          {/* Multi-word Tabs (if multiple words formed in 1 turn) */}
+                          {words.length > 1 && (
+                            <div className="flex flex-wrap gap-1 pb-1 border-b border-slate-800/60">
+                              {words.map((w) => (
+                                <button
+                                  key={w}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    selectWordForMove(entry.id, w);
+                                  }}
+                                  className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono transition-all cursor-pointer ${
+                                    activeWord === w
+                                      ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/50 shadow-[0_0_8px_rgba(6,182,212,0.3)]'
+                                      : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                                  }`}
+                                >
+                                  {w}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Definition Card */}
+                          {isLoading ? (
+                            <div className="flex items-center justify-center py-3 text-cyan-400 gap-2">
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span className="text-[11px] text-slate-400">Looking up definition...</span>
+                            </div>
+                          ) : definition && definition.meanings && definition.meanings.length > 0 ? (
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-bold text-cyan-300 tracking-wide text-xs">
+                                    {definition.word}
+                                  </span>
+                                  {definition.phonetic && (
+                                    <span className="text-[10px] text-slate-400 font-mono">
+                                      {definition.phonetic}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[9px] text-slate-500 uppercase font-semibold tracking-wider">
+                                  Definition
+                                </span>
+                              </div>
+                              <div className="space-y-1.5 max-h-40 overflow-y-auto pr-0.5">
+                                {definition.meanings.map((m, idx) => (
+                                  <div key={idx} className="bg-slate-900/70 p-1.5 rounded border border-slate-800/80 space-y-1">
+                                    <span className="inline-block px-1.5 py-0.5 rounded bg-cyan-950/70 border border-cyan-700/50 text-[9px] font-semibold text-cyan-300 uppercase tracking-wider">
+                                      {m.partOfSpeech}
+                                    </span>
+                                    <ul className="list-disc list-inside space-y-0.5 text-[11px] text-slate-300 leading-snug">
+                                      {m.definitions.map((def, dIdx) => (
+                                        <li key={dIdx} className="line-clamp-3">
+                                          {def}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="py-2 text-center text-[11px] text-slate-400 italic">
+                              No definition found for {activeWord}.
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
           )}
@@ -245,3 +423,4 @@ export const RightSidebar = memo(function RightSidebar({
     </aside>
   );
 });
+

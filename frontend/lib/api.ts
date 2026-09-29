@@ -10,6 +10,7 @@ import {
   GameMode,
   RematchResponse,
   TurnTimeLimit,
+  WordDefinition,
 } from './types';
 
 function getErrorMessage(error: unknown, fallback: string): string {
@@ -365,3 +366,17 @@ export async function leaveGame(gameId: string, playerId: string): Promise<void>
   });
   if (!res.ok) throw new Error('Failed to leave game');
 }
+
+/** Fetch English definition for a played word */
+export async function getWordDefinition(word: string): Promise<WordDefinition | null> {
+  if (!word) return null;
+  try {
+    const res = await fetch(`${getApiBase()}/dictionary/${encodeURIComponent(word.toUpperCase())}`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    console.error(`Failed to fetch definition for ${word}:`, err);
+    return null;
+  }
+}
+
