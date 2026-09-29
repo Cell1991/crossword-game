@@ -236,18 +236,24 @@ function drawTile(
         ctx.fillStyle = letterFill;
       }
       const fontSize = Math.max(12, Math.round(cellSize * 0.70));
-      ctx.font = `400 ${fontSize}px 'Granix Demo', sans-serif`;
+      ctx.font = `italic 900 ${fontSize}px 'Inter Black Italic', sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       const metrics = ctx.measureText(letter);
       const textX = x + cellSize / 2 + (metrics.actualBoundingBoxLeft - metrics.actualBoundingBoxRight) / 2;
       const textY = y + cellSize / 2 + (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) / 2;
+      
+      // Use offset fills instead of strokeText to avoid font overlap issues
       if (!isRemote) {
-        ctx.lineJoin = 'round';
-        ctx.lineWidth = Math.max(1.6, fontSize * 0.08);
-        ctx.strokeStyle = scene.tilePalette.letter.stroke;
-        ctx.strokeText(letter, textX, textY);
+        const offset = Math.max(1.6, fontSize * 0.08) / 2;
+        ctx.fillStyle = scene.tilePalette.letter.stroke;
+        const offsets = [[-1,-1],[1,-1],[-1,1],[1,1],[0,-1],[0,1],[-1,0],[1,0]];
+        for (const [dx, dy] of offsets) {
+          ctx.fillText(letter, textX + dx * offset, textY + dy * offset);
+        }
       }
+      
+      ctx.fillStyle = letterFill; // Restore original fill for the main letter
       ctx.shadowColor = isRemote ? 'transparent' : scene.tilePalette.letter.shadow;
       ctx.shadowBlur = isRemote ? 0 : Math.max(2, cellSize * 0.06);
       ctx.shadowOffsetY = isRemote ? 0 : Math.max(1, cellSize * 0.035);
@@ -257,7 +263,7 @@ function drawTile(
 
     if (cellSize >= 20) {
       const numFontSize = Math.max(9, Math.round(cellSize * 0.28));
-      ctx.font = `${scene.tilePalette.score.weight} ${numFontSize}px 'Granix Demo', sans-serif`;
+      ctx.font = `italic 900 ${numFontSize}px 'Inter Black Italic', sans-serif`;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       const numX = x + cellSize - pad * 1.5;
@@ -266,10 +272,15 @@ function drawTile(
       ctx.save();
       ctx.shadowColor = scene.tilePalette.score.glow;
       ctx.shadowBlur = lowPower ? 2 : Math.max(4, numFontSize * 0.6);
-      ctx.lineWidth = Math.max(0.5, numFontSize * 0.05);
-      ctx.strokeStyle = scene.tilePalette.score.stroke;
+      
+      const offset = Math.max(0.5, numFontSize * 0.05) / 2;
+      ctx.fillStyle = scene.tilePalette.score.stroke;
+      const offsets = [[-1,-1],[1,-1],[-1,1],[1,1],[0,-1],[0,1],[-1,0],[1,0]];
+      for (const [dx, dy] of offsets) {
+        ctx.fillText(`${effectiveValue}`, numX + dx * offset, numY + dy * offset);
+      }
+      
       ctx.fillStyle = scene.tilePalette.score.color;
-      ctx.strokeText(`${effectiveValue}`, numX, numY);
       ctx.fillText(`${effectiveValue}`, numX, numY);
       ctx.restore();
     }
