@@ -18,9 +18,60 @@
 
 <br/>
 
-[🌟 Overview](#-system-overview) • [🎮 Game Modes](#-game-modes) • [⚡ Power Cards](#-power-card-arsenal) • [🏗️ Architecture](#-system-architecture) • [🚀 Quick Start](#-quick-start--installation) • [📂 Project Structure](#-project-structure) • [📡 API & WebSockets](#-api--websocket-specification)
-
----
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <a href="#-system-overview">
+        <b>🌟 Overview</b><br/>
+        <sub>Core Engine & Highlights</sub>
+      </a>
+    </td>
+    <td align="center" width="25%">
+      <a href="#-game-modes">
+        <b>🎮 Game Modes</b><br/>
+        <sub>HP Deathmatch vs Turn Score</sub>
+      </a>
+    </td>
+    <td align="center" width="25%">
+      <a href="#-power-card-arsenal">
+        <b>⚡ Power Cards</b><br/>
+        <sub>7 Tactical Cards & Effects</sub>
+      </a>
+    </td>
+    <td align="center" width="25%">
+      <a href="#-system-architecture">
+        <b>🏗️ Architecture</b><br/>
+        <sub>Tier Diagram & Move Sequence</sub>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="25%">
+      <a href="#-project-structure">
+        <b>📂 Project Structure</b><br/>
+        <sub>Full Directory Tree</sub>
+      </a>
+    </td>
+    <td align="center" width="25%">
+      <a href="#-quick-start--installation">
+        <b>🚀 Quick Start</b><br/>
+        <sub>Docker & Local Setup</sub>
+      </a>
+    </td>
+    <td align="center" width="25%">
+      <a href="#-api--websocket-specification">
+        <b>📡 API & WebSockets</b><br/>
+        <sub>REST Endpoints & Events</sub>
+      </a>
+    </td>
+    <td align="center" width="25%">
+      <a href="#-testing">
+        <b>🧪 Testing</b><br/>
+        <sub>Automated Pytest Suites</sub>
+      </a>
+    </td>
+  </tr>
+</table>
 
 </div>
 
