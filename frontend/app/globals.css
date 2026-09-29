@@ -17,17 +17,17 @@
 }
 
 @font-face {
-  font-family: "NATOENA";
-  src: url("/fonts/NATOENA.otf") format("opentype"),
-       url("/fonts/NATOENA.ttf") format("truetype");
+  font-family: "Inter Black Italic";
+  src: url("/fonts/inter.18pt-black-italic.ttf") format("truetype");
   font-display: swap;
-  font-style: normal;
-  font-weight: 400;
+  font-style: italic;
+  font-weight: 900;
 }
 
 .font-maple {
-  font-family: "Granix Demo", sans-serif;
-  font-weight: 400;
+  font-family: "Inter Black Italic", sans-serif;
+  font-weight: 900;
+  font-style: italic;
 }
 
 .tile-letter {
@@ -40,17 +40,30 @@
 
 .tile-letter-orange {
   color: var(--tile-letter-color-desktop);
-  -webkit-text-stroke: 2.6px var(--tile-letter-stroke-desktop);
-  paint-order: stroke fill;
-  text-shadow: 0 2px 1px rgba(0, 0, 0, 0.9), 0 4px 5px rgba(0, 0, 0, 0.68), var(--tile-letter-shadow-desktop);
+  text-shadow: 
+    -2px -2px 0 var(--tile-letter-stroke-desktop),
+     2px -2px 0 var(--tile-letter-stroke-desktop),
+    -2px  2px 0 var(--tile-letter-stroke-desktop),
+     2px  2px 0 var(--tile-letter-stroke-desktop),
+    -2px  0   0 var(--tile-letter-stroke-desktop),
+     2px  0   0 var(--tile-letter-stroke-desktop),
+     0   -2px 0 var(--tile-letter-stroke-desktop),
+     0    2px 0 var(--tile-letter-stroke-desktop),
+    0 2px 1px rgba(0, 0, 0, 0.9), 
+    0 4px 5px rgba(0, 0, 0, 0.68), 
+    var(--tile-letter-shadow-desktop);
 }
 
 .tile-face { background-image: var(--tile-face-gradient); }
 
 .tile-score-blue {
   color: var(--tile-score-color-desktop);
-  -webkit-text-stroke: 0.75px var(--tile-score-stroke-desktop);
-  text-shadow: var(--tile-score-shadow-desktop);
+  text-shadow: 
+    -1px -1px 0 var(--tile-score-stroke-desktop),
+     1px -1px 0 var(--tile-score-stroke-desktop),
+    -1px  1px 0 var(--tile-score-stroke-desktop),
+     1px  1px 0 var(--tile-score-stroke-desktop),
+    var(--tile-score-shadow-desktop);
 }
 
 .tile-blank-star {
