@@ -443,6 +443,11 @@ function drawTile(
  * several ms a frame, and every property a cell uses (alpha, fill, stroke, line width) is set
  * explicitly before it is used, so each cell draws exactly as it would from a fresh state.
  */
+const NUM_GRID_BUCKETS = 16;
+const BUCKET_CAPACITY = 8000;
+const gridBuffer = new Float32Array(NUM_GRID_BUCKETS * BUCKET_CAPACITY);
+const gridCounts = new Int32Array(NUM_GRID_BUCKETS);
+
 function drawGrid(
   ctx: CanvasRenderingContext2D,
   scene: BoardScene,
@@ -508,25 +513,48 @@ function drawGrid(
     }
   }
 
-  // 2. Draw grid cell borders in a single batched pass
-  ctx.strokeStyle = 'rgba(245, 190, 72, 0.24)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
+  // 2. Draw grid cell borders with smooth alpha fade (Zero allocation / High FPS)
+  gridCounts.fill(0);
   for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
     for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
       const lineAlpha = getCellAlpha(r, c, occupiedTiles);
       if (lineAlpha <= 0.005) continue;
 
-      const x = offset.x + c * cellSize;
-      const y = offset.y + r * cellSize;
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + cellSize, y);
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + cellSize);
+      const bucket = Math.min(NUM_GRID_BUCKETS - 1, Math.floor(lineAlpha * NUM_GRID_BUCKETS));
+      const count = gridCounts[bucket];
+      if (count + 8 < BUCKET_CAPACITY) {
+        const base = bucket * BUCKET_CAPACITY + count;
+        const x = offset.x + c * cellSize;
+        const y = offset.y + r * cellSize;
+        // Top horizontal segment
+        gridBuffer[base] = x;
+        gridBuffer[base + 1] = y;
+        gridBuffer[base + 2] = x + cellSize;
+        gridBuffer[base + 3] = y;
+        // Left vertical segment
+        gridBuffer[base + 4] = x;
+        gridBuffer[base + 5] = y;
+        gridBuffer[base + 6] = x;
+        gridBuffer[base + 7] = y + cellSize;
+        gridCounts[bucket] += 8;
+      }
     }
   }
-  ctx.globalAlpha = 1.0;
-  ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(245, 190, 72, 0.24)';
+  ctx.lineWidth = 1;
+  for (let b = 0; b < NUM_GRID_BUCKETS; b++) {
+    const count = gridCounts[b];
+    if (count === 0) continue;
+    ctx.globalAlpha = (b + 0.5) / NUM_GRID_BUCKETS;
+    ctx.beginPath();
+    const base = b * BUCKET_CAPACITY;
+    for (let i = 0; i < count; i += 4) {
+      ctx.moveTo(gridBuffer[base + i], gridBuffer[base + i + 1]);
+      ctx.lineTo(gridBuffer[base + i + 2], gridBuffer[base + i + 3]);
+    }
+    ctx.stroke();
+  }
 
   ctx.restore();
 }
