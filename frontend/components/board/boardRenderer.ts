@@ -450,27 +450,25 @@ function drawGrid(
   occupiedTiles: CellPosition[]
 ) {
   const { offset, cellSize, lowPower } = scene;
-  const numBuckets = 24;
-  const gridPaths: Path2D[] = Array.from({ length: numBuckets }, () => new Path2D());
-  const gridPathCounts = new Uint16Array(numBuckets);
 
   ctx.save();
+
+  // 1. Special cell fills and Center Star (100% mirrored)
   for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
     for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
-      const lineAlpha = getCellAlpha(r, c, occupiedTiles);
-      if (lineAlpha <= 0.005) continue;
-
-      const x = offset.x + c * cellSize;
-      const y = offset.y + r * cellSize;
-
-      // Special cell fills and Center Star (100% mirrored)
       const isCenter = r === CENTER_ROW && c === CENTER_COL;
       const isTriple = isTripleLetterCell(r, c);
       const isDouble = isDoubleLetterCell(r, c);
       const isPower = isPowerCell(r, c);
-      const specialRadius = Math.max(3, cellSize * 0.12);
 
       if (isTriple || isDouble || isPower || isCenter) {
+        const lineAlpha = getCellAlpha(r, c, occupiedTiles);
+        if (lineAlpha <= 0.005) continue;
+
+        const x = offset.x + c * cellSize;
+        const y = offset.y + r * cellSize;
+        const specialRadius = Math.max(3, cellSize * 0.12);
+
         ctx.globalAlpha = lineAlpha;
         if (isTriple) {
           ctx.fillStyle = '#7f1d1d';
@@ -507,29 +505,29 @@ function drawGrid(
           }
         }
       }
-
-      // Batch grid strokes by opacity bucket
-      const bucket = Math.min(
-        numBuckets - 1,
-        Math.floor(lineAlpha * numBuckets)
-      );
-      const path = gridPaths[bucket];
-      path.moveTo(x, y);
-      path.lineTo(x + cellSize, y);
-      path.moveTo(x, y);
-      path.lineTo(x, y + cellSize);
-      gridPathCounts[bucket]++;
     }
   }
 
-  // Single batched stroke per alpha bucket
+  // 2. Draw grid cell borders in a single batched pass
   ctx.strokeStyle = 'rgba(245, 190, 72, 0.24)';
   ctx.lineWidth = 1;
-  for (let bucket = 0; bucket < numBuckets; bucket++) {
-    if (gridPathCounts[bucket] === 0) continue;
-    ctx.globalAlpha = (bucket + 0.5) / numBuckets;
-    ctx.stroke(gridPaths[bucket]);
+  ctx.beginPath();
+  for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
+    for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
+      const lineAlpha = getCellAlpha(r, c, occupiedTiles);
+      if (lineAlpha <= 0.005) continue;
+
+      const x = offset.x + c * cellSize;
+      const y = offset.y + r * cellSize;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + cellSize, y);
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + cellSize);
+    }
   }
+  ctx.globalAlpha = 1.0;
+  ctx.stroke();
+
   ctx.restore();
 }
 

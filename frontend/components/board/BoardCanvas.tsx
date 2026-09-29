@@ -190,22 +190,6 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     };
   }, [draw]);
 
-  const queuePan = (dx: number, dy: number) => {
-    pendingPanDeltaRef.current.x += dx;
-    pendingPanDeltaRef.current.y += dy;
-    if (panFrameRef.current !== null) return;
-    panFrameRef.current = requestAnimationFrame(() => {
-      panFrameRef.current = null;
-      const delta = pendingPanDeltaRef.current;
-      pendingPanDeltaRef.current = { x: 0, y: 0 };
-      if (delta.x === 0 && delta.y === 0) return;
-      camera.setOffset(previous => ({
-        x: previous.x + delta.x,
-        y: previous.y + delta.y,
-      }));
-    });
-  };
-
   const measurePinch = () => {
     const [a, b] = [...touchPointsRef.current.values()];
     return { distance: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
@@ -279,7 +263,12 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     if (isPanningRef.current) {
       const dx = e.clientX - lastPointerRef.current.x;
       const dy = e.clientY - lastPointerRef.current.y;
-      queuePan(dx, dy);
+      if (dx !== 0 || dy !== 0) {
+        camera.setOffset(previous => ({
+          x: previous.x + dx,
+          y: previous.y + dy,
+        }));
+      }
       lastPointerRef.current = { x: e.clientX, y: e.clientY };
       const start = panStartRef.current;
       if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) >= 5) panMovedRef.current = true;
@@ -330,37 +319,9 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     }
   };
 
-  const targetScaleRef = useRef<number | null>(null);
-  const zoomPivotRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const zoomAnimFrameRef = useRef<number | null>(null);
-
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
-    const startSmoothZoom = () => {
-      if (zoomAnimFrameRef.current !== null) return;
-      const step = () => {
-        const target = targetScaleRef.current;
-        if (target === null) {
-          zoomAnimFrameRef.current = null;
-          return;
-        }
-        const current = camera.getView().scale;
-        const diff = target - current;
-        if (Math.abs(diff) < 0.001) {
-          camera.zoomToScale(target, zoomPivotRef.current.x, zoomPivotRef.current.y);
-          targetScaleRef.current = null;
-          zoomAnimFrameRef.current = null;
-          return;
-        }
-        // Smooth exponential damping (0.35 gives crisp responsiveness without stuttering)
-        const nextScale = current + diff * 0.35;
-        camera.zoomToScale(nextScale, zoomPivotRef.current.x, zoomPivotRef.current.y);
-        zoomAnimFrameRef.current = requestAnimationFrame(step);
-      };
-      zoomAnimFrameRef.current = requestAnimationFrame(step);
-    };
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -368,28 +329,13 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       if (!rect) return;
       // Convert line/page scrolls to pixel deltas
       const deltaPixels = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * rect.height : e.deltaY;
-      
-      const currentScale = camera.getView().scale;
-      const baseTarget = targetScaleRef.current ?? currentScale;
-      // Cap per-event delta to avoid massive jumping
-      const cappedDelta = Math.max(-180, Math.min(180, deltaPixels));
-      const factor = Math.exp(-cappedDelta * 0.0015);
-      const newTarget = Math.min(camera.maxScale, Math.max(camera.minScale, baseTarget * factor));
-
-      targetScaleRef.current = newTarget;
-      zoomPivotRef.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      };
-      startSmoothZoom();
+      const cappedDelta = Math.max(-200, Math.min(200, deltaPixels));
+      camera.zoomAtPoint(cappedDelta, e.clientX - rect.left, e.clientY - rect.top);
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
       container.removeEventListener('wheel', handleWheel);
-      if (zoomAnimFrameRef.current !== null) cancelAnimationFrame(zoomAnimFrameRef.current);
-      zoomAnimFrameRef.current = null;
-      targetScaleRef.current = null;
     };
   }, [camera, containerRef]);
 
