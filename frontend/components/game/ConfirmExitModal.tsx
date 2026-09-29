@@ -1,0 +1,81 @@
+'use client';
+
+import React from 'react';
+import { LogOut, X } from 'lucide-react';
+
+interface ConfirmExitModalProps {
+  isOpen: boolean;
+  isSpectator?: boolean;
+  onConfirm: () => void;
+  onClose: () => void;
+}
+
+export function ConfirmExitModal({
+  isOpen,
+  isSpectator = false,
+  onConfirm,
+  onClose,
+}: ConfirmExitModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="exit-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md animate-fadeIn"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-[22rem] sm:max-w-sm rounded-[1.75rem] border border-rose-500/30 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-900/95 p-6 text-center shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_35px_rgba(244,63,94,0.25)] ring-1 ring-white/10"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Top luminous accent beam */}
+        <span className="absolute inset-x-10 top-0 h-0.5 bg-gradient-to-r from-transparent via-rose-400 to-transparent shadow-[0_0_10px_#fb7185]" />
+
+        {/* Close corner button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-full p-1 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+          aria-label="Close modal"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        {/* Icon */}
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-rose-500/40 bg-rose-500/15 shadow-[0_0_24px_rgba(244,63,94,0.35)]">
+          <LogOut className="h-6 w-6 text-rose-400 stroke-[2.2]" />
+        </div>
+
+        {/* Text */}
+        <h3 id="exit-modal-title" className="text-xl font-black tracking-tight text-white">
+          {isSpectator ? 'หยุดรับชม?' : 'ออกจากเกม?'}
+        </h3>
+        <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-400">
+          {isSpectator
+            ? 'คุณต้องการออกจากการรับชมเกมนี้และกลับสู่หน้าหลักหรือไม่?'
+            : 'คุณต้องการออกจากห้องเล่นนี้หรือไม่? หากออกไประหว่างเล่นเกม คุณจะไม่สามารถกลับมาเล่นต่อในรอบนี้ได้'}
+        </p>
+
+        {/* Action Buttons */}
+        <div className="mt-6 flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl border border-slate-700 bg-slate-800/80 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-slate-300 transition hover:border-slate-600 hover:bg-slate-700/80 hover:text-white active:scale-95"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="flex-1 rounded-xl border border-rose-500/50 bg-gradient-to-r from-rose-600 to-red-600 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white shadow-[0_0_20px_rgba(244,63,94,0.4)] transition hover:brightness-110 active:scale-95"
+          >
+            ออกจากเกม
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

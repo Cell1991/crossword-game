@@ -28,6 +28,7 @@ import { TurnTimer } from '@/components/game/TurnTimer';
 import { GameOverScreen } from '@/components/game/GameOverScreen';
 import { CardRevealOverlay, PendingEffectBanner, ToastStack } from '@/components/game/GameOverlays';
 import { BlankTilePickerModal } from '@/components/game/BlankTilePickerModal';
+import { ConfirmExitModal } from '@/components/game/ConfirmExitModal';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 
 const EMPTY_TILES: Tile[] = [];
@@ -122,6 +123,7 @@ export default function GamePage() {
   const [exchangeTileIds, setExchangeTileIds] = useState<string[] | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
+  const [isExitModalOpen, setIsExitModalOpen] = useState(false);
 
   const seatReturningTile = useCallback((tileId: string, targetSlot: number) => {
     seatReturning(tileId, targetSlot, pendingTileIds);
@@ -311,9 +313,12 @@ export default function GamePage() {
       router.push('/');
       return;
     }
-    if (window.confirm('ต้องการออกจากเกมหรือไม่?')) {
-      void leaveGame(gameId, myPlayerId ?? '').finally(() => router.push('/'));
-    }
+    setIsExitModalOpen(true);
+  };
+
+  const handleConfirmExit = () => {
+    setIsExitModalOpen(false);
+    void leaveGame(gameId, myPlayerId ?? '').finally(() => router.push('/'));
   };
 
   return (
@@ -537,6 +542,14 @@ export default function GamePage() {
         isOpen={staged.blankPickerTarget !== null}
         onSelect={staged.chooseBlankLetter}
         onClose={staged.closeBlankPicker}
+      />
+
+      {/* In-Game Themed Exit Confirmation Modal */}
+      <ConfirmExitModal
+        isOpen={isExitModalOpen}
+        isSpectator={isSpectator}
+        onConfirm={handleConfirmExit}
+        onClose={() => setIsExitModalOpen(false)}
       />
 
       {isDebug && (
