@@ -42,56 +42,38 @@ export interface BoardScene {
 
 const LOW_POWER_GRID_ALPHA_BUCKETS = 24;
 
-/** Rounded Signed Distance function for smooth organic rounded board contours */
-function getRoundedBoxDistance(
-  r: number,
-  c: number,
-  minR: number,
-  maxR: number,
-  minC: number,
-  maxC: number,
-  radius = 4.0
-): number {
-  const boxMinR = minR + radius;
-  const boxMaxR = maxR - radius;
-  const boxMinC = minC + radius;
-  const boxMaxC = maxC - radius;
-
-  const dR = r < boxMinR ? boxMinR - r : r > boxMaxR ? r - boxMaxR : 0;
-  const dC = c < boxMinC ? boxMinC - c : c > boxMaxC ? c - boxMaxC : 0;
-
-  return Math.hypot(dR, dC) - radius;
-}
-
-/** Directional cell alpha with smooth organic rounded-corner falloff */
+/** True smooth elliptical / oval falloff radiating from center star (9, 13) */
 export function getCellAlpha(row: number, col: number, occupiedTiles: CellPosition[] = []): number {
-  // 1. Distance to smooth rounded starter board contour
-  const baseDist = getRoundedBoxDistance(row, col, 0, BOARD_ROWS - 1, 0, BOARD_COLS - 1, 4.0);
+  // 1. Normalized Elliptical distance from center star (9, 13)
+  const dx = (col - CENTER_COL) / 13.5;
+  const dy = (row - CENTER_ROW) / 9.5;
+  const ellipseNorm = Math.hypot(dx, dy);
 
   let alpha = 0;
-  if (baseDist <= -0.5) {
+  if (ellipseNorm <= 0.82) {
     alpha = 1.0;
-  } else if (baseDist <= 2.6) {
-    // Smooth ease-out fade from border to cosmic space
-    const t = Math.max(0, (baseDist + 0.5) / 3.1);
-    alpha = Math.max(0, Math.pow(1 - t, 1.7));
+  } else if (ellipseNorm <= 1.15) {
+    // Smooth ease-out fade in an oval ring around the board
+    const t = (ellipseNorm - 0.82) / (1.15 - 0.82);
+    alpha = Math.pow(1 - t, 1.5);
   }
 
   // 2. Local rounded aura around any placed tiles (committed, staged, or extended words)
   for (let i = 0; i < occupiedTiles.length; i++) {
     const t = occupiedTiles[i];
-    const tileDist = Math.hypot(row - t.row, (col - t.col) * 0.9);
+    const tileDist = Math.hypot(row - t.row, (col - t.col) * 0.85);
     if (tileDist <= 1.2) {
       alpha = Math.max(alpha, 1.0);
-    } else if (tileDist <= 3.2) {
-      const u = (tileDist - 1.2) / 2.0;
-      const tileAlpha = Math.pow(1 - u, 1.6);
+    } else if (tileDist <= 3.0) {
+      const u = (tileDist - 1.2) / 1.8;
+      const tileAlpha = Math.pow(1 - u, 1.5);
       if (tileAlpha > alpha) alpha = tileAlpha;
     }
   }
 
   return Math.max(0, Math.min(1, alpha));
 }
+
 
 
 
