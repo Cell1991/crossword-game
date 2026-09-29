@@ -33,10 +33,10 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     let beams: Beam[] = [];
     const device = navigator as Navigator & { deviceMemory?: number };
     const isTouchDevice = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
-    const isLowPowerDevice = (device.hardwareConcurrency ?? 8) <= 4 || (device.deviceMemory ?? 8) <= 4;
-    const nodeCount = isTouchDevice ? 20 : isLowPowerDevice ? 28 : NODE_COUNT;
-    const beamCount = isTouchDevice ? 6 : isLowPowerDevice ? 8 : BEAM_COUNT;
-    const frameInterval = 1000 / 30;
+    const isLowPowerDevice = isTouchDevice || (device.hardwareConcurrency ?? 8) <= 4 || (device.deviceMemory ?? 8) <= 4;
+    const nodeCount = isTouchDevice ? 14 : isLowPowerDevice ? 24 : NODE_COUNT;
+    const beamCount = isTouchDevice ? 4 : isLowPowerDevice ? 6 : BEAM_COUNT;
+    const frameInterval = isTouchDevice ? 1000 / 25 : 1000 / 30;
     let lastDrawAt = 0;
     const mouse = { x: -1000, y: -1000 };
     /** The canvas box, measured on resize: reading it on every pointer move forced a layout each time. */
@@ -49,9 +49,9 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       canvasTop = rect.top;
       width = rect.width;
       height = rect.height;
-      const dpr = Math.min(window.devicePixelRatio || 1, isLowPowerDevice ? 1 : 1.5);
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      const dpr = isTouchDevice ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
@@ -85,19 +85,11 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       mouse.x = e.clientX - canvasLeft;
       mouse.y = e.clientY - canvasTop;
     };
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0) {
-        mouse.x = e.touches[0].clientX - canvasLeft;
-        mouse.y = e.touches[0].clientY - canvasTop;
-      }
-    };
 
     resize();
     seed();
     window.addEventListener('resize', onResize);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
-    window.addEventListener('touchstart', onTouchMove, { passive: true });
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
 
     const draw = () => {
       const now = performance.now();
@@ -112,6 +104,8 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       lastDrawAt = now;
       ctx.clearRect(0, 0, width, height);
 
+      // 1. Draw Beams
+      ctx.lineWidth = 1.5;
       for (const beam of beams) {
         beam.y -= beam.speed;
         if (beam.y + beam.length < 0) {
@@ -122,33 +116,33 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
         gradient.addColorStop(0, `rgba(${accent}, ${beam.opacity})`);
         gradient.addColorStop(1, 'transparent');
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(beam.x, beam.y);
         ctx.lineTo(beam.x, beam.y + beam.length);
         ctx.stroke();
       }
 
-      ctx.font = '11px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
+      // 2. Batch Links
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      const linkDistSq = LINK_DISTANCE * LINK_DISTANCE;
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const dx = nodes[i].x - nodes[j].x;
           const dy = nodes[i].y - nodes[j].y;
-          const distanceSquared = dx * dx + dy * dy;
-          if (distanceSquared < LINK_DISTANCE * LINK_DISTANCE) {
-            const d = Math.sqrt(distanceSquared);
-            ctx.strokeStyle = `rgba(148, 163, 184, ${0.12 * (1 - d / LINK_DISTANCE)})`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
+          if (dx * dx + dy * dy < linkDistSq) {
             ctx.moveTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.stroke();
           }
         }
       }
+      ctx.stroke();
+
+      // 3. Draw Nodes
+      ctx.font = '11px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
 
       for (const node of nodes) {
         node.y += node.vy;
@@ -164,7 +158,6 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
 
         if (dist < MOUSE_RADIUS) {
           ctx.strokeStyle = `rgba(${accent}, ${0.4 * (1 - dist / MOUSE_RADIUS)})`;
-          ctx.lineWidth = 0.5;
           ctx.beginPath();
           ctx.moveTo(node.x, node.y);
           ctx.lineTo(mouse.x, mouse.y);
@@ -185,8 +178,6 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchstart', onTouchMove);
     };
   }, [accent]);
 

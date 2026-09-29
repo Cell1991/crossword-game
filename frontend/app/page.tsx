@@ -133,7 +133,7 @@ export default function HomePage() {
         </div>
 
         {/* Card */}
-        <div className="w-full rounded-2xl sm:rounded-[1.75rem] border border-white/[0.1] bg-slate-900/75 sm:bg-slate-900/65 p-4 sm:p-5 shadow-[0_28px_90px_rgba(2,6,23,0.38)] backdrop-blur-md">
+        <div className="w-full rounded-2xl sm:rounded-[1.75rem] border border-white/[0.1] bg-slate-900/90 sm:bg-slate-900/65 sm:backdrop-blur-md p-4 sm:p-5 shadow-[0_28px_90px_rgba(2,6,23,0.38)]">
 
           {mode === 'home' && (
             <div className="flex flex-col gap-3">
