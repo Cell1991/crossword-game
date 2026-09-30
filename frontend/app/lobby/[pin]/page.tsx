@@ -185,8 +185,8 @@ export default function LobbyPage() {
         <PinDisplay pin={pin} />
 
         <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-sm text-slate-300 bg-slate-900/70 border border-slate-700/50 rounded-xl px-4 py-2">
-          <span>Mode: <span className="font-semibold text-amber-300">{gameMode === 'HP' ? `HP Battle (${startingHp ?? 100} HP)` : `Turn Count (${maxTurns} turns)`}</span></span>
-          <span>Turn Time: <span className="font-semibold text-amber-300">{turnTimeLimit === null ? 'Unlimited' : `${turnTimeLimit} sec`}</span></span>
+          <span className="flex items-center gap-1.5"><strong className="font-bold text-slate-200">Mode</strong> <span className="font-semibold text-amber-300">{gameMode === 'HP' ? `HP Battle (${startingHp ?? 100} HP)` : `Turn Count (${maxTurns} turns)`}</span></span>
+          <span className="flex items-center gap-1.5"><strong className="font-bold text-slate-200">Turn Time</strong> <span className="font-semibold text-amber-300">{turnTimeLimit === null ? 'Unlimited' : `${turnTimeLimit} sec`}</span></span>
           {isDebugRoom && <span className="font-semibold text-rose-300">🐞 Debug room</span>}
         </div>
 
