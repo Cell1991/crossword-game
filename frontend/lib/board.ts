@@ -35,8 +35,8 @@ export const DOUBLE_WORD = cellKeys([
 export const TRIPLE_WORD = cellKeys([
   [2, 7], [2, 19],
   [16, 7], [16, 19],
-  [7, 2], [7, 24],
-  [11, 2], [11, 24],
+  [7, 3], [7, 23],
+  [11, 3], [11, 23],
 ]);
 
 // Lightning tiles award random power cards and stay symmetric around the center star.
@@ -47,11 +47,12 @@ export const SECRET_POWER = cellKeys([
   [11, 10], [11, 16],
   [13, 7], [13, 19],
   [15, 4], [15, 22],
+  // Additional lightning blocks requested:
   [3, 13], [15, 13],
   [1, 10], [1, 16],
   [17, 10], [17, 16],
-  [1, 5], [1, 21],
-  [17, 5], [17, 21],
+  [1, 6], [1, 20],
+  [17, 6], [17, 20],
   [4, 2], [4, 24],
   [14, 2], [14, 24],
 ]);

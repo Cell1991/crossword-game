@@ -84,200 +84,200 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
   const baseFontSize = 13;
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden" style={{ contain: 'strict' }}>
-      <div ref={layerRef} className="absolute left-0 top-0" style={{ willChange: 'transform' }}>
-        {/* 1. Lightning Power Cells (Restored original /light.png with 3D depth) */}
+    <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+      <div ref={layerRef} className="absolute left-0 top-0">
+        {/* 1. Lightning Power Cells */}
         {[
           ...POWER_CELLS.filter(([r, c]) => !isCellOccupied(r, c)).map(([r, c]) => {
             const alpha = model.getCellAlpha(r, c);
-            return { row: r, col: c, alpha, isEcho: false };
+            return { row: r, col: c, isSolid: true, alpha, isEcho: false };
           }),
-          ...powerEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, alpha: e.alpha, isEcho: true })),
-        ].map(({ row, col, alpha, isEcho }) => {
+          ...powerEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
+        ].map(({ row, col, isSolid, alpha, isEcho }) => {
           if (alpha <= 0.01) return null;
           return (
             <span
               key={`power-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              className="tile-3d-power absolute flex items-center justify-center transition-[opacity] duration-200"
+              className={`absolute border border-cyan-200/75 bg-cyan-400/20 shadow-[inset_0_0_10px_rgba(165,243,252,0.18),0_0_22px_rgba(34,211,238,0.55)] transition-[opacity,filter] duration-300 ${isSolid ? 'board-power-pulse' : ''}`}
               style={{
                 left: `${col * baseCellSize + 1}px`,
                 top: `${row * baseCellSize + 1}px`,
                 width: `${squareSize}px`,
                 height: `${squareSize}px`,
-                borderRadius: isEcho ? '6px' : '5px',
+                borderRadius: isEcho ? '6px' : '4px',
+                animationDelay: `${-((row * 5 + col * 3) % 13) / 10}s`,
                 opacity: alpha,
+                filter: isSolid ? 'brightness(1.15)' : undefined,
               }}
             >
-              <span className="board-lightning-halo absolute left-1/2 top-1/2 h-[60%] w-[60%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+              <span className="board-lightning-halo absolute left-1/2 top-1/2 h-[64%] w-[64%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
               <span className="absolute inset-0 flex items-center justify-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/light.png"
                   alt=""
-                  className="board-lightning-logo h-[72%] w-[72%] object-contain"
+                  className="board-lightning-logo h-[76%] w-[76%] object-contain"
                   style={{ animationDelay: `${-((row * 7 + col * 2) % 11) / 10}s` }}
                 />
               </span>
-              <i className="board-lightning-spark absolute left-[20%] top-[22%] h-1 w-1 rounded-full bg-yellow-100 shadow-[0_0_6px_1px_rgba(253,224,71,0.7)]" style={{ animationDelay: `${-((row + col) % 7) / 10}s` }} />
-              <i className="board-lightning-spark absolute bottom-[20%] right-[20%] h-1 w-1 rounded-full bg-cyan-100 shadow-[0_0_6px_1px_rgba(165,243,252,0.7)]" style={{ animationDelay: `${-((row * 2 + col) % 9) / 10}s` }} />
+              <i className="board-lightning-spark absolute left-[20%] top-[24%] h-1 w-1 rounded-full bg-yellow-100 shadow-[0_0_8px_2px_rgba(253,224,71,0.9)]" style={{ animationDelay: `${-((row + col) % 7) / 10}s` }} />
+              <i className="board-lightning-spark absolute bottom-[20%] right-[20%] h-1 w-1 rounded-full bg-cyan-100 shadow-[0_0_8px_2px_rgba(165,243,252,0.9)]" style={{ animationDelay: `${-((row * 2 + col) % 9) / 10}s` }} />
             </span>
           );
         })}
 
-        {/* 2. Triple Letter Ruby Red Cells (3L) with Flame Depth */}
+        {/* 2. Triple Letter Fire Cells (3L) */}
         {[
           ...TRIPLE_CELLS.filter(([r, c]) => !isCellOccupied(r, c)).map(([r, c]) => {
             const alpha = model.getCellAlpha(r, c);
-            return { row: r, col: c, alpha, isEcho: false };
+            return { row: r, col: c, isSolid: true, alpha, isEcho: false };
           }),
-          ...tripleEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, alpha: e.alpha, isEcho: true })),
-        ].map(({ row, col, alpha, isEcho }) => {
+          ...tripleEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
+        ].map(({ row, col, isSolid, alpha, isEcho }) => {
           if (alpha <= 0.01) return null;
           return (
             <span
               key={`triple-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              className="tile-3d-3l absolute flex items-center justify-center transition-[opacity] duration-200"
+              className={`absolute border border-red-300/60 bg-red-950/20 transition-[opacity,filter] duration-300 ${isSolid ? 'board-triple-aura' : ''}`}
               style={{
                 left: `${col * baseCellSize + 1}px`,
                 top: `${row * baseCellSize + 1}px`,
                 width: `${squareSize}px`,
                 height: `${squareSize}px`,
-                borderRadius: isEcho ? '6px' : '5px',
+                borderRadius: isEcho ? '6px' : '4px',
                 opacity: alpha,
+                filter: isSolid ? 'brightness(1.1)' : undefined,
               }}
             >
-              <span className="board-fire-core absolute inset-[20%] rounded-full bg-rose-400/25" />
+              <span className="board-fire-core absolute inset-[18%] rounded-full bg-red-400/40" />
               <span
-                className="board-premium-label z-10 flex items-center justify-center leading-none text-white"
+                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white"
                 style={{ fontSize: `${baseFontSize}px` }}
               >
-                3<span className="board-premium-letter text-rose-100">L</span>
+                3<span className="board-premium-letter">L</span>
               </span>
             </span>
           );
         })}
 
-        {/* 3. Double Letter Emerald Green Cells (2L) with Mountain Depth */}
+        {/* 3. Double Letter Earth Cells (2L) */}
         {[
           ...DOUBLE_CELLS.filter(([r, c]) => !isCellOccupied(r, c)).map(([r, c]) => {
             const alpha = model.getCellAlpha(r, c);
-            return { row: r, col: c, alpha, isEcho: false };
+            return { row: r, col: c, isSolid: true, alpha, isEcho: false };
           }),
-          ...doubleEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, alpha: e.alpha, isEcho: true })),
-        ].map(({ row, col, alpha, isEcho }) => {
+          ...doubleEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
+        ].map(({ row, col, isSolid, alpha, isEcho }) => {
           if (alpha <= 0.01) return null;
           return (
             <span
               key={`double-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              className="tile-3d-2l absolute flex items-center justify-center transition-[opacity] duration-200"
+              className={`absolute border border-orange-300/45 bg-orange-400/10 transition-[opacity,filter] duration-300 ${isSolid ? 'board-double-aura' : ''}`}
               style={{
                 left: `${col * baseCellSize + 1}px`,
                 top: `${row * baseCellSize + 1}px`,
                 width: `${squareSize}px`,
                 height: `${squareSize}px`,
-                borderRadius: isEcho ? '6px' : '5px',
+                borderRadius: isEcho ? '6px' : '4px',
                 opacity: alpha,
+                filter: isSolid ? 'brightness(1.1)' : undefined,
               }}
             >
-              <span className="board-earth-mountain board-earth-mountain-back absolute inset-x-0 bottom-0 h-[62%]" />
-              <span className="board-earth-mountain board-earth-mountain-front absolute inset-x-0 bottom-0 h-[52%]" />
+              <span className="board-earth-glow absolute inset-[12%] rounded-full" />
+              <span className="board-earth-mountain board-earth-mountain-back absolute inset-x-0 bottom-0 h-[70%]" />
+              <span className="board-earth-mountain board-earth-mountain-front absolute inset-x-0 bottom-0 h-[62%]" />
+              <i className="board-earth-speck absolute left-[22%] top-[27%] h-1 w-1 rounded-full" />
+              <i className="board-earth-speck absolute right-[20%] top-[38%] h-1 w-1 rounded-full [animation-delay:0.7s]" />
               <span
-                className="board-premium-label z-10 flex items-center justify-center leading-none text-white"
+                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white"
                 style={{ fontSize: `${baseFontSize}px` }}
               >
-                2<span className="board-premium-letter text-emerald-100">L</span>
+                2<span className="board-premium-letter">L</span>
               </span>
             </span>
           );
         })}
 
-        {/* 4. Double Word Amethyst Purple Cells (2W) with Crystal Depth */}
+        {/* 4. Double Word Cosmic Violet Cells (2W) */}
         {[
           ...DOUBLE_WORD_CELLS.filter(([r, c]) => !isCellOccupied(r, c)).map(([r, c]) => {
             const alpha = model.getCellAlpha(r, c);
-            return { row: r, col: c, alpha, isEcho: false };
+            return { row: r, col: c, isSolid: true, alpha, isEcho: false };
           }),
-          ...doubleWordEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, alpha: e.alpha, isEcho: true })),
-        ].map(({ row, col, alpha, isEcho }) => {
+          ...doubleWordEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
+        ].map(({ row, col, isSolid, alpha, isEcho }) => {
           if (alpha <= 0.01) return null;
           return (
             <span
               key={`double-word-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              className="tile-3d-2w absolute flex items-center justify-center transition-[opacity] duration-200"
+              className={`absolute border border-purple-400/70 bg-purple-950/30 transition-[opacity,filter] duration-300 ${isSolid ? 'board-double-word-aura' : ''}`}
               style={{
                 left: `${col * baseCellSize + 1}px`,
                 top: `${row * baseCellSize + 1}px`,
                 width: `${squareSize}px`,
                 height: `${squareSize}px`,
-                borderRadius: isEcho ? '6px' : '5px',
+                borderRadius: isEcho ? '6px' : '4px',
                 opacity: alpha,
+                filter: isSolid ? 'brightness(1.15)' : undefined,
               }}
             >
-              <span className="board-cosmic-crystal-back absolute inset-[22%] rounded-sm opacity-60" />
+              <span className="board-cosmic-glow absolute inset-[12%] rounded-full" />
               <span
-                className="board-premium-label z-10 flex items-center justify-center leading-none text-white"
+                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-purple-100"
                 style={{ fontSize: `${baseFontSize}px` }}
               >
-                2<span className="board-premium-letter board-premium-letter-w text-purple-100">W</span>
+                2<span className="board-premium-letter board-premium-letter-w text-purple-200">W</span>
               </span>
             </span>
           );
         })}
 
-        {/* 5. Triple Word Golden Amber Cells (3W) with Solar Depth */}
+        {/* 5. Triple Word Amber / Egg Cells (3W) */}
         {[
           ...TRIPLE_WORD_CELLS.filter(([r, c]) => !isCellOccupied(r, c)).map(([r, c]) => {
             const alpha = model.getCellAlpha(r, c);
-            return { row: r, col: c, alpha, isEcho: false };
+            return { row: r, col: c, isSolid: true, alpha, isEcho: false };
           }),
-          ...tripleWordEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, alpha: e.alpha, isEcho: true })),
-        ].map(({ row, col, alpha, isEcho }) => {
+          ...tripleWordEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
+        ].map(({ row, col, isSolid, alpha, isEcho }) => {
           if (alpha <= 0.01) return null;
           return (
             <span
               key={`triple-word-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              className="tile-3d-3w absolute flex items-center justify-center transition-[opacity] duration-200"
+              className={`absolute border border-amber-400/70 bg-amber-950/30 transition-[opacity,filter] duration-300 ${isSolid ? 'board-triple-word-aura' : ''}`}
               style={{
                 left: `${col * baseCellSize + 1}px`,
                 top: `${row * baseCellSize + 1}px`,
                 width: `${squareSize}px`,
                 height: `${squareSize}px`,
-                borderRadius: isEcho ? '6px' : '5px',
+                borderRadius: isEcho ? '6px' : '4px',
                 opacity: alpha,
+                filter: isSolid ? 'brightness(1.15)' : undefined,
               }}
             >
-              <span className="board-sun-ring absolute inset-[18%] rounded-full opacity-60" />
+              <span className="board-egg-glow absolute inset-[12%] rounded-full" />
               <span
-                className="board-premium-label z-10 flex items-center justify-center leading-none text-white"
+                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-amber-100"
                 style={{ fontSize: `${baseFontSize}px` }}
               >
-                3<span className="board-premium-letter board-premium-letter-w text-yellow-100">W</span>
+                3<span className="board-premium-letter board-premium-letter-w text-amber-200">W</span>
               </span>
             </span>
           );
         })}
 
-        {/* 6. Center Start Star (3D Deep Sapphire with Large Radiant Gold Star) */}
+        {/* 6. Center Start Star */}
         {!isCellOccupied(CENTER_ROW, CENTER_COL) && (
           <span
-            className="tile-3d-center absolute flex items-center justify-center transition-[opacity] duration-200 overflow-hidden"
+            className="absolute border border-amber-300/35 shadow-[0_0_18px_rgba(251,191,36,0.25)] board-center-pulse"
             style={{
               left: `${CENTER_COL * baseCellSize + 1}px`,
               top: `${CENTER_ROW * baseCellSize + 1}px`,
               width: `${squareSize}px`,
               height: `${squareSize}px`,
-              borderRadius: '5px',
+              borderRadius: '4px',
             }}
-          >
-            <span className="board-center-pulse absolute inset-0 rounded-full bg-amber-400/20 blur-[1px]" />
-            <span className="board-gold-spark absolute inset-[15%] rounded-full bg-yellow-200/15" />
-            <span
-              className="relative z-10 text-amber-300 font-black leading-none select-none drop-shadow-[0_0_8px_rgba(251,191,36,0.95)] drop-shadow-[0_0_16px_rgba(245,158,11,0.6)]"
-              style={{ fontSize: `${Math.max(18, Math.round(baseCellSize * 0.74))}px` }}
-            >
-              ★
-            </span>
-          </span>
+          />
         )}
       </div>
     </div>

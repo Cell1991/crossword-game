@@ -37,16 +37,20 @@ async def init_db():
     async with AsyncSessionLocal() as session:
         await _backfill_normalized_state(session)
         await _seed_dictionary(session)
-        await _load_dictionary_from_database(session)
         await _seed_word_definitions(session)
-        await _load_cached_word_definitions(session)
         await session.commit()
 
 
 async def _backfill_normalized_state(session: AsyncSession):
     """Backfill normalized tables once, preserving databases created by older builds."""
-    games = (await session.execute(select(Game))).scalars().all()
-    for game in games:
+    # Fast check: only query games if any unmigrated game exists
+    unmigrated_games = (await session.execute(
+        select(Game).where(Game.board_state != None) # noqa
+    )).scalars().all()
+    if not unmigrated_games:
+        return
+
+    for game in unmigrated_games:
         cell_count = await session.scalar(select(func.count()).select_from(BoardCell).where(BoardCell.game_id == game.id))
         if not cell_count and game.board_state:
             session.add_all([
@@ -73,32 +77,13 @@ async def _backfill_normalized_state(session: AsyncSession):
                 for index, tile in enumerate(game.tile_bag)
             ])
 
-    players = (await session.execute(select(GamePlayer))).scalars().all()
-    for player in players:
-        tile_count = await session.scalar(select(func.count()).select_from(GameTile).where(GameTile.player_id == player.id))
-        if not tile_count and player.rack:
-            session.add_all([
-                GameTile(
-                    id=tile["id"], game_id=player.game_id, player_id=player.id,
-                    location="RACK", position=index, letter=tile["letter"].upper(), value=tile["value"]
-                )
-                for index, tile in enumerate(player.rack)
-            ])
-        card_count = await session.scalar(select(func.count()).select_from(PlayerCard).where(PlayerCard.player_id == player.id))
-        if not card_count and player.cards:
-            session.add_all([PlayerCard(player_id=player.id, card_type=card) for card in player.cards])
-
 
 async def _seed_dictionary(session: AsyncSession):
-    """Copy the configured dictionary into PostgreSQL/SQLite once."""
+    """Copy the configured dictionary into PostgreSQL/SQLite once if table is empty."""
     word_count = await session.scalar(select(func.count()).select_from(DictionaryWord))
     if word_count:
         return
 
-    # A word list can contain hundreds of thousands of entries.  Creating one
-    # ORM object per word keeps all of them in the session until flush, which
-    # can exhaust the container and prevents the API from starting.  Send
-    # compact batches straight to the database instead.
     rows = [
         {"word": word, "word_length": len(word)}
         for word in sorted(dictionary_service._words)
@@ -109,45 +94,24 @@ async def _seed_dictionary(session: AsyncSession):
         await session.execute(insert(DictionaryWord), rows[start:start + batch_size])
 
 
-async def _load_dictionary_from_database(session: AsyncSession):
-    """Use the normalized dictionary table as the runtime source of truth."""
-    await session.flush()
-    words = (await session.execute(select(DictionaryWord.word))).scalars().all()
-    if words:
-        dictionary_service._words = set(words)
-
-
 async def _seed_word_definitions(session: AsyncSession):
-    """Seed offline definitions into PostgreSQL/SQLite if not already present."""
+    """Seed offline definitions into PostgreSQL/SQLite if table is empty."""
     from app.game.offline_definitions import OFFLINE_DEFINITIONS
 
-    existing_words = set((await session.execute(select(WordDefinition.word))).scalars().all())
+    def_count = await session.scalar(select(func.count()).select_from(WordDefinition))
+    if def_count:
+        return
+
     new_rows = []
     for word, data in OFFLINE_DEFINITIONS.items():
-        if word not in existing_words:
-            new_rows.append({
-                "word": word,
-                "phonetic": data.get("phonetic"),
-                "meanings": data.get("meanings", []),
-                "source": "OFFLINE",
-            })
+        new_rows.append({
+            "word": word,
+            "phonetic": data.get("phonetic"),
+            "meanings": data.get("meanings", []),
+            "source": "OFFLINE",
+        })
     if new_rows:
         await session.execute(insert(WordDefinition), new_rows)
-
-
-async def _load_cached_word_definitions(session: AsyncSession):
-    """Pre-load all persisted definitions from database directly into the L1 RAM cache."""
-    from app.services.dictionary_lookup import dictionary_lookup_service
-
-    await session.flush()
-    records = (await session.execute(select(WordDefinition))).scalars().all()
-    for rec in records:
-        dictionary_lookup_service._cache[rec.word] = {
-            "word": rec.word,
-            "found": True,
-            "phonetic": rec.phonetic,
-            "meanings": rec.meanings,
-        }
 
 
 
