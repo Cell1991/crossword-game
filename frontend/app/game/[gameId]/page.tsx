@@ -127,6 +127,7 @@ export default function GamePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
 
   const seatReturningTile = useCallback((tileId: string, targetSlot: number) => {
@@ -326,7 +327,7 @@ export default function GamePage() {
   // The game UI needs the browser session and a game snapshot first. This loading view reads no
   // client-only state, so the server and the client's first paint render it identically (no
   // hydration mismatch) while the session/state fetch that used to show a blank screen resolves.
-  if (!hydrated || !session || sync.loading || !gameState) {
+  if (!hydrated || !session || sync.loading || !gameState || isLeaving) {
     return (
       <div
         className="flex h-screen w-screen items-center justify-center"
@@ -394,15 +395,22 @@ export default function GamePage() {
 
   const handleExit = () => {
     if (isSpectator) {
-      router.push('/');
+      setIsLeaving(true);
+      sessionStore.remove(gameId);
+      router.replace('/');
       return;
     }
     setIsExitModalOpen(true);
   };
 
   const handleConfirmExit = () => {
+    setIsLeaving(true);
     setIsExitModalOpen(false);
-    void leaveGame(gameId, myPlayerId ?? '').finally(() => router.push('/'));
+    sessionStore.remove(gameId);
+    router.replace('/');
+    if (myPlayerId) {
+      void leaveGame(gameId, myPlayerId).catch(() => {});
+    }
   };
 
   return (
@@ -632,6 +640,7 @@ export default function GamePage() {
       <ConfirmExitModal
         isOpen={isExitModalOpen}
         isSpectator={isSpectator}
+        isLeaving={isLeaving}
         onConfirm={handleConfirmExit}
         onClose={() => setIsExitModalOpen(false)}
       />

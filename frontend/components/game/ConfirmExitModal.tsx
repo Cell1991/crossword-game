@@ -6,6 +6,7 @@ import { LogOut, X } from 'lucide-react';
 interface ConfirmExitModalProps {
   isOpen: boolean;
   isSpectator?: boolean;
+  isLeaving?: boolean;
   onConfirm: () => void;
   onClose: () => void;
 }
@@ -13,6 +14,7 @@ interface ConfirmExitModalProps {
 export function ConfirmExitModal({
   isOpen,
   isSpectator = false,
+  isLeaving = false,
   onConfirm,
   onClose,
 }: ConfirmExitModalProps) {
@@ -63,16 +65,18 @@ export function ConfirmExitModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-xl border border-slate-700 bg-slate-800/80 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-slate-300 transition hover:border-slate-600 hover:bg-slate-700/80 hover:text-white active:scale-95"
+            disabled={isLeaving}
+            className="flex-1 rounded-xl border border-slate-700 bg-slate-800/80 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-slate-300 transition hover:border-slate-600 hover:bg-slate-700/80 hover:text-white active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="flex-1 rounded-xl border border-rose-500/50 bg-gradient-to-r from-rose-600 to-red-600 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white shadow-[0_0_20px_rgba(244,63,94,0.4)] transition hover:brightness-110 active:scale-95"
+            disabled={isLeaving}
+            className="flex-1 rounded-xl border border-rose-500/50 bg-gradient-to-r from-rose-600 to-red-600 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white shadow-[0_0_20px_rgba(244,63,94,0.4)] transition hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Leave Game
+            {isLeaving ? 'Leaving...' : 'Leave Game'}
           </button>
         </div>
       </div>

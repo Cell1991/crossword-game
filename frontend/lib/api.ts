@@ -79,6 +79,13 @@ export const sessionStore = {
     if (typeof window === 'undefined') return null;
     const lastId = sessionStorage.getItem('crossword_last_game_id');
     return lastId ? this.get(lastId) : null;
+  },
+  remove(gameId: string) {
+    if (typeof window === 'undefined') return;
+    sessionStorage.removeItem(`crossword_session_${gameId}`);
+    if (sessionStorage.getItem('crossword_last_game_id') === gameId) {
+      sessionStorage.removeItem('crossword_last_game_id');
+    }
   }
 };
 
