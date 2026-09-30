@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 
-const TARGET_VOLUME = 0.25;
+const TARGET_VOLUME = 0.5;
 const INTRO_FADE_MS = 2500;
 const CROSSFADE_S = 6;
 const MUTE_KEY = 'wordx.music.muted';
