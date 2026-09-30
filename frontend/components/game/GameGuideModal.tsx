@@ -13,6 +13,8 @@ import {
   Snowflake,
   RotateCcw,
   Layers,
+  Clock,
+  SkipForward,
 } from 'lucide-react';
 
 interface GameGuideModalProps {
@@ -423,61 +425,127 @@ export function GameGuideModal({
           {/* TAB 3: RULES & GAME MODES */}
           {activeTab === 'rules' && (
             <div className="space-y-4">
-              {/* Game Modes */}
+              {/* Game Modes - Instant Structured Contrast */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] hover:bg-white/[0.05] p-4 transition-all">
-                  <div className="flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-rose-400 fill-rose-400/30" />
-                    <h4 className="text-sm font-semibold text-white">HP Battle Mode</h4>
+                {/* HP Battle */}
+                <div className="rounded-2xl border border-rose-500/25 bg-gradient-to-b from-rose-500/[0.08] to-transparent p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-500/15 text-rose-300">
+                          <Heart className="h-4 w-4 fill-rose-400/40" />
+                        </span>
+                        <span className="text-sm sm:text-base font-bold text-white">HP Battle</span>
+                      </div>
+                      <span className="rounded-full bg-rose-500/15 border border-rose-500/25 px-2.5 py-0.5 text-[10px] font-bold text-rose-300 uppercase tracking-wider">
+                        Survival
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-400 w-16 shrink-0">Goal:</span>
+                        <span className="font-semibold text-white">Last survivor wins</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-400 w-16 shrink-0">Scoring:</span>
+                        <span className="text-rose-200">Word points deal HP damage to all rivals</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed font-normal">
-                    Start with 100 HP. Words deal their points as <span className="text-rose-300 font-medium">damage to all opponents</span>. Last survivor wins!
-                  </p>
                 </div>
 
-                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] hover:bg-white/[0.05] p-4 transition-all">
-                  <div className="flex items-center gap-2">
-                    <Layers className="h-4 w-4 text-indigo-400" />
-                    <h4 className="text-sm font-semibold text-white">Turn Count Mode</h4>
+                {/* Turn Count */}
+                <div className="rounded-2xl border border-indigo-500/25 bg-gradient-to-b from-indigo-500/[0.08] to-transparent p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300">
+                          <Layers className="h-4 w-4" />
+                        </span>
+                        <span className="text-sm sm:text-base font-bold text-white">Turn Count</span>
+                      </div>
+                      <span className="rounded-full bg-indigo-500/15 border border-indigo-500/25 px-2.5 py-0.5 text-[10px] font-bold text-indigo-300 uppercase tracking-wider">
+                        Classic
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-400 w-16 shrink-0">Goal:</span>
+                        <span className="font-semibold text-white">Highest total score wins</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-400 w-16 shrink-0">Rounds:</span>
+                        <span className="text-indigo-200">Fixed turns (no player damage)</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed font-normal">
-                    Compete across fixed rounds (e.g. 7 turns). No HP damage. <span className="text-indigo-300 font-medium">Highest total score wins!</span>
-                  </p>
                 </div>
               </div>
 
-              {/* Special Rules & Mechanics */}
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 sm:p-5 space-y-3">
-                <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-400">
-                  Key Rules & Scoring
-                </h3>
+              {/* Match Rules & Actions - 2x2 Grid of Micro Cards */}
+              <div className="space-y-2.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                  Match Rules & Actions
+                </span>
 
-                <ul className="space-y-2.5 text-xs sm:text-sm text-slate-300">
-                  <li className="flex items-start gap-2.5">
-                    <span className="text-amber-400 font-bold shrink-0 mt-0.5">✦</span>
-                    <div>
-                      <strong className="text-white font-medium">Bingo (+50):</strong> Play all 7 rack tiles in one turn to earn a +50 bonus point boost.
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {/* Rule 1: Bingo Bonus */}
+                  <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] hover:bg-white/[0.04] p-3 sm:p-3.5 transition-all">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-400/15 text-amber-300 border border-amber-400/25">
+                      <Sparkles className="h-4.5 w-4.5" />
                     </div>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="text-amber-400 font-bold shrink-0 mt-0.5">✦</span>
-                    <div>
-                      <strong className="text-white font-medium">Tile Exchange:</strong> Swap any number of tiles from your rack with the bag (uses your turn).
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs sm:text-sm font-bold text-white">Bingo Bonus</span>
+                        <span className="text-[10px] font-extrabold text-amber-300 bg-amber-400/15 px-1.5 py-0.2 rounded border border-amber-400/25">
+                          +50 Pts
+                        </span>
+                      </div>
+                      <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 leading-snug">
+                        Place all 7 rack tiles in one turn
+                      </p>
                     </div>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="text-amber-400 font-bold shrink-0 mt-0.5">✦</span>
-                    <div>
-                      <strong className="text-white font-medium">Pass Turn:</strong> Skip your turn if you cannot or choose not to place tiles.
+                  </div>
+
+                  {/* Rule 2: Tile Exchange */}
+                  <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] hover:bg-white/[0.04] p-3 sm:p-3.5 transition-all">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-400/15 text-sky-300 border border-sky-400/25">
+                      <Repeat2 className="h-4.5 w-4.5" />
                     </div>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="text-amber-400 font-bold shrink-0 mt-0.5">✦</span>
-                    <div>
-                      <strong className="text-white font-medium">Turn Timer:</strong> Automatically passes turn to the next player when the countdown reaches 0.
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs sm:text-sm font-bold text-white">Tile Exchange</span>
+                      <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 leading-snug">
+                        Swap rack tiles with bag (uses turn)
+                      </p>
                     </div>
-                  </li>
-                </ul>
+                  </div>
+
+                  {/* Rule 3: Pass Turn */}
+                  <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] hover:bg-white/[0.04] p-3 sm:p-3.5 transition-all">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-700/40 text-slate-300 border border-slate-600/40">
+                      <SkipForward className="h-4.5 w-4.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs sm:text-sm font-bold text-white">Pass Turn</span>
+                      <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 leading-snug">
+                        Skip if no playable words can be formed
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Rule 4: Turn Timer */}
+                  <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] hover:bg-white/[0.04] p-3 sm:p-3.5 transition-all">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-400/15 text-purple-300 border border-purple-400/25">
+                      <Clock className="h-4.5 w-4.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs sm:text-sm font-bold text-white">Turn Timer</span>
+                      <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 leading-snug">
+                        Auto-passes when countdown hits 0
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
