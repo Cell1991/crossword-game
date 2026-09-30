@@ -296,7 +296,7 @@ export default function HomePage() {
                       onChange={setHpOption}
                       options={[
                         { value: '50', label: '50 HP' },
-                        { value: '100', label: '100 HP (Default)' },
+                        { value: '100', label: '100 HP' },
                         { value: '150', label: '150 HP' },
                         { value: '200', label: '200 HP' },
                         { value: 'custom', label: 'Custom' },
