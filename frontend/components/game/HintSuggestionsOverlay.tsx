@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { HintSuggestion } from '@/lib/types';
-import { Lightbulb, ArrowRight, ArrowDown } from 'lucide-react';
+import { ArrowRight, ArrowDown } from 'lucide-react';
 
 interface HintSuggestionsOverlayProps {
   suggestions: HintSuggestion[];
@@ -21,19 +21,9 @@ export const HintSuggestionsOverlay: React.FC<HintSuggestionsOverlayProps> = ({
   return (
     <div className="relative flex flex-col items-center max-w-[calc(100vw-1rem)] pointer-events-auto animate-in fade-in slide-in-from-top-3 duration-200 select-none mx-auto">
       {/* Self-contained Capsule with permanent rounded corners & hidden scrollbars */}
-      <div className="flex items-center gap-1 sm:gap-2 px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl bg-neutral-950/95 backdrop-blur-2xl border border-amber-500/40 shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(245,158,11,0.2)] text-white max-w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        {/* Header Badge */}
-        <div className="flex items-center gap-1 text-amber-400 font-extrabold text-xs shrink-0 tracking-wider pl-0.5">
-          <div className="p-1 sm:p-1.5 rounded-lg bg-amber-500/20 border border-amber-400/40 shadow-[0_0_8px_rgba(245,158,11,0.35)]">
-            <Lightbulb className="w-3.5 h-3.5 animate-pulse text-amber-300" />
-          </div>
-          <span className="hidden md:inline uppercase text-[10px] font-black text-amber-300/90 tracking-widest">
-            HINTS
-          </span>
-        </div>
-
+      <div className="flex items-center gap-1.5 sm:gap-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-2xl bg-neutral-950/95 backdrop-blur-2xl border border-amber-500/40 shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(245,158,11,0.2)] text-white max-w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {/* 3 Suggestion Pills */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {suggestions.map((s, idx) => {
             const isActive = idx === activeIndex;
 
@@ -42,7 +32,7 @@ export const HintSuggestionsOverlay: React.FC<HintSuggestionsOverlayProps> = ({
                 key={idx}
                 type="button"
                 onClick={() => onSelectIndex(idx)}
-                className={`group relative shrink-0 flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl font-bold transition-all duration-150 border cursor-pointer ${
+                className={`group relative shrink-0 flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl font-bold transition-all duration-150 border cursor-pointer ${
                   isActive
                     ? 'bg-gradient-to-r from-amber-500/35 via-yellow-500/25 to-amber-500/35 border-amber-400 text-amber-50 shadow-[0_0_12px_rgba(245,158,11,0.35)]'
                     : 'bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 hover:border-amber-400/40 hover:text-white'

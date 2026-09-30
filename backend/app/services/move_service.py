@@ -283,7 +283,7 @@ class MoveService:
         player.score += score
 
         card_awarded = None
-        if any((pt.row, pt.col) in Board.SECRET_POWER for pt in placed_tiles):
+        if any(Board.is_power_cell(pt.row, pt.col) for pt in placed_tiles):
             cards = list(player.cards or [])
             if len(cards) < 3:
                 card_awarded = random.choice(cls.card_pool(game))
