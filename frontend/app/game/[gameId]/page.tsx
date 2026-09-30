@@ -5,6 +5,7 @@ export const dynamicParams = true;
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { Bug } from 'lucide-react';
 import { commitMove, exchangeTiles, expireTurn, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
 import { buildRackSlots } from '@/lib/rack';
 import { GameState, Tile, Player } from '@/lib/types';
@@ -126,6 +127,7 @@ export default function GamePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+  const [isDebugOpen, setIsDebugOpen] = useState(false);
 
   const seatReturningTile = useCallback((tileId: string, targetSlot: number) => {
     seatReturning(tileId, targetSlot, pendingTileIds);
@@ -391,6 +393,24 @@ export default function GamePage() {
         maxTurns={gameState.max_turns}
         onExit={handleExit}
         onOpenInfo={() => setIsMobileInfoOpen(true)}
+        debugSlot={
+          isDebug ? (
+            <button
+              type="button"
+              onClick={() => setIsDebugOpen(prev => !prev)}
+              className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-bold transition-all cursor-pointer active:scale-95 shrink-0 select-none ${
+                isDebugOpen
+                  ? 'border-rose-400 bg-rose-950/80 text-rose-200 shadow-[0_0_12px_rgba(244,63,94,0.45)] ring-1 ring-rose-400/50'
+                  : 'border-rose-500/40 bg-rose-950/40 text-rose-300 hover:bg-rose-900/60 hover:text-white hover:border-rose-400/70 shadow-[0_0_8px_rgba(244,63,94,0.2)]'
+              }`}
+              title="Toggle Sandbox Developer Tools"
+              aria-label="Toggle Sandbox Developer Tools"
+            >
+              <Bug className="h-3.5 w-3.5 text-rose-400 drop-shadow-[0_0_4px_#fb7185] shrink-0" />
+              <span className="tracking-wide">Debug</span>
+            </button>
+          ) : undefined
+        }
         timer={(
           <TurnTimer
             turnTimeLimit={gameState.turn_time_limit}
@@ -589,6 +609,8 @@ export default function GamePage() {
           players={gameState.players ?? []}
           sessions={debugSessions}
           activePlayerId={myPlayerId}
+          isOpen={isDebugOpen}
+          onClose={() => setIsDebugOpen(false)}
           onSwitchPlayer={switchSession}
           onGameState={sync.setGameState}
         />

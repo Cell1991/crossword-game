@@ -3,25 +3,27 @@
 import React, { useRef, useState } from 'react';
 import { Player, GameState, CARD_TYPES } from '@/lib/types';
 import { debugSetHp, debugSetRackTile, debugGrantCard, StoredSession } from '@/lib/api';
-import { Bug, X, Sparkles, Heart, Shield, Zap, Snowflake, RefreshCw, Flame, Lightbulb, Trash2, ArrowLeftRight } from 'lucide-react';
+import { Bug, X, Sparkles, Heart, Shield, Zap, Snowflake, Lightbulb, Trash2, ArrowLeftRight, ChevronDown, Check } from 'lucide-react';
 
 interface DebugPanelProps {
   gameId: string;
   players: Player[];
   sessions: StoredSession[];
   activePlayerId: string | null;
+  isOpen: boolean;
+  onClose: () => void;
   onSwitchPlayer: (session: StoredSession) => void;
   onGameState: (state: GameState) => void;
 }
 
-const CARD_QUICK_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  HINT: { label: 'Hint', icon: <Lightbulb className="w-3 h-3 text-amber-300" />, color: 'border-amber-500/40 bg-amber-950/50 text-amber-200 hover:bg-amber-900/60' },
-  SHIELD: { label: 'Shield', icon: <Shield className="w-3 h-3 text-blue-300" />, color: 'border-blue-500/40 bg-blue-950/50 text-blue-200 hover:bg-blue-900/60' },
-  HEAL: { label: 'Heal', icon: <Heart className="w-3 h-3 text-rose-300" />, color: 'border-rose-500/40 bg-rose-950/50 text-rose-200 hover:bg-rose-900/60' },
-  FREEZE_TILE: { label: 'Freeze', icon: <Snowflake className="w-3 h-3 text-cyan-300" />, color: 'border-cyan-500/40 bg-cyan-950/50 text-cyan-200 hover:bg-cyan-900/60' },
-  DOUBLE_DAMAGE: { label: 'Word ×2', icon: <Zap className="w-3 h-3 text-purple-300" />, color: 'border-purple-500/40 bg-purple-950/50 text-purple-200 hover:bg-purple-900/60' },
-  SPY_SWAP: { label: 'Swap', icon: <ArrowLeftRight className="w-3 h-3 text-emerald-300" />, color: 'border-emerald-500/40 bg-emerald-950/50 text-emerald-200 hover:bg-emerald-900/60' },
-  DESTROY_TILE: { label: 'Clear', icon: <Trash2 className="w-3 h-3 text-orange-300" />, color: 'border-orange-500/40 bg-orange-950/50 text-orange-200 hover:bg-orange-900/60' },
+const CARD_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string; desc: string }> = {
+  HINT: { label: 'Hint', icon: <Lightbulb className="w-3.5 h-3.5 text-amber-300" />, color: 'text-amber-300', desc: 'Reveal top 3 moves' },
+  SHIELD: { label: 'Shield', icon: <Shield className="w-3.5 h-3.5 text-blue-300" />, color: 'text-blue-300', desc: 'Block attack/swap' },
+  HEAL: { label: 'Heal', icon: <Heart className="w-3.5 h-3.5 text-rose-300" />, color: 'text-rose-300', desc: 'Restore +1 HP' },
+  FREEZE_TILE: { label: 'Freeze Word', icon: <Snowflake className="w-3.5 h-3.5 text-cyan-300" />, color: 'text-cyan-300', desc: 'Lock board tile' },
+  DOUBLE_DAMAGE: { label: 'Word ×2', icon: <Zap className="w-3.5 h-3.5 text-purple-300" />, color: 'text-purple-300', desc: 'Double damage' },
+  SPY_SWAP: { label: 'Swap Word', icon: <ArrowLeftRight className="w-3.5 h-3.5 text-emerald-300" />, color: 'text-emerald-300', desc: 'Swap with rival' },
+  DESTROY_TILE: { label: 'Clear Word', icon: <Trash2 className="w-3.5 h-3.5 text-orange-300" />, color: 'text-orange-300', desc: 'Destroy tile' },
 };
 
 export const DebugPanel: React.FC<DebugPanelProps> = ({
@@ -29,12 +31,15 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
   players,
   sessions,
   activePlayerId,
+  isOpen,
+  onClose,
   onSwitchPlayer,
   onGameState,
 }) => {
-  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [selectedCards, setSelectedCards] = useState<Record<string, string>>({});
+  const [openDropdownPlayerId, setOpenDropdownPlayerId] = useState<string | null>(null);
   const hpInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const run = async (fn: () => Promise<GameState>) => {
@@ -72,25 +77,15 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
     void run(() => debugSetRackTile(gameId, playerId, slot, letter));
   };
 
-  const handleGrantCard = (playerId: string, card: string) => {
+  const handleGrantCard = (playerId: string) => {
+    const card = selectedCards[playerId] || CARD_TYPES[0];
     void run(() => debugGrantCard(gameId, playerId, card));
   };
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="fixed top-3.5 right-14 sm:right-16 z-[70] flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/90 hover:bg-rose-950/70 border border-rose-500/60 text-rose-300 hover:text-white shadow-[0_0_16px_rgba(244,63,94,0.4)] ring-1 ring-rose-500/30 backdrop-blur-xl text-xs font-black tracking-wider uppercase transition-all duration-200 cursor-pointer active:scale-95"
-        title="Open Developer Debug Console"
-      >
-        <Bug className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-        <span>Debug</span>
-      </button>
-    );
-  }
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed top-14 right-3 sm:right-4 z-[200] w-[22rem] max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-4.5rem)] flex flex-col rounded-2xl border border-rose-500/60 bg-slate-950/95 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(244,63,94,0.25)] text-slate-200 text-xs overflow-hidden select-none animate-in fade-in slide-in-from-top-2 duration-150 ring-1 ring-rose-500/20">
+    <div className="fixed top-14 right-3 sm:right-4 z-[200] w-[22.5rem] max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-4.5rem)] flex flex-col rounded-2xl border border-rose-500/60 bg-slate-950/95 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(244,63,94,0.25)] text-slate-200 text-xs overflow-hidden select-none animate-in fade-in slide-in-from-top-2 duration-150 ring-1 ring-rose-500/20">
       {/* Console Top Header */}
       <div className="flex items-center justify-between border-b border-rose-500/30 bg-gradient-to-r from-rose-950/90 via-slate-950/90 to-rose-950/90 px-3.5 py-2.5">
         <div className="flex items-center gap-2">
@@ -103,7 +98,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
           </div>
         </div>
         <button
-          onClick={() => setOpen(false)}
+          onClick={() => { onClose(); setOpenDropdownPlayerId(null); }}
           className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           title="Close Debug Console"
         >
@@ -122,6 +117,9 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
         {players.map(player => {
           const session = sessions.find(s => s.playerId === player.id);
           const isActing = player.id === activePlayerId;
+          const currentSelectedCard = selectedCards[player.id] || CARD_TYPES[0];
+          const selectedCardMeta = CARD_CONFIG[currentSelectedCard] || { label: currentSelectedCard, icon: <Sparkles className="w-3.5 h-3.5 text-cyan-300" />, color: 'text-cyan-300', desc: '' };
+          const isDropdownOpen = openDropdownPlayerId === player.id;
 
           return (
             <div
@@ -216,29 +214,79 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
                 </div>
               </div>
 
-              {/* Instant 1-Click Power Card Spawner */}
+              {/* Styled Power Card Dropdown Spawner */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Instant Card Spawner</span>
-                  <span className="text-[9px] font-mono text-cyan-400">1-Click</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Spawn Power Card</span>
+                  <span className="text-[9px] font-mono text-cyan-400">Instant</span>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {CARD_TYPES.map(card => {
-                    const cfg = CARD_QUICK_CONFIG[card] || { label: card, icon: <Sparkles className="w-3 h-3" />, color: 'border-slate-700 bg-slate-800 text-slate-300' };
-                    return (
-                      <button
-                        key={card}
-                        type="button"
-                        disabled={busy}
-                        onClick={() => handleGrantCard(player.id, card)}
-                        className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-bold transition-all duration-100 cursor-pointer shadow-xs active:scale-90 ${cfg.color}`}
-                        title={`Instantly spawn ${cfg.label} card`}
-                      >
-                        {cfg.icon}
-                        <span>+{cfg.label}</span>
-                      </button>
-                    );
-                  })}
+
+                <div className="relative flex items-center gap-1.5">
+                  {/* Custom Styled Select Trigger */}
+                  <div className="relative flex-1">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => setOpenDropdownPlayerId(isDropdownOpen ? null : player.id)}
+                      className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl bg-slate-950/80 border border-slate-700/80 hover:border-cyan-400/60 text-slate-100 text-xs font-bold transition-all cursor-pointer shadow-xs focus:ring-1 focus:ring-cyan-400/50"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="p-1 rounded-md bg-slate-800 border border-slate-700">
+                          {selectedCardMeta.icon}
+                        </div>
+                        <span className={`truncate font-extrabold ${selectedCardMeta.color}`}>{selectedCardMeta.label}</span>
+                      </div>
+                      <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-cyan-400' : ''}`} />
+                    </button>
+
+                    {/* Dropdown Options Menu */}
+                    {isDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-xl border border-slate-700 bg-slate-950/98 backdrop-blur-2xl shadow-2xl p-1 flex flex-col gap-0.5 animate-in fade-in zoom-in-95 duration-100 max-h-48 overflow-y-auto [scrollbar-width:none]">
+                        {CARD_TYPES.map(card => {
+                          const meta = CARD_CONFIG[card] || { label: card, icon: <Sparkles className="w-3 h-3 text-cyan-300" />, color: 'text-cyan-300', desc: '' };
+                          const isSelected = card === currentSelectedCard;
+
+                          return (
+                            <button
+                              key={card}
+                              type="button"
+                              onClick={() => {
+                                setSelectedCards(prev => ({ ...prev, [player.id]: card }));
+                                setOpenDropdownPlayerId(null);
+                              }}
+                              className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-cyan-950/70 border border-cyan-500/50 text-white font-black'
+                                  : 'hover:bg-slate-800/80 text-slate-300 hover:text-white font-medium'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className="p-1 rounded bg-slate-900 border border-slate-800">
+                                  {meta.icon}
+                                </div>
+                                <div className="flex flex-col items-start">
+                                  <span className={`font-bold text-[11px] ${meta.color}`}>{meta.label}</span>
+                                  <span className="text-[9px] text-slate-500">{meta.desc}</span>
+                                </div>
+                              </div>
+                              {isSelected && <Check className="w-3.5 h-3.5 text-cyan-400 stroke-[3]" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Grant Action Button */}
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => handleGrantCard(player.id)}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 hover:brightness-110 active:scale-95 text-slate-950 font-black text-xs uppercase tracking-wider shadow-[0_0_14px_rgba(6,182,212,0.45)] transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Grant</span>
+                  </button>
                 </div>
 
                 {/* Hand Cards Tags */}
@@ -246,7 +294,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
                   <div className="flex items-center gap-1 flex-wrap mt-0.5 pt-1 border-t border-slate-800">
                     <span className="text-[9px] font-bold text-slate-500 uppercase">Hand:</span>
                     {(player.cards ?? []).map((card, idx) => {
-                      const cfg = CARD_QUICK_CONFIG[card];
+                      const cfg = CARD_CONFIG[card];
                       return (
                         <span
                           key={idx}

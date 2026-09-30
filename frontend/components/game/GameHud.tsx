@@ -21,6 +21,7 @@ interface GameHudProps {
   onOpenInfo: () => void;
   /** The turn countdown, rendered by its own component so its tick stays local. */
   timer: React.ReactNode;
+  debugSlot?: React.ReactNode;
 }
 
 /** Top HUD. On a phone it wraps: controls and counters on the first row, the turn banner below. */
@@ -38,6 +39,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   onExit,
   onOpenInfo,
   timer,
+  debugSlot,
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -125,11 +127,12 @@ export const GameHud: React.FC<GameHudProps> = ({
           </button>
         </div>
 
-        {/* Right: spectators, desktop timer, desktop TurnBanner, and Fullscreen button */}
+        {/* Right: spectators, debug button, desktop timer, desktop TurnBanner, and Fullscreen button */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
           {spectatorCount > 0 && (
             <span className="whitespace-nowrap text-xs text-slate-400" title="Spectators watching">👁 {spectatorCount}</span>
           )}
+          {debugSlot}
           <div className="hidden lg:flex items-center gap-2">
             {timer}
             <TurnBanner
