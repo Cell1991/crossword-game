@@ -232,8 +232,8 @@ export function GameGuideModal({
               {/* 4. Center Star Cell */}
               <div className="flex items-start gap-3.5 rounded-2xl border border-slate-800/90 bg-slate-900/50 hover:bg-slate-900/70 p-3.5 sm:p-4 transition-colors">
                 {/* Exact Center Star from Board */}
-                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-amber-300/60 bg-[#1e1b4b] shadow-[0_0_16px_rgba(251,191,36,0.3)] board-center-pulse overflow-hidden">
-                  <span className="text-2xl font-black text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] select-none">
+                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-amber-300/70 bg-[#1e1b4b] shadow-[0_0_16px_rgba(251,191,36,0.35)] board-center-pulse overflow-hidden">
+                  <span className="text-[39px] leading-none font-sans text-[#fbbf24] drop-shadow-[0_0_10px_rgba(251,191,36,0.85)] select-none">
                     ★
                   </span>
                 </div>
