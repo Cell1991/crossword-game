@@ -196,11 +196,11 @@ export default function LobbyPage() {
 
           {players.length < 2 && (
             <div className="flex items-center justify-center gap-2 mt-4 select-none">
-              <span className="text-amber-400 text-xs sm:text-sm animate-pulse">✨</span>
+              <span className="text-amber-300 text-xs sm:text-sm slow-twinkle">✨</span>
               <p className="text-center font-bold text-xs sm:text-sm tracking-wide gold-shimmer-text">
                 Waiting for other players to join...
               </p>
-              <span className="text-amber-400 text-xs sm:text-sm animate-pulse delay-150">✨</span>
+              <span className="text-amber-300 text-xs sm:text-sm slow-twinkle-delayed">✨</span>
             </div>
           )}
         </div>

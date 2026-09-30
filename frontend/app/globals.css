@@ -315,37 +315,48 @@ body {
 
 @keyframes gold-shimmer {
   0% {
-    background-position: -200% center;
+    background-position: 200% center;
   }
   100% {
-    background-position: 200% center;
+    background-position: -200% center;
   }
 }
 
-@keyframes gold-glow-pulse {
+@keyframes slow-twinkle {
   0%, 100% {
-    filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.45)) drop-shadow(0 0 14px rgba(245, 158, 11, 0.25));
-    opacity: 0.92;
+    opacity: 0.35;
+    transform: scale(0.9);
   }
   50% {
-    filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.85)) drop-shadow(0 0 24px rgba(245, 158, 11, 0.55));
     opacity: 1;
+    transform: scale(1.08);
   }
+}
+
+.slow-twinkle {
+  display: inline-block;
+  animation: slow-twinkle 4.5s ease-in-out infinite;
+}
+
+.slow-twinkle-delayed {
+  display: inline-block;
+  animation: slow-twinkle 4.5s ease-in-out infinite 2.25s;
 }
 
 .gold-shimmer-text {
   background: linear-gradient(
-    90deg,
+    110deg,
     #f59e0b 0%,
-    #fbbf24 20%,
-    #ffffff 50%,
-    #fbbf24 80%,
+    #fbbf24 35%,
+    #fffdf0 50%,
+    #fbbf24 65%,
     #f59e0b 100%
   );
-  background-size: 200% auto;
+  background-size: 250% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: gold-shimmer 3s linear infinite, gold-glow-pulse 2.2s ease-in-out infinite;
+  animation: gold-shimmer 7s ease-in-out infinite;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 3px rgba(245, 158, 11, 0.2));
 }
 
 .board-premium-letter { margin-left: 0.12em; }
