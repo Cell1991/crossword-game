@@ -156,21 +156,29 @@ export default function LobbyPage() {
 
       <div className="relative z-10 w-full max-w-lg flex flex-col items-center gap-6">
         {/* Header */}
-        <div className="text-center">
-          <Image
-            src="/wordx-icon-256.png?v=20260915"
-            alt="WordX logo"
-            width={72}
-            height={72}
-            priority
-            className="mx-auto mb-2 h-[72px] w-[72px] object-contain drop-shadow-2xl"
-          />
-          <h1 className="text-3xl font-black text-white tracking-tight">
-            Word<span className="text-amber-400">X</span>
+        <div className="relative text-center flex flex-col items-center">
+          {/* 3D Cube Logo with glowing halo */}
+          <div className="relative mb-2 flex items-center justify-center">
+            <div className="pointer-events-none absolute -inset-3 rounded-full bg-gradient-to-tr from-indigo-500/30 via-amber-400/20 to-amber-500/35 blur-xl hero-glow-breathe" />
+            <div className="relative hero-logo-float transition-transform duration-300 hover:scale-105">
+              <Image
+                src="/wordx-icon-256.png?v=20260915"
+                alt="WordX logo"
+                width={76}
+                height={76}
+                priority
+                className="h-[72px] w-[72px] object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.55)] drop-shadow-[0_0_20px_rgba(245,158,11,0.35)]"
+              />
+            </div>
+          </div>
+          <h1 className="relative text-3xl sm:text-4xl font-black tracking-[-0.03em] leading-none drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]">
+            <span className="bg-gradient-to-b from-white via-slate-100 to-slate-300 bg-clip-text text-transparent [text-shadow:0_2px_12px_rgba(255,255,255,0.25)]">
+              Word
+            </span>
+            <span className="relative inline-block bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_22px_rgba(245,158,11,0.85)] ml-0.5">
+              X
+            </span>
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            {isHost ? 'Share the PIN and start when ready!' : 'Waiting for host to start the game...'}
-          </p>
         </div>
 
         {/* PIN Display */}
@@ -187,9 +195,13 @@ export default function LobbyPage() {
           <PlayerList players={players} myPlayerId={myPlayerId} />
 
           {players.length < 2 && (
-            <p className="text-center text-slate-500 text-sm mt-4">
-              Waiting for other players to join... {isHost && '(or start now to play solo)'}
-            </p>
+            <div className="flex items-center justify-center gap-2 mt-4 select-none">
+              <span className="text-amber-400 text-xs sm:text-sm animate-pulse">✨</span>
+              <p className="text-center font-bold text-xs sm:text-sm tracking-wide gold-shimmer-text">
+                Waiting for other players to join...
+              </p>
+              <span className="text-amber-400 text-xs sm:text-sm animate-pulse delay-150">✨</span>
+            </div>
           )}
         </div>
 

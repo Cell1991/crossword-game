@@ -313,6 +313,41 @@ body {
   animation: hero-glow-breathe 3.5s ease-in-out infinite;
 }
 
+@keyframes gold-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes gold-glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.45)) drop-shadow(0 0 14px rgba(245, 158, 11, 0.25));
+    opacity: 0.92;
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.85)) drop-shadow(0 0 24px rgba(245, 158, 11, 0.55));
+    opacity: 1;
+  }
+}
+
+.gold-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #f59e0b 0%,
+    #fbbf24 20%,
+    #ffffff 50%,
+    #fbbf24 80%,
+    #f59e0b 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gold-shimmer 3s linear infinite, gold-glow-pulse 2.2s ease-in-out infinite;
+}
+
 .board-premium-letter { margin-left: 0.12em; }
 
 @media (prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse) {
