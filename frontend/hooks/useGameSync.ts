@@ -182,10 +182,29 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       case 'PLAYER_RECONNECTED':
       case 'PLAYER_DISCONNECTED':
       case 'EFFECT_PENDING':
-      case 'EFFECT_RESOLVED':
-      case 'REMATCH_CREATED':
         loadGameState();
         break;
+      case 'EFFECT_RESOLVED': {
+        if (event.payload?.applied && typeof event.payload.applied === 'object') {
+          const applied = event.payload.applied as Record<string, number>;
+          replaceGameState(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              pending_effect: null,
+              players: prev.players.map(p => {
+                const dmg = applied[p.id];
+                if (dmg && dmg > 0) {
+                  return { ...p, hp: Math.max(0, p.hp - dmg) };
+                }
+                return p;
+              }),
+            };
+          });
+        }
+        loadGameState();
+        break;
+      }
     }
   }, [flashInfo, loadGameState, myPlayerId, players, replaceGameState]);
 

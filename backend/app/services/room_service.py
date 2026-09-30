@@ -8,7 +8,6 @@ from app.core.config import settings
 from app.core.security import generate_game_pin, generate_session_token
 from app.database.models import GameRoom, Game, GamePlayer, get_utc_now
 from app.game.tiles import TileService
-from app.database.state import replace_game_tiles
 from app.websocket.connection_manager import manager
 
 class RoomService:
@@ -23,15 +22,7 @@ class RoomService:
         max_turns: int | None = None,
         starting_hp: int | None = None,
     ) -> tuple[GameRoom, Game, GamePlayer]:
-        # Generate unique 6-digit PIN
-        for _ in range(10):
-            pin = generate_game_pin()
-            existing = await db.execute(select(GameRoom).where(GameRoom.game_pin == pin))
-            if not existing.scalar_one_or_none():
-                break
-        else:
-            raise HTTPException(status_code=500, detail="Could not generate unique game PIN")
-
+        pin = generate_game_pin()
         room_id = str(uuid.uuid4())
         host_id = str(uuid.uuid4())
         session_token = generate_session_token()
@@ -79,26 +70,27 @@ class RoomService:
         db.add(game)
         db.add(host_player)
         await db.flush()
-        await replace_game_tiles(db, room_id, tile_bag, [host_player])
 
         return room, game, host_player
 
     @staticmethod
     async def join_room(db: AsyncSession, game_pin: str, player_name: str) -> tuple[GameRoom, Game, GamePlayer]:
-        stmt = select(GameRoom).where(GameRoom.game_pin == game_pin)
-        res = await db.execute(stmt)
-        room = res.scalar_one_or_none()
-
-        if not room:
+        stmt = (
+            select(GameRoom, GamePlayer)
+            .outerjoin(GamePlayer, GamePlayer.game_id == GameRoom.id)
+            .where(GameRoom.game_pin == game_pin)
+            .order_by(GamePlayer.turn_order)
+        )
+        rows = (await db.execute(stmt)).all()
+        if not rows:
             raise HTTPException(status_code=404, detail="Invalid Game PIN: Room not found")
 
+        room = rows[0][0]
         if room.status != "WAITING":
             raise HTTPException(status_code=400, detail="Game has already started or finished")
 
         # Check existing players
-        stmt_players = select(GamePlayer).where(GamePlayer.game_id == room.id)
-        res_players = await db.execute(stmt_players)
-        existing_players = res_players.scalars().all()
+        existing_players = [row[1] for row in rows if row[1] is not None]
 
         if len(existing_players) >= settings.MAX_PLAYERS:
             spectator_count = manager.spectator_count(room.id)
@@ -130,10 +122,10 @@ class RoomService:
         db.add(new_player)
         await db.flush()
 
-        stmt_game = select(Game).where(Game.id == room.id)
-        game = (await db.execute(stmt_game)).scalar_one()
+        # Shared PK between GameRoom and Game avoids redundant select(Game) network roundtrip
+        stub_game = type("StubGame", (), {"id": room.id})()
 
-        return room, game, new_player
+        return room, stub_game, new_player
 
     @staticmethod
     async def leave_room(db: AsyncSession, game_pin: str, player_id: str) -> GameRoom:
@@ -207,23 +199,37 @@ class RoomService:
 
     @staticmethod
     async def get_room_details(db: AsyncSession, game_pin: str) -> tuple[GameRoom, list[GamePlayer]]:
-        stmt = select(GameRoom).where(GameRoom.game_pin == game_pin)
-        res = await db.execute(stmt)
-        room = res.scalar_one_or_none()
-        if not room:
+        stmt = (
+            select(GameRoom, GamePlayer)
+            .outerjoin(GamePlayer, GamePlayer.game_id == GameRoom.id)
+            .where(GameRoom.game_pin == game_pin)
+            .order_by(GamePlayer.turn_order)
+        )
+        rows = (await db.execute(stmt)).all()
+        if not rows:
             raise HTTPException(status_code=404, detail="Room not found")
 
-        stmt_players = select(GamePlayer).where(GamePlayer.game_id == room.id).order_by(GamePlayer.turn_order)
-        players = (await db.execute(stmt_players)).scalars().all()
+        room = rows[0][0]
+        players = [row[1] for row in rows if row[1] is not None]
 
-        return room, list(players)
+        return room, players
 
     @staticmethod
     async def start_game(db: AsyncSession, room_id: str, host_player_id: str) -> Game:
-        stmt = select(GameRoom).where(GameRoom.id == room_id)
-        room = (await db.execute(stmt)).scalar_one_or_none()
-        if not room:
+        stmt = (
+            select(GameRoom, Game, GamePlayer)
+            .join(Game, Game.id == GameRoom.id)
+            .outerjoin(GamePlayer, GamePlayer.game_id == GameRoom.id)
+            .where(GameRoom.id == room_id)
+            .order_by(GamePlayer.turn_order)
+        )
+        rows = (await db.execute(stmt)).all()
+        if not rows:
             raise HTTPException(status_code=404, detail="Room not found")
+
+        room = rows[0][0]
+        game = rows[0][1]
+        players = [row[2] for row in rows if row[2] is not None]
 
         if room.host_player_id != host_player_id:
             raise HTTPException(status_code=403, detail="Only the host can start the game")
@@ -231,17 +237,10 @@ class RoomService:
         if room.status != "WAITING":
             raise HTTPException(status_code=400, detail="Game has already started")
 
-        stmt_players = select(GamePlayer).where(GamePlayer.game_id == room.id).order_by(GamePlayer.turn_order)
-        players = (await db.execute(stmt_players)).scalars().all()
         if len(players) < settings.MIN_PLAYERS:
             raise HTTPException(status_code=400, detail=f"At least {settings.MIN_PLAYERS} players are needed to start")
 
         # Deal starting rack to each player
-        stmt_game = select(Game).where(Game.id == room.id)
-        game = (await db.execute(stmt_game)).scalar_one()
-
-        # Base starting HP, +20 per player beyond the first two (a 4-player free-for-all takes damage
-        # from three opponents each round, so a flat base would knock players out too fast).
         base_hp = room.starting_hp if room.starting_hp is not None else 100
         starting_hp = base_hp + max(0, len(players) - 2) * 20
         bag = list(game.tile_bag)
@@ -259,8 +258,6 @@ class RoomService:
         room.status = "PLAYING"
         room.started_at = get_utc_now()
         game.turn_started_at = get_utc_now()
-
-        await replace_game_tiles(db, game.id, bag, players)
 
         await db.flush()
         return game

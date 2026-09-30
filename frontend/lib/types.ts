@@ -260,6 +260,9 @@ export interface WebSocketEvent {
     card?: string;
     /** MOVE_COMMITTED: the private-card reveal animation follows this event. */
     cardAwarded?: string | null;
+    /** EFFECT_RESOLVED: HP damage applied per player */
+    applied?: Record<string, number>;
+    [key: string]: unknown;
   };
   timestamp: string;
 }

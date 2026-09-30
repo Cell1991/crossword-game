@@ -195,8 +195,8 @@ class MoveService:
         if player.hp <= 0 or player.connection_status == "OFFLINE":
             raise HTTPException(status_code=403, detail="This player cannot play")
 
-        normalized_board = await board_state(db, game_id)
-        normalized_rack = await player_rack(db, player.id)
+        normalized_board = game.board_state if (game.board_state is not None and isinstance(game.board_state, dict)) else await board_state(db, game_id)
+        normalized_rack = player.rack if (player.rack is not None and isinstance(player.rack, list)) else await player_rack(db, player.id)
         # Check tile ownership
         owns_tiles, err_ownership = cls._verify_tile_ownership(normalized_rack, placed_tiles)
         if not owns_tiles:
@@ -247,7 +247,6 @@ class MoveService:
                 "turn_number": game.turn_number
             }
         game.board_state = updated_board
-        await replace_board_state(db, game.id, updated_board)
 
         # Remove placed tiles from player rack
         remaining_rack = list(normalized_rack)
@@ -275,7 +274,7 @@ class MoveService:
 
         # Draw replacement tiles from tile bag
         tiles_needed = len(placed_tiles)
-        bag = await bag_tiles(db, game.id)
+        bag = list(game.tile_bag) if (game.tile_bag is not None and isinstance(game.tile_bag, list)) else await bag_tiles(db, game.id)
         drawn_tiles, remaining_bag = TileService.draw_tiles(bag, tiles_needed)
         remaining_rack.extend(drawn_tiles)
         player.rack = remaining_rack
@@ -291,7 +290,6 @@ class MoveService:
                 card_awarded = random.choice(cls.card_pool(game))
                 cards.append(card_awarded)
                 player.cards = cards
-                await replace_player_cards(db, player.id, cards)
 
         words_formed = cls._words_formed(words, breakdown)
 
@@ -317,7 +315,6 @@ class MoveService:
             held_cards = list(player.cards or [])
             held_cards.remove("FREEZE_TILE")
             player.cards = held_cards
-            await replace_player_cards(db, player.id, held_cards)
             turns_to_block = max(1, len(GameService.eligible_players(all_players)) - 1)
             game.frozen_tile = {
                 "row": freeze_target.row, "col": freeze_target.col,
@@ -356,7 +353,6 @@ class MoveService:
             game.turn_started_at = get_utc_now()
 
         await db.flush()
-        await replace_game_tiles(db, game.id, game.tile_bag, all_players)
 
         res = CommitMoveResponse(
             success=True,

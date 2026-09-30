@@ -237,8 +237,8 @@ class GameService:
 
         player_outs = []
         for p in players:
-            normalized_rack = await player_rack(db, p.id)
-            normalized_cards = await player_cards(db, p.id)
+            normalized_rack = p.rack if (p.rack is not None and isinstance(p.rack, list)) else []
+            normalized_cards = p.cards if (p.cards is not None and isinstance(p.cards, list)) else []
             is_mine = bool(requesting_player_id and p.id == requesting_player_id)
             p_rack = None
             if reveal_all or is_mine:

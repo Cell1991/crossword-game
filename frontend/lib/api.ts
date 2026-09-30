@@ -58,6 +58,10 @@ export interface StoredSession {
   gamePin?: string;
   /** Watching only: no seat, no token, no rack. */
   isSpectator?: boolean;
+  turnTimeLimit?: TurnTimeLimit;
+  gameMode?: GameMode;
+  maxTurns?: number | null;
+  startingHp?: number | null;
 }
 
 export const sessionStore = {

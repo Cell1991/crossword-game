@@ -18,23 +18,37 @@ export default function LobbyPage() {
   const params = useParams();
   const pin = params.pin as string;
 
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [gameId, setGameId] = useState<string | null>(null);
-  // The room says who hosts: the host can leave and hand the room to someone else.
-  const [hostPlayerId, setHostPlayerId] = useState<string | null>(null);
-  const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
-  const [sessionIsHost, setSessionIsHost] = useState(false);
-  const [isSpectator, setIsSpectator] = useState(false);
+  const initialSession = typeof window !== 'undefined' ? sessionStore.getLast() : null;
+  const matchesCurrentPin = initialSession?.gamePin === pin;
+
+  const [players, setPlayers] = useState<Player[]>(() => {
+    if (matchesCurrentPin && initialSession?.playerId && !initialSession.isSpectator) {
+      return [{
+        id: initialSession.playerId,
+        display_name: initialSession.displayName,
+        is_host: initialSession.isHost,
+        score: 0,
+        hp: initialSession.startingHp ?? 100,
+        turn_order: 0,
+        connection_status: 'ONLINE',
+        rack_count: 0,
+      }];
+    }
+    return [];
+  });
+  const [gameId, setGameId] = useState<string | null>(matchesCurrentPin ? (initialSession?.gameId ?? null) : null);
+  const [hostPlayerId, setHostPlayerId] = useState<string | null>(matchesCurrentPin && initialSession?.isHost ? initialSession.playerId : null);
+  const [myPlayerId, setMyPlayerId] = useState<string | null>(matchesCurrentPin ? (initialSession?.playerId ?? null) : null);
+  const [sessionIsHost, setSessionIsHost] = useState(Boolean(matchesCurrentPin && initialSession?.isHost));
+  const [isSpectator, setIsSpectator] = useState(Boolean(matchesCurrentPin && initialSession?.isSpectator));
   const [leaving, setLeaving] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [turnTimeLimit, setTurnTimeLimit] = useState<number | null>(null);
-  const [gameMode, setGameMode] = useState<GameMode>('HP');
-  const [maxTurns, setMaxTurns] = useState<number | null>(null);
-  const [startingHp, setStartingHp] = useState<number | null>(null);
-  // The room's own flag: everyone in a debug room lands in the game with debug tools, not only
-  // whoever created it.
+  const [loading, setLoading] = useState(!matchesCurrentPin);
+  const [turnTimeLimit, setTurnTimeLimit] = useState<number | null>(matchesCurrentPin ? (initialSession?.turnTimeLimit ?? null) : null);
+  const [gameMode, setGameMode] = useState<GameMode>(matchesCurrentPin && initialSession?.gameMode ? initialSession.gameMode : 'HP');
+  const [maxTurns, setMaxTurns] = useState<number | null>(matchesCurrentPin ? (initialSession?.maxTurns ?? null) : null);
+  const [startingHp, setStartingHp] = useState<number | null>(matchesCurrentPin ? (initialSession?.startingHp ?? null) : null);
   const [isDebugRoom, setIsDebugRoom] = useState(false);
 
   // Load session
@@ -49,6 +63,21 @@ export default function LobbyPage() {
       setGameId(session.gameId);
       setSessionIsHost(session.isHost);
       setIsSpectator(Boolean(session.isSpectator));
+      if (!session.isSpectator && session.playerId) {
+        setPlayers(prev => {
+          if (prev.some(p => p.id === session.playerId)) return prev;
+          return [{
+            id: session.playerId,
+            display_name: session.displayName,
+            is_host: session.isHost,
+            score: 0,
+            hp: session.startingHp ?? 100,
+            turn_order: 0,
+            connection_status: 'ONLINE',
+            rack_count: 0,
+          }, ...prev];
+        });
+      }
     });
   }, [router]);
 
