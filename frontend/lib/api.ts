@@ -29,7 +29,10 @@ function getErrorMessage(error: unknown, fallback: string): string {
 }
 
 export const getApiBase = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    const base = process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+    return base.endsWith('/api') ? base : `${base}/api`;
+  }
   if (typeof window !== 'undefined') {
     // Use the frontend origin so public tunnels do not expose a private backend port.
     return '/api';

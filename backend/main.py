@@ -40,13 +40,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API and WebSocket routers
+# Include API and WebSocket routers under both /api and /
 app.include_router(rooms.router, prefix=settings.API_V1_STR)
+app.include_router(rooms.router)
 app.include_router(games.router, prefix=settings.API_V1_STR)
+app.include_router(games.router)
 app.include_router(moves.router, prefix=settings.API_V1_STR)
+app.include_router(moves.router)
 app.include_router(cards.router, prefix=settings.API_V1_STR)
+app.include_router(cards.router)
 app.include_router(dictionary.router, prefix=settings.API_V1_STR)
+app.include_router(dictionary.router)
 app.include_router(debug.router, prefix=settings.API_V1_STR)
+app.include_router(debug.router)
 app.include_router(handlers.router)
 
 @app.get("/")

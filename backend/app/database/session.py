@@ -8,14 +8,25 @@ from app.database.models import (
 )
 from app.game.dictionary import dictionary_service
 
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+if "sslmode=require" in db_url:
+    db_url = db_url.replace("sslmode=require", "ssl=require")
+if "&channel_binding=require" in db_url:
+    db_url = db_url.replace("&channel_binding=require", "")
+
 engine_kwargs = {}
-if "sqlite" in settings.DATABASE_URL:
+if "sqlite" in db_url:
     engine_kwargs["connect_args"] = {"check_same_thread": False}
     engine_kwargs["poolclass"] = NullPool
 
 # Async engine
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    db_url,
     echo=False,
     future=True,
     **engine_kwargs
