@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Maximize, Minimize, ScrollText } from 'lucide-react';
+import { BookOpen, Maximize, Minimize, ScrollText } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { TurnBanner } from './TurnBanner';
 
@@ -19,6 +19,7 @@ interface GameHudProps {
   maxTurns: number | null;
   onExit: () => void;
   onOpenInfo: () => void;
+  onOpenGuide?: () => void;
   /** The turn countdown, rendered by its own component so its tick stays local. */
   timer: React.ReactNode;
   debugSlot?: React.ReactNode;
@@ -38,6 +39,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   maxTurns,
   onExit,
   onOpenInfo,
+  onOpenGuide,
   timer,
   debugSlot,
 }) => {
@@ -144,6 +146,17 @@ export const GameHud: React.FC<GameHudProps> = ({
               maxTurns={maxTurns}
             />
           </div>
+          {onOpenGuide && (
+            <button
+              type="button"
+              onClick={onOpenGuide}
+              className="rounded-lg border border-slate-700 p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer active:scale-95 shrink-0"
+              title="คู่มือเกมและการ์ดพลัง (Game Guide)"
+              aria-label="คู่มือเกมและการ์ดพลัง (Game Guide)"
+            >
+              <BookOpen className="h-4 w-4 text-cyan-300" />
+            </button>
+          )}
           <button
             type="button"
             onClick={toggleFullscreen}

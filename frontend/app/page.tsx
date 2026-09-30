@@ -3,12 +3,13 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowRight, Eye, LogIn, Minus, Plus } from 'lucide-react';
+import { ArrowRight, BookOpen, Eye, LogIn, Minus, Plus } from 'lucide-react';
 import { createRoom, getRoom, joinRoom, sessionStore } from '@/lib/api';
 import { GameMode, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
+import { GameGuideModal } from '@/components/game/GameGuideModal';
 
 type Mode = 'home' | 'create' | 'join';
 
@@ -19,6 +20,7 @@ export default function HomePage() {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [turnTimeLimit, setTurnTimeLimit] = useState<TurnTimeLimit>(null);
   const [gameMode, setGameMode] = useState<GameMode>('HP');
   const [turnCountOption, setTurnCountOption] = useState('7');
@@ -212,6 +214,26 @@ export default function HomePage() {
                   </span>
                 </span>
                 <ArrowRight className="h-5 w-5 text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-white" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsGuideOpen(true)}
+                className="group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-slate-900/60 to-slate-900/40 px-4 py-3 sm:px-5 sm:py-3.5 text-left text-white shadow-[0_8px_24px_rgba(6,182,212,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-400/60 hover:from-cyan-900/40 hover:shadow-[0_12px_28px_rgba(6,182,212,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 active:translate-y-0 cursor-pointer"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 shadow-[0_0_10px_rgba(6,182,212,0.25)]">
+                    <BookOpen className="h-5 w-5" strokeWidth={2.2} />
+                  </span>
+                  <span>
+                    <span className="block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-cyan-400/90">How to play</span>
+                    <span className="block text-base sm:text-lg font-bold tracking-tight text-slate-100 group-hover:text-white">Game Guide & Cards</span>
+                  </span>
+                </span>
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-cyan-300/80 group-hover:text-cyan-200">
+                  <span>คู่มือ</span>
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                </span>
               </button>
             </div>
           )}
@@ -461,6 +483,11 @@ export default function HomePage() {
           )}
         </div>
       </div>
+
+      <GameGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+      />
     </div>
   );
 }

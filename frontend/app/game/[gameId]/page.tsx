@@ -32,6 +32,7 @@ import { HintSuggestionsOverlay } from '@/components/game/HintSuggestionsOverlay
 import { BlankTilePickerModal } from '@/components/game/BlankTilePickerModal';
 import { ConfirmExitModal } from '@/components/game/ConfirmExitModal';
 import { MobileInfoModal } from '@/components/game/MobileInfoModal';
+import { GameGuideModal } from '@/components/game/GameGuideModal';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 
 const EMPTY_TILES: Tile[] = [];
@@ -128,6 +129,7 @@ export default function GamePage() {
   const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
 
   const seatReturningTile = useCallback((tileId: string, targetSlot: number) => {
@@ -434,6 +436,7 @@ export default function GamePage() {
         maxTurns={gameState.max_turns}
         onExit={handleExit}
         onOpenInfo={() => setIsMobileInfoOpen(true)}
+        onOpenGuide={() => setIsGuideOpen(true)}
         debugSlot={
           isDebug ? (
             <button
@@ -643,6 +646,12 @@ export default function GamePage() {
         isLeaving={isLeaving}
         onConfirm={handleConfirmExit}
         onClose={() => setIsExitModalOpen(false)}
+      />
+
+      {/* Game Guide Modal */}
+      <GameGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
       />
 
       {isDebug && (
