@@ -35,6 +35,17 @@ def test_board_special_cells_match_the_rendered_19x27_grid():
         (8, 7), (8, 19), (10, 7), (10, 19),
         (8, 12), (8, 14), (10, 12), (10, 14),
     })
+    assert Board.DOUBLE_WORD == frozenset({
+        (4, 11), (4, 15),
+        (14, 11), (14, 15),
+        (9, 5), (9, 21),
+    })
+    assert Board.TRIPLE_WORD == frozenset({
+        (2, 7), (2, 19),
+        (16, 7), (16, 19),
+        (7, 2), (7, 24),
+        (11, 2), (11, 24),
+    })
     assert Board.SECRET_POWER == frozenset({
         (3, 4), (3, 22),
         (5, 7), (5, 19),
@@ -42,6 +53,13 @@ def test_board_special_cells_match_the_rendered_19x27_grid():
         (11, 10), (11, 16),
         (13, 7), (13, 19),
         (15, 4), (15, 22),
+        (3, 13), (15, 13),
+        (1, 10), (1, 16),
+        (17, 10), (17, 16),
+        (1, 5), (1, 21),
+        (17, 5), (17, 21),
+        (4, 2), (4, 24),
+        (14, 2), (14, 24),
     })
 
 def test_premium_squares_are_the_classic_layout_spread_over_the_larger_board():
@@ -56,6 +74,17 @@ def test_premium_squares_are_the_classic_layout_spread_over_the_larger_board():
         (8, 7), (8, 19), (10, 7), (10, 19),
         (8, 12), (8, 14), (10, 12), (10, 14),
     })
+    assert Board.DOUBLE_WORD == frozenset({
+        (4, 11), (4, 15),
+        (14, 11), (14, 15),
+        (9, 5), (9, 21),
+    })
+    assert Board.TRIPLE_WORD == frozenset({
+        (2, 7), (2, 19),
+        (16, 7), (16, 19),
+        (7, 2), (7, 24),
+        (11, 2), (11, 24),
+    })
     lightning = {
         (3, 4), (3, 22),
         (5, 7), (5, 19),
@@ -63,10 +92,17 @@ def test_premium_squares_are_the_classic_layout_spread_over_the_larger_board():
         (11, 10), (11, 16),
         (13, 7), (13, 19),
         (15, 4), (15, 22),
+        (3, 13), (15, 13),
+        (1, 10), (1, 16),
+        (17, 10), (17, 16),
+        (1, 5), (1, 21),
+        (17, 5), (17, 21),
+        (4, 2), (4, 24),
+        (14, 2), (14, 24),
     }
     assert Board.SECRET_POWER == frozenset(lightning)
-    premium = Board.TRIPLE_LETTER | Board.DOUBLE_LETTER | Board.SECRET_POWER
-    assert len(premium) == 12 + 18 + 12 and Board.CENTER not in premium
+    premium = Board.TRIPLE_LETTER | Board.DOUBLE_LETTER | Board.DOUBLE_WORD | Board.TRIPLE_WORD | Board.SECRET_POWER
+    assert len(premium) == 12 + 18 + 6 + 8 + 26 and Board.CENTER not in premium
     assert premium == {(r, Board.COLS - 1 - c) for r, c in premium}
     assert premium == {(Board.ROWS - 1 - r, c) for r, c in premium}
 
@@ -90,6 +126,38 @@ def test_new_tiles_receive_letter_multipliers_only():
         [triple_word], placed_tiles_count=2, placed_coords={(0, 13), (0, 14)}, apply_bingo=False
     )
     assert score == (1 * 3) + 3
+
+def test_double_word_multiplier_doubles_entire_word():
+    # Place CAT at (4, 11), (4, 12), (4, 13) where (4, 11) is 2W
+    word = ExtractedWord(
+        "CAT",
+        [(4, 11), (4, 12), (4, 13)],
+        [("C", 3, True), ("A", 1, True), ("T", 1, True)],
+    )
+    score, breakdown = ScoringService.calculate_move_score(
+        [word], placed_tiles_count=3, placed_coords={(4, 11), (4, 12), (4, 13)}, apply_bingo=False
+    )
+    # (3 + 1 + 1) * 2 = 10
+    assert score == 10
+    assert breakdown[0]["multiplier"] == 2
+    assert breakdown[0]["base_score"] == 5
+    assert breakdown[0]["total"] == 10
+
+def test_triple_word_multiplier_triples_entire_word():
+    # Place CAT at (2, 7), (2, 8), (2, 9) where (2, 7) is 3W
+    word = ExtractedWord(
+        "CAT",
+        [(2, 7), (2, 8), (2, 9)],
+        [("C", 3, True), ("A", 1, True), ("T", 1, True)],
+    )
+    score, breakdown = ScoringService.calculate_move_score(
+        [word], placed_tiles_count=3, placed_coords={(2, 7), (2, 8), (2, 9)}, apply_bingo=False
+    )
+    # (3 + 1 + 1) * 3 = 15
+    assert score == 15
+    assert breakdown[0]["multiplier"] == 3
+    assert breakdown[0]["base_score"] == 5
+    assert breakdown[0]["total"] == 15
 
 def test_committed_multiplier_cell_retains_letter_multiplier():
     word = ExtractedWord(

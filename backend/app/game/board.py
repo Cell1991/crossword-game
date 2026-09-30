@@ -32,6 +32,17 @@ class Board:
         (8, 7), (8, 19), (10, 7), (10, 19),
         (8, 12), (8, 14), (10, 12), (10, 14),
     })
+    DOUBLE_WORD = frozenset({
+        (4, 11), (4, 15),
+        (14, 11), (14, 15),
+        (9, 5), (9, 21),
+    })
+    TRIPLE_WORD = frozenset({
+        (2, 7), (2, 19),
+        (16, 7), (16, 19),
+        (7, 2), (7, 24),
+        (11, 2), (11, 24),
+    })
     SECRET_POWER = frozenset({
         (3, 4), (3, 22),
         (5, 7), (5, 19),
@@ -39,6 +50,13 @@ class Board:
         (11, 10), (11, 16),
         (13, 7), (13, 19),
         (15, 4), (15, 22),
+        (3, 13), (15, 13),
+        (1, 10), (1, 16),
+        (17, 10), (17, 16),
+        (1, 5), (1, 21),
+        (17, 5), (17, 21),
+        (4, 2), (4, 24),
+        (14, 2), (14, 24),
     })
 
 
@@ -58,13 +76,36 @@ class Board:
         return row == cls.CENTER[0] and col == cls.CENTER[1]
 
     @classmethod
-    def multiplier_at(cls, row: int, col: int) -> int:
+    def letter_multiplier_at(cls, row: int, col: int) -> int:
         mr, mc = mirror_row(row), mirror_col(col)
         if (mr, mc) in cls.TRIPLE_LETTER:
             return 3
         if (mr, mc) in cls.DOUBLE_LETTER:
             return 2
         return 1
+
+    @classmethod
+    def word_multiplier_at(cls, row: int, col: int) -> int:
+        mr, mc = mirror_row(row), mirror_col(col)
+        if (mr, mc) in cls.TRIPLE_WORD:
+            return 3
+        if (mr, mc) in cls.DOUBLE_WORD:
+            return 2
+        return 1
+
+    @classmethod
+    def multiplier_at(cls, row: int, col: int) -> int:
+        return cls.letter_multiplier_at(row, col)
+
+    @classmethod
+    def is_double_word(cls, row: int, col: int) -> bool:
+        mr, mc = mirror_row(row), mirror_col(col)
+        return (mr, mc) in cls.DOUBLE_WORD
+
+    @classmethod
+    def is_triple_word(cls, row: int, col: int) -> bool:
+        mr, mc = mirror_row(row), mirror_col(col)
+        return (mr, mc) in cls.TRIPLE_WORD
 
     @classmethod
     def is_power_cell(cls, row: int, col: int) -> bool:

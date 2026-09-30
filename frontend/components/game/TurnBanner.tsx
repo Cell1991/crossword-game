@@ -6,6 +6,7 @@ import { Sparkles, Hourglass } from 'lucide-react';
 
 interface TurnBannerProps {
   isMyTurn: boolean;
+  isEliminated?: boolean;
   currentPlayer: Player | undefined;
   nextPlayer?: Player | undefined;
   turnNumber: number;
@@ -15,12 +16,45 @@ interface TurnBannerProps {
 
 export const TurnBanner: React.FC<TurnBannerProps> = ({
   isMyTurn,
+  isEliminated = false,
   currentPlayer,
   nextPlayer,
   turnNumber,
   maxTurns,
   mobile = false,
 }) => {
+  if (isEliminated) {
+    return (
+      <div className="flex items-center gap-2 select-none min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-rose-500/50 bg-gradient-to-r from-rose-950/90 via-slate-900/80 to-rose-950/90 px-2.5 py-1 text-xs font-medium text-rose-200 shadow-[0_0_14px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/30 truncate">
+          <span className="text-sm shrink-0">☠️</span>
+          <span className="font-extrabold tracking-wide text-rose-300 uppercase text-[11px] sm:text-xs shrink-0">
+            คุณตายแล้ว
+          </span>
+          {currentPlayer && (
+            <>
+              <span className="text-slate-600 hidden sm:inline">•</span>
+              <span className="text-slate-400 text-[11px] hidden sm:inline truncate">
+                <strong className="text-amber-300 font-bold">{currentPlayer.display_name}</strong>&apos;s Turn
+              </span>
+            </>
+          )}
+          {nextPlayer && !mobile && (
+            <>
+              <span className="text-slate-600 hidden sm:inline">•</span>
+              <span className="text-slate-400 text-[11px] hidden sm:inline truncate">
+                Next: <span className="text-slate-300 font-semibold">{nextPlayer.display_name}</span>
+              </span>
+            </>
+          )}
+          <span className="font-mono text-[10px] sm:text-xs font-semibold px-1.5 py-0.2 rounded-md bg-rose-950/80 border border-rose-700/60 text-rose-300 shrink-0">
+            T{turnNumber}{maxTurns ? `/${maxTurns}` : ''}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   if (isMyTurn) {
     return (
       <div className="flex items-center gap-2 select-none min-w-0">

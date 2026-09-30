@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { commitMove, exchangeTiles, expireTurn, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
 import { buildRackSlots } from '@/lib/rack';
-import { GameState, Tile } from '@/lib/types';
+import { GameState, Tile, Player } from '@/lib/types';
 import { TILE_THEME_STYLE } from '@/lib/tileTheme';
 import { isBlankLetter } from '@/lib/tiles';
 import { useBoardCamera } from '@/hooks/useBoardCamera';
@@ -303,11 +303,25 @@ export default function GamePage() {
     );
   }
 
+  const isHpMode = gameState.max_turns === null;
+  const isEligibleForTurn = (p: Player) => (!isHpMode || p.hp > 0) && p.connection_status !== 'OFFLINE';
+  const isEliminated = Boolean(myPlayer && isHpMode && myPlayer.hp <= 0);
+
   const tileBagCount = gameState.tile_bag_count ?? 0;
   const currentPlayer = gameState.players.find(p => p.id === gameState.current_player_id);
   const sortedPlayers = [...(gameState.players ?? [])].sort((a, b) => a.turn_order - b.turn_order);
   const currentPlayerIndex = sortedPlayers.findIndex(p => p.id === gameState.current_player_id);
-  const nextPlayer = currentPlayerIndex >= 0 ? sortedPlayers[(currentPlayerIndex + 1) % sortedPlayers.length] : undefined;
+
+  let nextPlayer: Player | undefined = undefined;
+  if (currentPlayerIndex >= 0 && sortedPlayers.length > 1) {
+    for (let step = 1; step <= sortedPlayers.length; step++) {
+      const candidate = sortedPlayers[(currentPlayerIndex + step) % sortedPlayers.length];
+      if (isEligibleForTurn(candidate) && candidate.id !== gameState.current_player_id) {
+        nextPlayer = candidate;
+        break;
+      }
+    }
+  }
 
   const handleExit = () => {
     if (isSpectator) {
@@ -332,6 +346,7 @@ export default function GamePage() {
     >
       <GameHud
         isSpectator={isSpectator}
+        isEliminated={isEliminated}
         isConnected={sync.isConnected}
         roomPin={gameState.game_pin ?? session.gamePin ?? null}
         spectatorCount={gameState.spectator_count ?? 0}
@@ -437,12 +452,22 @@ export default function GamePage() {
         cardUseEffects={sync.cardUseEffects}
       />
 
-      {/* Bottom: Tile rack (spectators have no seat and never see a rack) */}
+      {/* Bottom: Tile rack (spectators and eliminated players have no active rack) */}
       <div className="relative z-10 shrink-0 px-1.5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1.5 sm:p-3">
         {isSpectator ? (
           <p className="py-3 text-center text-sm text-sky-300">
             👁 You are watching this game. Players&apos; tiles stay hidden.
           </p>
+        ) : isEliminated ? (
+          <div className="flex flex-col items-center justify-center py-3.5 px-4 sm:px-6 rounded-2xl border border-rose-500/50 bg-gradient-to-r from-rose-950/85 via-slate-900/90 to-rose-950/85 text-center shadow-[0_0_24px_rgba(244,63,94,0.25)] ring-1 ring-rose-500/30 max-w-lg mx-auto">
+            <div className="flex items-center gap-2 text-rose-300 font-black text-sm sm:text-base tracking-wide uppercase">
+              <span className="text-xl">☠️</span>
+              <span>คุณตายแล้ว (Knocked Out)</span>
+            </div>
+            <p className="text-xs text-slate-300 mt-1">
+              พลังชีวิต (HP) ของคุณหมดลงแล้ว คุณกำลังรับชมการเล่นของผู้เล่นที่เหลืออยู่ในห้อง
+            </p>
+          </div>
         ) : (
           <TileRack
             slots={rackSlots}

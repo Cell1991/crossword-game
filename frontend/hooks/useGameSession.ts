@@ -17,8 +17,12 @@ export function useGameSession(gameId: string, isDebug: boolean) {
 
   useEffect(() => {
     startTransition(() => {
-      setSession(sessionStore.get(gameId));
-      if (isDebug) setDebugSessions(debugSessionStore.get(gameId));
+      const stored = sessionStore.get(gameId);
+      setSession(stored);
+      if (isDebug) {
+        const storedDebug = debugSessionStore.get(gameId);
+        setDebugSessions(storedDebug.length > 0 ? storedDebug : (stored ? [stored] : []));
+      }
       setHydrated(true);
     });
   }, [gameId, isDebug]);

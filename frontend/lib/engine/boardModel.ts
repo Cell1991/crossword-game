@@ -4,8 +4,10 @@ import {
   CENTER_COL,
   CENTER_ROW,
   isDoubleLetterCell,
+  isDoubleWordCell,
   isPowerCell,
   isTripleLetterCell,
+  isTripleWordCell,
 } from '@/lib/board';
 import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
 import { cellKey } from '@/lib/tiles';
@@ -20,7 +22,7 @@ export interface BoardBounds {
 export interface PremiumEchoCell {
   row: number;
   col: number;
-  type: 'power' | 'triple' | 'double';
+  type: 'power' | 'triple' | 'double' | 'double-word' | 'triple-word';
   distance: number;
   isSolid: boolean;
   alpha: number;
@@ -176,10 +178,12 @@ export class BoardModel {
           const key = `${r}_${c}`;
           if (echoes.has(key) || this.isOccupied(r, c)) continue;
 
-          let type: 'power' | 'triple' | 'double' | null = null;
+          let type: 'power' | 'triple' | 'double' | 'double-word' | 'triple-word' | null = null;
           if (isPowerCell(r, c)) type = 'power';
           else if (isTripleLetterCell(r, c)) type = 'triple';
           else if (isDoubleLetterCell(r, c)) type = 'double';
+          else if (isDoubleWordCell(r, c)) type = 'double-word';
+          else if (isTripleWordCell(r, c)) type = 'triple-word';
 
           if (type) {
             const distance = this.getDistanceToOccupied(r, c);
@@ -201,10 +205,12 @@ export class BoardModel {
         const key = `${r}_${c}`;
         if (echoes.has(key) || this.isOccupied(r, c)) continue;
 
-        let type: 'power' | 'triple' | 'double' | null = null;
+        let type: 'power' | 'triple' | 'double' | 'double-word' | 'triple-word' | null = null;
         if (isPowerCell(r, c)) type = 'power';
         else if (isTripleLetterCell(r, c)) type = 'triple';
         else if (isDoubleLetterCell(r, c)) type = 'double';
+        else if (isDoubleWordCell(r, c)) type = 'double-word';
+        else if (isTripleWordCell(r, c)) type = 'triple-word';
 
         if (type) {
           const distance = this.getDistanceToOccupied(r, c);

@@ -208,6 +208,11 @@ export const RightSidebar = memo(function RightSidebar({
                         {player.is_host && (
                           <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0 drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]" />
                         )}
+                        {isDead && (
+                          <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-md bg-rose-950/80 border border-rose-500/50 text-rose-300 text-[9px] font-black uppercase tracking-wider shrink-0 shadow-sm">
+                            ☠️ ตายแล้ว
+                          </span>
+                        )}
                         {player.has_shield && !isDead && (
                           <span
                             className="flex items-center gap-1 rounded-full border border-cyan-400/80 bg-cyan-950/80 px-1.5 py-0.5 text-[10px] font-bold text-cyan-200 shadow-[0_0_10px_rgba(6,182,212,0.6)] animate-pulse"

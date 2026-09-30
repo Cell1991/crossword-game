@@ -2,8 +2,10 @@ import {
   CENTER_COL,
   CENTER_ROW,
   isDoubleLetterCell,
+  isDoubleWordCell,
   isPowerCell,
   isTripleLetterCell,
+  isTripleWordCell,
 } from '@/lib/board';
 import { BoardModel } from '@/lib/engine/boardModel';
 
@@ -44,15 +46,17 @@ export class GridRenderer {
 
     ctx.save();
 
-    // 1. Special cell background fills (2L, 3L, Power, Center Star)
+    // 1. Special cell background fills (2L, 3L, 2W, 3W, Power, Center Star)
     for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
       for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
         const isCenter = r === CENTER_ROW && c === CENTER_COL;
         const isTriple = isTripleLetterCell(r, c);
         const isDouble = isDoubleLetterCell(r, c);
+        const isDoubleWord = isDoubleWordCell(r, c);
+        const isTripleWord = isTripleWordCell(r, c);
         const isPower = isPowerCell(r, c);
 
-        if (isTriple || isDouble || isPower || isCenter) {
+        if (isTriple || isDouble || isDoubleWord || isTripleWord || isPower || isCenter) {
           const lineAlpha = model.getCellAlpha(r, c);
           if (lineAlpha <= 0.005) continue;
 
@@ -62,15 +66,23 @@ export class GridRenderer {
 
           ctx.globalAlpha = lineAlpha;
           if (isTriple) {
-            ctx.fillStyle = '#7f1d1d';
+            ctx.fillStyle = '#be123c';
             drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
             ctx.fill();
           } else if (isDouble) {
-            ctx.fillStyle = '#166534';
+            ctx.fillStyle = '#15803d';
+            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+            ctx.fill();
+          } else if (isDoubleWord) {
+            ctx.fillStyle = '#7e22ce';
+            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+            ctx.fill();
+          } else if (isTripleWord) {
+            ctx.fillStyle = '#b45309';
             drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
             ctx.fill();
           } else if (isPower) {
-            ctx.fillStyle = '#0e7490';
+            ctx.fillStyle = '#0891b2';
             drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
             ctx.fill();
           }

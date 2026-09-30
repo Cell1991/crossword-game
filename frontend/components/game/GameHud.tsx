@@ -8,6 +8,7 @@ import { TurnBanner } from './TurnBanner';
 
 interface GameHudProps {
   isSpectator: boolean;
+  isEliminated?: boolean;
   isConnected: boolean;
   roomPin: string | null;
   spectatorCount: number;
@@ -25,6 +26,7 @@ interface GameHudProps {
 /** Top HUD. On a phone it wraps: controls and counters on the first row, the turn banner below. */
 export const GameHud: React.FC<GameHudProps> = ({
   isSpectator,
+  isEliminated = false,
   isConnected,
   roomPin,
   spectatorCount,
@@ -130,7 +132,14 @@ export const GameHud: React.FC<GameHudProps> = ({
           )}
           <div className="hidden lg:flex items-center gap-2">
             {timer}
-            <TurnBanner isMyTurn={isMyTurn} currentPlayer={currentPlayer} nextPlayer={nextPlayer} turnNumber={turnNumber} maxTurns={maxTurns} />
+            <TurnBanner
+              isMyTurn={isMyTurn}
+              isEliminated={isEliminated}
+              currentPlayer={currentPlayer}
+              nextPlayer={nextPlayer}
+              turnNumber={turnNumber}
+              maxTurns={maxTurns}
+            />
           </div>
           <button
             type="button"
@@ -150,6 +159,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           <TurnBanner
             mobile
             isMyTurn={isMyTurn}
+            isEliminated={isEliminated}
             currentPlayer={currentPlayer}
             nextPlayer={nextPlayer}
             turnNumber={turnNumber}
