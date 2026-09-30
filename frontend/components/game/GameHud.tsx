@@ -151,8 +151,8 @@ export const GameHud: React.FC<GameHudProps> = ({
               type="button"
               onClick={onOpenGuide}
               className="rounded-lg border border-slate-700 p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer active:scale-95 shrink-0"
-              title="คู่มือเกมและการ์ดพลัง (Game Guide)"
-              aria-label="คู่มือเกมและการ์ดพลัง (Game Guide)"
+              title="Game Guide & Cards"
+              aria-label="Open Game Guide & Cards"
             >
               <BookOpen className="h-4 w-4 text-cyan-300" />
             </button>

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import {
   BookOpen,
   X,
@@ -10,14 +9,10 @@ import {
   Eye,
   Shield,
   Heart,
-  Swords,
   Repeat2,
   Snowflake,
   RotateCcw,
-  Star,
-  Flame,
   Layers,
-  HelpCircle,
 } from 'lucide-react';
 
 interface GameGuideModalProps {
@@ -82,14 +77,14 @@ export function GameGuideModal({
             <div>
               <div className="flex items-center gap-2">
                 <h2 id="guide-modal-title" className="text-lg sm:text-xl font-black tracking-tight text-white">
-                  คู่มือการเล่น WordX
+                  WordX Game Guide
                 </h2>
                 <span className="rounded-full border border-cyan-500/40 bg-cyan-950/60 px-2 py-0.5 text-[10px] font-bold text-cyan-300 uppercase tracking-wider">
-                  Game Guide
+                  Manual
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-                สัญลักษณ์บนกระดาน การ์ดพลังวิเศษ และกติกาการแข่งขัน
+                Board special squares, magic power cards & gameplay mechanics
               </p>
             </div>
           </div>
@@ -116,7 +111,7 @@ export function GameGuideModal({
             }`}
           >
             <Zap className="h-4 w-4 text-cyan-400" />
-            <span>สัญลักษณ์บนกระดาน</span>
+            <span>Board Symbols</span>
           </button>
 
           <button
@@ -129,7 +124,7 @@ export function GameGuideModal({
             }`}
           >
             <Sparkles className="h-4 w-4 text-purple-400" />
-            <span>การ์ดพลังวิเศษ (7 ใบ)</span>
+            <span>7 Power Cards</span>
           </button>
 
           <button
@@ -142,7 +137,7 @@ export function GameGuideModal({
             }`}
           >
             <Layers className="h-4 w-4 text-amber-400" />
-            <span>กติกาและวิธีเล่น</span>
+            <span>Rules & Modes</span>
           </button>
         </div>
 
@@ -152,108 +147,130 @@ export function GameGuideModal({
           {activeTab === 'board' && (
             <div className="space-y-3.5">
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                บนกระดานเกม WordX จะมีช่องพิเศษที่ช่วยเพิ่มคะแนน หรือมอบความสามารถพิเศษเมื่อวางตัวอักษรทับลงไป:
+                The WordX board features animated special cells that grant multipliers, power card drops, and starting rules:
               </p>
 
               {/* 1. Lightning Power Cell */}
               <div className="flex items-start gap-3.5 rounded-2xl border border-cyan-500/35 bg-gradient-to-r from-cyan-950/40 via-slate-900/60 to-slate-900/40 p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(6,182,212,0.15)]">
-                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-cyan-300/80 bg-cyan-400/20 shadow-[0_0_16px_rgba(34,211,238,0.5)]">
-                  <span className="absolute inset-1 rounded-lg bg-cyan-500/10 blur-[2px]" />
-                  <Image
-                    src="/light.png"
-                    alt="Lightning Cell"
-                    width={36}
-                    height={36}
-                    className="relative object-contain drop-shadow-[0_0_8px_#38bdf8]"
-                  />
+                {/* Exact Animated Lightning Cell from Board */}
+                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-cyan-200/75 bg-cyan-400/20 shadow-[inset_0_0_10px_rgba(165,243,252,0.18),0_0_22px_rgba(34,211,238,0.55)] board-power-pulse overflow-hidden">
+                  <span className="board-lightning-halo absolute left-1/2 top-1/2 h-[64%] w-[64%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/light.png"
+                      alt="Lightning Cell"
+                      className="board-lightning-logo h-[76%] w-[76%] object-contain"
+                    />
+                  </span>
+                  <i className="board-lightning-spark absolute left-[20%] top-[24%] h-1 w-1 rounded-full bg-yellow-100 shadow-[0_0_8px_2px_rgba(253,224,71,0.9)]" />
+                  <i className="board-lightning-spark absolute bottom-[20%] right-[20%] h-1 w-1 rounded-full bg-cyan-100 shadow-[0_0_8px_2px_rgba(165,243,252,0.9)]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">ช่องสายฟ้า (Lightning Power Cell)</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-white">Lightning Cell (Power Card Drop)</h3>
                     <span className="rounded-md border border-cyan-400/40 bg-cyan-500/20 px-2 py-0.5 text-[10px] font-bold text-cyan-200">
-                      สุ่มรับการ์ดพลัง
+                      Card Drop
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    เมื่อวางตัวอักษรลงบนช่องสายฟ้า ผู้เล่นจะ <strong className="text-cyan-300">สุ่มได้รับการ์ดพลังวิเศษ (Power Card) 1 ใบ</strong> เข้าสู่มือทันที! (สะสมการ์ดในมือได้สูงสุด 3 ใบ)
+                    Placing a tile on any glowing Lightning Cell instantly awards you <strong className="text-cyan-300">1 random Secret Power Card</strong> directly into your hand! You can hold up to 3 power cards at a time.
                   </p>
                 </div>
               </div>
 
               {/* 2. 3L Triple Letter Cell */}
               <div className="flex items-start gap-3.5 rounded-2xl border border-rose-500/35 bg-gradient-to-r from-rose-950/40 via-slate-900/60 to-slate-900/40 p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,63,94,0.15)]">
-                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-red-400/80 bg-red-950/60 shadow-[0_0_16px_rgba(239,68,68,0.4)]">
-                  <span className="absolute inset-1 rounded-full bg-red-500/20 blur-[3px]" />
-                  <span className="relative text-xl font-black text-white drop-shadow-[0_2px_8px_rgba(239,68,68,0.8)]">
-                    3L
+                {/* Exact Animated 3L Fire Cell from Board */}
+                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-red-300/60 bg-red-950/40 shadow-[0_0_16px_rgba(239,68,68,0.4)] board-triple-aura overflow-hidden">
+                  <span className="board-fire-core absolute inset-[18%] rounded-full bg-red-400/40" />
+                  <span className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white font-black text-xl font-maple drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                    3<span className="board-premium-letter">L</span>
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">ช่อง 3L (Triple Letter Score)</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-white">3L Cell (Triple Letter Score)</h3>
                     <span className="rounded-md border border-rose-400/40 bg-rose-500/20 px-2 py-0.5 text-[10px] font-bold text-rose-200">
-                      คะแนนตัวอักษร ×3
+                      Letter Score ×3
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    ตัวอักษรที่ถูกวางลงบนช่องนี้ จะได้รับคะแนนตัวอักษร <strong className="text-rose-300">คูณ 3 เท่า</strong> ในเทิร์นนั้นทันที
+                    Triples the point value of any letter tile placed on this cell (<strong className="text-rose-300">Letter Score × 3</strong>) for that turn.
                   </p>
                 </div>
               </div>
 
               {/* 3. 2L Double Letter Cell */}
-              <div className="flex items-start gap-3.5 rounded-2xl border border-amber-500/35 bg-gradient-to-r from-amber-950/40 via-slate-900/60 to-slate-900/40 p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(245,158,11,0.15)]">
-                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-orange-400/80 bg-orange-950/60 shadow-[0_0_16px_rgba(249,115,22,0.4)]">
-                  <span className="absolute inset-1 rounded-full bg-orange-500/20 blur-[3px]" />
-                  <span className="relative text-xl font-black text-white drop-shadow-[0_2px_8px_rgba(249,115,22,0.8)]">
-                    2L
+              <div className="flex items-start gap-3.5 rounded-2xl border border-emerald-500/35 bg-gradient-to-r from-emerald-950/40 via-slate-900/60 to-slate-900/40 p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(34,197,94,0.15)]">
+                {/* Exact Animated 2L Earth Cell from Board */}
+                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-emerald-300/45 bg-emerald-950/40 shadow-[0_0_16px_rgba(34,197,94,0.35)] board-double-aura overflow-hidden">
+                  <span className="board-earth-glow absolute inset-[12%] rounded-full" />
+                  <span className="board-earth-mountain board-earth-mountain-back absolute inset-x-0 bottom-0 h-[70%]" />
+                  <span className="board-earth-mountain board-earth-mountain-front absolute inset-x-0 bottom-0 h-[62%]" />
+                  <i className="board-earth-speck absolute left-[22%] top-[27%] h-1 w-1 rounded-full" />
+                  <i className="board-earth-speck absolute right-[20%] top-[38%] h-1 w-1 rounded-full [animation-delay:0.7s]" />
+                  <span className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white font-black text-xl font-maple drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                    2<span className="board-premium-letter">L</span>
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">ช่อง 2L (Double Letter Score)</h3>
-                    <span className="rounded-md border border-amber-400/40 bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-200">
-                      คะแนนตัวอักษร ×2
+                    <h3 className="text-sm sm:text-base font-bold text-white">2L Cell (Double Letter Score)</h3>
+                    <span className="rounded-md border border-emerald-400/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-200">
+                      Letter Score ×2
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    ตัวอักษรที่ถูกวางลงบนช่องนี้ จะได้รับคะแนนตัวอักษร <strong className="text-amber-300">คูณ 2 เท่า</strong> ในเทิร์นนั้นทันที
+                    Doubles the point value of any letter tile placed on this cell (<strong className="text-emerald-300">Letter Score × 2</strong>) for that turn.
                   </p>
                 </div>
               </div>
 
-              {/* 4. Center Star */}
+              {/* 4. Center Star Cell */}
               <div className="flex items-start gap-3.5 rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-950/30 via-slate-900/60 to-slate-900/40 p-3.5 sm:p-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-amber-400/60 bg-amber-500/15 shadow-[0_0_14px_rgba(251,191,36,0.3)]">
-                  <Star className="h-7 w-7 text-amber-300 fill-amber-400/40 drop-shadow-[0_0_8px_#fbbf24]" />
+                {/* Exact Center Star from Board */}
+                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-amber-300/60 bg-[#1e1b4b] shadow-[0_0_18px_rgba(251,191,36,0.35)] board-center-pulse overflow-hidden">
+                  <span className="text-2xl font-black text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] select-none">
+                    ★
+                  </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">จุดศูนย์กลางกระดาน (Center Star)</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-white">Center Star Cell (Board Origin)</h3>
                     <span className="rounded-md border border-amber-400/40 bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-200">
-                      จุดเริ่มคำแรก
+                      Starting Square
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    ตำแหน่งกึ่งกลางของกระดาน <strong className="text-amber-200">คำศัพท์แรกของการแข่งขัน</strong> จะต้องวางพาดผ่านช่องดาวนี้เสมอ
+                    The exact center of the board. The <strong className="text-amber-200">very first word of the match</strong> must be placed across this star cell.
                   </p>
                 </div>
               </div>
 
-              {/* 5. Wildcard Blank Tile */}
-              <div className="flex items-start gap-3.5 rounded-2xl border border-indigo-400/30 bg-gradient-to-r from-indigo-950/30 via-slate-900/60 to-slate-900/40 p-3.5 sm:p-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-indigo-400/60 bg-gradient-to-br from-indigo-900/80 to-slate-900 text-indigo-300 shadow-[0_0_14px_rgba(129,140,248,0.3)]">
-                  <span className="text-2xl font-black text-amber-300 drop-shadow-[0_0_10px_rgba(251,191,36,0.8)]">★</span>
+              {/* 5. Blank Wildcard Tile */}
+              <div className="flex items-start gap-3.5 rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-950/30 via-slate-900/60 to-slate-900/40 p-3.5 sm:p-4">
+                {/* Exact Blank Tile from Rack */}
+                <div className="tile-face relative flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl border border-amber-100/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_4px_8px_rgba(74,34,8,0.48)] overflow-hidden">
+                  <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
+                  <div className="relative z-20 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" className="tile-blank-star w-7 h-7 animate-pulse" fill="#ffffff" stroke="#000000" strokeWidth="1.5" strokeLinejoin="round">
+                      <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+                    </svg>
+                  </div>
+                  <span className="tile-score-blue absolute bottom-0.5 right-1.5 z-20 text-[14px] font-maple leading-none italic font-bold">
+                    0
+                  </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">ตัวอักษรว่าง / ไวลด์การ์ด (Blank Wildcard Tile)</h3>
-                    <span className="rounded-md border border-indigo-400/40 bg-indigo-500/20 px-2 py-0.5 text-[10px] font-bold text-indigo-200">
-                      แทนตัวใดก็ได้ (A-Z)
+                    <h3 className="text-sm sm:text-base font-bold text-white">Blank Wildcard Tile (0 Pts)</h3>
+                    <span className="rounded-md border border-amber-400/40 bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-200">
+                      Wildcard (A–Z)
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    แผ่นป้ายอักษรพิเศษไม่มีแต้ม (0 คะแนน) แต่สามารถใช้ <strong className="text-indigo-200">แทนตัวอักษรใดก็ได้ตั้งแต่ A-Z</strong> ช่วยให้ต่อคำศัพท์ยากๆ ได้อย่างอิสระ
+                    Carries 0 points, but can represent <strong className="text-amber-200">any English letter (A–Z)</strong> of your choice. When placed on the board, an interactive picker modal lets you choose the designated letter.
                   </p>
                 </div>
               </div>
@@ -264,7 +281,7 @@ export function GameGuideModal({
           {activeTab === 'cards' && (
             <div className="space-y-3.5">
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                การ์ดพลังวิเศษทั้ง 7 ใบ ได้รับจากการวางตัวอักษรทับช่องสายฟ้า โดยแต่ละใบมีความสามารถในการพลิกสถานการณ์ที่แตกต่างกัน:
+                Awarded by placing tiles onto Lightning Cells. You can hold up to 3 cards simultaneously to turn the tide of battle:
               </p>
 
               {/* 1. HINT */}
@@ -274,13 +291,13 @@ export function GameGuideModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">Hint (การ์ดคำใบ้)</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-white">Hint</h3>
                     <span className="rounded-md border border-amber-400/40 bg-amber-500/25 px-2 py-0.5 text-[10px] font-bold text-amber-200">
-                      เทิร์นตนเอง
+                      Own Turn Only
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    สแกนกระดานและ <strong className="text-amber-300">แสดงคำศัพท์ที่ดีที่สุด 3 อันดับแรก</strong> พร้อมตำแหน่งวางตัวอักษรและคะแนนที่จะได้รับ ช่วยให้หาทางลงคำศัพท์ได้ง่ายขึ้นทันที
+                    Scans the current board and your rack to calculate and highlight the <strong className="text-amber-300">top 3 highest-scoring word placements</strong>, showing preview positions and estimated points.
                   </p>
                 </div>
               </div>
@@ -292,13 +309,13 @@ export function GameGuideModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">Shield (โล่ป้องกัน)</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-white">Shield</h3>
                     <span className="rounded-md border border-blue-400/40 bg-blue-500/25 px-2 py-0.5 text-[10px] font-bold text-blue-200">
-                      ใช้ได้ตลอดเวลา / โต้กลับ
+                      Anytime / Reactive
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    สร้างเกราะคุ้มกันตนเอง เพื่อ <strong className="text-blue-300">ป้องกันความเสียหาย (Damage) หรือการถูกขโมยสลับตัวอักษร (Swap)</strong> จากคู่ต่อสู้ สามารถเปิดเกราะล่วงหน้าหรือกดใช้ตอนถูกโจมตีได้
+                    Erects an impenetrable defensive shield that <strong className="text-blue-300">completely blocks incoming Damage or tile Swaps</strong> from opponents. Can be deployed proactively or as an instant counter.
                   </p>
                 </div>
               </div>
@@ -310,13 +327,13 @@ export function GameGuideModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">Heal (ฟื้นฟูเลือด)</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-white">Heal</h3>
                     <span className="rounded-md border border-rose-400/40 bg-rose-500/25 px-2 py-0.5 text-[10px] font-bold text-rose-200">
-                      ใช้ได้ตลอดเวลา (HP Mode)
+                      Anytime (HP Mode)
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    <strong className="text-rose-300">ฟื้นฟูพลังชีวิต (HP) ของตนเองทันที</strong> โดยคำนวณแต้มเลือดที่ได้รับจากผลรวมคะแนนตัวอักษรทั้งหมดที่อยู่บนแท่นวาง (Rack) ของเรา
+                    <strong className="text-rose-300">Instantly restores your HP</strong> by the sum of all point values of letter tiles currently sitting on your rack. Hold high-value tiles to maximize your recovery!
                   </p>
                 </div>
               </div>
@@ -328,13 +345,13 @@ export function GameGuideModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">Word ×2 (ดาเมจสองเท่า)</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-white">Word ×2 (Double Damage)</h3>
                     <span className="rounded-md border border-purple-400/40 bg-purple-500/25 px-2 py-0.5 text-[10px] font-bold text-purple-200">
-                      เทิร์นตนเอง (HP Mode)
+                      Own Turn Only (HP Mode)
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    ใช้ก่อนกดยืนยันคำศัพท์ เพื่อเพิ่มพลังโจมตีของคำที่ลงในเทิร์นนั้นเป็น <strong className="text-purple-300">2 เท่าของคะแนนคำศัพท์</strong> โจมตีลด HP ของคู่ต่อสู้ที่เลือกได้อย่างหนักหน่วง!
+                    Target an opponent before confirming your move. Your word deals <strong className="text-purple-300">double (2×) attack damage</strong> directly lowering their HP for devastating knockouts!
                   </p>
                 </div>
               </div>
@@ -346,13 +363,13 @@ export function GameGuideModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">Swap Word (จารกรรมสลับตัวอักษร)</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-white">Swap Word (Spy Swap)</h3>
                     <span className="rounded-md border border-emerald-400/40 bg-emerald-500/25 px-2 py-0.5 text-[10px] font-bold text-emerald-200">
-                      ใช้ได้ตลอดเวลา
+                      Anytime
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    เลือกตัวอักษรบนแท่นวางของเรา 1-3 ตัว เพื่อ <strong className="text-emerald-300">สลับแลกเปลี่ยนกับตัวอักษรของคู่ต่อสู้</strong> ชิงตัวอักษรดีๆ มาใช้และทิ้งตัวอักษรยากๆ ให้คู่แข่ง
+                    Choose 1 to 3 tiles from your rack to <strong className="text-emerald-300">swap with random tiles from a targeted opponent</strong>. Offload awkward letters while snatching valuable tiles from their hand!
                   </p>
                 </div>
               </div>
@@ -364,13 +381,13 @@ export function GameGuideModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">Freeze Word (สาปแช่แข็งตัวอักษร)</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-white">Freeze Word (Freeze Tile)</h3>
                     <span className="rounded-md border border-cyan-400/40 bg-cyan-500/25 px-2 py-0.5 text-[10px] font-bold text-cyan-200">
-                      เทิร์นตนเอง
+                      Own Turn Only
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    เลือกแช่แข็งตัวอักษรบนกระดาน 1 ตัว ทำให้ <strong className="text-cyan-300">คู่ต่อสู้ทุกคนไม่สามารถนำตัวอักษรมาต่อคำที่ช่องนี้ได้</strong> จนกว่าจะวนกลับมาถึงเทิร์นของเราอีกครั้ง
+                    Freeze a placed tile on the board in crystal ice. <strong className="text-cyan-300">Opponents cannot attach or connect any letters to this tile</strong> until the turn rotation returns to you!
                   </p>
                 </div>
               </div>
@@ -382,13 +399,13 @@ export function GameGuideModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white">Clear Word (ทำลายตัวอักษร)</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-white">Clear Word (Destroy Tile)</h3>
                     <span className="rounded-md border border-orange-400/40 bg-orange-500/25 px-2 py-0.5 text-[10px] font-bold text-orange-200">
-                      ใช้ได้ตลอดเวลา
+                      Anytime
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    เลือกทำลายและ <strong className="text-orange-300">ลบตัวอักษร 1 ตัวออกจากกระดานอย่างถาวร</strong> (ยกเว้นช่องจุดกึ่งกลาง) เพื่อตัดทางต่อคำของคู่ต่อสู้ หรือเปิดช่องคะแนนพิเศษให้เราวางคำใหม่
+                    Permanently <strong className="text-orange-300">vaporize and remove 1 tile from the board</strong> (excluding center square). Disrupt opponent word combinations or reopen high-scoring multiplier paths!
                   </p>
                 </div>
               </div>
@@ -402,27 +419,27 @@ export function GameGuideModal({
               <div className="rounded-2xl border border-slate-700/60 bg-slate-900/60 p-4 space-y-3">
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <Layers className="h-4 w-4 text-amber-400" />
-                  <span>โหมดการเล่น (Game Modes)</span>
+                  <span>Game Modes</span>
                 </h3>
 
                 <div className="space-y-2.5">
                   <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
                     <h4 className="text-sm font-bold text-rose-300 flex items-center gap-1.5">
                       <Heart className="h-4 w-4 fill-rose-400/40" />
-                      <span>HP Battle Mode (โหมดต่อสู้พลังชีวิต)</span>
+                      <span>HP Battle Mode</span>
                     </h4>
                     <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
-                      ผู้เล่นทุกคนเริ่มต้นด้วย 100 HP เมื่อผู้เล่นวางคำศัพท์สำเร็จ คะแนนที่ทำได้จะกลายเป็น <strong className="text-rose-300">ดาเมจลด HP ของคู่ต่อสู้ทุกคน</strong> ในเกม! ผู้เล่นที่ HP เหลือ 0 จะถูกคัดออก คนสุดท้ายที่รอดชีวิตคือผู้ชนะ
+                      All players start with 100 HP (or custom lobby setting). Every valid word placed deals its scored points as <strong className="text-rose-300">damage to all opponents</strong>! Players whose HP reaches 0 are eliminated. The last survivor wins!
                     </p>
                   </div>
 
                   <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
                     <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-1.5">
                       <Layers className="h-4 w-4" />
-                      <span>Turn Count Mode (โหมดนับรอบเทิร์น)</span>
+                      <span>Turn Count Mode</span>
                     </h4>
                     <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
-                      แข่งขันตามจำนวนเทิร์นที่กำหนดไว้ (เช่น 7 เทิร์น) ไม่มีการลดเลือด เน้นการสะสมคะแนนจากคำศัพท์ให้ได้มากที่สุด เมื่อครบกำหนดจำนวนเทิร์น <strong className="text-indigo-300">ผู้ที่มีคะแนนรวมสูงสุดจะเป็นผู้ชนะ</strong>
+                      Compete over a set number of rounds (e.g. 7 turns). No damage is dealt. Focus on building high-scoring words and leveraging multipliers. <strong className="text-indigo-300">The highest total score at the end wins!</strong>
                     </p>
                   </div>
                 </div>
@@ -432,32 +449,32 @@ export function GameGuideModal({
               <div className="rounded-2xl border border-slate-700/60 bg-slate-900/60 p-4 space-y-2.5">
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-cyan-400" />
-                  <span>กติกาและกลยุทธ์พิเศษ</span>
+                  <span>Key Rules & Scoring</span>
                 </h3>
 
                 <ul className="space-y-2 text-xs sm:text-sm text-slate-300">
                   <li className="flex items-start gap-2">
                     <span className="text-amber-400 font-bold shrink-0">✦</span>
                     <div>
-                      <strong className="text-amber-300">Bingo Bonus (+50 คะแนน):</strong> หากผู้เล่นสามารถวางตัวอักษรจากแท่นวางได้ครบทั้ง 7 ตัวในเทิร์นเดียว จะได้รับโบนัสบิงโกเพิ่มทันที +50 คะแนน!
+                      <strong className="text-amber-300">Bingo Bonus (+50 Points):</strong> Play all 7 tiles from your rack in a single turn to receive an instant +50 Bingo point bonus!
                     </div>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-amber-400 font-bold shrink-0">✦</span>
                     <div>
-                      <strong className="text-cyan-300">การสลับตัวอักษร (Exchange Tiles):</strong> หากตัวอักษรบนแท่นวางเล่นยาก สามารถเลือกตัวอักษรเพื่อสลับเปลี่ยนกับถุงตัวอักษรส่วนกลางได้ (จะเสียสิทธิ์ในการวางคำในเทิร์นนั้น)
+                      <strong className="text-cyan-300">Tile Exchange:</strong> Exchange any number of tiles from your rack with the bag if you have no playable words (uses your turn).
                     </div>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-amber-400 font-bold shrink-0">✦</span>
                     <div>
-                      <strong className="text-slate-200">การข้ามเทิร์น (Pass Turn):</strong> หากไม่สามารถคิดคำศัพท์ได้ สามารถกด Pass เพื่อข้ามเทิร์นและส่งต่อให้ผู้เล่นถัดไป
+                      <strong className="text-slate-200">Pass Turn:</strong> You may pass your turn if you cannot or choose not to place tiles.
                     </div>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-amber-400 font-bold shrink-0">✦</span>
                     <div>
-                      <strong className="text-purple-300">จำกัดเวลาต่อเทิร์น (Turn Timer):</strong> หากหมดเวลาประจำเทิร์น ระบบจะทำการข้ามเทิร์นโดยอัตโนมัติ
+                      <strong className="text-purple-300">Turn Timer:</strong> When the turn countdown reaches 0, your turn automatically expires and passes to the next player.
                     </div>
                   </li>
                 </ul>
@@ -476,7 +493,7 @@ export function GameGuideModal({
             onClick={onClose}
             className="rounded-xl border border-slate-700 bg-slate-800/90 px-4 py-2 text-xs sm:text-sm font-bold text-slate-200 transition hover:bg-slate-700 hover:text-white active:scale-95 cursor-pointer"
           >
-            เข้าใจแล้ว (Close)
+            Got it (Close)
           </button>
         </div>
       </div>

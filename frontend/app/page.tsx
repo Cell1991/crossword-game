@@ -231,7 +231,7 @@ export default function HomePage() {
                   </span>
                 </span>
                 <span className="flex items-center gap-1.5 text-xs font-semibold text-cyan-300/80 group-hover:text-cyan-200">
-                  <span>คู่มือ</span>
+                  <span>View Guide</span>
                   <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </span>
               </button>
