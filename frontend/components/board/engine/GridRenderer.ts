@@ -90,17 +90,17 @@ export class GridRenderer {
             ctx.fillStyle = '#1e1b4b';
             drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
             ctx.fill();
-            ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
-            ctx.lineWidth = 1.2;
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.75)';
+            ctx.lineWidth = 1.4;
             ctx.stroke();
 
             if (cellSize >= 12) {
               ctx.save();
-              ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
-              ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.2);
-              ctx.fillStyle = '#fbbf24';
-              const starSize = Math.max(12, Math.round(cellSize * 0.72));
-              ctx.font = `${starSize}px sans-serif`;
+              ctx.shadowColor = 'rgba(251, 191, 36, 0.95)';
+              ctx.shadowBlur = lowPower ? 0 : Math.max(5, cellSize * 0.25);
+              ctx.fillStyle = '#fde047';
+              const starSize = Math.max(16, Math.round(cellSize * 0.74));
+              ctx.font = `bold ${starSize}px sans-serif`;
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);

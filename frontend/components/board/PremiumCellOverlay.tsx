@@ -257,10 +257,10 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
           );
         })}
 
-        {/* 6. Center Start Star (3D Deep Sapphire with Gold Star) */}
+        {/* 6. Center Start Star (3D Deep Sapphire with Large Radiant Gold Star) */}
         {!isCellOccupied(CENTER_ROW, CENTER_COL) && (
           <span
-            className="tile-3d-center absolute flex items-center justify-center transition-[opacity] duration-200"
+            className="tile-3d-center absolute flex items-center justify-center transition-[opacity] duration-200 overflow-hidden"
             style={{
               left: `${CENTER_COL * baseCellSize + 1}px`,
               top: `${CENTER_ROW * baseCellSize + 1}px`,
@@ -269,7 +269,12 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
               borderRadius: '5px',
             }}
           >
-            <span className="text-amber-400 text-sm drop-shadow-[0_0_6px_rgba(251,191,36,0.85)] leading-none select-none">
+            <span className="board-center-pulse absolute inset-0 rounded-full bg-amber-400/20 blur-[1px]" />
+            <span className="board-gold-spark absolute inset-[15%] rounded-full bg-yellow-200/15" />
+            <span
+              className="relative z-10 text-amber-300 font-black leading-none select-none drop-shadow-[0_0_8px_rgba(251,191,36,0.95)] drop-shadow-[0_0_16px_rgba(245,158,11,0.6)]"
+              style={{ fontSize: `${Math.max(18, Math.round(baseCellSize * 0.74))}px` }}
+            >
               ★
             </span>
           </span>
