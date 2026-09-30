@@ -7,7 +7,6 @@ import { ArrowRight, Eye, LogIn, Minus, Plus } from 'lucide-react';
 import { createRoom, getRoom, joinRoom, sessionStore } from '@/lib/api';
 import { GameMode, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
-import MouseGradientText from '@/components/effects/MouseGradientText';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
 
@@ -136,20 +135,40 @@ export default function HomePage() {
 
       <div className="relative z-10 my-auto flex w-full max-w-[28rem] flex-col items-center gap-6 sm:gap-8">
         {/* Logo / Title */}
-        <div className="text-center">
-          <Image
-            src="/wordx-icon-256.png?v=20260915"
-            alt="WordX logo"
-            width={112}
-            height={112}
-            priority
-            className="mx-auto mb-2 h-20 w-20 sm:h-28 sm:w-28 object-contain drop-shadow-[0_18px_28px_rgba(0,0,0,0.42)] transition-transform hover:scale-105"
-          />
-          <p className="mb-1 text-[0.65rem] font-bold uppercase tracking-[0.3em] text-amber-300/80">Real-time word play</p>
-          <h1 className="text-4xl sm:text-5xl sm:text-[3.4rem] font-black tracking-[-0.04em] leading-none">
-            <MouseGradientText>WordX</MouseGradientText>
-          </h1>
-          <p className="mt-2 text-xs sm:text-sm font-medium tracking-wide text-slate-400">Multiplayer Crossword Game</p>
+        <div className="relative text-center flex flex-col items-center">
+          {/* 3D Cube Logo with layered glowing aura */}
+          <div className="relative mb-2 sm:mb-3 flex items-center justify-center">
+            {/* Multi-layered dynamic neon ambient halos */}
+            <div className="pointer-events-none absolute -inset-6 rounded-full bg-gradient-to-tr from-indigo-500/35 via-amber-400/25 to-amber-500/40 blur-2xl hero-glow-breathe" />
+            <div className="pointer-events-none absolute h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-amber-400/25 blur-xl" />
+
+            {/* Floating 3D Logo */}
+            <div className="relative hero-logo-float transition-transform duration-300 hover:scale-110 active:scale-95 cursor-pointer">
+              <Image
+                src="/wordx-icon-256.png?v=20260915"
+                alt="WordX logo"
+                width={140}
+                height={140}
+                priority
+                className="h-24 w-24 sm:h-32 sm:w-32 object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.65)] drop-shadow-[0_0_30px_rgba(245,158,11,0.45)]"
+              />
+            </div>
+          </div>
+
+          {/* Prominent, Majestic WordX Title */}
+          <div className="relative select-none">
+            {/* Subtle glow behind title */}
+            <div className="pointer-events-none absolute -inset-x-8 -inset-y-4 rounded-full bg-gradient-to-r from-indigo-500/20 via-amber-400/30 to-orange-500/25 blur-2xl opacity-80" />
+
+            <h1 className="relative text-5xl sm:text-6xl sm:text-[4.25rem] font-black tracking-[-0.03em] leading-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]">
+              <span className="bg-gradient-to-b from-white via-slate-100 to-slate-300 bg-clip-text text-transparent [text-shadow:0_2px_16px_rgba(255,255,255,0.35)]">
+                Word
+              </span>
+              <span className="relative inline-block bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(245,158,11,0.9)] drop-shadow-[0_4px_16px_rgba(217,119,6,0.7)] ml-0.5">
+                X
+              </span>
+            </h1>
+          </div>
         </div>
 
         {/* Card */}
@@ -441,10 +460,6 @@ export default function HomePage() {
             </div>
           )}
         </div>
-
-        <p className="text-center text-[0.65rem] sm:text-[0.68rem] font-medium uppercase tracking-[0.2em] text-slate-500">
-          Think sharp · play together · score big
-        </p>
       </div>
     </div>
   );

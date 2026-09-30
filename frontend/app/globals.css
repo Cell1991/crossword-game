@@ -285,6 +285,34 @@ body {
   animation: board-label-breathe 3.2s ease-in-out infinite;
 }
 
+@keyframes hero-logo-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1.5deg);
+  }
+}
+
+@keyframes hero-glow-breathe {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08);
+  }
+}
+
+.hero-logo-float {
+  animation: hero-logo-float 4.5s ease-in-out infinite;
+}
+
+.hero-glow-breathe {
+  animation: hero-glow-breathe 3.5s ease-in-out infinite;
+}
+
 .board-premium-letter { margin-left: 0.12em; }
 
 @media (prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse) {
