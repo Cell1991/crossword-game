@@ -8,6 +8,7 @@ const INTRO_FADE_MS = 2500;
 const CROSSFADE_S = 6;
 const MUTE_KEY = 'wordx.music.muted';
 const VOLUME_KEY = 'wordx.music.volume';
+const TIME_KEY = 'wordx.music.time';
 
 interface BackgroundMusicProps {
   src: string;
@@ -42,7 +43,13 @@ export default function BackgroundMusic({ src, credit }: BackgroundMusicProps) {
 
     const players = [new Audio(src), new Audio(src)];
     players.forEach((p) => { p.preload = 'auto'; p.volume = 0; });
+    // Pages remount the player on navigation; resume where the last page left off.
+    try {
+      const saved = Number(sessionStorage.getItem(TIME_KEY));
+      if (Number.isFinite(saved) && saved > 0) players[0].currentTime = saved;
+    } catch { /* storage unavailable */ }
     let active = 0;
+    let introStart = 0;
     let raf: number | null = null;
     let started = false;
 
@@ -59,7 +66,7 @@ export default function BackgroundMusic({ src, credit }: BackgroundMusicProps) {
           cur.volume = target * (1 - t);
           next.volume = target * t;
         } else {
-          cur.volume = Math.min(target, (cur.currentTime / (INTRO_FADE_MS / 1000)) * target);
+          cur.volume = Math.min(target, ((performance.now() - introStart) / INTRO_FADE_MS) * target);
         }
         if (cur.ended || remaining <= 0.05) {
           cur.pause();
@@ -75,6 +82,7 @@ export default function BackgroundMusic({ src, credit }: BackgroundMusicProps) {
       const cur = players[active];
       cur.play().then(() => {
         started = true;
+        introStart = performance.now();
         stopLoop();
         raf = requestAnimationFrame(tick);
       }).catch(() => { /* blocked; waits for a gesture */ });
@@ -94,6 +102,9 @@ export default function BackgroundMusic({ src, credit }: BackgroundMusicProps) {
     return () => {
       window.removeEventListener('pointerdown', onGesture);
       window.removeEventListener('keydown', onGesture);
+      if (started) {
+        try { sessionStorage.setItem(TIME_KEY, String(players[active].currentTime)); } catch { /* storage unavailable */ }
+      }
       pause();
       controlsRef.current = { play: () => {}, pause: () => {} };
     };
