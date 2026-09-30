@@ -27,6 +27,7 @@ import { GameHud } from '@/components/game/GameHud';
 import { TurnTimer } from '@/components/game/TurnTimer';
 import { GameOverScreen } from '@/components/game/GameOverScreen';
 import { CardRevealOverlay, PendingEffectBanner, ToastStack } from '@/components/game/GameOverlays';
+import { HintSuggestionsOverlay } from '@/components/game/HintSuggestionsOverlay';
 import { BlankTilePickerModal } from '@/components/game/BlankTilePickerModal';
 import { ConfirmExitModal } from '@/components/game/ConfirmExitModal';
 import { MobileInfoModal } from '@/components/game/MobileInfoModal';
@@ -165,11 +166,37 @@ export default function GamePage() {
       handleTurnChange(gameState);
       clearRemotePlacements();
       setExchangeTileIds(null);
+      cards.clearHints();
     }
     turnKeyRef.current = nextTurnKey;
-  }, [clearRemotePlacements, gameState, handleTurnChange]);
+  }, [cards, clearRemotePlacements, gameState, handleTurnChange]);
 
   const handleTimeUp = useCallback(() => expireTurn(gameId).then(() => reload()), [gameId, reload]);
+
+  const handleSelectHint = useCallback((index: number) => {
+    cards.setActiveHintIndex(index);
+    const suggestion = cards.hintSuggestions[index];
+    if (suggestion && serverRack.length > 0) {
+      staged.stageHintTiles(suggestion.tiles, serverRack);
+    }
+  }, [cards, serverRack, staged]);
+
+  // When hint suggestions arrive or change, automatically stage tiles onto the board
+  const prevHintKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (cards.hintSuggestions.length > 0) {
+      const activeSuggestion = cards.hintSuggestions[cards.activeHintIndex];
+      const hintKey = `${cards.activeHintIndex}:${activeSuggestion?.word ?? ''}`;
+      if (activeSuggestion && serverRack.length > 0) {
+        if (prevHintKeyRef.current !== hintKey) {
+          prevHintKeyRef.current = hintKey;
+          staged.stageHintTiles(activeSuggestion.tiles, serverRack);
+        }
+      }
+    } else {
+      prevHintKeyRef.current = null;
+    }
+  }, [cards.activeHintIndex, cards.hintSuggestions, serverRack, staged]);
 
   // Handlers below are stable callbacks: TileRack, PowerCardBar and RightSidebar are memoised
   // so a drag crossing into another cell does not re-render them.
@@ -212,13 +239,14 @@ export default function GamePage() {
     try {
       await exchangeTiles(gameId, myPlayerId, exchangeTileIds);
       setExchangeTileIds(null);
+      cards.clearHints();
       reload();
     } catch (error: unknown) {
       flashError(error instanceof Error ? error.message : 'Failed to exchange tiles');
     } finally {
       setIsSubmitting(false);
     }
-  }, [exchangeTileIds, flashError, gameId, myPlayerId, reload]);
+  }, [cards, exchangeTileIds, flashError, gameId, myPlayerId, reload]);
 
   const handleConfirmMove = useCallback(async () => {
     if (!myPlayerId || temporaryTiles.length === 0) return;
@@ -231,21 +259,27 @@ export default function GamePage() {
     setIsSubmitting(true);
     try {
       const freezeTileId = cards.deferredFreezeTileId ?? undefined;
+      const wasBingo = temporaryTiles.length >= 7;
       await commitMove(gameId, myPlayerId, temporaryTiles, freezeTileId);
+      if (wasBingo) {
+        toasts.flashInfo('🎉 BINGO! All 7 tiles placed (+50 Bonus Points)!');
+      }
       clearStagedMove();
+      cards.clearHints();
       reload();
     } catch (error: unknown) {
       flashError(error instanceof Error ? error.message : 'Failed to commit move');
     } finally {
       setIsSubmitting(false);
     }
-  }, [cards.deferredFreezeTileId, clearStagedMove, flashError, gameId, myPlayerId, reload, setError, temporaryTiles, validationReason, validationState]);
+  }, [cards, clearStagedMove, flashError, gameId, myPlayerId, reload, setError, temporaryTiles, validationReason, validationState]);
 
   const handlePassTurn = useCallback(async () => {
     if (!myPlayerId) return;
     setIsSubmitting(true);
     try {
       await passTurn(gameId, myPlayerId);
+      cards.clearHints();
       reload();
     } catch (error: unknown) {
       flashError(error instanceof Error ? error.message : 'Failed to pass turn');
@@ -385,7 +419,18 @@ export default function GamePage() {
       <div className="relative z-10 flex flex-1 min-h-0">
         {/* Board canvas takes full space */}
         <div className="relative min-w-0 flex-1">
-          <ToastStack info={toasts.info} error={toasts.error} />
+          {/* Top Overlays Stack: Toasts & Hint Suggestions (stacked vertically, never overlapping) */}
+          <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex w-full max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-col items-center gap-2.5 sm:top-4">
+            {cards.hintSuggestions.length > 0 && (
+              <HintSuggestionsOverlay
+                suggestions={cards.hintSuggestions}
+                activeIndex={cards.activeHintIndex}
+                onSelectIndex={handleSelectHint}
+                onDismiss={cards.clearHints}
+              />
+            )}
+            <ToastStack info={toasts.info} error={toasts.error} inline />
+          </div>
           <div className="absolute inset-0 z-10">
             <BoardCanvas
               containerRef={boardRef}
@@ -407,6 +452,7 @@ export default function GamePage() {
               camera={camera}
               frozenTile={gameState.frozen_tile}
               hintCell={cards.hintCell}
+              hintTiles={temporaryTiles.length > 0 ? null : cards.activeHintTiles}
               pendingArmedCell={cards.pendingArmedCell ?? deferredFreezeCell}
               pendingArmedCard={cards.armedCard ?? (cards.deferredFreezeTileId ? 'FREEZE_TILE' : null)}
             />
@@ -462,10 +508,10 @@ export default function GamePage() {
           <div className="flex flex-col items-center justify-center py-3.5 px-4 sm:px-6 rounded-2xl border border-rose-500/50 bg-gradient-to-r from-rose-950/85 via-slate-900/90 to-rose-950/85 text-center shadow-[0_0_24px_rgba(244,63,94,0.25)] ring-1 ring-rose-500/30 max-w-lg mx-auto">
             <div className="flex items-center gap-2 text-rose-300 font-black text-sm sm:text-base tracking-wide uppercase">
               <span className="text-xl">☠️</span>
-              <span>คุณตายแล้ว (Knocked Out)</span>
+              <span>You Have Been Knocked Out</span>
             </div>
             <p className="text-xs text-slate-300 mt-1">
-              พลังชีวิต (HP) ของคุณหมดลงแล้ว คุณกำลังรับชมการเล่นของผู้เล่นที่เหลืออยู่ในห้อง
+              Your HP reached 0. You are now spectating the remaining players in the room.
             </p>
           </div>
         ) : (
@@ -517,6 +563,7 @@ export default function GamePage() {
               placementValid={validationState}
               isSubmitting={isSubmitting}
               estimatedScore={staged.estimatedScore}
+              isBingoBonus={temporaryTiles.length >= 7}
             />
         )}
       </div>

@@ -27,6 +27,65 @@ class DictionaryService:
             self.load_from_file(path)
         if not self._words:
             self._load_default_wordlist()
+        self._rebuild_indices()
+
+    def _rebuild_indices(self) -> None:
+        from collections import Counter
+        self._words_by_len: dict[int, list[str]] = {}
+        self._word_profiles: list[tuple[str, int, set[str], Counter]] = []
+        for w in self._words:
+            length = len(w)
+            self._words_by_len.setdefault(length, []).append(w)
+            self._word_profiles.append((w, length, set(w), Counter(w)))
+
+    def get_words_of_length(self, length: int) -> list[str]:
+        if not hasattr(self, "_words_by_len") or not self._words_by_len:
+            self._rebuild_indices()
+        return self._words_by_len.get(length, [])
+
+    def get_viable_words(
+        self,
+        rack_counts: dict[str, int],
+        board_counts: dict[str, int],
+        blanks: int = 0,
+        max_len: int = 15,
+    ) -> dict[int, list[str]]:
+        if not hasattr(self, "_word_profiles") or not self._word_profiles:
+            self._rebuild_indices()
+
+        total_pool: dict[str, int] = {}
+        for k, v in rack_counts.items():
+            total_pool[k] = total_pool.get(k, 0) + v
+        for k, v in board_counts.items():
+            total_pool[k] = total_pool.get(k, 0) + v
+
+        pool_set = set(total_pool.keys())
+        result: dict[int, list[str]] = {}
+
+        if blanks == 0:
+            for w, length, wset, wc in self._word_profiles:
+                if length > max_len or length < 2:
+                    continue
+                if wset.issubset(pool_set):
+                    if all(wc[ch] <= total_pool[ch] for ch in wc):
+                        result.setdefault(length, []).append(w)
+        else:
+            for w, length, wset, wc in self._word_profiles:
+                if length > max_len or length < 2:
+                    continue
+                needed_blanks = 0
+                possible = True
+                for ch, count in wc.items():
+                    avail = total_pool.get(ch, 0)
+                    if count > avail:
+                        needed_blanks += (count - avail)
+                        if needed_blanks > blanks:
+                            possible = False
+                            break
+                if possible:
+                    result.setdefault(length, []).append(w)
+
+        return result
 
     def load_from_file(self, file_path: str) -> None:
         with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
@@ -34,6 +93,7 @@ class DictionaryService:
                 word = line.strip().upper()
                 if word and word.isalpha():
                     self._words.add(word)
+        self._rebuild_indices()
 
     def is_valid_word(self, word: str) -> bool:
         if not word or not isinstance(word, str):
@@ -45,7 +105,10 @@ class DictionaryService:
 
     def add_word(self, word: str) -> None:
         if word and word.isalpha():
-            self._words.add(word.strip().upper())
+            cleaned = word.strip().upper()
+            self._words.add(cleaned)
+            if hasattr(self, "_words_by_len"):
+                self._words_by_len.setdefault(len(cleaned), []).append(cleaned)
 
     def _load_default_wordlist(self) -> None:
         """Loads an extensive set of valid standard English words."""

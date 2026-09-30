@@ -369,10 +369,64 @@ pytest tests/ -v
 
 ---
 
+## 👥 Contributors & Team Members
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="20%">
+      <a href="https://github.com/Cell1991">
+        <img src="https://github.com/Cell1991.png" width="90px;" alt="Cell1991" style="border-radius: 50%;" /><br />
+        <sub><b>Cell1991</b></sub>
+      </a>
+      <br />
+      <sub>Chu</sub>
+    </td>
+    <td align="center" width="20%">
+      <a href="https://github.com/friend47">
+        <img src="https://github.com/friend47.png" width="90px;" alt="friend47" style="border-radius: 50%;" /><br />
+        <sub><b>friend47</b></sub>
+      </a>
+      <br />
+      <sub>Peerapatr</sub>
+    </td>
+    <td align="center" width="20%">
+      <a href="https://github.com/waiwaix43">
+        <img src="https://github.com/waiwaix43.png" width="90px;" alt="waiwaix43" style="border-radius: 50%;" /><br />
+        <sub><b>waiwaix43</b></sub>
+      </a>
+      <br />
+      <sub>Natthaset</sub>
+    </td>
+    <td align="center" width="20%">
+      <a href="https://github.com/Rednoselittledog">
+        <img src="https://github.com/Rednoselittledog.png" width="90px;" alt="Rednoselittledog" style="border-radius: 50%;" /><br />
+        <sub><b>Rednoselittledog</b></sub>
+      </a>
+      <br />
+      <sub>Kanin Noisiri</sub>
+    </td>
+    <td align="center" width="20%">
+      <a href="https://github.com/ReFresh-bit">
+        <img src="https://github.com/ReFresh-bit.png" width="90px;" alt="ReFresh-bit" style="border-radius: 50%;" /><br />
+        <sub><b>ReFresh-bit</b></sub>
+      </a>
+      <br />
+      <sub>Freshy</sub>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+---
+
 ## 📄 License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 <div align="center">
-  <sub>Built with ❤️ by Cell1991 for competitive word puzzle and strategy enthusiasts.</sub>
+  <sub>Built with ❤️ by the development team for competitive word puzzle and strategy enthusiasts.</sub>
 </div>
+

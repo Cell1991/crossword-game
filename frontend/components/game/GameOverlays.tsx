@@ -54,10 +54,10 @@ export const CardRevealOverlay: React.FC<{ reveal: CardReveal }> = ({ reveal }) 
 );
 
 /** Toasts stack instead of sitting on top of each other, and stay clear of the zoom controls. */
-export const ToastStack: React.FC<{ info: string | null; error: string }> = ({ info, error }) => {
+export const ToastStack: React.FC<{ info: string | null; error: string; inline?: boolean; className?: string }> = ({ info, error, inline = false, className = '' }) => {
   if (!info && !error) return null;
   return (
-    <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex w-full max-w-[calc(100%-2rem)] -translate-x-1/2 flex-col items-center gap-2 sm:top-4">
+    <div className={inline ? `pointer-events-none flex flex-col items-center gap-2 w-full max-w-[calc(100%-2rem)] ${className}` : `pointer-events-none absolute left-1/2 top-3 z-30 flex w-full max-w-[calc(100%-2rem)] -translate-x-1/2 flex-col items-center gap-2 sm:top-4 ${className}`}>
       {info && (
         <div role="status" aria-live="polite" className="pointer-events-auto relative block w-fit max-w-[min(32rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-emerald-400/40 bg-gradient-to-r from-emerald-950/90 via-slate-950/95 to-emerald-950/90 px-12 py-3.5 sm:px-14 sm:py-4 text-center text-sm font-semibold tracking-wide text-emerald-100 shadow-[0_12px_36px_rgba(0,0,0,0.6),0_0_24px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/20 backdrop-blur-md animate-fadeIn">
           <span className="absolute inset-x-8 top-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-90" />

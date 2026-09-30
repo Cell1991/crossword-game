@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.models import Game, GamePlayer
 from app.database.session import get_db
 from app.game.board import Board
-from app.game.hint import find_hint_candidates
+from app.game.hint import find_hint_suggestions, find_hint_candidates
 from app.game.tiles import TileService, NotEnoughTilesInBag
 from app.schemas.events import WebSocketEvent, EventType
 from app.schemas.move import PlacedTileInput
@@ -58,16 +58,13 @@ async def use_card(
         raise HTTPException(status_code=400, detail="Card is not in your hand")
 
     if card == "HINT":
-        # find_hint_candidates is a best-effort heuristic (see app/game/hint.py) that can come up
-        # empty even when a valid move exists — don't burn the player's card on a failed search.
         if game.current_player_id != player.id:
             raise HTTPException(status_code=400, detail="You can only use this on your turn")
         board = await board_state(db, game.id)
         rack = await player_rack(db, player.id)
-        candidates = find_hint_candidates(board, [t["letter"] for t in rack], is_first_move=len(board) == 0)
-        if not candidates:
-            return {"success": True, "found": False}
-        row, col = random.choice(candidates)
+        suggestions = find_hint_suggestions(board, rack, is_first_move=len(board) == 0, max_suggestions=3)
+        if not suggestions:
+            return {"success": True, "found": False, "suggestions": []}
         cards.remove(card)
         player.cards = cards
         await replace_player_cards(db, player.id, cards)
@@ -75,7 +72,14 @@ async def use_card(
             type=EventType.CARD_USED,
             payload={"playerId": player.id, "card": card},
         ).model_dump())
-        return {"success": True, "found": True, "row": row, "col": col}
+        first_tile = suggestions[0]["tiles"][0] if suggestions[0]["tiles"] else {"row": 9, "col": 13}
+        return {
+            "success": True,
+            "found": True,
+            "row": first_tile.get("row", 9),
+            "col": first_tile.get("col", 13),
+            "suggestions": suggestions,
+        }
 
     if card == "SHIELD":
         cards.remove(card)

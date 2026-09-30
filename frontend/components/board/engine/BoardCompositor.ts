@@ -1,4 +1,4 @@
-import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
+import { BoardCell, CellPosition, HintTile, PlacedTile } from '@/lib/types';
 import { TilePalette } from '@/lib/tileTheme';
 import { BoardModel } from '@/lib/engine/boardModel';
 import { GridRenderer } from './GridRenderer';
@@ -21,6 +21,7 @@ export interface SceneRenderConfig {
   draggingTileId: string | null;
   frozenTile: CellPosition | null;
   hintCell: CellPosition | null;
+  hintTiles?: HintTile[] | null;
   pendingArmedCell: CellPosition | null;
   pendingArmedCard?: string | null;
   lowPower: boolean;
@@ -99,10 +100,17 @@ export class BoardCompositor {
       }
     }
 
-    // 4. Layer 3: Hint & Action Reticles
-    if (config.hintCell && isCellVisible(config.hintCell.row, config.hintCell.col)) {
-      FXRenderer.renderHint(ctx, config.hintCell, offset, cellSize);
+    // 3.5 Layer 2.5: Hint Ghost Tiles (suggested word placements)
+    if (config.hintTiles && config.hintTiles.length > 0) {
+      for (let i = 0; i < config.hintTiles.length; i++) {
+        const ht = config.hintTiles[i];
+        if (isCellVisible(ht.row, ht.col)) {
+          TileRenderer.renderGhostTile(tileContext, ht.row, ht.col, ht.letter, ht.value);
+        }
+      }
     }
+
+    // 4. Layer 3: Action Reticles
     if (config.pendingArmedCell && isCellVisible(config.pendingArmedCell.row, config.pendingArmedCell.col)) {
       FXRenderer.renderPendingArmed(ctx, config.pendingArmedCell, offset, cellSize, config.pendingArmedCard);
     }

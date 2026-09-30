@@ -37,6 +37,7 @@ interface TileRackProps {
   placementValid: boolean | null;
   isSubmitting: boolean;
   estimatedScore?: number;
+  isBingoBonus?: boolean;
   powerCardSlot?: React.ReactNode;
 }
 
@@ -66,6 +67,7 @@ export const TileRack = memo(function TileRack({
   placementValid,
   isSubmitting,
   estimatedScore,
+  isBingoBonus,
   powerCardSlot,
 }: TileRackProps) {
   const [draggedSlot, setDraggedSlot] = useState<number | null>(null);
@@ -392,17 +394,29 @@ export const TileRack = memo(function TileRack({
                 {isExchanging ? 'Confirm Action' : 'Turn Actions'}
               </span>
             </div>
-            {/* Points / Validity preview badge */}
+            {/* Points / Validity preview badge & Bingo indicator */}
             {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
-              <span
-                className={`text-[11px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-lg border transition-all ${
-                  placementValid === false
-                    ? 'bg-gradient-to-r from-rose-950/90 to-rose-900/80 border-rose-500/70 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] animate-pulse'
-                    : 'bg-gradient-to-r from-emerald-950/90 to-emerald-900/80 border-emerald-500/70 text-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] animate-pulse'
-                }`}
-              >
-                {placementValid === false ? 'INVALID' : `+${estimatedScore} PTS`}
-              </span>
+              <div className="flex items-center">
+                {placementValid === false ? (
+                  <span className="text-[11px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-lg border bg-gradient-to-r from-rose-950/90 to-rose-900/80 border-rose-500/70 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] animate-pulse">
+                    INVALID
+                  </span>
+                ) : isBingoBonus ? (
+                  <div className="flex items-center rounded-lg border border-amber-500/70 bg-slate-950/90 shadow-[0_0_16px_rgba(245,158,11,0.35)] overflow-hidden text-[11px] font-black tracking-wider uppercase">
+                    <span className="flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-amber-500/30 to-yellow-500/20 text-amber-300 border-r border-amber-500/50">
+                      <span>🎉</span>
+                      <span>BINGO</span>
+                    </span>
+                    <span className="px-2.5 py-0.5 bg-emerald-950/70 text-emerald-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                      +{estimatedScore} PTS
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-[11px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-lg border bg-gradient-to-r from-emerald-950/90 to-emerald-900/80 border-emerald-500/70 text-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                    +{estimatedScore} PTS
+                  </span>
+                )}
+              </div>
             )}
           </div>
 

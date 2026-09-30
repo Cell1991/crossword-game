@@ -2,7 +2,7 @@
 
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { validateMove } from '@/lib/api';
-import { BoardCell, CellPosition, GameState, PlacedTile, Tile } from '@/lib/types';
+import { BoardCell, CellPosition, GameState, HintTile, PlacedTile, Tile } from '@/lib/types';
 import { cellKey, isBlankLetter, isCellCommitted } from '@/lib/tiles';
 
 /** Wait this long after the last change before asking the server whether the placement is valid. */
@@ -214,6 +214,38 @@ export function useStagedMove({
     ));
   }, [myPlayerId]);
 
+  /** Automatically stages a hint suggestion's tiles from rack onto the board. */
+  const stageHintTiles = useCallback((hintTiles: HintTile[], rack: Tile[]) => {
+    const availableRack = [...rack];
+    const newPlaced: PlacedTile[] = [];
+    const newBlankLetters: Record<string, string> = {};
+
+    for (const ht of hintTiles) {
+      let matchedIdx = availableRack.findIndex(t => t.letter.toUpperCase() === ht.letter.toUpperCase());
+      if (matchedIdx === -1) {
+        matchedIdx = availableRack.findIndex(t => isBlankLetter(t.letter));
+      }
+      if (matchedIdx !== -1) {
+        const [matchedTile] = availableRack.splice(matchedIdx, 1);
+        if (isBlankLetter(matchedTile.letter)) {
+          newBlankLetters[matchedTile.id] = ht.letter.toUpperCase();
+        }
+        newPlaced.push({
+          row: ht.row,
+          col: ht.col,
+          tile_id: matchedTile.id,
+          letter: ht.letter.toUpperCase(),
+          value: isBlankLetter(matchedTile.letter) ? 0 : matchedTile.value,
+        });
+      }
+    }
+
+    setDesignatedBlankLetters(prev => ({ ...prev, ...newBlankLetters }));
+    setTemporaryTiles(newPlaced);
+    setSelectedTileId(null);
+    setSelectedCell(null);
+  }, []);
+
   return {
     temporaryTiles,
     pendingTileIds,
@@ -225,6 +257,7 @@ export function useStagedMove({
     designatedBlankLetters,
     blankPickerTarget,
     stageTile,
+    stageHintTiles,
     swapStagedTiles,
     unstageTile,
     handleCellClick,

@@ -18,9 +18,8 @@ class ScoringService:
     ) -> tuple[int, list[dict[str, Any]]]:
         """
         Calculate the total move score and return a detailed breakdown.
-        Temporary default rules:
-          - Score for each word is the sum of letter values.
-          - 50-point bonus if all 7 tiles are placed (configurable).
+        - Score for each word is the sum of letter values with newly placed cell multipliers.
+        - 50-point bonus if all 7 tiles are placed in a single turn.
         """
         total_score = 0
         breakdown: list[dict[str, Any]] = []
@@ -29,8 +28,8 @@ class ScoringService:
             word_base_score = 0
             for index, (_, val, _) in enumerate(w.letters_with_vals):
                 row, col = w.cells[index]
-                multiplier = Board.multiplier_at(row, col)
-                word_base_score += val * multiplier
+                letter_multiplier = Board.multiplier_at(row, col)
+                word_base_score += val * letter_multiplier
             breakdown.append({
                 "word": w.word,
                 "base_score": word_base_score,

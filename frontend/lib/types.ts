@@ -126,6 +126,21 @@ export interface ViewportRect {
   height: number;
 }
 
+export interface HintTile {
+  row: number;
+  col: number;
+  letter: string;
+  value: number;
+}
+
+export interface HintSuggestion {
+  word: string;
+  score: number;
+  direction: 'across' | 'down';
+  tiles: HintTile[];
+  bingo_bonus?: number;
+}
+
 /** Mirrors backend MoveService.CARD_TYPES (backend/app/services/move_service.py). */
 export const CARD_TYPES = [
   'HINT', 'SPY_SWAP', 'DESTROY_TILE', 'HEAL', 'DOUBLE_DAMAGE', 'SHIELD', 'FREEZE_TILE',
@@ -142,6 +157,7 @@ export interface ValidateMoveResponse {
   reason?: string | null;
   words_formed: WordFormed[];
   estimated_score: number;
+  bingo_bonus?: number;
 }
 
 export interface CommitMoveResponse {
@@ -150,8 +166,9 @@ export interface CommitMoveResponse {
   turn_number: number;
   words_formed: WordFormed[];
   score_earned: number;
+  bingo_bonus?: number;
   next_player_id?: string | null;
-  game_over: boolean;
+  game_over?: boolean;
   winner_id?: string | null;
   card_awarded?: string | null;
 }

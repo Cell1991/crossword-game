@@ -29,7 +29,7 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-rose-500/50 bg-gradient-to-r from-rose-950/90 via-slate-900/80 to-rose-950/90 px-2.5 py-1 text-xs font-medium text-rose-200 shadow-[0_0_14px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/30 truncate">
           <span className="text-sm shrink-0">☠️</span>
           <span className="font-extrabold tracking-wide text-rose-300 uppercase text-[11px] sm:text-xs shrink-0">
-            คุณตายแล้ว
+            KNOCKED OUT
           </span>
           {currentPlayer && (
             <>

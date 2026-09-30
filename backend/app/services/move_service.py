@@ -162,7 +162,8 @@ class MoveService:
             valid=valid,
             reason=err,
             words_formed=words_formed,
-            estimated_score=score if valid else 0
+            estimated_score=score if valid else 0,
+            bingo_bonus=50 if (valid and len(placed_tiles) >= 7) else 0,
         )
 
     @classmethod
@@ -361,6 +362,7 @@ class MoveService:
             turn_number=completed_turn,
             words_formed=words_formed,
             score_earned=score,
+            bingo_bonus=50 if len(placed_tiles) >= 7 else 0,
             next_player_id=next_player_id,
             game_over=game_over,
             winner_id=winner,

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
+import { BoardCell, CellPosition, HintTile, PlacedTile } from '@/lib/types';
 import { BoardCamera } from '@/hooks/useBoardCamera';
 import { BoardModel, BoardScene, drawBoard } from './boardRenderer';
 import { PremiumCellOverlay } from './PremiumCellOverlay';
@@ -43,6 +43,7 @@ interface BoardCanvasProps {
   camera: BoardCamera;
   frozenTile?: CellPosition | null;
   hintCell?: CellPosition | null;
+  hintTiles?: HintTile[] | null;
   pendingArmedCell?: CellPosition | null;
   pendingArmedCard?: string | null;
 }
@@ -75,6 +76,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   camera,
   frozenTile = null,
   hintCell = null,
+  hintTiles = null,
   pendingArmedCell = null,
   pendingArmedCard = null,
 }) => {
@@ -128,12 +130,13 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       draggingTileId,
       frozenTile,
       hintCell,
+      hintTiles,
       pendingArmedCell,
       pendingArmedCard,
       model: modelRef.current,
     };
     draw();
-  }, [boardState, dragPreviewCell, dragPreviewIsValid, dragPreviewTile, draggingTileId, draw, frozenTile, hintCell, pendingArmedCell, pendingArmedCard, remotePlacements, selectedCell, temporaryTiles, temporaryTilesValid]);
+  }, [boardState, dragPreviewCell, dragPreviewIsValid, dragPreviewTile, draggingTileId, draw, frozenTile, hintCell, hintTiles, pendingArmedCell, pendingArmedCard, remotePlacements, selectedCell, temporaryTiles, temporaryTilesValid]);
 
   // Size the canvas to its container, and centre the board the first time it has a size.
   useLayoutEffect(() => {
