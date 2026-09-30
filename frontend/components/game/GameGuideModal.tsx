@@ -443,11 +443,11 @@ export function GameGuideModal({
                     </div>
                     <div className="space-y-1.5 text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="text-slate-400 w-16 shrink-0">Goal:</span>
+                        <span className="text-slate-400 w-16 shrink-0">Goal</span>
                         <span className="font-semibold text-white">Last survivor wins</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-slate-400 w-16 shrink-0">Scoring:</span>
+                        <span className="text-slate-400 w-16 shrink-0">Scoring</span>
                         <span className="text-rose-200">Word points deal HP damage to all rivals</span>
                       </div>
                     </div>
@@ -470,11 +470,11 @@ export function GameGuideModal({
                     </div>
                     <div className="space-y-1.5 text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="text-slate-400 w-16 shrink-0">Goal:</span>
+                        <span className="text-slate-400 w-16 shrink-0">Goal</span>
                         <span className="font-semibold text-white">Highest total score wins</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-slate-400 w-16 shrink-0">Rounds:</span>
+                        <span className="text-slate-400 w-16 shrink-0">Rounds</span>
                         <span className="text-indigo-200">Fixed turns (no player damage)</span>
                       </div>
                     </div>
