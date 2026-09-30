@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: crossword-backend
+    env: docker
+    dockerContext: backend
+    dockerfilePath: backend/Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://neondb_owner:npg_u1M4njDJWyYc@ep-lingering-river-b5qqbz4r-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require
+      - key: CORS_ORIGINS
+        value: "*"

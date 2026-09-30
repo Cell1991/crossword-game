@@ -1,11 +1,15 @@
+from datetime import datetime, timedelta
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.database.session import init_db
 from app.api import rooms, games, moves, cards, debug, dictionary
 from app.websocket import handlers
+
+# Global tracker for 7-day inactivity sleep
+last_user_activity = datetime.now()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,7 +22,16 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration - allow any origin (dev mode)
+@app.middleware("http")
+async def track_user_activity(request: Request, call_next):
+    global last_user_activity
+    path = request.url.path
+    if not path.endswith("/api/ping") and not path.endswith("/health"):
+        last_user_activity = datetime.now()
+    response = await call_next(request)
+    return response
+
+# CORS configuration - allow any origin
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -43,3 +56,11 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/api/ping")
+def ping_keep_alive():
+    global last_user_activity
+    # If no real user activity for 7 days, return 503 so Render auto-sleeps
+    if datetime.now() - last_user_activity > timedelta(days=7):
+        return Response(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content="Server sleeping due to 7 days of inactivity")
+    return {"status": "ok", "last_user_activity": last_user_activity.isoformat()}
