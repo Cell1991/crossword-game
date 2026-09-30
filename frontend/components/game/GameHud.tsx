@@ -120,12 +120,12 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={onOpenInfo}
-            className="lg:hidden flex-1 max-w-[160px] flex items-center justify-center gap-1.5 rounded-lg border border-cyan-500/40 bg-gradient-to-r from-cyan-950/70 via-slate-900/80 to-slate-900/90 px-2.5 py-1 text-xs font-bold text-cyan-300 hover:from-cyan-900/80 hover:to-slate-800 hover:text-white shadow-[0_0_10px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/20 transition-all cursor-pointer active:scale-95 select-none shrink truncate"
+            className="lg:hidden flex items-center justify-center gap-1.5 rounded-lg border border-cyan-500/40 bg-gradient-to-r from-cyan-950/70 via-slate-900/80 to-slate-900/90 px-2.5 py-1 text-xs font-bold text-cyan-300 hover:from-cyan-900/80 hover:to-slate-800 hover:text-white shadow-[0_0_10px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/20 transition-all cursor-pointer active:scale-95 select-none shrink-0"
             title="Match stats, word history, and tile bag"
             aria-label="Open match stats, word history, and tile bag"
           >
             <ScrollText className="h-3.5 w-3.5 text-cyan-300 drop-shadow-[0_0_4px_#22d3ee] shrink-0" />
-            <span className="tracking-wide font-extrabold text-[11px] sm:text-xs truncate">Log & Stats</span>
+            <span className="tracking-wide font-extrabold text-[11px] sm:text-xs whitespace-nowrap">Stats</span>
           </button>
         </div>
 
