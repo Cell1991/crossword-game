@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowRight, BookOpen, Eye, LogIn, Minus, Plus } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Eye, LogIn, Minus, Plus } from 'lucide-react';
 import { createRoom, getRoom, joinRoom, sessionStore } from '@/lib/api';
 import { GameMode, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
@@ -239,19 +239,25 @@ export default function HomePage() {
           )}
 
           {mode === 'create' && (
-            <div className="flex flex-col gap-4 sm:gap-6">
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <button onClick={() => { setMode('home'); setError(''); }} className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70">
-                    ← Back
-                  </button>
-                  <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-amber-300/80">Host a session</p>
+            <div className="flex flex-col gap-3.5 sm:gap-4">
+              {/* Header */}
+              <div className="flex items-center gap-3 pb-2 border-b border-white/[0.06]">
+                <button
+                  type="button"
+                  onClick={() => { setMode('home'); setError(''); }}
+                  className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
+                  aria-label="Back"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </button>
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white">Create Room</h2>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Create a Room</h2>
-                <p className="mt-0.5 text-xs sm:text-sm leading-5 text-slate-400">You&apos;ll be the host and receive a Game PIN to share.</p>
               </div>
+
+              {/* Game Mode */}
               <fieldset>
-                <legend className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game Mode</legend>
+                <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Game Mode</legend>
                 <div className="grid grid-cols-2 gap-2">
                   {([
                     ['HP', 'HP Battle', 'Score drains health'],
@@ -262,134 +268,148 @@ export default function HomePage() {
                       type="button"
                       aria-pressed={gameMode === value}
                       onClick={() => setGameMode(value)}
-                      className={`rounded-xl border p-2.5 sm:p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${
+                      className={`rounded-xl border p-2.5 sm:p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
                         gameMode === value
-                          ? 'border-amber-300/70 bg-amber-300/10 text-white'
-                          : 'border-white/10 bg-slate-800/50 text-slate-300 hover:border-white/25'
+                          ? 'border-amber-400/80 bg-amber-400/15 text-white shadow-[0_0_15px_rgba(251,191,36,0.12)]'
+                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
                       }`}
                     >
-                      <span className="block text-xs sm:text-sm font-bold">{title}</span>
-                      <span className="mt-0.5 block text-[0.68rem] leading-snug text-slate-400">{description}</span>
+                      <span className={`block text-xs sm:text-sm font-bold ${gameMode === value ? 'text-amber-200' : 'text-slate-200'}`}>
+                        {title}
+                      </span>
+                      <span className={`mt-0.5 block text-[0.68rem] leading-snug ${gameMode === value ? 'text-amber-300/80' : 'text-slate-400'}`}>
+                        {description}
+                      </span>
                     </button>
                   ))}
                 </div>
               </fieldset>
-              {gameMode === 'HP' && (
+
+              {/* Settings 2-Column: (Starting HP / Turn Count) + Turn Time */}
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                {gameMode === 'HP' ? (
+                  <div>
+                    <label htmlFor="starting-hp" className="mb-1.5 block text-xs font-semibold text-slate-300">Starting HP</label>
+                    <CustomSelect
+                      id="starting-hp"
+                      value={hpOption}
+                      onChange={setHpOption}
+                      options={[
+                        { value: '50', label: '50 HP' },
+                        { value: '100', label: '100 HP (Default)' },
+                        { value: '150', label: '150 HP' },
+                        { value: '200', label: '200 HP' },
+                        { value: 'custom', label: 'Custom' },
+                      ]}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label htmlFor="max-turns" className="mb-1.5 block text-xs font-semibold text-slate-300">Game Length</label>
+                    <CustomSelect
+                      id="max-turns"
+                      value={turnCountOption}
+                      onChange={setTurnCountOption}
+                      options={[
+                        { value: '7', label: '7 Turns' },
+                        { value: '14', label: '14 Turns' },
+                        { value: '21', label: '21 Turns' },
+                        { value: 'custom', label: 'Custom' },
+                      ]}
+                    />
+                  </div>
+                )}
+
                 <div>
-                  <label htmlFor="starting-hp" className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Starting Health</label>
+                  <label htmlFor="turn-time" className="mb-1.5 block text-xs font-semibold text-slate-300">Turn Time</label>
                   <CustomSelect
-                    id="starting-hp"
-                    value={hpOption}
-                    onChange={setHpOption}
+                    id="turn-time"
+                    value={turnTimeLimit === null ? '' : String(turnTimeLimit)}
+                    onChange={val => setTurnTimeLimit(val === '' ? null : Number(val) as TurnTimeLimit)}
                     options={[
-                      { value: '50', label: '50 HP' },
-                      { value: '100', label: '100 HP (Default)' },
-                      { value: '150', label: '150 HP' },
-                      { value: '200', label: '200 HP' },
-                      { value: 'custom', label: 'Custom' },
+                      { value: '', label: 'Unlimited' },
+                      { value: '30', label: '30 sec' },
+                      { value: '60', label: '60 sec' },
+                      { value: '90', label: '90 sec' },
+                      { value: '120', label: '120 sec' },
                     ]}
                   />
-                  {hpOption === 'custom' && (
-                    <div className="mt-2 flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
-                      <button
-                        type="button"
-                        onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
-                        className="flex items-center justify-center w-11 sm:w-12 h-11 sm:h-12 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                        aria-label="Decrease HP"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
-                        <input
-                          type="number"
-                          min={10}
-                          max={1000}
-                          value={customHp}
-                          onChange={event => setCustomHp(event.target.value)}
-                          aria-label="Custom starting HP"
-                          placeholder="100"
-                          className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                        <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">HP</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
-                        className="flex items-center justify-center w-11 sm:w-12 h-11 sm:h-12 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                        aria-label="Increase HP"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
                 </div>
-              )}
-              {gameMode === 'TURNS' && (
-                <div>
-                  <label htmlFor="max-turns" className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game Length</label>
-                  <CustomSelect
-                    id="max-turns"
-                    value={turnCountOption}
-                    onChange={setTurnCountOption}
-                    options={[
-                      { value: '7', label: '7 Turns' },
-                      { value: '14', label: '14 Turns' },
-                      { value: '21', label: '21 Turns' },
-                      { value: 'custom', label: 'Custom' },
-                    ]}
-                  />
-                  {turnCountOption === 'custom' && (
-                    <div className="mt-2 flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
-                      <button
-                        type="button"
-                        onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 28) - 1)))}
-                        className="flex items-center justify-center w-11 sm:w-12 h-11 sm:h-12 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                        aria-label="Decrease turns"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
-                        <input
-                          type="number"
-                          min={1}
-                          max={500}
-                          value={customTurnCount}
-                          onChange={event => setCustomTurnCount(event.target.value)}
-                          aria-label="Custom turn count"
-                          placeholder="28"
-                          className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                        <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Turns</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 28) + 1)))}
-                        className="flex items-center justify-center w-11 sm:w-12 h-11 sm:h-12 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                        aria-label="Increase turns"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-              <div>
-                <label htmlFor="turn-time" className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Turn Time</label>
-                <CustomSelect
-                  id="turn-time"
-                  value={turnTimeLimit === null ? '' : String(turnTimeLimit)}
-                  onChange={val => setTurnTimeLimit(val === '' ? null : Number(val) as TurnTimeLimit)}
-                  options={[
-                    { value: '', label: 'Unlimited' },
-                    { value: '30', label: '30 sec' },
-                    { value: '60', label: '60 sec' },
-                    { value: '90', label: '90 sec' },
-                    { value: '120', label: '120 sec' },
-                  ]}
-                />
               </div>
+
+              {/* Custom HP Stepper */}
+              {gameMode === 'HP' && hpOption === 'custom' && (
+                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    aria-label="Decrease HP"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
+                    <input
+                      type="number"
+                      min={10}
+                      max={1000}
+                      value={customHp}
+                      onChange={event => setCustomHp(event.target.value)}
+                      aria-label="Custom starting HP"
+                      placeholder="100"
+                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">HP</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    aria-label="Increase HP"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Custom Turns Stepper */}
+              {gameMode === 'TURNS' && turnCountOption === 'custom' && (
+                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 28) - 1)))}
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    aria-label="Decrease turns"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
+                    <input
+                      type="number"
+                      min={1}
+                      max={500}
+                      value={customTurnCount}
+                      onChange={event => setCustomTurnCount(event.target.value)}
+                      aria-label="Custom turn count"
+                      placeholder="28"
+                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Turns</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 28) + 1)))}
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    aria-label="Increase turns"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Your Name */}
               <div>
-                <label className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Your Name</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-300">Your Name</label>
                 <input
                   type="text"
                   value={name}
@@ -400,11 +420,14 @@ export default function HomePage() {
                   className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
                 />
               </div>
+
               {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
+
+              {/* Action Button */}
               <button
                 onClick={handleCreate}
                 disabled={loading}
-                className="w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-amber-400 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_12px_30px_rgba(245,158,11,0.16)] transition-all hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px"
+                className="w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-amber-400 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_10px_25px_rgba(245,158,11,0.2)] transition-all hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px cursor-pointer"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -420,19 +443,25 @@ export default function HomePage() {
           )}
 
           {mode === 'join' && (
-            <div className="flex flex-col gap-4 sm:gap-6">
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <button onClick={() => { setMode('home'); setError(''); }} className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/70">
-                    ← Back
-                  </button>
-                  <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-indigo-300/80">Enter a session</p>
+            <div className="flex flex-col gap-3.5 sm:gap-4">
+              {/* Header */}
+              <div className="flex items-center gap-3 pb-2 border-b border-white/[0.06]">
+                <button
+                  type="button"
+                  onClick={() => { setMode('home'); setError(''); }}
+                  className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
+                  aria-label="Back"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </button>
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white">Join Game</h2>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Join a Game</h2>
-                <p className="mt-0.5 text-xs sm:text-sm leading-5 text-slate-400">Enter the Game PIN given by the host.</p>
               </div>
+
+              {/* Your Name */}
               <div>
-                <label className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Your Name</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-300">Your Name</label>
                 <input
                   type="text"
                   value={name}
@@ -442,8 +471,10 @@ export default function HomePage() {
                   className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
                 />
               </div>
+
+              {/* Game PIN */}
               <div>
-                <label className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Game PIN</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-300">Game PIN</label>
                 <input
                   type="text"
                   value={pin}
@@ -451,14 +482,17 @@ export default function HomePage() {
                   onKeyDown={e => e.key === 'Enter' && handleJoin()}
                   placeholder="6-digit PIN"
                   maxLength={6}
-                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-center font-mono text-xl sm:text-2xl tracking-[0.28em] text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-center font-mono text-xl sm:text-2xl tracking-[0.25em] text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
                 />
               </div>
+
               {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
+
+              {/* Action Buttons */}
               <button
                 onClick={handleJoin}
                 disabled={loading}
-                className="w-full rounded-xl sm:rounded-2xl border border-indigo-300/30 bg-indigo-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-white shadow-[0_12px_30px_rgba(99,102,241,0.18)] transition-all hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px"
+                className="w-full rounded-xl sm:rounded-2xl border border-indigo-400/40 bg-indigo-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-white shadow-[0_10px_25px_rgba(99,102,241,0.25)] transition-all hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px cursor-pointer"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -470,10 +504,11 @@ export default function HomePage() {
                   </span>
                 ) : 'Join Game'}
               </button>
+
               <button
                 onClick={handleWatch}
                 disabled={loading}
-                className="-mt-1.5 sm:-mt-3 flex w-full items-center justify-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl border border-white/10 py-2.5 text-xs sm:text-sm font-semibold text-slate-300 transition-all hover:border-sky-300/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+                className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/20 py-2.5 text-xs sm:text-sm font-medium text-slate-300 hover:text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 cursor-pointer"
                 title="Watch the game without playing (only the PIN is needed)"
               >
                 <Eye className="h-4 w-4" />
