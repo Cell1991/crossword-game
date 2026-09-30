@@ -213,9 +213,10 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
   useEffect(() => {
     if (!pendingEffectExpiry) return;
     const msRemaining = Date.parse(pendingEffectExpiry) - (Date.now() + clockOffsetRef.current);
+    const delay = Math.min(1200, Math.max(0, msRemaining));
     const timer = window.setTimeout(() => {
       void resolvePendingEffect(gameId).then(() => loadGameState()).catch(() => {});
-    }, Math.max(0, msRemaining));
+    }, delay);
     return () => window.clearTimeout(timer);
   }, [pendingEffectExpiry, gameId, loadGameState]);
 

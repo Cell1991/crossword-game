@@ -6,7 +6,7 @@ import { BoardCell, CellPosition, GameState, HintTile, PlacedTile, Tile } from '
 import { cellKey, isBlankLetter, isCellCommitted } from '@/lib/tiles';
 
 /** Wait this long after the last change before asking the server whether the placement is valid. */
-const VALIDATE_DEBOUNCE_MS = 400;
+const VALIDATE_DEBOUNCE_MS = 150;
 
 interface BlankPickerTarget {
   tileId: string;

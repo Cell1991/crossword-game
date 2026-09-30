@@ -113,7 +113,8 @@ class MoveService:
         player_id: str,
         placed_tiles: list[PlacedTileInput]
     ) -> ValidateMoveResponse:
-        stmt_game = select(Game).where(Game.id == game_id).with_for_update()
+        # Fast non-locking query for move validation
+        stmt_game = select(Game).where(Game.id == game_id)
         game = (await db.execute(stmt_game)).scalar_one_or_none()
         if not game:
             raise HTTPException(status_code=404, detail="Game not found")
@@ -130,8 +131,9 @@ class MoveService:
         if player.hp <= 0 or player.connection_status == "OFFLINE":
             return ValidateMoveResponse(valid=False, reason="This player cannot play")
 
-        normalized_board = await board_state(db, game_id)
-        normalized_rack = await player_rack(db, player.id)
+        # Use fast in-memory JSON state to avoid redundant remote DB roundtrips
+        normalized_board = game.board_state or {}
+        normalized_rack = player.rack or []
         # Verify tile ownership in rack
         owns_tiles, err_ownership = cls._verify_tile_ownership(normalized_rack, placed_tiles)
         if not owns_tiles:
