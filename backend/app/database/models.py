@@ -154,3 +154,14 @@ class DictionaryWord(Base):
 
     word = Column(String(32), primary_key=True)
     word_length = Column(Integer, nullable=False, index=True)
+
+
+class WordDefinition(Base):
+    """Persistent storage for word definitions (phonetics, meanings, parts of speech)."""
+    __tablename__ = "word_definitions"
+
+    word = Column(String(32), primary_key=True, index=True)
+    phonetic = Column(String(64), nullable=True)
+    meanings = Column(JSON, nullable=False, default=list)  # [{"partOfSpeech": "noun", "definitions": ["..."]}]
+    source = Column(String(32), default="ONLINE", nullable=False)  # OFFLINE, ONLINE
+    created_at = Column(DateTime(timezone=True), default=get_utc_now, nullable=False)

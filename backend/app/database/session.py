@@ -3,7 +3,9 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy import inspect, text, select, func, insert
 from sqlalchemy.pool import NullPool
 from app.core.config import settings
-from app.database.models import Base, Game, GamePlayer, BoardCell, GameTile, PlayerCard, DictionaryWord
+from app.database.models import (
+    Base, Game, GamePlayer, BoardCell, GameTile, PlayerCard, DictionaryWord, WordDefinition
+)
 from app.game.dictionary import dictionary_service
 
 engine_kwargs = {}
@@ -36,6 +38,8 @@ async def init_db():
         await _backfill_normalized_state(session)
         await _seed_dictionary(session)
         await _load_dictionary_from_database(session)
+        await _seed_word_definitions(session)
+        await _load_cached_word_definitions(session)
         await session.commit()
 
 
@@ -111,6 +115,40 @@ async def _load_dictionary_from_database(session: AsyncSession):
     words = (await session.execute(select(DictionaryWord.word))).scalars().all()
     if words:
         dictionary_service._words = set(words)
+
+
+async def _seed_word_definitions(session: AsyncSession):
+    """Seed offline definitions into PostgreSQL/SQLite if not already present."""
+    from app.game.offline_definitions import OFFLINE_DEFINITIONS
+
+    existing_words = set((await session.execute(select(WordDefinition.word))).scalars().all())
+    new_rows = []
+    for word, data in OFFLINE_DEFINITIONS.items():
+        if word not in existing_words:
+            new_rows.append({
+                "word": word,
+                "phonetic": data.get("phonetic"),
+                "meanings": data.get("meanings", []),
+                "source": "OFFLINE",
+            })
+    if new_rows:
+        await session.execute(insert(WordDefinition), new_rows)
+
+
+async def _load_cached_word_definitions(session: AsyncSession):
+    """Pre-load all persisted definitions from database directly into the L1 RAM cache."""
+    from app.services.dictionary_lookup import dictionary_lookup_service
+
+    await session.flush()
+    records = (await session.execute(select(WordDefinition))).scalars().all()
+    for rec in records:
+        dictionary_lookup_service._cache[rec.word] = {
+            "word": rec.word,
+            "found": True,
+            "phonetic": rec.phonetic,
+            "meanings": rec.meanings,
+        }
+
 
 
 def _upgrade_existing_schema(connection):
