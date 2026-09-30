@@ -309,9 +309,15 @@ export const PowerCardBar = memo(function PowerCardBar({
                       selected ? 'border-emerald-300 ring-2 ring-emerald-400 shadow-[0_0_14px_rgba(16,185,129,0.7)] scale-105' : 'border-amber-100/80 hover:brightness-105'
                     }`}
                   >
-                    <span className="tile-letter tile-letter-orange text-[26px] leading-none font-maple">
-                      {tile.letter}
-                    </span>
+                    {isBlankLetter(tile.letter) ? (
+                      <svg viewBox="0 0 24 24" className="tile-blank-star w-6 h-6 animate-pulse text-amber-300" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+                        <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+                      </svg>
+                    ) : (
+                      <span className="tile-letter tile-letter-orange text-[26px] leading-none font-maple">
+                        {tile.letter}
+                      </span>
+                    )}
                     <span className="tile-score-blue absolute bottom-0.5 right-1 text-[10px] font-maple">
                       {tile.value}
                     </span>

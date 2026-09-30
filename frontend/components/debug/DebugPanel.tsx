@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { Player, GameState, CARD_TYPES } from '@/lib/types';
+import { Player, GameState, Tile, CARD_TYPES } from '@/lib/types';
 import { debugSetHp, debugSetRackTile, debugGrantCard, debugClearCards, StoredSession } from '@/lib/api';
+import { isBlankLetter } from '@/lib/tiles';
 import { Bug, X, Sparkles, Heart, Shield, Zap, Snowflake, Lightbulb, Trash2, ArrowLeftRight, ChevronDown, Check } from 'lucide-react';
 
 interface DebugPanelProps {
@@ -24,6 +25,51 @@ const CARD_CONFIG: Record<string, { label: string; icon: React.ReactNode; color:
   DOUBLE_DAMAGE: { label: 'Word ×2', icon: <Zap className="w-3.5 h-3.5 text-purple-300" />, color: 'text-purple-300', desc: 'Double damage' },
   SPY_SWAP: { label: 'Swap Word', icon: <ArrowLeftRight className="w-3.5 h-3.5 text-emerald-300" />, color: 'text-emerald-300', desc: 'Swap with rival' },
   DESTROY_TILE: { label: 'Clear Word', icon: <Trash2 className="w-3.5 h-3.5 text-orange-300" />, color: 'text-orange-300', desc: 'Destroy tile' },
+};
+
+const DebugTileInput: React.FC<{
+  tile: Tile;
+  slot: number;
+  playerId: string;
+  disabled: boolean;
+  onEdit: (playerId: string, slot: number, nextLetter: string, currentLetter: string) => void;
+}> = ({ tile, slot, playerId, disabled, onEdit }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const isBlank = isBlankLetter(tile.letter);
+
+  if (isBlank && !isEditing) {
+    return (
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setIsEditing(true)}
+        title="Blank tile (Click to edit letter A-Z or ?)"
+        className="h-7 w-7 rounded-lg bg-gradient-to-b from-amber-100 to-amber-200 border border-amber-400/80 flex items-center justify-center text-amber-950 shadow-sm transition-all hover:ring-2 hover:ring-rose-400 cursor-pointer shrink-0"
+      >
+        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-amber-950 stroke-amber-950" strokeWidth="1.5" strokeLinejoin="round">
+          <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+        </svg>
+      </button>
+    );
+  }
+
+  return (
+    <input
+      key={`${tile.id}:${tile.letter}`}
+      defaultValue={isBlank ? '?' : tile.letter}
+      maxLength={1}
+      disabled={disabled}
+      autoFocus={isEditing}
+      title="Edit letter (Type A-Z or ? for blank)"
+      onFocus={e => e.target.select()}
+      onBlur={e => {
+        setIsEditing(false);
+        onEdit(playerId, slot, e.target.value, tile.letter);
+      }}
+      onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+      className="h-7 w-7 rounded-lg bg-gradient-to-b from-amber-100 to-amber-200 border border-amber-400/80 text-center text-xs font-black uppercase text-stone-950 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-sm transition-all shrink-0"
+    />
+  );
 };
 
 export const DebugPanel: React.FC<DebugPanelProps> = ({
@@ -82,9 +128,14 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
   };
 
   const handleEditTile = (playerId: string, slot: number, nextLetter: string, currentLetter: string) => {
-    const letter = nextLetter.trim().toUpperCase();
-    if (!letter || letter === currentLetter || !/^[A-Z]$/.test(letter)) return;
-    void run(() => debugSetRackTile(gameId, playerId, slot, letter), `Tile [${letter}]`, playerId, 'tile');
+    let letter = nextLetter.trim().toUpperCase();
+    if (letter === '?' || letter === '*' || letter === '_' || letter === 'BLANK' || letter === '✦') {
+      letter = 'BLANK';
+    } else if (!/^[A-Z]$/.test(letter)) {
+      return;
+    }
+    if (!letter || letter === currentLetter) return;
+    void run(() => debugSetRackTile(gameId, playerId, slot, letter), `Tile [${letter === 'BLANK' ? '✦' : letter}]`, playerId, 'tile');
   };
 
   const handleGrantCard = (playerId: string) => {
@@ -244,16 +295,13 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
                 <div className="flex flex-wrap gap-1">
                   {(player.rack ?? []).length === 0 && <span className="text-slate-500 italic text-[10px]">Rack is empty</span>}
                   {(player.rack ?? []).map((tile, slot) => (
-                    <input
+                    <DebugTileInput
                       key={`${tile.id}:${tile.letter}`}
-                      defaultValue={tile.letter}
-                      maxLength={1}
+                      tile={tile}
+                      slot={slot}
+                      playerId={player.id}
                       disabled={busy}
-                      title="Edit letter (Type A-Z)"
-                      onFocus={e => e.target.select()}
-                      onBlur={e => handleEditTile(player.id, slot, e.target.value, tile.letter)}
-                      onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }}
-                      className="h-7 w-7 rounded-lg bg-gradient-to-b from-amber-100 to-amber-200 border border-amber-400/80 text-center text-xs font-black uppercase text-stone-950 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-sm transition-all"
+                      onEdit={handleEditTile}
                     />
                   ))}
                 </div>
