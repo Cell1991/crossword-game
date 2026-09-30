@@ -219,18 +219,18 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setIsGuideOpen(true)}
-                className="group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-slate-900/60 to-slate-900/40 px-4 py-3 sm:px-5 sm:py-3.5 text-left text-white shadow-[0_8px_24px_rgba(6,182,212,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-400/60 hover:from-cyan-900/40 hover:shadow-[0_12px_28px_rgba(6,182,212,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 active:translate-y-0 cursor-pointer"
+                className="group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.1] bg-gradient-to-r from-slate-800/40 via-slate-800/25 to-slate-900/40 px-4 py-3 sm:px-5 sm:py-3.5 text-left text-white shadow-[0_4px_16px_rgba(0,0,0,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-slate-800/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/50 active:translate-y-0 cursor-pointer"
               >
                 <span className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 shadow-[0_0_10px_rgba(6,182,212,0.25)]">
-                    <BookOpen className="h-5 w-5" strokeWidth={2.2} />
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300/90 border border-amber-400/20">
+                    <BookOpen className="h-4.5 w-4.5" strokeWidth={2} />
                   </span>
                   <span>
-                    <span className="block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-cyan-400/90">How to play</span>
-                    <span className="block text-base sm:text-lg font-bold tracking-tight text-slate-100 group-hover:text-white">Game Guide & Cards</span>
+                    <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Rules & Cards</span>
+                    <span className="block text-base sm:text-lg font-bold tracking-tight text-slate-200 group-hover:text-white transition-colors">Game Guide</span>
                   </span>
                 </span>
-                <span className="flex items-center gap-1.5 text-xs font-semibold text-cyan-300/80 group-hover:text-cyan-200">
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 group-hover:text-amber-200 transition-colors">
                   <span>View Guide</span>
                   <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </span>
