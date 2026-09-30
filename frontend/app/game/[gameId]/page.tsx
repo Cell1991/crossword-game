@@ -472,7 +472,7 @@ export default function GamePage() {
               camera={camera}
               frozenTile={gameState.frozen_tile}
               hintCell={cards.hintCell}
-              hintTiles={temporaryTiles.length > 0 ? null : cards.activeHintTiles}
+              hintTiles={cards.activeHintTiles}
               pendingArmedCell={cards.pendingArmedCell ?? deferredFreezeCell}
               pendingArmedCard={cards.armedCard ?? (cards.deferredFreezeTileId ? 'FREEZE_TILE' : null)}
             />

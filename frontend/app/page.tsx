@@ -10,7 +10,6 @@ import ParticleField from '@/components/effects/ParticleField';
 import MouseGradientText from '@/components/effects/MouseGradientText';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
-import BackgroundMusic from '@/components/audio/BackgroundMusic';
 
 type Mode = 'home' | 'create' | 'join';
 
@@ -130,7 +129,6 @@ export default function HomePage() {
     <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-x-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(99,102,241,0.16),transparent_30%),linear-gradient(135deg,#020617_0%,#0f172a_58%,#171942_100%)] px-4 py-6 sm:py-12">
       <ParticleField className="pointer-events-none fixed inset-0 h-full w-full" />
       <FullscreenButton className="fixed top-3.5 right-3.5 z-40" />
-      <BackgroundMusic src="/audio/autumn-day.mp3" credit={'"Autumn Day" by Kevin MacLeod (incompetech.com) · CC BY 3.0'} />
 
       <div className="relative z-10 my-auto flex w-full max-w-[28rem] flex-col items-center gap-6 sm:gap-8">
         {/* Logo / Title */}

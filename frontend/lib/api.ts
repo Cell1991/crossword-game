@@ -220,6 +220,19 @@ export async function debugGrantCard(gameId: string, playerId: string, card: str
   return res.json();
 }
 
+/** Debug-only: clear all cards (or a specific card index) for a player. */
+export async function debugClearCards(gameId: string, playerId: string, cardIndex?: number): Promise<GameState> {
+  const query = cardIndex !== undefined ? `?card_index=${cardIndex}` : '';
+  const res = await fetch(`${getApiBase()}/debug/games/${gameId}/players/${playerId}/cards${query}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to clear cards');
+  }
+  return res.json();
+}
+
 export async function validateMove(
   gameId: string,
   playerId: string,

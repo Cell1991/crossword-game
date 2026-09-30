@@ -106,3 +106,30 @@ async def grant_card(game_id: str, player_id: str, request: GrantCardRequest, db
         payload=state.model_dump()
     ).model_dump())
     return state
+
+
+@router.delete("/cards", response_model=GameStateResponse)
+async def clear_cards(
+    game_id: str,
+    player_id: str,
+    card_index: int | None = None,
+    db: AsyncSession = Depends(get_db)
+):
+    await _require_debug_mode(db, game_id)
+    _, player = await _load_game_and_player(db, game_id, player_id)
+    cards = await player_cards(db, player_id)
+    if card_index is not None:
+        if 0 <= card_index < len(cards):
+            cards.pop(card_index)
+    else:
+        cards = []
+    player.cards = cards
+    await replace_player_cards(db, player_id, cards)
+    await db.commit()
+    state = await GameService.get_game_state(db, game_id, reveal_all=True)
+    await manager.broadcast(game_id, WebSocketEvent(
+        type=EventType.SNAPSHOT,
+        payload=state.model_dump()
+    ).model_dump())
+    return state
+

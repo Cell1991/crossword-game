@@ -100,11 +100,14 @@ export class BoardCompositor {
       }
     }
 
-    // 3.5 Layer 2.5: Hint Ghost Tiles (suggested word placements)
+    // 3.5 Layer 2.5: Hint Ghost Tiles (suggested word placements for unplaced cells)
     if (config.hintTiles && config.hintTiles.length > 0) {
       for (let i = 0; i < config.hintTiles.length; i++) {
         const ht = config.hintTiles[i];
-        if (isCellVisible(ht.row, ht.col)) {
+        if (!isCellVisible(ht.row, ht.col)) continue;
+        const isOccupiedByCommitted = Boolean(config.boardState[`${ht.row}_${ht.col}`]);
+        const isOccupiedByTemporary = config.temporaryTiles.some(t => t.row === ht.row && t.col === ht.col && t.tile_id !== config.draggingTileId);
+        if (!isOccupiedByCommitted && !isOccupiedByTemporary) {
           TileRenderer.renderGhostTile(tileContext, ht.row, ht.col, ht.letter, ht.value);
         }
       }

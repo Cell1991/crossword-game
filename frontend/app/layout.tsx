@@ -64,13 +64,18 @@ export const metadata: Metadata = {
   },
 };
 
+import BackgroundMusic from "@/components/audio/BackgroundMusic";
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${granix.variable} ${interBlackItalic.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <BackgroundMusic />
+      </body>
     </html>
   );
 }

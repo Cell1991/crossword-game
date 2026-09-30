@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import { Player, GameState, CARD_TYPES } from '@/lib/types';
-import { debugSetHp, debugSetRackTile, debugGrantCard, StoredSession } from '@/lib/api';
+import { debugSetHp, debugSetRackTile, debugGrantCard, debugClearCards, StoredSession } from '@/lib/api';
 import { Bug, X, Sparkles, Heart, Shield, Zap, Snowflake, Lightbulb, Trash2, ArrowLeftRight, ChevronDown, Check } from 'lucide-react';
 
 interface DebugPanelProps {
@@ -37,20 +37,30 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
   onGameState,
 }) => {
   const [busy, setBusy] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [statusFeedback, setStatusFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [completedAction, setCompletedAction] = useState<{ playerId: string; type: string } | null>(null);
   const [selectedCards, setSelectedCards] = useState<Record<string, string>>({});
   const [openDropdownPlayerId, setOpenDropdownPlayerId] = useState<string | null>(null);
   const hpInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
-  const run = async (fn: () => Promise<GameState>) => {
+  const run = async (fn: () => Promise<GameState>, actionName: string, playerId: string = '', actionType: string = '') => {
     if (busy) return;
     setBusy(true);
     try {
       const newState = await fn();
       onGameState(newState);
+      setStatusFeedback({ type: 'success', message: `${actionName} Complete` });
+      if (playerId && actionType) {
+        setCompletedAction({ playerId, type: actionType });
+        setTimeout(() => setCompletedAction(null), 1800);
+      }
+      setTimeout(() => setStatusFeedback(null), 3000);
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Debug action failed');
-      setTimeout(() => setErrorMsg(''), 4000);
+      setStatusFeedback({
+        type: 'error',
+        message: err instanceof Error ? err.message : `${actionName} Failed`,
+      });
+      setTimeout(() => setStatusFeedback(null), 4000);
     } finally {
       setBusy(false);
     }
@@ -60,7 +70,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
     const raw = hpInputRefs.current[playerId]?.value ?? '';
     const hp = Number(raw);
     if (!Number.isFinite(hp)) return;
-    void run(() => debugSetHp(gameId, playerId, Math.round(hp)));
+    void run(() => debugSetHp(gameId, playerId, Math.round(hp)), 'HP Update', playerId, 'hp');
   };
 
   const handleQuickHpAdjust = (playerId: string, currentHp: number, delta: number) => {
@@ -68,18 +78,28 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
     if (hpInputRefs.current[playerId]) {
       hpInputRefs.current[playerId]!.value = String(targetHp);
     }
-    void run(() => debugSetHp(gameId, playerId, targetHp));
+    void run(() => debugSetHp(gameId, playerId, targetHp), `HP ${delta > 0 ? `+${delta}` : delta}`, playerId, 'hp');
   };
 
   const handleEditTile = (playerId: string, slot: number, nextLetter: string, currentLetter: string) => {
     const letter = nextLetter.trim().toUpperCase();
     if (!letter || letter === currentLetter || !/^[A-Z]$/.test(letter)) return;
-    void run(() => debugSetRackTile(gameId, playerId, slot, letter));
+    void run(() => debugSetRackTile(gameId, playerId, slot, letter), `Tile [${letter}]`, playerId, 'tile');
   };
 
   const handleGrantCard = (playerId: string) => {
     const card = selectedCards[playerId] || CARD_TYPES[0];
-    void run(() => debugGrantCard(gameId, playerId, card));
+    const cardMeta = CARD_CONFIG[card]?.label || card;
+    void run(() => debugGrantCard(gameId, playerId, card), `Grant ${cardMeta}`, playerId, 'grant');
+  };
+
+  const handleClearCards = (playerId: string, cardIndex?: number) => {
+    void run(
+      () => debugClearCards(gameId, playerId, cardIndex),
+      cardIndex !== undefined ? 'Card Removed' : 'Clear All Cards',
+      playerId,
+      'clear'
+    );
   };
 
   if (!isOpen) return null;
@@ -106,9 +126,30 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
         </button>
       </div>
 
-      {errorMsg && (
-        <div className="border-b border-rose-500/40 bg-rose-950/80 px-3 py-1.5 text-[11px] font-bold text-rose-200 animate-fadeIn">
-          ⚠️ {errorMsg}
+      {/* Action Notification Status Banner */}
+      {statusFeedback && (
+        <div
+          className={`border-b px-3 py-1.5 text-[11px] font-bold flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-150 transition-all ${
+            statusFeedback.type === 'success'
+              ? 'border-emerald-500/50 bg-emerald-950/90 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
+              : 'border-rose-500/50 bg-rose-950/90 text-rose-300'
+          }`}
+        >
+          <div className="flex items-center gap-1.5 min-w-0">
+            {statusFeedback.type === 'success' ? (
+              <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3] shrink-0" />
+            ) : (
+              <span className="text-rose-400 shrink-0">⚠️</span>
+            )}
+            <span className="truncate">{statusFeedback.message}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStatusFeedback(null)}
+            className="p-0.5 text-slate-400 hover:text-white shrink-0 ml-2"
+          >
+            <X className="w-3 h-3" />
+          </button>
         </div>
       )}
 
@@ -170,9 +211,13 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
                   <button
                     onClick={() => handleSetHp(player.id)}
                     disabled={busy}
-                    className="rounded-lg bg-rose-600 hover:bg-rose-500 text-white px-2 py-1 text-[10px] font-black uppercase tracking-wider cursor-pointer shadow-sm active:scale-95 transition-all"
+                    className={`rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-wider cursor-pointer shadow-sm active:scale-95 transition-all ${
+                      completedAction?.playerId === player.id && completedAction?.type === 'hp'
+                        ? 'bg-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(52,211,153,0.5)]'
+                        : 'bg-rose-600 hover:bg-rose-500 text-white'
+                    }`}
                   >
-                    Set
+                    {completedAction?.playerId === player.id && completedAction?.type === 'hp' ? 'Done ✓' : 'Set'}
                   </button>
                   <div className="flex items-center gap-0.5 ml-1">
                     <button
@@ -282,29 +327,81 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
                     type="button"
                     disabled={busy}
                     onClick={() => handleGrantCard(player.id)}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 hover:brightness-110 active:scale-95 text-slate-950 font-black text-xs uppercase tracking-wider shadow-[0_0_14px_rgba(6,182,212,0.45)] transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 shrink-0 ${
+                      completedAction?.playerId === player.id && completedAction?.type === 'grant'
+                        ? 'bg-emerald-400 text-slate-950 shadow-[0_0_16px_rgba(52,211,153,0.6)]'
+                        : 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 hover:brightness-110 active:scale-95 text-slate-950 shadow-[0_0_14px_rgba(6,182,212,0.45)]'
+                    }`}
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Grant</span>
+                    {completedAction?.playerId === player.id && completedAction?.type === 'grant' ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>Complete</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Grant</span>
+                      </>
+                    )}
                   </button>
                 </div>
 
                 {/* Hand Cards Tags */}
                 {(player.cards ?? []).length > 0 && (
-                  <div className="flex items-center gap-1 flex-wrap mt-0.5 pt-1 border-t border-slate-800">
-                    <span className="text-[9px] font-bold text-slate-500 uppercase">Hand:</span>
-                    {(player.cards ?? []).map((card, idx) => {
-                      const cfg = CARD_CONFIG[card];
-                      return (
-                        <span
-                          key={idx}
-                          className="flex items-center gap-1 px-1.5 py-0.5 rounded-md border border-slate-700 bg-slate-800/80 text-[9px] font-bold text-slate-300"
-                        >
-                          {cfg?.icon}
-                          <span>{cfg?.label || card}</span>
-                        </span>
-                      );
-                    })}
+                  <div className="flex flex-col gap-1.5 mt-0.5 pt-1.5 border-t border-slate-800/80">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        Hand ({(player.cards ?? []).length})
+                      </span>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => handleClearCards(player.id)}
+                        className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[9px] font-bold transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50 ${
+                          completedAction?.playerId === player.id && completedAction?.type === 'clear'
+                            ? 'border-emerald-500/60 bg-emerald-950/60 text-emerald-300'
+                            : 'border-rose-500/40 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-white'
+                        }`}
+                        title="Clear all cards for this player"
+                      >
+                        {completedAction?.playerId === player.id && completedAction?.type === 'clear' ? (
+                          <>
+                            <Check className="w-2.5 h-2.5 text-emerald-400 stroke-[3]" />
+                            <span>Cleared</span>
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="w-2.5 h-2.5 text-rose-400" />
+                            <span>Clear All</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {(player.cards ?? []).map((card, idx) => {
+                        const cfg = CARD_CONFIG[card];
+                        return (
+                          <div
+                            key={idx}
+                            className="group flex items-center gap-1 pl-1.5 pr-1 py-0.5 rounded-md border border-slate-700 bg-slate-800/90 text-[10px] font-bold text-slate-300 hover:border-rose-400/60 transition-all shadow-xs"
+                          >
+                            {cfg?.icon}
+                            <span className={cfg?.color || 'text-slate-200'}>{cfg?.label || card}</span>
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => handleClearCards(player.id, idx)}
+                              className="p-0.5 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-950/60 transition-colors cursor-pointer"
+                              title="Remove this card"
+                            >
+                              <X className="w-2.5 h-2.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

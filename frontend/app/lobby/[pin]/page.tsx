@@ -8,7 +8,6 @@ import { PinDisplay } from '@/components/lobby/PinDisplay';
 import { PlayerList } from '@/components/lobby/PlayerList';
 import ParticleField from '@/components/effects/ParticleField';
 import FullscreenButton from '@/components/ui/FullscreenButton';
-import BackgroundMusic from '@/components/audio/BackgroundMusic';
 import { GameMode, Player } from '@/lib/types';
 
 /** Matches MIN_PLAYERS on the backend: a host may start alone and play solo. */
@@ -121,7 +120,6 @@ export default function LobbyPage() {
     <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4 gap-6 overflow-hidden">
       <ParticleField className="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-80" />
       <FullscreenButton className="fixed top-3.5 right-3.5 z-40" />
-      <BackgroundMusic src="/audio/autumn-day.mp3" credit={'"Autumn Day" by Kevin MacLeod (incompetech.com) · CC BY 3.0'} />
       {/* Background grid */}
       <div className="absolute inset-0 opacity-5 pointer-events-none"
         style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }}
