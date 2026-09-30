@@ -72,7 +72,7 @@ export default function GamePage() {
   }, [debugSessions, isDebug, myPlayerId, reconcile, switchSession]);
 
   const sync = useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnapshot: handleSnapshot });
-  const { gameState, reload } = sync;
+  const { gameState, reload, setGameState } = sync;
 
   const isMyTurn = gameState?.current_player_id === myPlayerId;
   const myPlayer = gameState?.players.find(p => p.id === myPlayerId);
@@ -258,14 +258,47 @@ export default function GamePage() {
         : validationReason || 'Fix the invalid word before confirming');
       return;
     }
+    const tilesToCommit = [...temporaryTiles];
     setIsSubmitting(true);
     try {
       const freezeTileId = cards.deferredFreezeTileId ?? undefined;
-      const wasBingo = temporaryTiles.length >= 7;
-      await commitMove(gameId, myPlayerId, temporaryTiles, freezeTileId);
+      const wasBingo = tilesToCommit.length >= 7;
+      await commitMove(gameId, myPlayerId, tilesToCommit, freezeTileId);
       if (wasBingo) {
         toasts.flashInfo('🎉 BINGO! All 7 tiles placed (+50 Bonus Points)!');
       }
+
+      // Optimistically bake placed tiles directly into board_state and remove them from rack
+      // BEFORE clearing staged move so tiles never vanish from the board for even a fraction of a second!
+      const committedTileIds = new Set(tilesToCommit.map(t => t.tile_id));
+      setGameState(prev => {
+        if (!prev) return prev;
+        const nextBoard = { ...prev.board_state };
+        for (const t of tilesToCommit) {
+          nextBoard[`${t.row}_${t.col}`] = {
+            row: t.row,
+            col: t.col,
+            letter: t.letter,
+            value: t.value,
+            player_id: myPlayerId,
+            turn_number: prev.turn_number,
+          };
+        }
+        return {
+          ...prev,
+          board_state: nextBoard,
+          players: prev.players.map(p => {
+            if (p.id === myPlayerId && p.rack) {
+              return {
+                ...p,
+                rack: p.rack.filter(tile => !committedTileIds.has(tile.id)),
+              };
+            }
+            return p;
+          }),
+        };
+      });
+
       clearStagedMove();
       cards.clearHints();
       reload();
@@ -274,7 +307,7 @@ export default function GamePage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [cards, clearStagedMove, flashError, gameId, myPlayerId, reload, setError, temporaryTiles, validationReason, validationState]);
+  }, [cards, clearStagedMove, flashError, gameId, myPlayerId, reload, setError, setGameState, temporaryTiles, toasts, validationReason, validationState]);
 
   const handlePassTurn = useCallback(async () => {
     if (!myPlayerId) return;
