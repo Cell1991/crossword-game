@@ -136,11 +136,12 @@ async def _seed_word_definitions(session: AsyncSession):
 
 
 async def _load_cached_word_definitions(session: AsyncSession):
-    """Pre-load all persisted definitions from database directly into the L1 RAM cache."""
+    """Pre-load recent persisted definitions from database directly into the L1 RAM cache."""
     from app.services.dictionary_lookup import dictionary_lookup_service
 
     await session.flush()
-    records = (await session.execute(select(WordDefinition))).scalars().all()
+    # Limit initial cache warm-up to 1,000 records; remaining 300,000+ words are fetched on-demand from L2 DB
+    records = (await session.execute(select(WordDefinition).limit(1000))).scalars().all()
     for rec in records:
         dictionary_lookup_service._cache[rec.word] = {
             "word": rec.word,
