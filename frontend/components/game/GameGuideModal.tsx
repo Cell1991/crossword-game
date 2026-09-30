@@ -112,7 +112,7 @@ export function GameGuideModal({
               }`}
             >
               <Zap className={`h-4 w-4 ${activeTab === 'board' ? 'text-amber-300' : 'text-slate-400'}`} />
-              <span>Board Symbols</span>
+              <span>Board & Tiles</span>
             </button>
 
             <button
@@ -149,7 +149,7 @@ export function GameGuideModal({
           {activeTab === 'board' && (
             <div className="space-y-3">
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                The WordX board features animated special cells that award score multipliers, secret power card drops, and placement rules:
+                The WordX board features animated special cells, special tiles, and live multiplayer indicators:
               </p>
 
               {/* 1. Lightning Power Cell */}
@@ -273,6 +273,31 @@ export function GameGuideModal({
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
                     Carries 0 points, but can represent <span className="text-amber-200/95 font-medium">any English letter (A–Z)</span> of your choice. When placed on the board, a letter picker appears to designate your desired character.
+                  </p>
+                </div>
+              </div>
+
+              {/* 6. Opponent Live Placement Tile */}
+              <div className="flex items-start gap-3.5 rounded-2xl border border-slate-800/90 bg-slate-900/50 hover:bg-slate-900/70 p-3.5 sm:p-4 transition-colors">
+                {/* Exact Opponent Placement Tile from Board */}
+                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-sky-400 bg-gradient-to-b from-[#0284c7] via-[#0369a1] to-[#082f49] shadow-[0_0_14px_rgba(56,189,248,0.45)] overflow-hidden">
+                  <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 via-sky-300/10 to-transparent pointer-events-none" />
+                  <div className="absolute inset-1 rounded-lg border border-sky-300/30 pointer-events-none" />
+                  <div className="relative z-10 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 text-[#e0f2fe] drop-shadow-[0_0_6px_rgba(56,189,248,0.9)]" fill="currentColor">
+                      <polygon points="12,2.5 14.2,9.8 21.5,12 14.2,14.2 12,21.5 9.8,14.2 2.5,12 9.8,9.8" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm sm:text-base font-semibold text-white">Opponent Live Placement</h3>
+                    <span className="rounded-full border border-slate-700 bg-slate-800/90 px-2.5 py-0.5 text-[10px] font-medium text-sky-300">
+                      Live Move Indicator
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                    Appears in real time when an opponent is placing tiles during their turn. The secret letters remain concealed under this <span className="text-amber-200/95 font-medium">blue star placeholder</span> until they confirm their word, preventing others from guessing the move in advance.
                   </p>
                 </div>
               </div>
