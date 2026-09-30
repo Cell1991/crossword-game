@@ -27,7 +27,6 @@ export default function HomePage() {
   const [customTurnCount, setCustomTurnCount] = useState('28');
   const [hpOption, setHpOption] = useState('100');
   const [customHp, setCustomHp] = useState('100');
-  const [isDebugMode, setIsDebugMode] = useState(false);
 
   const handleCreate = async () => {
     if (!name.trim()) { setError('Please enter your name'); return; }
@@ -49,7 +48,7 @@ export default function HomePage() {
         turnTimeLimit,
         gameMode,
         gameMode === 'TURNS' ? maxTurns : null,
-        isDebugMode,
+        false,
         gameMode === 'HP' ? startingHp : null,
       );
       sessionStore.save({
@@ -192,21 +191,6 @@ export default function HomePage() {
                   </span>
                 </span>
                 <ArrowRight className="h-5 w-5 text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-white" />
-              </button>
-              <button
-                onClick={() => router.push('/debug')}
-                className="group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-rose-500/30 bg-gradient-to-r from-rose-950/30 to-rose-900/20 px-4 py-3 sm:px-5 sm:py-3.5 text-left text-rose-200 shadow-[0_10px_25px_rgba(244,63,94,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-400/50 hover:from-rose-950/50 hover:to-rose-900/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 active:translate-y-0"
-              >
-                <span className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/20 text-rose-300 text-base">
-                    🐞
-                  </span>
-                  <span>
-                    <span className="block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-rose-400/70">Solo sandbox</span>
-                    <span className="block text-base sm:text-lg font-bold tracking-tight text-rose-100">Debug Mode</span>
-                  </span>
-                </span>
-                <ArrowRight className="h-5 w-5 text-rose-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-rose-200" />
               </button>
             </div>
           )}
@@ -373,18 +357,6 @@ export default function HomePage() {
                   className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
                 />
               </div>
-              <label className="flex items-center gap-2.5 rounded-xl border border-rose-400/30 bg-rose-950/20 px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm text-rose-200 cursor-pointer hover:border-rose-400/50 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={isDebugMode}
-                  onChange={e => setIsDebugMode(e.target.checked)}
-                  className="h-4 w-4 rounded accent-rose-400 cursor-pointer"
-                />
-                <span>
-                  🐞 <span className="font-semibold">Debug room</span>
-                  <span className="block text-[0.65rem] sm:text-xs text-rose-300/70">Everyone sees every rack and gets debug tools</span>
-                </span>
-              </label>
               {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
               <button
                 onClick={handleCreate}

@@ -2,10 +2,8 @@ import {
   CENTER_COL,
   CENTER_ROW,
   isDoubleLetterCell,
-  isDoubleWordCell,
   isPowerCell,
   isTripleLetterCell,
-  isTripleWordCell,
 } from '@/lib/board';
 import { BoardModel } from '@/lib/engine/boardModel';
 
@@ -46,17 +44,15 @@ export class GridRenderer {
 
     ctx.save();
 
-    // 1. Special cell background fills (2L, 3L, 2W, 3W, Power, Center Star)
+    // 1. Special cell background fills (2L, 3L, Power, Center Star)
     for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
       for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
         const isCenter = r === CENTER_ROW && c === CENTER_COL;
         const isTriple = isTripleLetterCell(r, c);
         const isDouble = isDoubleLetterCell(r, c);
-        const isDoubleWord = isDoubleWordCell(r, c);
-        const isTripleWord = isTripleWordCell(r, c);
         const isPower = isPowerCell(r, c);
 
-        if (isTriple || isDouble || isDoubleWord || isTripleWord || isPower || isCenter) {
+        if (isTriple || isDouble || isPower || isCenter) {
           const lineAlpha = model.getCellAlpha(r, c);
           if (lineAlpha <= 0.005) continue;
 
@@ -71,14 +67,6 @@ export class GridRenderer {
             ctx.fill();
           } else if (isDouble) {
             ctx.fillStyle = '#166534';
-            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-            ctx.fill();
-          } else if (isDoubleWord) {
-            ctx.fillStyle = '#581c87';
-            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-            ctx.fill();
-          } else if (isTripleWord) {
-            ctx.fillStyle = '#78350f';
             drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
             ctx.fill();
           } else if (isPower) {

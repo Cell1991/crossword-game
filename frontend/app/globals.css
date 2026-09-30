@@ -15,7 +15,7 @@ input[type="number"] {
   src: url("/fonts/Granix-Demo.otf") format("opentype");
   font-display: swap;
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 400;
 }
 
 @font-face {
@@ -232,44 +232,6 @@ body {
 .board-triple-aura { animation: board-triple-aura 1.9s ease-in-out infinite; }
 .board-fire-core { animation: board-fire-core 1.15s ease-in-out infinite; }
 .board-double-aura { animation: board-double-aura 2.6s ease-in-out infinite; }
-.board-double-word-aura { animation: board-double-word-aura 2.2s ease-in-out infinite; }
-.board-triple-word-aura { animation: board-triple-word-aura 2.2s ease-in-out infinite; }
-.board-cosmic-glow {
-  background: radial-gradient(ellipse, rgba(192, 132, 252, 0.45), rgba(88, 28, 135, 0.15) 58%, transparent 78%);
-  animation: board-cosmic-glow 3.2s ease-in-out infinite;
-}
-.board-egg-glow {
-  background: radial-gradient(ellipse, rgba(251, 191, 36, 0.45), rgba(180, 83, 9, 0.18) 58%, transparent 78%);
-  animation: board-egg-glow 3.2s ease-in-out infinite;
-}
-@keyframes board-double-word-aura {
-  0%, 100% {
-    box-shadow: 0 0 14px rgba(168, 85, 247, 0.45), inset 0 0 10px rgba(216, 180, 254, 0.25);
-    border-color: rgba(192, 132, 252, 0.7);
-  }
-  50% {
-    box-shadow: 0 0 22px rgba(168, 85, 247, 0.8), inset 0 0 14px rgba(216, 180, 254, 0.45);
-    border-color: #e9d5ff;
-  }
-}
-@keyframes board-triple-word-aura {
-  0%, 100% {
-    box-shadow: 0 0 14px rgba(245, 158, 11, 0.45), inset 0 0 10px rgba(253, 230, 138, 0.25);
-    border-color: rgba(251, 191, 36, 0.7);
-  }
-  50% {
-    box-shadow: 0 0 22px rgba(245, 158, 11, 0.8), inset 0 0 14px rgba(253, 230, 138, 0.45);
-    border-color: #fef08a;
-  }
-}
-@keyframes board-cosmic-glow {
-  0%, 100% { opacity: 0.35; transform: scale(0.85); }
-  50% { opacity: 0.85; transform: scale(1.08); }
-}
-@keyframes board-egg-glow {
-  0%, 100% { opacity: 0.35; transform: scale(0.85); }
-  50% { opacity: 0.85; transform: scale(1.08); }
-}
 .board-earth-glow {
   background: radial-gradient(ellipse, rgba(74, 222, 128, 0.4), rgba(21, 128, 61, 0.12) 58%, transparent 76%);
   animation: board-earth-glow 3.6s ease-in-out infinite;
@@ -316,23 +278,14 @@ body {
 
 .board-premium-label {
   font-family: "Granix Demo", var(--font-geist-sans), sans-serif;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0, 0, 0, 0.7);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  -webkit-text-stroke: 0.35px rgba(255, 255, 255, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 0 4px rgba(255, 255, 255, 0.16);
   animation: board-label-breathe 3.2s ease-in-out infinite;
 }
 
-.board-premium-letter {
-  display: inline-block;
-  margin-left: 0.08em;
-}
-
-.board-premium-letter-w {
-  display: inline-block;
-  margin-left: 0.06em;
-  letter-spacing: 0.03em;
-  transform: scale(0.92);
-}
+.board-premium-letter { margin-left: 0.12em; }
 
 @media (prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse) {
   .board-power-pulse,
@@ -342,14 +295,10 @@ body {
   .board-center-pulse { animation: none !important; }
   .board-triple-aura,
   .board-fire-core,
-  .board-double-aura,
-  .board-double-word-aura,
-  .board-triple-word-aura { animation: none !important; }
+  .board-double-aura { animation: none !important; }
   .board-earth-glow,
   .board-earth-mountain,
   .board-earth-speck,
-  .board-cosmic-glow,
-  .board-egg-glow,
   .board-premium-label { animation: none !important; }
   .board-freeze-pulse,
   .board-ice-shimmer,
