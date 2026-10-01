@@ -96,7 +96,10 @@ async def leave_room(
     return {"status": "left", "host_player_id": room.host_player_id}
 
 @router.get("/{game_pin}", response_model=RoomDetailResponse)
-async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
+async def get_room(game_pin: str, response: Response, db: AsyncSession = Depends(get_db)):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     room, players = await RoomService.get_room_details(db, game_pin)
     player_outs = [
         PlayerOut(

@@ -99,12 +99,9 @@ export default function LobbyPage() {
     try {
       const room = await getRoom(pin);
       if (room.status === 'EXPIRED') {
-        setError('This room has been dissolved due to 10 minutes of inactivity.');
-        setTimeout(() => {
-          const session = sessionStore.getLast();
-          if (session?.gameId) sessionStore.remove(session.gameId);
-          router.replace('/');
-        }, 2200);
+        const session = sessionStore.getLast();
+        if (session?.gameId) sessionStore.remove(session.gameId);
+        router.replace('/?kicked=expired');
         return;
       }
       setPlayers(room.players);
@@ -126,18 +123,19 @@ export default function LobbyPage() {
     } catch (error: unknown) {
       setLoading(false);
       const msg = error instanceof Error ? error.message : 'Failed to fetch room';
-      setError(msg);
       if (
         msg.toLowerCase().includes('expired') ||
         msg.toLowerCase().includes('dissolved') ||
-        msg.toLowerCase().includes('not found')
+        msg.toLowerCase().includes('not found') ||
+        msg.includes('410') ||
+        msg.includes('404')
       ) {
-        setTimeout(() => {
-          const session = sessionStore.getLast();
-          if (session?.gameId) sessionStore.remove(session.gameId);
-          router.replace('/');
-        }, 2200);
+        const session = sessionStore.getLast();
+        if (session?.gameId) sessionStore.remove(session.gameId);
+        router.replace('/?kicked=expired');
+        return;
       }
+      setError(msg);
     }
   }, [pin, router]);
 
@@ -168,12 +166,18 @@ export default function LobbyPage() {
       const now = Date.now();
       const diff = Math.max(0, Math.floor((expiryMs - now) / 1000));
       setTimeLeft(diff);
+      if (diff <= 0) {
+        // Countdown reached 0: kick all players from lobby to home page immediately
+        const session = sessionStore.getLast();
+        if (session?.gameId) sessionStore.remove(session.gameId);
+        router.replace('/?kicked=expired');
+      }
     };
 
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [createdAt]);
+  }, [createdAt, router]);
 
   const formatCountdown = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

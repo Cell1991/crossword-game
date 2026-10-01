@@ -91,7 +91,7 @@ class RoomService:
         room = rows[0][0]
         if room.status == "EXPIRED" or RoomService.is_room_expired(room):
             room.status = "EXPIRED"
-            await db.flush()
+            await db.commit()
             raise HTTPException(
                 status_code=410,
                 detail=f"This room has expired because the game was not started within {settings.ROOM_EXPIRY_MINUTES} minutes."
@@ -222,7 +222,7 @@ class RoomService:
         room = rows[0][0]
         if room.status == "EXPIRED" or RoomService.is_room_expired(room):
             room.status = "EXPIRED"
-            await db.flush()
+            await db.commit()
             raise HTTPException(
                 status_code=410,
                 detail=f"This room has expired because the game was not started within {settings.ROOM_EXPIRY_MINUTES} minutes."

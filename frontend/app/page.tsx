@@ -47,6 +47,16 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('kicked') === 'expired') {
+        setError('This room has been dissolved due to 10 minutes of inactivity.');
+        window.history.replaceState({}, '', '/');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (mode === 'join') {
       fetchRooms(true);
       const timer = setInterval(() => {
@@ -250,6 +260,19 @@ export default function HomePage() {
 
           {mode === 'home' && (
             <div className="flex flex-col gap-3">
+              {error && (
+                <div className="flex items-center justify-between rounded-xl border border-amber-400/30 bg-amber-400/10 px-3.5 py-2.5 text-xs text-amber-200">
+                  <span>{error}</span>
+                  <button
+                    type="button"
+                    onClick={() => setError('')}
+                    className="ml-2 text-slate-400 hover:text-white text-sm font-bold cursor-pointer"
+                    aria-label="Dismiss"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
               <div className="flex items-center justify-between px-1 pb-1">
                 <div>
                   <p className="text-sm font-semibold text-white">Start playing</p>

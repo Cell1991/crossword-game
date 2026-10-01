@@ -181,10 +181,12 @@ export async function getRooms(): Promise<RoomSummary[]> {
 }
 
 export async function getRoom(gamePin: string): Promise<RoomDetailResponse> {
-  const res = await fetch(`${getApiBase()}/rooms/${gamePin}`);
+  const res = await fetch(`${getApiBase()}/rooms/${gamePin}?_t=${Date.now()}`, {
+    cache: 'no-store',
+  });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Failed to fetch room');
+    throw new Error(err.detail || `Failed to fetch room (${res.status})`);
   }
   return res.json();
 }
