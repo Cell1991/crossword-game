@@ -165,26 +165,40 @@ async def handle_disconnect(
         ).model_dump())
         return
 
-    # If any player remains disconnected for over 3 minutes (180s), dissolve the room immediately!
-    used_grace = settings.DISCONNECT_GRACE_SECONDS if grace_seconds is None else grace_seconds
-    remaining_wait = max(0, 180 - used_grace)
-    await asyncio.sleep(remaining_wait)
-    if manager.is_connected(game_id, player_id):
-        return
+    # If in normal game play, schedule background timer to dissolve room if player is disconnected for 3 minutes (180s)
+    if grace_seconds is None:
+        asyncio.create_task(_schedule_room_disconnect_timeout(game_id, player_id, player_name, delay=180.0))
 
-    async with AsyncSessionLocal() as db:
-        room = await db.get(GameRoom, game_id)
-        active_game = await db.get(Game, game_id)
-        if room and room.status in ("WAITING", "PLAYING"):
-            room.status = "ABANDONED"
-            if active_game:
-                active_game.status = "FINISHED"
-            await db.commit()
-            await manager.broadcast(game_id, WebSocketEvent(
-                type=EventType.ROOM_EXPIRED,
-                payload={
-                    "roomId": game_id,
-                    "gamePin": room.game_pin,
-                    "reason": f"Room dissolved: player {player_name} was disconnected for more than 3 minutes.",
-                }
-            ).model_dump())
+
+async def _schedule_room_disconnect_timeout(
+    game_id: str,
+    player_id: str,
+    player_name: str,
+    delay: float = 180.0,
+) -> None:
+    """If a player remains disconnected for 3 minutes, dissolve the room to avoid dead games."""
+    try:
+        await asyncio.sleep(delay)
+        if manager.is_connected(game_id, player_id):
+            return
+
+        async with AsyncSessionLocal() as db:
+            room = await db.get(GameRoom, game_id)
+            active_game = await db.get(Game, game_id)
+            if room and room.status in ("WAITING", "PLAYING"):
+                room.status = "ABANDONED"
+                if active_game:
+                    active_game.status = "FINISHED"
+                await db.commit()
+                await manager.broadcast(game_id, WebSocketEvent(
+                    type=EventType.ROOM_EXPIRED,
+                    payload={
+                        "roomId": game_id,
+                        "gamePin": room.game_pin,
+                        "reason": f"Room dissolved: player {player_name} was disconnected for more than 3 minutes.",
+                    }
+                ).model_dump())
+    except asyncio.CancelledError:
+        pass
+    except Exception:
+        pass
