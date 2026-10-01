@@ -21,6 +21,7 @@ interface DbRoomRow {
   starting_hp: number | null;
   is_debug: boolean | null;
   created_at: string | null;
+  max_players: number | null;
   host_name: string | null;
   player_count: number | null;
 }
@@ -55,6 +56,7 @@ export async function GET() {
         r.starting_hp,
         r.is_debug,
         r.created_at,
+        COALESCE(r.max_players, 4) AS max_players,
         COALESCE(p.display_name, 'Host') AS host_name,
         COALESCE((SELECT count(*)::int FROM game_players gp WHERE gp.game_id = r.id), 1) AS player_count
       FROM game_rooms r
@@ -95,7 +97,10 @@ export async function GET() {
       status: String(r.status || 'WAITING'),
       host_name: String(r.host_name || 'Host'),
       player_count: Number(r.player_count || 1),
-      max_players: 4,
+      max_players:
+        r.max_players !== null && r.max_players !== undefined
+          ? Number(r.max_players)
+          : 4,
       turn_time_limit:
         r.turn_time_limit !== null && r.turn_time_limit !== undefined
           ? (Number(r.turn_time_limit) as 30 | 60 | 90 | 120)

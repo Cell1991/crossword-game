@@ -11,11 +11,12 @@ interface PlayerListProps {
 }
 
 export const PlayerList: React.FC<PlayerListProps> = ({ players, myPlayerId, maxPlayers }) => {
+  const limit = maxPlayers || 4;
   return (
     <div className="flex flex-col w-full max-w-md mx-auto">
       <div className="flex items-center justify-between mb-3 px-1">
         <span className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-          PLAYERS ({players.length}{maxPlayers ? `/${maxPlayers}` : ''})
+          PLAYERS ({players.length}/{limit})
         </span>
         <span className="text-xs text-emerald-400 flex items-center gap-1 font-medium">
           <CheckCircle2 className="w-3.5 h-3.5" /> Lobby Ready

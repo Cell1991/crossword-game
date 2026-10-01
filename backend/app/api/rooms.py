@@ -45,7 +45,7 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
         game_mode=room.game_mode,
         max_turns=room.max_turns,
         starting_hp=room.starting_hp,
-        max_players=room.max_players,
+        max_players=room.max_players if room.max_players is not None else req.max_players or 4,
         created_at=room.created_at,
     )
 
@@ -78,7 +78,7 @@ async def join_room(game_pin: str, req: JoinRoomRequest, db: AsyncSession = Depe
         game_mode=room.game_mode,
         max_turns=room.max_turns,
         starting_hp=room.starting_hp,
-        max_players=room.max_players,
+        max_players=room.max_players if room.max_players is not None else 4,
         created_at=room.created_at,
     )
 
@@ -132,7 +132,7 @@ async def get_room(game_pin: str, response: Response, db: AsyncSession = Depends
         max_turns=room.max_turns,
         starting_hp=room.starting_hp,
         is_debug=room.is_debug,
-        max_players=room.max_players,
+        max_players=room.max_players if room.max_players is not None else 4,
     )
 
 @router.post("/{game_pin}/start")

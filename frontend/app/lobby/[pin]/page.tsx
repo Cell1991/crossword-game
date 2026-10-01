@@ -54,7 +54,7 @@ export default function LobbyPage() {
   const [gameMode, setGameMode] = useState<GameMode>(matchesCurrentPin && initialSession?.gameMode ? initialSession.gameMode : 'HP');
   const [maxTurns, setMaxTurns] = useState<number | null>(matchesCurrentPin ? (initialSession?.maxTurns ?? null) : null);
   const [startingHp, setStartingHp] = useState<number | null>(matchesCurrentPin ? (initialSession?.startingHp ?? null) : null);
-  const [maxPlayers, setMaxPlayers] = useState<number | null>(matchesCurrentPin && initialSession?.maxPlayers !== undefined ? initialSession.maxPlayers : 4);
+  const [maxPlayers, setMaxPlayers] = useState<number | null>(matchesCurrentPin && initialSession?.maxPlayers ? initialSession.maxPlayers : 4);
   const [isDebugRoom, setIsDebugRoom] = useState(false);
   const [createdAt, setCreatedAt] = useState<string | null>(matchesCurrentPin ? (initialSession?.createdAt ?? null) : null);
   const [timeLeft, setTimeLeft] = useState<number>(600);
@@ -73,6 +73,9 @@ export default function LobbyPage() {
       setIsSpectator(Boolean(session.isSpectator));
       if (session.createdAt) {
         setCreatedAt(session.createdAt);
+      }
+      if (session.maxPlayers) {
+        setMaxPlayers(session.maxPlayers);
       }
       if (!session.isSpectator && session.playerId) {
         setPlayers(prev => {
@@ -111,7 +114,8 @@ export default function LobbyPage() {
       setGameMode(room.game_mode);
       setMaxTurns(room.max_turns);
       setStartingHp(room.starting_hp ?? null);
-      setMaxPlayers(room.max_players !== undefined ? room.max_players : null);
+      const effectiveMax = room.max_players || initialSession?.maxPlayers || 4;
+      setMaxPlayers(effectiveMax);
       setIsDebugRoom(room.is_debug);
       if (room.created_at) {
         setCreatedAt(room.created_at);
@@ -264,7 +268,7 @@ export default function LobbyPage() {
             <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-800/40 border border-white/5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Players</span>
               <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300">
-                {maxPlayers ? `${maxPlayers} Players` : 'Unlimited'}
+                {maxPlayers ? `${maxPlayers} Players` : '4 Players'}
               </span>
             </div>
 

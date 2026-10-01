@@ -318,7 +318,7 @@ class RoomService:
                     "status": str(room.status),
                     "host_name": host_name,
                     "player_count": len(players),
-                    "max_players": getattr(room, "max_players", None),
+                    "max_players": getattr(room, "max_players", None) or 4,
                     "turn_time_limit": room.turn_time_limit,
                     "game_mode": str(room.game_mode or "HP").upper(),
                     "max_turns": room.max_turns,
