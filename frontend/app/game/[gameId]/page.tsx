@@ -349,52 +349,50 @@ export default function GamePage() {
     (gameState?.players && gameState.players.find(p => !p.display_name.toLowerCase().includes('bot') && !p.display_name.toLowerCase().includes('[ai]'))?.id === myPlayerId)
   );
 
-  const botProcessingRef = useRef(false);
-  const lastProcessedTurnRef = useRef<string | null>(null);
+  const activeBotTurnKeyRef = useRef<string | null>(null);
+  const lastCompletedBotTurnRef = useRef<string | null>(null);
+  const sendMessageRef = useRef(sync.sendMessage);
+  useEffect(() => {
+    sendMessageRef.current = sync.sendMessage;
+  }, [sync.sendMessage]);
+  const reloadRef = useRef(reload);
+  useEffect(() => {
+    reloadRef.current = reload;
+  }, [reload]);
 
   useEffect(() => {
     if (!gameState || gameState.status !== 'PLAYING') return;
-    if (!isBotTurn || !currentTurnPlayer || !isHostDriver) return;
+    if (!isBotTurn || !currentTurnPlayer || !isHostDriver || !gameState.current_player_id) return;
 
     const turnKey = `${gameState.turn_number}:${gameState.current_player_id}`;
-    if (lastProcessedTurnRef.current === turnKey || botProcessingRef.current) return;
+    if (lastCompletedBotTurnRef.current === turnKey || activeBotTurnKeyRef.current === turnKey) return;
 
-    let isMounted = true;
-    botProcessingRef.current = true;
+    activeBotTurnKeyRef.current = turnKey;
 
     const runBotTurn = async () => {
       try {
         // 1. Natural thinking time calibrated by difficulty
-        const thinkingMs = botDifficulty === 'hard' ? 1400 : botDifficulty === 'medium' ? 1900 : 2500;
+        const thinkingMs = botDifficulty === 'hard' ? 900 : botDifficulty === 'medium' ? 1200 : 1500;
         await new Promise(r => setTimeout(r, thinkingMs));
-        if (!isMounted) return;
+        if (activeBotTurnKeyRef.current !== turnKey) return;
 
         // 2. Fetch dictionary-valid move planned on the backend
         const plan = await getBotPlan(gameId, botDifficulty);
-        if (!isMounted) return;
+        if (activeBotTurnKeyRef.current !== turnKey) return;
 
         const planTiles = plan.tiles ?? [];
         if (plan.action === 'MOVE' && planTiles.length > 0) {
-          // Place tiles step-by-step (one by one) with audio and visual feedback
-          const stepDelay = botDifficulty === 'hard' ? 320 : botDifficulty === 'medium' ? 400 : 520;
+          // Place tiles step-by-step (one by one) with visual feedback (sound effects disabled)
+          const stepDelay = botDifficulty === 'hard' ? 280 : botDifficulty === 'medium' ? 350 : 450;
           const stagedList: PlacedTile[] = [];
 
           for (const tile of planTiles) {
-            if (!isMounted) return;
+            if (activeBotTurnKeyRef.current !== turnKey) return;
             stagedList.push(tile);
             setBotStagedTiles([...stagedList]);
 
-            // Play realistic placement sound effect
-            try {
-              const sfx = new Audio('/audio/sfx-place.mp3');
-              sfx.volume = 0.65;
-              void sfx.play().catch(() => {});
-            } catch {
-              // Sound play may be ignored if unprompted by user gesture
-            }
-
             // Broadcast staging to other players / spectators
-            sync.sendMessage({
+            sendMessageRef.current?.({
               type: 'STAGING_CHANGE',
               placements: stagedList.map(t => ({ row: t.row, col: t.col })),
             });
@@ -402,47 +400,54 @@ export default function GamePage() {
             await new Promise(r => setTimeout(r, stepDelay));
           }
 
-          if (!isMounted) return;
+          if (activeBotTurnKeyRef.current !== turnKey) return;
 
           // Short suspense delay before committing word
-          await new Promise(r => setTimeout(r, 650));
-          if (!isMounted) return;
+          await new Promise(r => setTimeout(r, 450));
+          if (activeBotTurnKeyRef.current !== turnKey) return;
 
           await executeBotMove(gameId, plan);
-          lastProcessedTurnRef.current = turnKey;
+          lastCompletedBotTurnRef.current = turnKey;
         } else {
           // Exchange tiles or pass
-          await new Promise(r => setTimeout(r, 600));
-          if (!isMounted) return;
+          await new Promise(r => setTimeout(r, 400));
+          if (activeBotTurnKeyRef.current !== turnKey) return;
           await executeBotMove(gameId, plan);
-          lastProcessedTurnRef.current = turnKey;
+          lastCompletedBotTurnRef.current = turnKey;
         }
 
         setBotStagedTiles([]);
-        reload();
+        reloadRef.current?.();
       } catch (err) {
         console.error('Bot turn execution error:', err);
         try {
-          if (gameState.current_player_id) {
+          if (activeBotTurnKeyRef.current === turnKey && gameState.current_player_id) {
             await passTurn(gameId, gameState.current_player_id);
-            lastProcessedTurnRef.current = turnKey;
-            reload();
+            lastCompletedBotTurnRef.current = turnKey;
+            reloadRef.current?.();
           }
-        } catch {}
-      } finally {
-        if (isMounted) {
-          botProcessingRef.current = false;
-          setBotStagedTiles([]);
+        } catch (passErr) {
+          console.error('Bot fallback pass error:', passErr);
         }
+      } finally {
+        if (activeBotTurnKeyRef.current === turnKey) {
+          activeBotTurnKeyRef.current = null;
+        }
+        setBotStagedTiles([]);
       }
     };
 
     void runBotTurn();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [botDifficulty, currentTurnPlayer, gameId, gameState, isBotTurn, isHostDriver, reload, sync]);
+  }, [
+    botDifficulty,
+    currentTurnPlayer?.id,
+    gameId,
+    gameState?.current_player_id,
+    gameState?.status,
+    gameState?.turn_number,
+    isBotTurn,
+    isHostDriver,
+  ]);
 
   // The game UI needs the browser session and a game snapshot first. This loading view reads no
   // client-only state, so the server and the client's first paint render it identically (no

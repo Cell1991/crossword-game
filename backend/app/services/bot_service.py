@@ -72,28 +72,29 @@ class BotService:
                 "difficulty": difficulty,
             }
 
-        # Find all valid placement candidates
+        # Find all valid placement candidates (fast target)
         candidates = find_hint_suggestions(
             board_cells=board,
             rack_tiles=rack,
             is_first_move=is_first,
-            max_suggestions=80,
+            max_suggestions=25,
         )
 
         if candidates:
-            chosen = cls._select_candidate_by_difficulty(candidates, difficulty)
-            if chosen:
+            # Order candidates based on bot difficulty
+            prioritized = cls._order_candidates_by_difficulty(candidates, difficulty)
+            for cand in prioritized:
                 # Match candidate letters to real tile IDs in the bot's rack
-                matched_tiles = cls._match_tiles_to_rack(rack, chosen["tiles"])
+                matched_tiles = cls._match_tiles_to_rack(rack, cand.get("tiles", []))
                 if matched_tiles:
                     return {
                         "action": "MOVE",
                         "bot_player_id": current_player.id,
                         "bot_name": current_player.display_name,
                         "difficulty": difficulty,
-                        "word": chosen.get("word", ""),
-                        "score": chosen.get("score", 0),
-                        "direction": chosen.get("direction", "across"),
+                        "word": cand.get("word", ""),
+                        "score": cand.get("score", 0),
+                        "direction": cand.get("direction", "across"),
                         "tiles": matched_tiles,
                     }
 
@@ -101,14 +102,19 @@ class BotService:
         bag_len = len(game.tile_bag) if isinstance(game.tile_bag, list) else 0
         if bag_len >= 7 and len(rack) >= 2:
             num_swap = min(len(rack), random.randint(2, min(4, len(rack))))
-            tile_ids_to_swap = [str(t["id"]) for t in rack[:num_swap] if "id" in t]
-            return {
-                "action": "EXCHANGE",
-                "bot_player_id": current_player.id,
-                "bot_name": current_player.display_name,
-                "difficulty": difficulty,
-                "tile_ids": tile_ids_to_swap,
-            }
+            tile_ids_to_swap = [
+                str(t.get("id") or t.get("tile_id"))
+                for t in rack[:num_swap]
+                if (t.get("id") or t.get("tile_id"))
+            ]
+            if tile_ids_to_swap:
+                return {
+                    "action": "EXCHANGE",
+                    "bot_player_id": current_player.id,
+                    "bot_name": current_player.display_name,
+                    "difficulty": difficulty,
+                    "tile_ids": tile_ids_to_swap,
+                }
 
         return {
             "action": "PASS",
@@ -117,41 +123,44 @@ class BotService:
             "difficulty": difficulty,
         }
 
-    @staticmethod
-    def _select_candidate_by_difficulty(candidates: list[dict[str, Any]], difficulty: str) -> dict[str, Any]:
+    @classmethod
+    def _order_candidates_by_difficulty(
+        cls, candidates: list[dict[str, Any]], difficulty: str
+    ) -> list[dict[str, Any]]:
         """
-        Calculates move selection based on difficulty:
-        - Easy (SparkBot): Simple, shorter words (2-4 letters, modest score 4-18 pts).
-        - Medium (Nexus AI): Tactical words (3-5 letters, 12-35 pts, solid placement).
+        Orders candidate moves based on bot difficulty:
+        - Easy (SparkBot): Simple, shorter words (2-4 letters, modest score 4-20 pts).
+        - Medium (Nexus AI): Tactical words (3-5 letters, 10-35 pts, solid placement).
         - Hard (Titan AI): Top scoring moves (hits multipliers, max score, bingos).
         """
         if not candidates:
-            return {}
+            return []
 
-        # Candidates are already sorted descending by score from find_hint_suggestions
+        # candidates from find_hint_suggestions are sorted descending by score
+        sorted_by_score = list(candidates)
+
         if difficulty == "hard":
-            # Pick from the top 2 highest scoring moves
-            top_slice = candidates[: min(2, len(candidates))]
-            return random.choice(top_slice)
+            # Top scoring moves first, slight randomness among top 3
+            top = sorted_by_score[:3]
+            random.shuffle(top)
+            return top + sorted_by_score[3:]
 
         if difficulty == "easy":
             # Prefer shorter words with lower scores
-            easy_pool = [c for c in candidates if len(c.get("tiles", [])) <= 4 and c.get("score", 0) <= 20]
-            if easy_pool:
-                # Pick randomly from the modest pool
-                return random.choice(easy_pool)
-            # Fallback: pick the lowest scoring valid candidate
-            return candidates[-1]
+            easy_pool = [c for c in sorted_by_score if len(c.get("tiles", [])) <= 4 and c.get("score", 0) <= 22]
+            random.shuffle(easy_pool)
+            remainder = [c for c in sorted_by_score[::-1] if c not in easy_pool]
+            return easy_pool + remainder
 
         # Medium:
-        # Prefer balanced moves between 12 and 35 points with length 3 to 5
-        medium_pool = [c for c in candidates if 12 <= c.get("score", 0) <= 35 and 2 <= len(c.get("tiles", [])) <= 5]
-        if medium_pool:
-            return random.choice(medium_pool)
-
-        # Fallback to middle tier of candidates
-        mid_idx = len(candidates) // 2
-        return candidates[mid_idx]
+        # Prefer balanced moves between 10 and 35 points with length 2 to 5
+        medium_pool = [
+            c for c in sorted_by_score
+            if 10 <= c.get("score", 0) <= 35 and 2 <= len(c.get("tiles", [])) <= 5
+        ]
+        random.shuffle(medium_pool)
+        remainder = [c for c in sorted_by_score if c not in medium_pool]
+        return medium_pool + remainder
 
     @staticmethod
     def _match_tiles_to_rack(rack: list[dict[str, Any]], tiles_to_place: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -177,12 +186,13 @@ class BotService:
 
             if matched_idx is not None:
                 matched_tile = available.pop(matched_idx)
+                tile_id = str(matched_tile.get("id") or matched_tile.get("tile_id") or "")
                 result.append({
                     "row": int(pt["row"]),
                     "col": int(pt["col"]),
                     "letter": letter,
                     "value": int(matched_tile.get("value", pt.get("value", 1))),
-                    "tile_id": str(matched_tile.get("id", "")),
+                    "tile_id": tile_id,
                 })
             else:
                 # Could not match all tiles

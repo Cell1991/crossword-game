@@ -54,6 +54,7 @@ def find_hint_suggestions(
     is_board_empty = len(board_cells) == 0 or is_first_move
     candidates: list[dict[str, Any]] = []
     seen_signatures: set[str] = set()
+    search_cap = max(30, max_suggestions * 2)
 
     occupied: dict[tuple[int, int], str] = {
         (c["row"], c["col"]): c["letter"].upper()
@@ -205,9 +206,9 @@ def find_hint_suggestions(
                                         "tiles": placed,
                                         "bingo_bonus": 50 if len(placed) >= 7 else 0,
                                     })
-                                    if len(candidates) >= 150:
+                                    if len(candidates) >= search_cap:
                                         break
-                    if len(candidates) >= 150:
+                    if len(candidates) >= search_cap:
                         break
 
             # Test vertical spans passing through (r, c)
@@ -262,9 +263,9 @@ def find_hint_suggestions(
                                         "tiles": placed,
                                         "bingo_bonus": 50 if len(placed) >= 7 else 0,
                                     })
-                                    if len(candidates) >= 150:
+                                    if len(candidates) >= search_cap:
                                         break
-                    if len(candidates) >= 150:
+                    if len(candidates) >= search_cap:
                         break
 
     if not candidates:
