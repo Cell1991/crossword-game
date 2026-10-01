@@ -50,6 +50,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
   const secondPlace = sorted.length > 1 ? sorted[1] : null;
   const thirdPlace = sorted.length > 2 ? sorted[2] : null;
   const remainingPlayers = sorted.length > 3 ? sorted.slice(3) : [];
+  const isTwoPlayers = sorted.length === 2;
 
   const handlePlayAgain = async () => {
     if (!onPlayAgain) return;
@@ -135,19 +136,23 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
         {/* CENTRAL FOCUS: GRAND MULTI-TIERED VICTORY PODIUM */}
         <div className="w-full flex flex-col items-center gap-4">
           
-          {/* 3-Tier Podium Side-by-Side on both Mobile and Desktop */}
+          {/* Podium Layout: Custom proportional grid for 2 players (Gold right & wider), 3-col Olympic for 3+ */}
           <div className={`w-full ${
             sorted.length === 1
               ? 'flex justify-center max-w-sm'
-              : sorted.length === 2
-              ? 'grid grid-cols-2 max-w-lg gap-2.5 sm:gap-5 md:gap-6 items-end justify-center'
+              : isTwoPlayers
+              ? 'grid grid-cols-[1fr_1.35fr] sm:grid-cols-[1fr_1.4fr] max-w-xl gap-3 sm:gap-6 items-end justify-center'
               : 'grid grid-cols-3 gap-1.5 sm:gap-4 md:gap-6 items-end justify-center'
           }`}>
             
-            {/* 🥈 2ND PLACE (Left Silver Pedestal - Intermediate Height) */}
+            {/* 🥈 2ND PLACE (Left Silver Pedestal) */}
             {secondPlace && (
-              <div className={`${sorted.length > 2 ? 'order-1' : 'order-2'} flex flex-col items-center w-full`}>
-                <div className="w-full relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-slate-800/90 via-slate-900/95 to-slate-950 border-2 border-slate-300/70 p-2 sm:p-5 md:p-6 shadow-[0_16px_40px_rgba(0,0,0,0.7),0_0_28px_rgba(226,232,240,0.25)] backdrop-blur-xl ring-1 ring-slate-300/40 flex flex-col items-center text-center gap-1.5 sm:gap-3 transition-all hover:scale-[1.02] min-h-[200px] sm:min-h-[270px] md:min-h-[300px] justify-between">
+              <div className="order-1 flex flex-col items-center w-full min-w-0">
+                <div className={`w-full relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-slate-800/90 via-slate-900/95 to-slate-950 border-2 border-slate-300/70 p-2 sm:p-5 md:p-6 shadow-[0_16px_40px_rgba(0,0,0,0.7),0_0_28px_rgba(226,232,240,0.25)] backdrop-blur-xl ring-1 ring-slate-300/40 flex flex-col items-center text-center gap-1.5 sm:gap-3 transition-all hover:scale-[1.02] justify-between ${
+                  isTwoPlayers
+                    ? 'min-h-[210px] sm:min-h-[280px] md:min-h-[310px]'
+                    : 'min-h-[200px] sm:min-h-[270px] md:min-h-[300px]'
+                }`}>
                   
                   {/* Sunburst Silver Aura */}
                   <div className="absolute -inset-1.5 sm:-inset-2 rounded-3xl bg-gradient-to-r from-slate-400/15 via-slate-200/20 to-slate-400/15 blur-md sm:blur-lg pointer-events-none animate-pulse" />
@@ -197,23 +202,39 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
               </div>
             )}
 
-            {/* 🥇 1ST PLACE (Center Tallest Golden Champion Tier) */}
+            {/* 🥇 1ST PLACE (Right in 2-Player, Center Tallest in 3-Tier Podium) */}
             {firstPlace && (
-              <div className={`${sorted.length > 2 ? 'order-2' : 'order-1'} flex flex-col items-center w-full`}>
-                <div className="w-full relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-amber-950/80 via-slate-900/95 to-slate-950 border-2 border-amber-400 p-2.5 sm:p-6 md:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_40px_rgba(251,191,36,0.4)] backdrop-blur-2xl ring-2 ring-amber-400/50 flex flex-col items-center text-center gap-2 sm:gap-3.5 transition-all hover:scale-[1.02] min-h-[235px] sm:min-h-[320px] md:min-h-[355px] justify-between">
+              <div className="order-2 flex flex-col items-center w-full min-w-0">
+                <div className={`w-full relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-amber-950/80 via-slate-900/95 to-slate-950 border-2 border-amber-400 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_40px_rgba(251,191,36,0.4)] backdrop-blur-2xl ring-2 ring-amber-400/50 flex flex-col items-center text-center transition-all hover:scale-[1.02] justify-between ${
+                  isTwoPlayers
+                    ? 'p-3 sm:p-7 md:p-8 gap-2.5 sm:gap-4 min-h-[255px] sm:min-h-[345px] md:min-h-[385px]'
+                    : 'p-2.5 sm:p-6 md:p-7 gap-2 sm:gap-3.5 min-h-[235px] sm:min-h-[320px] md:min-h-[355px]'
+                }`}>
                   
                   {/* Sunburst Trophy Aura */}
                   <div className="absolute -inset-2 sm:-inset-4 rounded-3xl bg-gradient-to-r from-amber-500/25 via-yellow-400/30 to-amber-600/25 blur-md sm:blur-xl pointer-events-none animate-pulse" />
 
                   {/* Grand 3D Gold Champion Trophy */}
                   <div className="relative">
-                    <div className="w-12 h-12 sm:w-18 sm:h-18 md:w-22 md:h-22 rounded-xl sm:rounded-3xl bg-gradient-to-br from-yellow-200 via-amber-400 to-amber-700 border-2 border-yellow-100 shadow-[0_0_25px_rgba(251,191,36,0.85),inset_0_1px_3px_rgba(255,255,255,0.8)] flex items-center justify-center">
-                      <Trophy className="w-6 h-6 sm:w-10 sm:h-10 md:w-12 md:h-12 text-slate-950 drop-shadow-[0_1px_3px_rgba(255,255,255,0.7)]" />
+                    <div className={`rounded-xl sm:rounded-3xl bg-gradient-to-br from-yellow-200 via-amber-400 to-amber-700 border-2 border-yellow-100 shadow-[0_0_25px_rgba(251,191,36,0.85),inset_0_1px_3px_rgba(255,255,255,0.8)] flex items-center justify-center ${
+                      isTwoPlayers
+                        ? 'w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24'
+                        : 'w-12 h-12 sm:w-18 sm:h-18 md:w-22 md:h-22'
+                    }`}>
+                      <Trophy className={`${
+                        isTwoPlayers
+                          ? 'w-7 h-7 sm:w-11 sm:h-11 md:w-13 md:h-13'
+                          : 'w-6 h-6 sm:w-10 sm:h-10 md:w-12 md:h-12'
+                      } text-slate-950 drop-shadow-[0_1px_3px_rgba(255,255,255,0.7)]`} />
                     </div>
                   </div>
 
                   {/* 1st Place Gold Pill */}
-                  <div className="flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-3.5 sm:py-1 rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950 font-black text-[8.5px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-[0_0_15px_rgba(251,191,36,0.7)] whitespace-nowrap">
+                  <div className={`flex items-center gap-1 sm:gap-1.5 rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950 font-black uppercase tracking-wider sm:tracking-widest shadow-[0_0_15px_rgba(251,191,36,0.7)] whitespace-nowrap ${
+                    isTwoPlayers
+                      ? 'px-2.5 py-0.5 sm:px-4 sm:py-1 text-[9px] sm:text-xs'
+                      : 'px-2 py-0.5 sm:px-3.5 sm:py-1 text-[8.5px] sm:text-xs'
+                  }`}>
                     <Crown className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
                     <span>Champion • 1st</span>
                   </div>
@@ -223,7 +244,11 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                     <div className="flex items-center justify-center gap-1 max-w-full">
                       <span
                         title={firstPlace.display_name}
-                        className={`text-xs xs:text-sm sm:text-xl md:text-2xl font-black leading-tight line-clamp-2 break-words text-center drop-shadow-[0_0_14px_rgba(251,191,36,0.6)] ${
+                        className={`${
+                          isTwoPlayers
+                            ? 'text-sm xs:text-base sm:text-2xl md:text-3xl'
+                            : 'text-xs xs:text-sm sm:text-xl md:text-2xl'
+                        } font-black leading-tight line-clamp-2 break-words text-center drop-shadow-[0_0_14px_rgba(251,191,36,0.6)] ${
                           firstPlace.id === myPlayerId ? 'text-pink-300' : 'text-amber-200'
                         }`}
                       >
@@ -241,7 +266,11 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                   </div>
 
                   {/* Gold Score Orb */}
-                  <div className="w-full px-2 py-1 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 border-2 border-amber-400/80 text-amber-300 font-mono font-black text-xs sm:text-lg md:text-xl shadow-[0_0_18px_rgba(251,191,36,0.35)]">
+                  <div className={`w-full rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 border-2 border-amber-400/80 text-amber-300 font-mono font-black shadow-[0_0_18px_rgba(251,191,36,0.35)] ${
+                    isTwoPlayers
+                      ? 'px-2 py-1.5 sm:px-6 sm:py-3 text-sm sm:text-xl md:text-2xl'
+                      : 'px-2 py-1 sm:px-5 sm:py-2.5 text-xs sm:text-lg md:text-xl'
+                  }`}>
                     {firstPlace.score} <span className="text-[8px] sm:text-xs font-bold text-amber-400/80">PTS</span>
                   </div>
                 </div>
@@ -250,7 +279,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
 
             {/* 🥉 3RD PLACE (Right Bronze Pedestal - Lowest Height) */}
             {thirdPlace ? (
-              <div className="order-3 flex flex-col items-center w-full">
+              <div className="order-3 flex flex-col items-center w-full min-w-0">
                 <div className="w-full relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-amber-950/60 via-slate-900/95 to-slate-950 border-2 border-amber-600/70 p-2 sm:p-4 md:p-5 shadow-[0_16px_40px_rgba(0,0,0,0.7),0_0_28px_rgba(217,119,6,0.25)] backdrop-blur-xl ring-1 ring-amber-600/40 flex flex-col items-center text-center gap-1.5 sm:gap-2.5 transition-all hover:scale-[1.02] min-h-[175px] sm:min-h-[230px] md:min-h-[250px] justify-between">
                   
                   {/* Sunburst Bronze Aura */}
@@ -299,9 +328,6 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                   </div>
                 </div>
               </div>
-            ) : sorted.length > 1 ? (
-              // Symmetrical placeholder for 2-player matches
-              <div className="order-3 hidden md:block" />
             ) : null}
 
           </div>
