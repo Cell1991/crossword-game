@@ -208,10 +208,13 @@ export default function HomePage() {
   const handleSelectRoom = (room: RoomSummary) => {
     setPin(room.game_pin);
     setError('');
-    if (!name.trim()) {
+    if (room.status === 'WAITING' && !name.trim()) {
       nameInputRef.current?.focus();
     }
   };
+
+  const selectedRoom = rooms.find(r => r.game_pin === pin.trim());
+  const isSelectedRoomPlaying = selectedRoom?.status === 'PLAYING';
 
 
   return (
@@ -685,7 +688,7 @@ export default function HomePage() {
                 />
               </div>
 
-              {/* Open Rooms */}
+              {/* Active Rooms */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2">
@@ -694,7 +697,7 @@ export default function HomePage() {
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                     </span>
                     <label className="text-xs font-bold tracking-wide text-slate-200">
-                      Open Rooms {rooms.length > 0 && `(${rooms.length})`}
+                      Active Rooms {rooms.length > 0 && `(${rooms.length})`}
                     </label>
                   </div>
                   {loadingRooms && (
@@ -717,7 +720,7 @@ export default function HomePage() {
                   <div className="max-h-52 overflow-y-auto grid grid-cols-2 gap-2 pr-1 custom-scrollbar">
                     {rooms.map(room => {
                       const isFull = Boolean(room.max_players && room.player_count >= room.max_players);
-                      const isWaiting = room.status === 'WAITING';
+                      const isPlaying = room.status === 'PLAYING';
                       const isSelected = pin === room.game_pin;
                       return (
                         <div
@@ -729,23 +732,43 @@ export default function HomePage() {
                               : 'border-white/10 bg-slate-800/50 hover:bg-slate-800/80 hover:border-white/20'
                           }`}
                         >
-                          {/* Host Avatar Badge - Always vibrant gold like image 1 */}
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-xs sm:text-sm shadow-[0_2px_10px_rgba(245,158,11,0.25)]">
+                          {/* Host Avatar Badge */}
+                          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-xs sm:text-sm shadow-[0_2px_10px_rgba(245,158,11,0.25)]">
                             {(room.host_name || 'H').charAt(0).toUpperCase()}
+                            {isPlaying && (
+                              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5" title="Match in progress">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500 border border-slate-900"></span>
+                              </span>
+                            )}
                           </div>
 
                           <div className="min-w-0 flex-1 flex flex-col justify-center">
-                            <span className="font-bold text-xs text-white group-hover:text-amber-200 transition-colors truncate" title={room.host_name}>
-                              {room.host_name}
-                            </span>
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="font-bold text-xs text-white group-hover:text-amber-200 transition-colors truncate" title={room.host_name}>
+                                {room.host_name}
+                              </span>
+                              {isPlaying && (
+                                <span className="inline-flex items-center gap-0.5 rounded bg-sky-500/15 border border-sky-400/30 px-1 py-0.5 text-[8px] font-black uppercase tracking-wider text-sky-300 shrink-0">
+                                  <Eye className="h-2 w-2" />
+                                  Live
+                                </span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
                               <span className="font-mono font-bold text-amber-300">
                                 #{room.game_pin}
                               </span>
                               <span className="text-slate-500">•</span>
-                              <span className={isFull ? 'text-amber-400 font-medium' : 'text-emerald-400 font-medium'}>
-                                {room.player_count}{room.max_players ? `/${room.max_players}` : ' Players'}
-                              </span>
+                              {isPlaying ? (
+                                <span className="text-sky-300 font-medium">
+                                  {room.player_count} Playing
+                                </span>
+                              ) : (
+                                <span className={isFull ? 'text-amber-400 font-medium' : 'text-emerald-400 font-medium'}>
+                                  {room.player_count}{room.max_players ? `/${room.max_players}` : ' Players'}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -769,22 +792,35 @@ export default function HomePage() {
                     type="text"
                     value={pin}
                     onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    onKeyDown={e => e.key === 'Enter' && handleJoin()}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        if (isSelectedRoomPlaying) {
+                          handleWatch();
+                        } else {
+                          handleJoin();
+                        }
+                      }
+                    }}
                     placeholder="6-digit PIN..."
                     maxLength={6}
                     className="w-full rounded-xl border border-white/10 bg-slate-800/80 pl-3.5 pr-24 py-2.5 sm:py-3 font-mono text-sm sm:text-base tracking-[0.2em] text-amber-300 outline-none transition-all placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-sans hover:border-white/20 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                   />
                   <button
                     type="button"
-                    onClick={handleJoin}
+                    onClick={isSelectedRoomPlaying ? handleWatch : handleJoin}
                     disabled={loading || !pin.trim()}
                     className="group absolute right-1.5 top-1.5 bottom-1.5 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 px-4 text-xs sm:text-sm font-black text-slate-950 shadow-[0_2px_14px_rgba(245,158,11,0.35)] hover:shadow-[0_2px_20px_rgba(245,158,11,0.5)] transition-all duration-200 disabled:opacity-35 disabled:shadow-none disabled:cursor-not-allowed disabled:hover:from-amber-400 disabled:hover:via-amber-500 disabled:hover:to-orange-500 active:scale-95 cursor-pointer"
                   >
                     {loading ? (
                       <span className="flex items-center gap-1.5">
                         <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                        <span>Joining</span>
+                        <span>{isSelectedRoomPlaying ? 'Watching' : 'Joining'}</span>
                       </span>
+                    ) : isSelectedRoomPlaying ? (
+                      <>
+                        <Eye className="h-3.5 w-3.5 stroke-[2.5]" />
+                        <span>Watch</span>
+                      </>
                     ) : (
                       <>
                         <span>Join</span>
@@ -806,11 +842,19 @@ export default function HomePage() {
                 type="button"
                 onClick={handleWatch}
                 disabled={loading || !pin.trim()}
-                className="flex items-center justify-center gap-1.5 py-1 text-xs font-semibold text-slate-400 hover:text-amber-300 transition-colors disabled:opacity-40 disabled:hover:text-slate-400 cursor-pointer"
+                className={`flex items-center justify-center gap-1.5 py-1 text-xs font-semibold transition-colors disabled:opacity-40 cursor-pointer ${
+                  isSelectedRoomPlaying
+                    ? 'text-sky-300 hover:text-sky-200'
+                    : 'text-slate-400 hover:text-amber-300 disabled:hover:text-slate-400'
+                }`}
                 title="Watch game without playing (requires PIN)"
               >
                 <Eye className="h-3.5 w-3.5" />
-                <span>Watch as spectator {pin.trim() ? `(#${pin.trim()})` : ''}</span>
+                <span>
+                  {isSelectedRoomPlaying
+                    ? `Watch live match #${pin.trim()}`
+                    : `Watch as spectator ${pin.trim() ? `(#${pin.trim()})` : ''}`}
+                </span>
               </button>
             </div>
           )}

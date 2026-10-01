@@ -43,7 +43,7 @@ export async function GET() {
       body: JSON.stringify({ query: expireSql }),
     }).catch(() => {});
 
-    // 2. Fetch active waiting rooms created within the last 10 minutes
+    // 2. Fetch active rooms (WAITING within 10 min, PLAYING within 2 hours)
     const selectSql = `
       SELECT 
         r.id,
@@ -59,9 +59,12 @@ export async function GET() {
         COALESCE((SELECT count(*)::int FROM game_players gp WHERE gp.game_id = r.id), 1) AS player_count
       FROM game_rooms r
       LEFT JOIN game_players p ON r.host_player_id = p.id
-      WHERE r.status = 'WAITING'
-        AND (r.created_at IS NULL OR r.created_at >= NOW() - INTERVAL '10 minutes')
-      ORDER BY r.created_at DESC
+      WHERE (
+        (r.status = 'WAITING' AND (r.created_at IS NULL OR r.created_at >= NOW() - INTERVAL '10 minutes'))
+        OR
+        (r.status = 'PLAYING' AND (r.started_at >= NOW() - INTERVAL '2 hours' OR (r.started_at IS NULL AND r.created_at >= NOW() - INTERVAL '2 hours')))
+      )
+      ORDER BY CASE WHEN r.status = 'WAITING' THEN 0 ELSE 1 END, r.created_at DESC
       LIMIT 20
     `;
 
