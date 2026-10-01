@@ -778,17 +778,17 @@ export default function HomePage() {
                     type="button"
                     onClick={handleJoin}
                     disabled={loading || !pin.trim()}
-                    className="absolute right-1.5 top-1.5 bottom-1.5 flex items-center gap-1 rounded-lg bg-indigo-500 hover:bg-indigo-400 px-3.5 text-xs sm:text-sm font-bold text-white shadow-md transition-all disabled:opacity-40 disabled:hover:bg-indigo-500 active:scale-95 cursor-pointer"
+                    className="group absolute right-1.5 top-1.5 bottom-1.5 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 px-4 text-xs sm:text-sm font-black text-slate-950 shadow-[0_2px_14px_rgba(245,158,11,0.35)] hover:shadow-[0_2px_20px_rgba(245,158,11,0.5)] transition-all duration-200 disabled:opacity-35 disabled:shadow-none disabled:cursor-not-allowed disabled:hover:from-amber-400 disabled:hover:via-amber-500 disabled:hover:to-orange-500 active:scale-95 cursor-pointer"
                   >
                     {loading ? (
-                      <span className="flex items-center gap-1">
-                        <RefreshCw className="h-3 w-3 animate-spin" />
-                        Joining
+                      <span className="flex items-center gap-1.5">
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        <span>Joining</span>
                       </span>
                     ) : (
                       <>
                         <span>Join</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
+                        <ArrowRight className="h-3.5 w-3.5 stroke-[2.8] transition-transform duration-200 group-hover:translate-x-0.5" />
                       </>
                     )}
                   </button>
