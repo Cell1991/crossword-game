@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, ArrowRight, BookOpen, Eye, LogIn, Minus, Plus } from 'lucide-react';
-import { createRoom, getRoom, joinRoom, sessionStore } from '@/lib/api';
-import { GameMode, TurnTimeLimit } from '@/lib/types';
+import { ArrowLeft, ArrowRight, BookOpen, Eye, LogIn, Minus, Plus, RefreshCw, Users } from 'lucide-react';
+import { createRoom, getRoom, getRooms, joinRoom, sessionStore } from '@/lib/api';
+import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
@@ -27,6 +27,31 @@ export default function HomePage() {
   const [customTurnCount, setCustomTurnCount] = useState('28');
   const [hpOption, setHpOption] = useState('100');
   const [customHp, setCustomHp] = useState('100');
+  const [rooms, setRooms] = useState<RoomSummary[]>([]);
+  const [loadingRooms, setLoadingRooms] = useState(false);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchRooms = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoadingRooms(true);
+    try {
+      const data = await getRooms();
+      setRooms(data);
+    } catch {
+      // Keep previous list on network issues
+    } finally {
+      if (showLoading) setLoadingRooms(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode === 'join') {
+      fetchRooms(true);
+      const timer = setInterval(() => {
+        fetchRooms(false);
+      }, 6000);
+      return () => clearInterval(timer);
+    }
+  }, [mode, fetchRooms]);
 
   const handleCreate = async () => {
     if (!name.trim()) { setError('Please enter your name'); return; }
@@ -71,22 +96,29 @@ export default function HomePage() {
     }
   };
 
-  const handleJoin = async () => {
-    if (!name.trim()) { setError('Please enter your name'); return; }
-    if (!pin.trim()) { setError('Please enter the game PIN'); return; }
+  const executeJoin = async (pinToJoin: string, playerName: string) => {
+    if (!playerName.trim()) {
+      setError('Please enter your name');
+      nameInputRef.current?.focus();
+      return;
+    }
+    if (!pinToJoin.trim()) {
+      setError('Please enter the game PIN');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
-      const res = await joinRoom(pin.trim(), name.trim());
+      const res = await joinRoom(pinToJoin.trim(), playerName.trim());
       sessionStore.save({
         gameId: res.game_id,
         playerId: res.player_id,
         token: res.session_token,
         displayName: res.display_name,
         isHost: res.is_host,
-        gamePin: pin.trim(),
+        gamePin: pinToJoin.trim(),
       });
-      router.push(`/lobby/${pin.trim()}`);
+      router.push(`/lobby/${pinToJoin.trim()}`);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Failed to join room');
     } finally {
@@ -94,13 +126,17 @@ export default function HomePage() {
     }
   };
 
+  const handleJoin = async () => {
+    await executeJoin(pin, name);
+  };
+
   /** Spectators need only the PIN: they take no seat, so they can come in before or during a game. */
-  const handleWatch = async () => {
-    if (!pin.trim()) { setError('Please enter the game PIN'); return; }
+  const executeWatch = async (pinToWatch: string) => {
+    if (!pinToWatch.trim()) { setError('Please enter the game PIN'); return; }
     setLoading(true);
     setError('');
     try {
-      const room = await getRoom(pin.trim());
+      const room = await getRoom(pinToWatch.trim());
       const spectatorLimit = 2;
       const seatsAreFull = room.players.length >= 6;
       const spectatorGalleryIsFull = room.spectator_count >= spectatorLimit;
@@ -130,12 +166,38 @@ export default function HomePage() {
     }
   };
 
+  const handleWatch = async () => {
+    await executeWatch(pin);
+  };
+
+  const handleSelectRoom = (room: RoomSummary) => {
+    setPin(room.game_pin);
+    setError('');
+    if (!name.trim()) {
+      nameInputRef.current?.focus();
+    }
+  };
+
+  const handleQuickAction = async (room: RoomSummary) => {
+    setPin(room.game_pin);
+    if (room.status === 'PLAYING' || room.player_count >= room.max_players) {
+      await executeWatch(room.game_pin);
+      return;
+    }
+    if (!name.trim()) {
+      setError('Please enter your name first');
+      nameInputRef.current?.focus();
+      return;
+    }
+    await executeJoin(room.game_pin, name.trim());
+  };
+
   return (
     <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-x-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(99,102,241,0.16),transparent_30%),linear-gradient(135deg,#020617_0%,#0f172a_58%,#171942_100%)] px-4 py-6 sm:py-12">
       <ParticleField className="pointer-events-none fixed inset-0 h-full w-full" />
       <FullscreenButton className="fixed top-3.5 right-3.5 z-40" />
 
-      <div className="relative z-10 my-auto flex w-full max-w-[28rem] flex-col items-center gap-6 sm:gap-8">
+      <div className={`relative z-10 my-auto flex w-full flex-col items-center gap-6 sm:gap-8 transition-all duration-300 ${mode === 'join' ? 'max-w-[28rem] sm:max-w-[32rem]' : 'max-w-[28rem]'}`}>
         {/* Logo / Title */}
         <div className="relative text-center flex flex-col items-center">
           {/* 3D Cube Logo with layered glowing aura */}
@@ -445,24 +507,35 @@ export default function HomePage() {
           {mode === 'join' && (
             <div className="flex flex-col gap-3.5 sm:gap-4">
               {/* Header */}
-              <div className="flex items-center gap-3 pb-2 border-b border-white/[0.06]">
-                <button
-                  type="button"
-                  onClick={() => { setMode('home'); setError(''); }}
-                  className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
-                  aria-label="Back"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </button>
-                <div>
+              <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { setMode('home'); setError(''); }}
+                    className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
+                    aria-label="Back"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
                   <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white">Join Game</h2>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => fetchRooms(true)}
+                  disabled={loadingRooms}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50 cursor-pointer"
+                  title="Refresh active rooms"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${loadingRooms ? 'animate-spin text-indigo-400' : ''}`} />
+                  <span className="hidden sm:inline">Refresh</span>
+                </button>
               </div>
 
               {/* Your Name */}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-slate-300">Your Name</label>
                 <input
+                  ref={nameInputRef}
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
@@ -472,9 +545,123 @@ export default function HomePage() {
                 />
               </div>
 
+              {/* Active Rooms */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-slate-300">Active Rooms</span>
+                    {rooms.length > 0 && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        {rooms.filter(r => r.status === 'WAITING').length} Open
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-slate-400">Click a room to join</span>
+                </div>
+
+                <div className="max-h-[175px] sm:max-h-[200px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                  {loadingRooms && rooms.length === 0 ? (
+                    <div className="space-y-2 py-1">
+                      {[1, 2].map(i => (
+                        <div key={i} className="h-14 rounded-xl border border-white/5 bg-slate-800/30 animate-pulse" />
+                      ))}
+                    </div>
+                  ) : rooms.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-5 px-3 rounded-xl border border-dashed border-white/10 bg-slate-800/20 text-center">
+                      <Users className="h-6 w-6 text-slate-500 mb-1.5 opacity-60" />
+                      <p className="text-xs font-semibold text-slate-300">No active rooms right now</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Create a room or enter a PIN below</p>
+                    </div>
+                  ) : (
+                    rooms.map(room => {
+                      const isFull = room.player_count >= room.max_players;
+                      const isWaiting = room.status === 'WAITING';
+                      const isSelected = pin === room.game_pin;
+                      return (
+                        <div
+                          key={room.id}
+                          onClick={() => handleSelectRoom(room)}
+                          className={`group relative flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'border-indigo-400/80 bg-indigo-500/15 shadow-[0_0_15px_rgba(99,102,241,0.15)]'
+                              : 'border-white/10 bg-slate-800/40 hover:border-white/20 hover:bg-slate-800/70'
+                          }`}
+                        >
+                          {/* Host & Meta */}
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/25 to-purple-500/25 border border-indigo-400/30 text-indigo-200 font-bold text-xs sm:text-sm shadow-inner">
+                              {room.host_name ? room.host_name.charAt(0).toUpperCase() : 'H'}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-xs sm:text-sm text-white truncate max-w-[100px] sm:max-w-[140px]">
+                                  {room.host_name}
+                                </span>
+                                <span className="font-mono text-[10px] font-semibold text-indigo-300 bg-indigo-500/15 border border-indigo-500/25 px-1.5 py-0.2 rounded tracking-wide">
+                                  #{room.game_pin}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-0.5 text-[10px] sm:text-[11px] text-slate-400">
+                                <span>
+                                  {room.game_mode === 'HP' ? `${room.starting_hp ?? 100} HP` : `${room.max_turns ?? 7} Turns`}
+                                </span>
+                                <span className="text-slate-600">•</span>
+                                <span>
+                                  {room.turn_time_limit ? `${room.turn_time_limit}s` : 'No limit'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Players count & Button */}
+                          <div className="flex items-center gap-2 shrink-0">
+                            <div className="text-right">
+                              <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-300">
+                                <Users className="h-3 w-3 text-slate-400" />
+                                {room.player_count}/{room.max_players}
+                              </span>
+                              <span className={`block text-[9px] sm:text-[10px] font-medium ${
+                                !isWaiting ? 'text-amber-400' : isFull ? 'text-slate-400' : 'text-emerald-400'
+                              }`}>
+                                {!isWaiting ? 'In Game' : isFull ? 'Full' : 'Open'}
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleQuickAction(room);
+                              }}
+                              disabled={loading}
+                              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-md ${
+                                !isWaiting || isFull
+                                  ? 'border border-sky-400/40 bg-sky-500/20 text-sky-200 hover:bg-sky-500/30'
+                                  : 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-indigo-500/25'
+                              }`}
+                            >
+                              {!isWaiting || isFull ? 'Watch' : 'Join'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="relative my-0.5 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/[0.08]" />
+                </div>
+                <span className="relative bg-slate-900/95 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  Or Enter PIN Manually
+                </span>
+              </div>
+
               {/* Game PIN */}
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-300">Game PIN</label>
                 <input
                   type="text"
                   value={pin}
@@ -489,31 +676,33 @@ export default function HomePage() {
               {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
 
               {/* Action Buttons */}
-              <button
-                onClick={handleJoin}
-                disabled={loading}
-                className="w-full rounded-xl sm:rounded-2xl border border-indigo-400/40 bg-indigo-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-white shadow-[0_10px_25px_rgba(99,102,241,0.25)] transition-all hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px cursor-pointer"
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Joining Room...
-                  </span>
-                ) : 'Join Game'}
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleJoin}
+                  disabled={loading}
+                  className="w-full rounded-xl sm:rounded-2xl border border-indigo-400/40 bg-indigo-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-white shadow-[0_10px_25px_rgba(99,102,241,0.25)] transition-all hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px cursor-pointer"
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Joining Room...
+                    </span>
+                  ) : 'Join Game'}
+                </button>
 
-              <button
-                onClick={handleWatch}
-                disabled={loading}
-                className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/20 py-2.5 text-xs sm:text-sm font-medium text-slate-300 hover:text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 cursor-pointer"
-                title="Watch the game without playing (only the PIN is needed)"
-              >
-                <Eye className="h-4 w-4" />
-                Watch as spectator
-              </button>
+                <button
+                  onClick={handleWatch}
+                  disabled={loading}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/20 py-2.5 text-xs sm:text-sm font-medium text-slate-300 hover:text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 cursor-pointer"
+                  title="Watch the game without playing (only the PIN is needed)"
+                >
+                  <Eye className="h-4 w-4" />
+                  Watch as spectator
+                </button>
+              </div>
             </div>
           )}
         </div>

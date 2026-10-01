@@ -215,6 +215,21 @@ export interface RoomDetailResponse {
   is_debug: boolean;
 }
 
+export interface RoomSummary {
+  id: string;
+  game_pin: string;
+  status: string;
+  host_name: string;
+  player_count: number;
+  max_players: number;
+  turn_time_limit: TurnTimeLimit;
+  game_mode: GameMode;
+  max_turns: number | null;
+  starting_hp?: number | null;
+  is_debug: boolean;
+  created_at: string;
+}
+
 export interface ExchangeTilesResponse {
   /** `passed` when more tiles were requested than the bag holds (rules §5). */
   status: 'exchanged' | 'passed';

@@ -2,6 +2,7 @@ import {
   CreateRoomResponse,
   JoinRoomResponse,
   RoomDetailResponse,
+  RoomSummary,
   GameState,
   PlacedTile,
   ValidateMoveResponse,
@@ -145,6 +146,15 @@ export async function joinRoom(gamePin: string, playerName: string): Promise<Joi
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Failed to join room');
+  }
+  return res.json();
+}
+
+export async function getRooms(): Promise<RoomSummary[]> {
+  const res = await fetch(`${getApiBase()}/rooms`, { cache: 'no-store' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to fetch rooms');
   }
   return res.json();
 }

@@ -7,7 +7,8 @@ from app.schemas.room import (
     CreateRoomResponse,
     JoinRoomRequest,
     JoinRoomResponse,
-    RoomDetailResponse
+    RoomDetailResponse,
+    RoomSummaryResponse
 )
 from app.schemas.player import PlayerOut
 from app.schemas.events import WebSocketEvent, EventType
@@ -15,6 +16,10 @@ from app.services.room_service import RoomService
 from app.websocket.connection_manager import manager
 
 router = APIRouter(prefix="/rooms", tags=["Rooms"])
+
+@router.get("", response_model=list[RoomSummaryResponse])
+async def list_rooms(db: AsyncSession = Depends(get_db)):
+    return await RoomService.list_active_rooms(db)
 
 @router.post("", response_model=CreateRoomResponse)
 async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)):

@@ -64,3 +64,17 @@ class RoomDetailResponse(BaseModel):
     max_turns: Optional[int] = None
     starting_hp: Optional[int] = None
     is_debug: bool = False
+
+class RoomSummaryResponse(BaseModel):
+    id: str
+    game_pin: str
+    status: str
+    host_name: str
+    player_count: int
+    max_players: int = 4
+    turn_time_limit: Optional[int] = None
+    game_mode: Literal["HP", "TURNS"]
+    max_turns: Optional[int] = None
+    starting_hp: Optional[int] = None
+    is_debug: bool = False
+    created_at: datetime

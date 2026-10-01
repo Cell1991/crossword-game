@@ -167,3 +167,31 @@ async def test_custom_starting_hp():
             assert p["hp"] == 50
             assert p["max_hp"] == 50
 
+@pytest.mark.asyncio
+async def test_list_rooms():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # Create a room
+        res = await client.post("/api/rooms", json={
+            "host_name": "HostUser",
+            "game_mode": "HP",
+            "starting_hp": 100,
+            "turn_time_limit": 60,
+        })
+        assert res.status_code == 200
+        created = res.json()
+
+        # List rooms
+        list_res = await client.get("/api/rooms")
+        assert list_res.status_code == 200
+        rooms = list_res.json()
+        assert len(rooms) >= 1
+        found = next((r for r in rooms if r["game_pin"] == created["game_pin"]), None)
+        assert found is not None
+        assert found["host_name"] == "HostUser"
+        assert found["status"] == "WAITING"
+        assert found["player_count"] == 1
+        assert found["game_mode"] == "HP"
+        assert found["starting_hp"] == 100
+        assert found["turn_time_limit"] == 60
+

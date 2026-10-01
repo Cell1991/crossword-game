@@ -261,3 +261,44 @@ class RoomService:
 
         await db.flush()
         return game
+
+    @staticmethod
+    async def list_active_rooms(db: AsyncSession, limit: int = 30) -> list[dict]:
+        stmt = (
+            select(GameRoom, GamePlayer)
+            .outerjoin(GamePlayer, GamePlayer.game_id == GameRoom.id)
+            .where(GameRoom.status.in_(["WAITING", "PLAYING"]))
+            .order_by(GameRoom.created_at.desc())
+        )
+        rows = (await db.execute(stmt)).all()
+
+        rooms_map: dict[str, tuple[GameRoom, list[GamePlayer]]] = {}
+        for room, player in rows:
+            if room.id not in rooms_map:
+                rooms_map[room.id] = (room, [])
+            if player is not None:
+                rooms_map[room.id][1].append(player)
+
+        results = []
+        for room, players in rooms_map.values():
+            if not players:
+                continue
+            host = next((p for p in players if p.is_host or p.id == room.host_player_id), players[0])
+            results.append({
+                "id": room.id,
+                "game_pin": room.game_pin,
+                "status": room.status,
+                "host_name": host.display_name,
+                "player_count": len(players),
+                "max_players": settings.MAX_PLAYERS,
+                "turn_time_limit": room.turn_time_limit,
+                "game_mode": room.game_mode,
+                "max_turns": room.max_turns,
+                "starting_hp": room.starting_hp,
+                "is_debug": room.is_debug,
+                "created_at": room.created_at,
+            })
+            if len(results) >= limit:
+                break
+
+        return results
