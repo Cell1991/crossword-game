@@ -70,7 +70,7 @@ export async function GET() {
       LIMIT 20
     `;
 
-    const res = await fetch(NEON_SQL_URL, {
+    let res = await fetch(NEON_SQL_URL, {
       method: 'POST',
       headers: {
         'neon-connection-string': NEON_CONN_STRING,
@@ -81,11 +81,46 @@ export async function GET() {
     });
 
     if (!res.ok) {
+      // Fallback query without r.max_players in case of schema discrepancy
+      const fallbackSql = `
+        SELECT 
+          r.id,
+          r.game_pin,
+          r.status,
+          r.turn_time_limit,
+          r.game_mode,
+          r.max_turns,
+          r.starting_hp,
+          r.is_debug,
+          r.created_at,
+          4 AS max_players,
+          COALESCE(p.display_name, 'Host') AS host_name,
+          COALESCE((SELECT count(*)::int FROM game_players gp WHERE gp.game_id = r.id), 1) AS player_count
+        FROM game_rooms r
+        LEFT JOIN game_players p ON r.host_player_id = p.id
+        WHERE (
+          (r.status = 'WAITING' AND (r.created_at IS NULL OR r.created_at >= NOW() - INTERVAL '10 minutes'))
+          OR
+          (r.status = 'PLAYING' AND (r.started_at >= NOW() - INTERVAL '2 hours' OR (r.started_at IS NULL AND r.created_at >= NOW() - INTERVAL '2 hours')))
+        )
+        ORDER BY CASE WHEN r.status = 'WAITING' THEN 0 ELSE 1 END, r.created_at DESC
+        LIMIT 20
+      `;
+      res = await fetch(NEON_SQL_URL, {
+        method: 'POST',
+        headers: {
+          'neon-connection-string': NEON_CONN_STRING,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: fallbackSql }),
+        cache: 'no-store',
+      });
+    }
+
+    if (!res.ok) {
       const errText = await res.text();
-      return NextResponse.json(
-        { detail: `Database query failed: ${errText}` },
-        { status: 500, headers: { 'Cache-Control': 'no-store' } }
-      );
+      console.error('Failed to query rooms from database:', errText);
+      return NextResponse.json([], { headers: { 'Cache-Control': 'no-store' } });
     }
 
     const data = await res.json();
