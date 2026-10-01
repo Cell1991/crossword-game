@@ -195,7 +195,8 @@ export class TileRenderer {
     isTemporary: boolean,
     showLetter = true,
     isRemote = false,
-    isFrozen = false
+    isFrozen = false,
+    isLastMove = false
   ): void {
     const { ctx, offset, cellSize, lowPower, tilePalette, temporaryTilesValid, animTime, tileAnimations } = context;
     const x = offset.x + col * cellSize;
@@ -219,8 +220,11 @@ export class TileRenderer {
       }
     }
 
-    const isGolden = !isRemote && !isFrozen && (!isTemporary || temporaryTilesValid === true);
+    const isGolden = !isRemote && !isFrozen;
     const isCorrectPlacement = !isRemote && isTemporary && temporaryTilesValid === true;
+    const isInvalidPlacement = !isRemote && isTemporary && temporaryTilesValid === false;
+    const isPendingPlacement = !isRemote && isTemporary && (temporaryTilesValid === null || temporaryTilesValid === undefined);
+    const isPlacedTile = !isRemote && isTemporary;
 
     const cx = x + cellSize / 2;
     const cy = y + cellSize / 2;
@@ -260,30 +264,53 @@ export class TileRenderer {
         ? 'rgba(6, 182, 212, 0.5)'
         : TILE_THEME.face.shadow;
 
-      if (!lowPower || isCorrectPlacement || isRemote) {
+      if (!lowPower || isPlacedTile || isLastMove || isRemote) {
         ctx.save();
-        ctx.shadowColor = isCorrectPlacement
-          ? 'rgba(34, 197, 94, 0.85)'
-          : isRemote
-          ? 'rgba(6, 182, 212, 0.8)'
-          : shadowFill;
-        ctx.shadowBlur = isCorrectPlacement
-          ? Math.max(14, cellSize * 0.32)
-          : isRemote
-          ? Math.max(8, cellSize * 0.2)
-          : Math.max(4, cellSize * 0.1);
+        if (isCorrectPlacement) {
+          ctx.shadowColor = 'rgba(34, 197, 94, 0.85)';
+          ctx.shadowBlur = Math.max(14, cellSize * 0.32);
+        } else if (isInvalidPlacement) {
+          ctx.shadowColor = 'rgba(244, 63, 94, 0.85)';
+          ctx.shadowBlur = Math.max(14, cellSize * 0.32);
+        } else if (isPendingPlacement) {
+          ctx.shadowColor = 'rgba(14, 165, 233, 0.8)';
+          ctx.shadowBlur = Math.max(12, cellSize * 0.28);
+        } else if (isLastMove) {
+          ctx.shadowColor = 'rgba(245, 158, 11, 0.75)';
+          ctx.shadowBlur = Math.max(10, cellSize * 0.24);
+        } else if (isRemote) {
+          ctx.shadowColor = 'rgba(6, 182, 212, 0.8)';
+          ctx.shadowBlur = Math.max(8, cellSize * 0.2);
+        } else {
+          ctx.shadowColor = shadowFill;
+          ctx.shadowBlur = Math.max(4, cellSize * 0.1);
+        }
       }
       ctx.fillStyle = shadowFill;
       drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
       ctx.fill();
-      if (!lowPower || isCorrectPlacement || isRemote) ctx.restore();
+      if (!lowPower || isPlacedTile || isLastMove || isRemote) ctx.restore();
 
-      // Atmospheric outer green aura on the board under the tile (rendered BEFORE the face so gold stays 100% pure)
-      if (isCorrectPlacement && !lowPower) {
+      // Atmospheric outer aura on the board under the tile (rendered BEFORE the face so gold stays 100% pure)
+      if (!lowPower && (isPlacedTile || isLastMove)) {
         ctx.save();
-        ctx.shadowColor = 'rgba(34, 197, 94, 0.9)';
-        ctx.shadowBlur = Math.max(12, cellSize * 0.28);
-        ctx.fillStyle = 'rgba(34, 197, 94, 0.35)';
+        if (isCorrectPlacement) {
+          ctx.shadowColor = 'rgba(34, 197, 94, 0.9)';
+          ctx.shadowBlur = Math.max(12, cellSize * 0.28);
+          ctx.fillStyle = 'rgba(34, 197, 94, 0.35)';
+        } else if (isInvalidPlacement) {
+          ctx.shadowColor = 'rgba(244, 63, 94, 0.9)';
+          ctx.shadowBlur = Math.max(12, cellSize * 0.28);
+          ctx.fillStyle = 'rgba(244, 63, 94, 0.35)';
+        } else if (isPendingPlacement) {
+          ctx.shadowColor = 'rgba(14, 165, 233, 0.85)';
+          ctx.shadowBlur = Math.max(10, cellSize * 0.24);
+          ctx.fillStyle = 'rgba(14, 165, 233, 0.3)';
+        } else if (isLastMove) {
+          ctx.shadowColor = 'rgba(245, 158, 11, 0.8)';
+          ctx.shadowBlur = Math.max(9, cellSize * 0.22);
+          ctx.fillStyle = 'rgba(245, 158, 11, 0.22)';
+        }
         drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
         ctx.fill();
         ctx.restore();
@@ -415,7 +442,7 @@ export class TileRenderer {
     } else if (isCorrectPlacement) {
       ctx.save();
 
-      // Razor-sharp, clean, vibrant warm emerald border - zero inner blur to preserve pure gold face
+      // Razor-sharp, clean, vibrant warm emerald border
       const greenGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW, y + pad + tileW);
       greenGrad.addColorStop(0, '#86efac');  // Crisp warm lime-mint highlight
       greenGrad.addColorStop(0.3, '#4ade80'); // Radiant neon emerald
@@ -423,11 +450,99 @@ export class TileRenderer {
       greenGrad.addColorStop(1, '#16a34a');  // Deep pure emerald
 
       ctx.strokeStyle = greenGrad;
-      ctx.lineWidth = Math.max(2.2, cellSize * 0.052);
+      ctx.lineWidth = Math.max(2.6, cellSize * 0.065);
+      if (!lowPower) {
+        ctx.shadowColor = 'rgba(34, 197, 94, 0.85)';
+        ctx.shadowBlur = Math.max(4, cellSize * 0.1);
+      }
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
 
       // Subtle inner bright glint rim
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 1;
+      const innerPad = 1;
+      drawRoundedRect(ctx, x + pad + innerPad, y + pad + innerPad, tileW - innerPad * 2, tileW - innerPad * 2, Math.max(1, radius - innerPad));
+      ctx.stroke();
+
+      ctx.restore();
+    } else if (isInvalidPlacement) {
+      ctx.save();
+
+      // High-contrast, vibrant Crimson / Rose warning border
+      const roseGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW, y + pad + tileW);
+      roseGrad.addColorStop(0, '#fecdd3');
+      roseGrad.addColorStop(0.3, '#fb7185');
+      roseGrad.addColorStop(0.7, '#f43f5e');
+      roseGrad.addColorStop(1, '#be123c');
+
+      ctx.strokeStyle = roseGrad;
+      ctx.lineWidth = Math.max(2.8, cellSize * 0.07);
+      if (!lowPower) {
+        ctx.shadowColor = 'rgba(244, 63, 94, 0.85)';
+        ctx.shadowBlur = Math.max(5, cellSize * 0.12);
+      }
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
+
+      // Subtle inner bright glint rim
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 1;
+      const innerPad = 1;
+      drawRoundedRect(ctx, x + pad + innerPad, y + pad + innerPad, tileW - innerPad * 2, tileW - innerPad * 2, Math.max(1, radius - innerPad));
+      ctx.stroke();
+
+      ctx.restore();
+    } else if (isPendingPlacement) {
+      ctx.save();
+
+      // Glowing Electric Sky-Blue border
+      const blueGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW, y + pad + tileW);
+      blueGrad.addColorStop(0, '#e0f2fe');
+      blueGrad.addColorStop(0.3, '#38bdf8');
+      blueGrad.addColorStop(0.7, '#0284c7');
+      blueGrad.addColorStop(1, '#0369a1');
+
+      ctx.strokeStyle = blueGrad;
+      ctx.lineWidth = Math.max(2.6, cellSize * 0.065);
+      if (!lowPower) {
+        ctx.shadowColor = 'rgba(56, 189, 248, 0.8)';
+        ctx.shadowBlur = Math.max(4, cellSize * 0.1);
+      }
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
+
+      // Subtle inner bright glint rim
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 1;
+      const innerPad = 1;
+      drawRoundedRect(ctx, x + pad + innerPad, y + pad + innerPad, tileW - innerPad * 2, tileW - innerPad * 2, Math.max(1, radius - innerPad));
+      ctx.stroke();
+
+      ctx.restore();
+    } else if (isLastMove) {
+      ctx.save();
+
+      // Radiant Amber-Gold outline for most recently completed move
+      const amberGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW, y + pad + tileW);
+      amberGrad.addColorStop(0, '#fef08a');
+      amberGrad.addColorStop(0.4, '#facc15');
+      amberGrad.addColorStop(0.8, '#f59e0b');
+      amberGrad.addColorStop(1, '#d97706');
+
+      ctx.strokeStyle = amberGrad;
+      ctx.lineWidth = Math.max(2.2, cellSize * 0.052);
+      if (!lowPower) {
+        ctx.shadowColor = 'rgba(245, 158, 11, 0.7)';
+        ctx.shadowBlur = Math.max(4, cellSize * 0.09);
+      }
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
+
+      ctx.shadowBlur = 0;
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
       ctx.lineWidth = 1;
       const innerPad = 1;
@@ -436,8 +551,8 @@ export class TileRenderer {
 
       ctx.restore();
     } else if (isGolden) {
-      ctx.strokeStyle = isTemporary ? '#f5d98a' : 'rgba(226, 184, 93, 0.9)';
-      ctx.lineWidth = isTemporary ? 1.8 : 1.3;
+      ctx.strokeStyle = 'rgba(226, 184, 93, 0.9)';
+      ctx.lineWidth = 1.3;
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
     } else {
@@ -527,14 +642,70 @@ export class TileRenderer {
       }
     }
 
-    // Shimmer wave gleam across valid placements
-    if (isCorrectPlacement && animTime && !lowPower) {
+    // 5.5 Corner Status Pip for staged / recently placed tiles
+    if (cellSize >= 16 && !isRemote && (isPlacedTile || isLastMove)) {
+      ctx.save();
+      const pipOffset = Math.max(3.5, cellSize * 0.12);
+      const pipX = x + pad + pipOffset;
+      const pipY = y + pad + pipOffset;
+      const pipRadius = Math.max(2, cellSize * 0.055);
+
+      let pipColor = '#38bdf8';
+      let ringColor = '#7dd3fc';
+      if (isCorrectPlacement) {
+        pipColor = '#22c55e';
+        ringColor = '#86efac';
+      } else if (isInvalidPlacement) {
+        pipColor = '#f43f5e';
+        ringColor = '#fda4af';
+      } else if (isLastMove) {
+        pipColor = '#f59e0b';
+        ringColor = '#fde047';
+      }
+
+      if (!lowPower) {
+        ctx.shadowColor = pipColor;
+        ctx.shadowBlur = Math.max(3, pipRadius * 1.5);
+      }
+
+      // Outer status pip ring
+      ctx.beginPath();
+      ctx.arc(pipX, pipY, pipRadius, 0, Math.PI * 2);
+      ctx.fillStyle = pipColor;
+      ctx.fill();
+
+      ctx.strokeStyle = ringColor;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Tiny inner specular glint
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(pipX - pipRadius * 0.25, pipY - pipRadius * 0.25, Math.max(0.8, pipRadius * 0.35), 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Shimmer wave gleam across temporary placed tiles
+    if (isTemporary && !isRemote && animTime && !lowPower) {
       const phase = (animTime / 1400) % 1;
       const gleamX = x + pad + (tileW * 2.2) * phase - tileW * 0.6;
       const gleamGrad = ctx.createLinearGradient(gleamX - 18, y + pad, gleamX + 18, y + pad + tileW);
-      gleamGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
-      gleamGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.42)');
-      gleamGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      if (isCorrectPlacement) {
+        gleamGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        gleamGrad.addColorStop(0.5, 'rgba(134, 239, 172, 0.42)');
+        gleamGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      } else if (isInvalidPlacement) {
+        gleamGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        gleamGrad.addColorStop(0.5, 'rgba(254, 205, 211, 0.42)');
+        gleamGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      } else {
+        gleamGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        gleamGrad.addColorStop(0.5, 'rgba(224, 242, 254, 0.42)');
+        gleamGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      }
       ctx.save();
       ctx.beginPath();
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);

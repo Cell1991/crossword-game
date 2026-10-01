@@ -86,10 +86,21 @@ export class BoardCompositor {
     };
 
     // 3. Layer 2: Committed Board Tiles
+    let maxTurn = 0;
+    if (config.boardState) {
+      for (const key in config.boardState) {
+        const turn = config.boardState[key]?.turn_number;
+        if (typeof turn === 'number' && turn > maxTurn) {
+          maxTurn = turn;
+        }
+      }
+    }
+
     for (const key in config.boardState) {
       const cell = config.boardState[key];
       if (isCellVisible(cell.row, cell.col)) {
         const isFrozen = config.frozenTile?.row === cell.row && config.frozenTile?.col === cell.col;
+        const isLastMove = Boolean(maxTurn > 0 && cell.turn_number === maxTurn);
         TileRenderer.renderTile(
           tileContext,
           cell.row,
@@ -99,7 +110,8 @@ export class BoardCompositor {
           false,
           true,
           false,
-          isFrozen
+          isFrozen,
+          isLastMove
         );
       }
     }
