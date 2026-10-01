@@ -21,7 +21,12 @@ export const PlayerList: React.FC<PlayerListProps> = ({ players, myPlayerId }) =
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      {players.length === 0 ? (
+        <div className="flex items-center justify-center py-6 text-slate-400 text-xs sm:text-sm animate-pulse">
+          Connecting to lobby...
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {players.map((p) => {
           const isMe = p.id === myPlayerId;
           return (
@@ -50,7 +55,8 @@ export const PlayerList: React.FC<PlayerListProps> = ({ players, myPlayerId }) =
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

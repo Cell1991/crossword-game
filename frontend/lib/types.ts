@@ -193,6 +193,13 @@ export interface JoinRoomResponse {
   session_token: string;
   display_name: string;
   is_host: boolean;
+  game_pin?: string;
+  host_player_id?: string;
+  turn_time_limit?: TurnTimeLimit;
+  game_mode?: GameMode;
+  max_turns?: number | null;
+  starting_hp?: number | null;
+  created_at?: string;
 }
 
 export interface RematchResponse extends JoinRoomResponse {

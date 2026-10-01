@@ -46,6 +46,13 @@ class JoinRoomResponse(BaseModel):
     session_token: str
     display_name: str
     is_host: bool
+    game_pin: Optional[str] = None
+    host_player_id: Optional[str] = None
+    turn_time_limit: Optional[int] = None
+    game_mode: Optional[Literal["HP", "TURNS"]] = "HP"
+    max_turns: Optional[int] = None
+    starting_hp: Optional[int] = None
+    created_at: Optional[datetime] = None
 
 class RematchResponse(JoinRoomResponse):
     game_pin: str

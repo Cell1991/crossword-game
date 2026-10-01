@@ -118,6 +118,12 @@ export default function HomePage() {
         displayName: res.display_name,
         isHost: res.is_host,
         gamePin: pinToJoin.trim(),
+        hostPlayerId: res.host_player_id,
+        turnTimeLimit: res.turn_time_limit,
+        gameMode: res.game_mode,
+        maxTurns: res.max_turns,
+        startingHp: res.starting_hp,
+        createdAt: res.created_at,
       });
       router.push(`/lobby/${pinToJoin.trim()}`);
     } catch (error: unknown) {

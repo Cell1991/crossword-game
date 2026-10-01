@@ -66,7 +66,14 @@ async def join_room(game_pin: str, req: JoinRoomRequest, db: AsyncSession = Depe
         player_id=player.id,
         session_token=player.session_token,
         display_name=player.display_name,
-        is_host=player.is_host
+        is_host=player.is_host,
+        game_pin=room.game_pin,
+        host_player_id=room.host_player_id,
+        turn_time_limit=room.turn_time_limit,
+        game_mode=room.game_mode,
+        max_turns=room.max_turns,
+        starting_hp=room.starting_hp,
+        created_at=room.created_at,
     )
 
 @router.post("/{game_pin}/leave")

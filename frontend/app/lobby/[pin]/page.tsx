@@ -24,21 +24,25 @@ export default function LobbyPage() {
 
   const [players, setPlayers] = useState<Player[]>(() => {
     if (matchesCurrentPin && initialSession?.playerId && !initialSession.isSpectator) {
-      return [{
-        id: initialSession.playerId,
-        display_name: initialSession.displayName,
-        is_host: initialSession.isHost,
-        score: 0,
-        hp: initialSession.startingHp ?? 100,
-        turn_order: 0,
-        connection_status: 'ONLINE',
-        rack_count: 0,
-      }];
+      if (initialSession.isHost) {
+        return [{
+          id: initialSession.playerId,
+          display_name: initialSession.displayName,
+          is_host: true,
+          score: 0,
+          hp: initialSession.startingHp ?? 100,
+          turn_order: 0,
+          connection_status: 'ONLINE',
+          rack_count: 0,
+        }];
+      }
     }
     return [];
   });
   const [gameId, setGameId] = useState<string | null>(matchesCurrentPin ? (initialSession?.gameId ?? null) : null);
-  const [hostPlayerId, setHostPlayerId] = useState<string | null>(matchesCurrentPin && initialSession?.isHost ? initialSession.playerId : null);
+  const [hostPlayerId, setHostPlayerId] = useState<string | null>(
+    matchesCurrentPin ? (initialSession?.hostPlayerId || (initialSession?.isHost ? initialSession.playerId : null)) : null
+  );
   const [myPlayerId, setMyPlayerId] = useState<string | null>(matchesCurrentPin ? (initialSession?.playerId ?? null) : null);
   const [sessionIsHost, setSessionIsHost] = useState(Boolean(matchesCurrentPin && initialSession?.isHost));
   const [isSpectator, setIsSpectator] = useState(Boolean(matchesCurrentPin && initialSession?.isSpectator));
@@ -197,14 +201,6 @@ export default function LobbyPage() {
     router.push('/');
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center">
-        <div className="text-white text-xl animate-pulse">Loading lobby...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4 gap-6 overflow-hidden">
       <ParticleField className="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-80" />
@@ -280,7 +276,7 @@ export default function LobbyPage() {
         <div className="w-full bg-slate-900/80 border border-slate-700/50 rounded-3xl p-6 shadow-2xl backdrop-blur-sm">
           <PlayerList players={players} myPlayerId={myPlayerId} />
 
-          {players.length < 2 && (
+          {isHost && players.length < 2 && (
             <div className="flex items-center justify-center gap-2 mt-4 select-none">
               <span className="text-amber-300 text-xs sm:text-sm slow-twinkle">✨</span>
               <p className="text-center font-bold text-xs sm:text-sm tracking-wide gold-shimmer-text">
