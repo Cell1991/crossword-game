@@ -205,6 +205,23 @@ async def resolve_pending_effect(game_id: str, db: AsyncSession = Depends(get_db
             type=EventType.GAME_ENDED,
             payload={"reason": payload.get("reason") or "Game completed", "winnerId": payload.get("winner_id")},
         ).model_dump())
+    elif payload.get("turn_advanced"):
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.TURN_PASSED,
+            payload={
+                "passedPlayerId": payload.get("passed_player_id"),
+                "nextPlayerId": game.current_player_id,
+                "turnNumber": game.turn_number,
+                "consecutivePasses": game.consecutive_passes,
+                "reason": "ELIMINATED",
+            }
+        ).model_dump())
+        stmt_next = select(GamePlayer).where(GamePlayer.id == game.current_player_id)
+        next_p = (await db.execute(stmt_next)).scalar_one_or_none()
+        if BotService.is_bot_player(next_p):
+            asyncio.create_task(
+                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+            )
     return {"status": "resolved", **payload}
 
 

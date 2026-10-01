@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
@@ -13,6 +15,52 @@ from app.schemas.player import PlayerOut, TileSchema
 from app.schemas.game import GameStateResponse, MoveHistoryItem
 from app.database.state import bag_tiles, board_state, player_rack, player_cards, replace_game_tiles
 from app.services.room_service import RoomService
+
+
+async def _auto_resolve_effect_task(game_id: str, delay: float = 1.2) -> None:
+    """Backend safety timer: automatically finalize pending DAMAGE/SWAP effects if no client calls resolve."""
+    try:
+        await asyncio.sleep(delay)
+        from app.database.session import AsyncSessionLocal
+        from app.websocket.connection_manager import manager
+        from app.schemas.events import WebSocketEvent, EventType
+        from app.services.bot_service import BotService
+        async with AsyncSessionLocal() as db:
+            game, resolved, payload = await GameService.finalize_pending_effect_if_needed(db, game_id)
+            if not resolved or not payload:
+                return
+            await db.commit()
+            await manager.broadcast(game_id, WebSocketEvent(
+                type=EventType.EFFECT_RESOLVED,
+                payload={**payload, "blocked": False},
+            ).model_dump())
+            if payload.get("game_over"):
+                await manager.broadcast(game_id, WebSocketEvent(
+                    type=EventType.GAME_ENDED,
+                    payload={"reason": payload.get("reason") or "Game completed", "winnerId": payload.get("winner_id")},
+                ).model_dump())
+            elif payload.get("turn_advanced"):
+                await manager.broadcast(game_id, WebSocketEvent(
+                    type=EventType.TURN_PASSED,
+                    payload={
+                        "passedPlayerId": payload.get("passed_player_id"),
+                        "nextPlayerId": game.current_player_id,
+                        "turnNumber": game.turn_number,
+                        "consecutivePasses": game.consecutive_passes,
+                        "reason": "ELIMINATED",
+                    }
+                ).model_dump())
+                stmt_next = select(GamePlayer).where(GamePlayer.id == game.current_player_id)
+                next_p = (await db.execute(stmt_next)).scalar_one_or_none()
+                if BotService.is_bot_player(next_p):
+                    asyncio.create_task(
+                        BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+                    )
+    except asyncio.CancelledError:
+        pass
+    except Exception as e:
+        logging.getLogger(__name__).debug(f"_auto_resolve_effect_task error: {e}")
+
 
 class GameService:
 
@@ -77,6 +125,67 @@ class GameService:
         return winner_id
 
     @staticmethod
+    async def ensure_turn_order_valid(
+        db: AsyncSession, game: Game, players: list[GamePlayer]
+    ) -> dict[str, Any]:
+        """
+        Validates the turn holder and game status after HP deductions or leaves.
+        If a player's HP drops to <= 0:
+        - If only 0 or 1 players with HP > 0 remain: mark game as FINISHED, declare winner.
+        - If the dead player holds current_player_id: advance turn immediately to next living player!
+        """
+        result: dict[str, Any] = {
+            "game_over": False,
+            "reason": None,
+            "winner_id": None,
+            "turn_advanced": False,
+            "passed_player_id": None,
+            "next_player_id": game.current_player_id,
+        }
+        if game.status != "PLAYING":
+            return result
+
+        in_game = GameService.players_in_game(players)
+        # Check game end condition: 1 or 0 living players
+        if len(players) > 1 and len(in_game) <= 1:
+            winner_id = in_game[0].id if in_game else GameEndService.determine_winner(GameService.players_summary(players))
+            winner_id = await GameService.finish_game(db, game, players, winner_id)
+            result["game_over"] = True
+            result["reason"] = "Game ended: only one player has HP remaining"
+            result["winner_id"] = winner_id
+            result["next_player_id"] = None
+            return result
+
+        if len(players) == 1 and len(in_game) == 0:
+            winner_id = await GameService.finish_game(db, game, players, None)
+            result["game_over"] = True
+            result["reason"] = "Game ended: Player knocked out"
+            result["winner_id"] = winner_id
+            result["next_player_id"] = None
+            return result
+
+        # Check if active turn holder is dead or departed
+        curr_player = next((p for p in players if p.id == game.current_player_id), None)
+        if curr_player and (curr_player.hp <= 0 or curr_player.connection_status == "OFFLINE"):
+            next_player = GameService.next_player_after(players, curr_player.id)
+            if next_player and next_player.id != curr_player.id:
+                prev_id = curr_player.id
+                game.current_player_id = next_player.id
+                game.turn_number += 1
+                game.turn_started_at = get_utc_now()
+                result["turn_advanced"] = True
+                result["passed_player_id"] = prev_id
+                result["next_player_id"] = next_player.id
+            elif next_player is None:
+                winner_id = await GameService.finish_game(db, game, players, None)
+                result["game_over"] = True
+                result["reason"] = "Game ended: No eligible players remaining"
+                result["winner_id"] = winner_id
+                result["next_player_id"] = None
+
+        return result
+
+    @staticmethod
     async def expire_turn_if_needed(db: AsyncSession, game_id: str) -> tuple[Game, bool, str | None, str | None]:
         """Pass the current turn if its time limit has run out. Returns: (game, expired, reason, winner_id)."""
         stmt_game = select(Game).where(Game.id == game_id).with_for_update()
@@ -107,6 +216,7 @@ class GameService:
             await GameService._apply_pending_effect(db, game, game.pending_effect)
         effect["expires_at"] = (datetime.now(timezone.utc) + timedelta(seconds=settings.SHIELD_WINDOW_SECONDS)).isoformat()
         game.pending_effect = effect
+        asyncio.create_task(_auto_resolve_effect_task(game.id, delay=settings.SHIELD_WINDOW_SECONDS + 0.1))
 
     @staticmethod
     async def finalize_pending_effect_if_needed(db: AsyncSession, game_id: str) -> tuple[Game, bool, Optional[dict[str, Any]]]:
@@ -142,23 +252,17 @@ class GameService:
                     else:
                         player.hp = max(0, player.hp - amount)
                         applied[player.id] = amount
-            players_dict = [{"id": p.id, "display_name": p.display_name, "score": p.score, "hp": p.hp, "rack": p.rack} for p in players]
-            is_over, reason, winner = GameEndService.check_game_over(game.tile_bag, players_dict, game.consecutive_passes)
-            # A DISCONNECTED player is recoverable (they rejoin on reconnect) and must not end the
-            # game on their own — only players truly OFFLINE (left for good) count here, same as
-            # too_few_players. Debug mode's "Acting as" switch drops and reopens the socket, which
-            # briefly marks the other debug player DISCONNECTED; that must not end the game either.
-            in_game_players = GameService.players_in_game(players)
-            game_over = is_over or (len(players) > 1 and len(in_game_players) <= 1)
-            if game_over:
-                game.status = "FINISHED"
-                game.current_player_id = None
-                game.turn_started_at = None
-                room = (await db.execute(select(GameRoom).where(GameRoom.id == game.id))).scalar_one_or_none()
-                if room:
-                    room.status = "FINISHED"
-                    room.finished_at = get_utc_now()
-            return {"type": "DAMAGE", "applied": applied, "game_over": game_over, "reason": reason, "winner_id": winner}
+            validation = await GameService.ensure_turn_order_valid(db, game, players)
+            return {
+                "type": "DAMAGE",
+                "applied": applied,
+                "game_over": validation["game_over"],
+                "reason": validation["reason"],
+                "winner_id": validation["winner_id"],
+                "turn_advanced": validation["turn_advanced"],
+                "passed_player_id": validation["passed_player_id"],
+                "next_player_id": validation["next_player_id"],
+            }
 
         if effect["type"] == "SPY_SWAP":
             own_id = effect["source_player_id"]
@@ -234,6 +338,38 @@ class GameService:
         normalized_board = await board_state(db, game_id)
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
         players = (await db.execute(stmt_players)).scalars().all()
+
+        if game.status == "PLAYING" and game.current_player_id:
+            curr_p = next((p for p in players if p.id == game.current_player_id), None)
+            if curr_p and (curr_p.hp <= 0 or curr_p.connection_status == "OFFLINE"):
+                validation = await GameService.ensure_turn_order_valid(db, game, players)
+                await db.flush()
+                from app.websocket.connection_manager import manager
+                from app.schemas.events import WebSocketEvent, EventType
+                if validation["turn_advanced"]:
+                    await manager.broadcast(game_id, WebSocketEvent(
+                        type=EventType.TURN_PASSED,
+                        payload={
+                            "passedPlayerId": validation["passed_player_id"],
+                            "nextPlayerId": game.current_player_id,
+                            "turnNumber": game.turn_number,
+                            "consecutivePasses": game.consecutive_passes,
+                            "reason": "ELIMINATED",
+                        }
+                    ).model_dump())
+                    from app.services.bot_service import BotService
+                    stmt_next = select(GamePlayer).where(GamePlayer.id == game.current_player_id)
+                    next_p = (await db.execute(stmt_next)).scalar_one_or_none()
+                    if BotService.is_bot_player(next_p):
+                        asyncio.create_task(
+                            BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+                        )
+                elif validation["game_over"]:
+                    await manager.broadcast(game_id, WebSocketEvent(
+                        type=EventType.GAME_ENDED,
+                        payload={"reason": validation["reason"] or "Game completed", "winnerId": validation["winner_id"]},
+                    ).model_dump())
+
 
         player_outs = []
         for p in players:
@@ -366,13 +502,18 @@ class GameService:
         if game.status != "PLAYING":
             raise HTTPException(status_code=400, detail="Game is not currently active")
 
-        if game.current_player_id != player_id:
-            raise HTTPException(status_code=403, detail="It is not your turn to pass")
-
         game.pending_double_target_id = None
 
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
         players = (await db.execute(stmt_players)).scalars().all()
+
+        if game.current_player_id != player_id:
+            curr_p = next((p for p in players if p.id == game.current_player_id), None)
+            if not curr_p or curr_p.hp <= 0 or curr_p.connection_status == "OFFLINE":
+                player_id = game.current_player_id or player_id
+            else:
+                raise HTTPException(status_code=403, detail="It is not your turn to pass")
+
         passing_player = next((player for player in players if player.id == player_id), None)
         if not passing_player:
             raise HTTPException(status_code=403, detail="This player cannot take a turn")

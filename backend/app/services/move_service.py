@@ -388,16 +388,26 @@ class MoveService:
             }
 
         # Score is authoritative damage to every other living player, doubled for a
-        # DOUBLE_DAMAGE target. Applied after a short SHIELD window, not immediately.
+        # DOUBLE_DAMAGE target. Applied after a short SHIELD window if any opponent has shield,
+        # or applied immediately if no opponent can shield.
         if score > 0 and game.max_turns is None:
+            has_shield_holder = any(
+                getattr(p, "has_shield", False) or "SHIELD" in (p.cards or [])
+                for p in all_players if p.id != player.id and p.hp > 0
+            )
             amounts = {
                 opponent.id: score * (2 if opponent.id == game.pending_double_target_id else 1)
-                for opponent in all_players if opponent.id != player.id
+                for opponent in all_players if opponent.id != player.id and opponent.hp > 0
             }
             game.pending_double_target_id = None
-            await GameService.queue_pending_effect(
-                db, game, type="DAMAGE", source_player_id=player.id, damage=amounts
-            )
+            if has_shield_holder:
+                await GameService.queue_pending_effect(
+                    db, game, type="DAMAGE", source_player_id=player.id, damage=amounts
+                )
+            else:
+                for opponent in all_players:
+                    if opponent.id in amounts:
+                        opponent.hp = max(0, opponent.hp - amounts[opponent.id])
 
         completed_turn = game.turn_number
         reached_max_turns = bool(game.max_turns and completed_turn >= game.max_turns)
@@ -413,10 +423,16 @@ class MoveService:
             winner = await GameService.finish_game(db, game, all_players, winner)
             next_player_id = None
         else:
-            next_player_id = GameService.next_player_after(all_players, player_id).id
-            game.current_player_id = next_player_id
-            game.turn_number += 1
-            game.turn_started_at = get_utc_now()
+            next_player = GameService.next_player_after(all_players, player_id)
+            if next_player is None or next_player.hp <= 0:
+                winner = await GameService.finish_game(db, game, all_players, winner)
+                game_over = True
+                next_player_id = None
+            else:
+                next_player_id = next_player.id
+                game.current_player_id = next_player_id
+                game.turn_number += 1
+                game.turn_started_at = get_utc_now()
 
         await db.flush()
 

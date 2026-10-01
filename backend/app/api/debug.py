@@ -43,9 +43,28 @@ class SetHpRequest(BaseModel):
 @router.post("/hp", response_model=GameStateResponse)
 async def set_hp(game_id: str, player_id: str, request: SetHpRequest, db: AsyncSession = Depends(get_db)):
     await _require_debug_mode(db, game_id)
-    _, player = await _load_game_and_player(db, game_id, player_id)
+    game, player = await _load_game_and_player(db, game_id, player_id)
     player.hp = max(0, request.hp)
+    stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
+    players = (await db.execute(stmt_players)).scalars().all()
+    validation = await GameService.ensure_turn_order_valid(db, game, players)
     await db.commit()
+    if validation["turn_advanced"]:
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.TURN_PASSED,
+            payload={
+                "passedPlayerId": validation["passed_player_id"],
+                "nextPlayerId": game.current_player_id,
+                "turnNumber": game.turn_number,
+                "consecutivePasses": game.consecutive_passes,
+                "reason": "ELIMINATED",
+            }
+        ).model_dump())
+    elif validation["game_over"]:
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.GAME_ENDED,
+            payload={"reason": validation["reason"] or "Game completed", "winnerId": validation["winner_id"]},
+        ).model_dump())
     state = await GameService.get_game_state(db, game_id, reveal_all=True)
     await manager.broadcast(game_id, WebSocketEvent(
         type=EventType.SNAPSHOT,

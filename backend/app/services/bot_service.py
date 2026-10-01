@@ -498,7 +498,7 @@ class BotService:
         if res.game_over:
             await manager.broadcast(game_id, WebSocketEvent(
                 type=EventType.GAME_ENDED,
-                payload={"reason": "Game completed", "winnerId": res.next_player_id},
+                payload={"reason": "Game completed", "winnerId": res.winner_id},
             ).model_dump())
         elif res.next_player_id:
             # If the next player is ALSO a bot, auto-advance next bot too
