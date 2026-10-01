@@ -166,7 +166,7 @@ class BotService:
 
             if matched_idx is not None:
                 matched_tile = available.pop(matched_idx)
-                tile_id = str(matched_tile.get("id") or matched_tile.get("tile_id") or "")
+                tile_id = str(matched_tile.get("id") or matched_tile.get("tile_id") or uuid.uuid4().hex[:8])
                 result.append({
                     "row": int(pt["row"]),
                     "col": int(pt["col"]),
@@ -481,7 +481,7 @@ class BotService:
             next_p = (await db.execute(stmt_next)).scalar_one_or_none()
             if cls.is_bot_player(next_p):
                 asyncio.create_task(
-                    cls.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+                    cls.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=15.0)
                 )
 
         return {
@@ -498,7 +498,7 @@ class BotService:
         game_id: str,
         bot_player_id: str,
         expected_turn_number: int,
-        delay_seconds: float = 3.5,
+        delay_seconds: float = 15.0,
     ) -> None:
         """Background fallback: If the client doesn't commit the bot's turn within delay_seconds,
         the server executes the bot's turn automatically. Guarantees the game never halts."""

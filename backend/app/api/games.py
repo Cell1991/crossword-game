@@ -46,7 +46,7 @@ async def get_game(
         if BotService.is_bot_player(curr_p):
             now = get_utc_now()
             started = game_obj.turn_started_at or game_obj.created_at
-            if started and (now - started).total_seconds() >= 2.5:
+            if started and (now - started).total_seconds() >= 15.0:
                 await BotService.execute_bot_move_now(db, game_id, curr_p.id)
 
     # Whether racks are revealed comes from the room's own is_debug flag (see get_game_state),
@@ -91,7 +91,7 @@ async def pass_turn(
         next_p = (await db.execute(stmt_next)).scalar_one_or_none()
         if BotService.is_bot_player(next_p):
             asyncio.create_task(
-                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=15.0)
             )
 
     return {
@@ -331,7 +331,7 @@ async def execute_bot_move(
             next_p = (await db.execute(stmt_next)).scalar_one_or_none()
             if BotService.is_bot_player(next_p):
                 asyncio.create_task(
-                    BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+                    BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=15.0)
                 )
 
         return {"status": "success", "action": "MOVE", "score_earned": res.score_earned, "next_player_id": res.next_player_id}

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getGameState, resolvePendingEffect, StoredSession } from '@/lib/api';
-import { BoardCell, CardReveal, GameState, MoveHistoryEntry, WebSocketEvent } from '@/lib/types';
+import { BoardCell, CardReveal, GameState, MoveHistoryEntry, PlacedTile, WebSocketEvent } from '@/lib/types';
 import { useGameSocket } from './useGameSocket';
 import { GameToasts } from './useGameToasts';
 
@@ -36,6 +36,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
   const [cardUseEffects, setCardUseEffects] = useState<Record<string, string>>({});
   const [cardReveal, setCardReveal] = useState<CardReveal | null>(null);
   const [remotePlacements, setRemotePlacements] = useState<{ row: number; col: number }[]>([]);
+  const [remoteBotTiles, setRemoteBotTiles] = useState<PlacedTile[]>([]);
   /** Server clock minus this device's clock. The turn timer runs on server time so every device agrees. */
   const clockOffsetRef = useRef(0);
   /** Server time when the latest snapshot arrived. */
@@ -123,6 +124,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       case 'MOVE_COMMITTED':
       case 'TURN_PASSED':
       case 'TURN_STARTED': {
+        setRemoteBotTiles([]);
         if (event.type === 'MOVE_COMMITTED' && event.payload?.boardState) {
           const newBoard = event.payload.boardState as Record<string, BoardCell>;
           replaceGameState(prev => {
@@ -188,7 +190,11 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       }
       case 'PLACEMENT_PREVIEW':
         if (event.payload?.playerId !== myPlayerId) {
-          setRemotePlacements(event.payload?.tiles ?? []);
+          if (Array.isArray(event.payload?.botTiles) && event.payload.botTiles.length > 0) {
+            setRemoteBotTiles(event.payload.botTiles as PlacedTile[]);
+          } else {
+            setRemotePlacements(event.payload?.tiles ?? []);
+          }
         }
         break;
       case 'GAME_ENDED':
@@ -258,7 +264,10 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
     return () => window.clearTimeout(timer);
   }, [pendingEffectExpiry, gameId, loadGameState]);
 
-  const clearRemotePlacements = useCallback(() => setRemotePlacements([]), []);
+  const clearRemotePlacements = useCallback(() => {
+    setRemotePlacements([]);
+    setRemoteBotTiles([]);
+  }, []);
 
   return {
     gameState,
@@ -271,6 +280,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
     cardUseEffects,
     cardReveal,
     remotePlacements,
+    remoteBotTiles,
     clearRemotePlacements,
     clockOffsetRef,
     syncedAt,

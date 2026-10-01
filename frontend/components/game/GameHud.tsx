@@ -27,6 +27,7 @@ interface GameHudProps {
   roomPin: string | null;
   spectatorCount: number;
   isMyTurn: boolean;
+  isBotPlacing?: boolean;
   currentPlayer: Player | undefined;
   nextPlayer?: Player | undefined;
   turnNumber: number;
@@ -47,6 +48,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   roomPin,
   spectatorCount,
   isMyTurn,
+  isBotPlacing = false,
   currentPlayer,
   nextPlayer,
   turnNumber,
@@ -155,6 +157,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             {timer}
             <TurnBanner
               isMyTurn={isMyTurn}
+              isBotPlacing={isBotPlacing}
               isEliminated={isEliminated}
               currentPlayer={currentPlayer}
               nextPlayer={nextPlayer}
@@ -191,6 +194,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           <TurnBanner
             mobile
             isMyTurn={isMyTurn}
+            isBotPlacing={isBotPlacing}
             isEliminated={isEliminated}
             currentPlayer={currentPlayer}
             nextPlayer={nextPlayer}

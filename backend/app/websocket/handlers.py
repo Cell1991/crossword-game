@@ -71,6 +71,7 @@ async def websocket_endpoint(
                             "playerId": player_id,
                             "tiles": msg.get("tiles", []),
                             "valid": msg.get("valid"),
+                            "botTiles": msg.get("botTiles"),
                         },
                     ).model_dump())
             except json.JSONDecodeError:

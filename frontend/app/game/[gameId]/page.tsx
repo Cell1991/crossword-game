@@ -174,7 +174,9 @@ export default function GamePage() {
       clearRemotePlacements();
       setExchangeTileIds(null);
       cards.clearHints();
-      setBotStagedTiles([]);
+      if (activeBotTurnKeyRef.current !== nextTurnKey) {
+        setBotStagedTiles([]);
+      }
     }
     turnKeyRef.current = nextTurnKey;
   }, [cards, clearRemotePlacements, gameState, handleTurnChange]);
@@ -372,14 +374,16 @@ export default function GamePage() {
 
     const runBotTurn = async () => {
       try {
-        // 1. Fetch move from backend immediately in parallel with natural "thinking" duration
-        const minThinkMs = botDifficulty === 'hard' ? 450 : botDifficulty === 'medium' ? 700 : 1000;
+        console.log(`[Bot] Starting turn ${turnKey} for ${currentTurnPlayer.display_name} (${botDifficulty})`);
+        // 1. Fetch move from backend in parallel with natural "thinking" duration
+        const minThinkMs = botDifficulty === 'hard' ? 500 : botDifficulty === 'medium' ? 800 : 1100;
         const planPromise = getBotPlan(gameId, botDifficulty);
         const [plan] = await Promise.all([
           planPromise,
           new Promise(r => setTimeout(r, minThinkMs)),
         ]);
 
+        console.log('[Bot] Received plan:', plan);
         let activePlan = plan;
         if (activePlan.action !== 'MOVE' || !activePlan.tiles || activePlan.tiles.length === 0) {
           activePlan = await getBotPlan(gameId, botDifficulty);
@@ -387,8 +391,8 @@ export default function GamePage() {
 
         const planTiles = activePlan.tiles ?? [];
         if (planTiles.length > 0) {
-          // Place tiles step-by-step (one by one) with visual feedback on the board
-          const stepDelay = botDifficulty === 'hard' ? 240 : botDifficulty === 'medium' ? 320 : 400;
+          // Place tiles step-by-step (one by one) with clear, distinct visual feedback
+          const stepDelay = botDifficulty === 'hard' ? 280 : botDifficulty === 'medium' ? 380 : 480;
           const stagedList: PlacedTile[] = [];
 
           for (const tile of planTiles) {
@@ -397,19 +401,22 @@ export default function GamePage() {
 
             // Broadcast staging to other players / spectators
             sendMessageRef.current?.({
-              type: 'STAGING_CHANGE',
-              placements: stagedList.map(t => ({ row: t.row, col: t.col })),
+              type: 'PLACEMENT_PREVIEW',
+              tiles: stagedList.map(t => ({ row: t.row, col: t.col })),
+              botTiles: stagedList,
             });
 
             await new Promise(r => setTimeout(r, stepDelay));
           }
 
-          // Short suspense delay before committing word
-          await new Promise(r => setTimeout(r, 350));
+          // Short suspense delay before committing word so the player can see the full word formed
+          await new Promise(r => setTimeout(r, 500));
 
+          console.log('[Bot] Committing move with tiles:', activePlan.tiles);
           await executeBotMove(gameId, activePlan);
           lastCompletedBotTurnRef.current = turnKey;
         } else {
+          console.log('[Bot] Executing fallback move on backend');
           await executeBotMove(gameId, { action: 'MOVE', bot_player_id: gameState.current_player_id || '' });
           lastCompletedBotTurnRef.current = turnKey;
         }
@@ -417,7 +424,7 @@ export default function GamePage() {
         setBotStagedTiles([]);
         reloadRef.current?.();
       } catch (err) {
-        console.error('Bot turn execution error, falling back to instant server execution:', err);
+        console.error('[Bot] Turn execution error, falling back to server execution:', err);
         try {
           if (gameState.current_player_id) {
             await executeBotMove(gameId, { action: 'MOVE', bot_player_id: gameState.current_player_id });
@@ -425,7 +432,8 @@ export default function GamePage() {
             reloadRef.current?.();
           }
         } catch (retryErr) {
-          console.error('Bot fallback error:', retryErr);
+          console.error('[Bot] Server fallback error:', retryErr);
+          lastCompletedBotTurnRef.current = turnKey;
         }
       } finally {
         if (activeBotTurnKeyRef.current === turnKey) {
@@ -553,6 +561,7 @@ export default function GamePage() {
         roomPin={gameState.game_pin ?? session.gamePin ?? null}
         spectatorCount={gameState.spectator_count ?? 0}
         isMyTurn={isMyTurn}
+        isBotPlacing={isBotTurn && (botStagedTiles.length > 0 || (sync.remoteBotTiles?.length ?? 0) > 0)}
         currentPlayer={currentPlayer}
         nextPlayer={nextPlayer}
         turnNumber={gameState.turn_number ?? 1}
@@ -624,9 +633,9 @@ export default function GamePage() {
             <BoardCanvas
               containerRef={boardRef}
               boardState={boardState}
-              temporaryTiles={isBotTurn && botStagedTiles.length > 0 ? botStagedTiles : temporaryTiles}
-              remotePlacements={isBotTurn && botStagedTiles.length > 0 ? botStagedTiles.map(t => ({ row: t.row, col: t.col })) : sync.remotePlacements}
-              temporaryTilesValid={isBotTurn && botStagedTiles.length > 0 ? true : validationState}
+              temporaryTiles={isBotTurn ? (botStagedTiles.length > 0 ? botStagedTiles : (sync.remoteBotTiles ?? [])) : temporaryTiles}
+              remotePlacements={isBotTurn ? [] : sync.remotePlacements}
+              temporaryTilesValid={isBotTurn ? true : validationState}
               selectedCell={staged.selectedCell}
               onCellClick={handleCellClick}
               onStartPendingDrag={startPendingDrag}

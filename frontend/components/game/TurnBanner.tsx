@@ -12,6 +12,7 @@ interface TurnBannerProps {
   turnNumber: number;
   maxTurns: number | null;
   mobile?: boolean;
+  isBotPlacing?: boolean;
 }
 
 export const TurnBanner: React.FC<TurnBannerProps> = ({
@@ -22,6 +23,7 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
   turnNumber,
   maxTurns,
   mobile = false,
+  isBotPlacing = false,
 }) => {
   const isBot = Boolean(
     currentPlayer &&
@@ -83,12 +85,18 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
   if (isBot) {
     return (
       <div className="flex items-center gap-2 select-none min-w-0">
-        <div className="flex items-center gap-2 rounded-xl border border-cyan-500/50 bg-gradient-to-r from-cyan-950/80 via-slate-900/70 to-cyan-950/80 px-2.5 py-1 text-xs font-medium text-cyan-200 shadow-[0_0_14px_rgba(6,182,212,0.25)] ring-1 ring-cyan-500/30 min-w-0 truncate">
-          <Bot className="w-3.5 h-3.5 text-cyan-400 animate-pulse shrink-0" />
+        <div className={`flex items-center gap-2 rounded-xl border px-2.5 py-1 text-xs font-medium min-w-0 truncate transition-all duration-300 ${
+          isBotPlacing
+            ? 'border-amber-400/80 bg-gradient-to-r from-amber-950/90 via-slate-900/80 to-amber-950/90 text-amber-200 shadow-[0_0_18px_rgba(245,158,11,0.4)] ring-1 ring-amber-400/50'
+            : 'border-cyan-500/50 bg-gradient-to-r from-cyan-950/80 via-slate-900/70 to-cyan-950/80 text-cyan-200 shadow-[0_0_14px_rgba(6,182,212,0.25)] ring-1 ring-cyan-500/30'
+        }`}>
+          <Bot className={`w-3.5 h-3.5 shrink-0 ${isBotPlacing ? 'text-amber-300 animate-bounce' : 'text-cyan-400 animate-pulse'}`} />
           <span className="truncate text-[11px] sm:text-xs">
-            <strong className="text-cyan-300 font-bold">{currentPlayer?.display_name}</strong> is thinking...
+            <strong className={isBotPlacing ? 'text-amber-300 font-bold' : 'text-cyan-300 font-bold'}>{currentPlayer?.display_name}</strong> {isBotPlacing ? 'is placing tiles...' : 'is thinking...'}
           </span>
-          <span className="font-mono text-[10px] sm:text-xs font-semibold px-1.5 py-0.2 rounded-md bg-cyan-950/80 border border-cyan-700/60 text-cyan-300 shrink-0">
+          <span className={`font-mono text-[10px] sm:text-xs font-semibold px-1.5 py-0.2 rounded-md border shrink-0 ${
+            isBotPlacing ? 'bg-amber-950/90 border-amber-600/70 text-amber-200' : 'bg-cyan-950/80 border-cyan-700/60 text-cyan-300'
+          }`}>
             T{turnNumber}{maxTurns ? `/${maxTurns}` : ''}
           </span>
         </div>
