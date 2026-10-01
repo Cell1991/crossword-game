@@ -444,14 +444,18 @@ export default function HomePage() {
                   onClick={() => { setMode('bot'); setError(''); }}
                   title="Play vs Bot"
                   aria-label="Play with Bot"
-                  className="group relative flex flex-col items-center justify-center shrink-0 w-20 sm:w-24 rounded-xl sm:rounded-2xl border border-cyan-400/30 bg-gradient-to-b from-cyan-950/40 via-slate-800/80 to-cyan-950/30 px-2 py-2 text-center text-white shadow-[0_8px_24px_rgba(6,182,212,0.15)] transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-400/60 hover:from-cyan-900/50 hover:to-slate-800 hover:shadow-[0_12px_28px_rgba(6,182,212,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0 cursor-pointer overflow-hidden"
+                  className="group relative flex flex-col items-center justify-center shrink-0 w-20 sm:w-24 rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-2 py-2.5 sm:py-3 text-center text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400/35 hover:from-white/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0 cursor-pointer"
                 >
-                  <div className="pointer-events-none absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80" />
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-400/15 text-cyan-300 border border-cyan-400/25 group-hover:scale-110 group-hover:bg-cyan-400/25 transition-all">
+                  <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/20 group-hover:scale-105 group-hover:bg-amber-400/20 group-hover:text-amber-200 transition-all shadow-[0_2px_10px_rgba(245,158,11,0.15)]">
                     <Bot className="h-4.5 w-4.5" strokeWidth={2.2} />
                   </span>
-                  <span className="mt-1 block text-[0.62rem] sm:text-[0.65rem] font-bold uppercase tracking-wider text-cyan-200 group-hover:text-white transition-colors leading-tight">
-                    VS Bot
+                  <span className="mt-1.5 block">
+                    <span className="block text-[0.58rem] sm:text-[0.62rem] font-bold uppercase tracking-[0.16em] text-slate-400 group-hover:text-amber-300/80 transition-colors leading-none">
+                      Solo
+                    </span>
+                    <span className="mt-0.5 block text-xs sm:text-sm font-bold tracking-tight text-slate-200 group-hover:text-white transition-colors leading-tight">
+                      VS Bot
+                    </span>
                   </span>
                 </button>
               </div>
@@ -974,8 +978,8 @@ export default function HomePage() {
                   <div>
                     <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
                       <span>Play vs Bot</span>
-                      <span className="flex items-center gap-1 rounded-full bg-cyan-400/15 border border-cyan-400/30 px-2 py-0.5 text-[10px] font-bold text-cyan-300 uppercase tracking-wider">
-                        <Bot className="w-3 h-3" /> 1v1 AI
+                      <span className="flex items-center gap-1 rounded-full bg-amber-400/15 border border-amber-400/30 px-2 py-0.5 text-[10px] font-bold text-amber-300 uppercase tracking-wider">
+                        <Bot className="w-3 h-3" /> Solo Match
                       </span>
                     </h2>
                   </div>
@@ -996,20 +1000,20 @@ export default function HomePage() {
                       type="button"
                       aria-pressed={botDifficulty === val}
                       onClick={() => setBotDifficulty(val)}
-                      className={`rounded-xl border p-2 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 cursor-pointer ${
+                      className={`rounded-xl border p-2 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
                         botDifficulty === val
-                          ? 'border-cyan-400/80 bg-cyan-400/15 text-white shadow-[0_0_15px_rgba(6,182,212,0.18)]'
+                          ? 'border-amber-400/80 bg-amber-400/15 text-white shadow-[0_0_15px_rgba(251,191,36,0.12)]'
                           : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
                       }`}
                     >
-                      <span className={`block text-xs sm:text-sm font-bold ${botDifficulty === val ? 'text-cyan-200' : 'text-slate-200'}`}>
+                      <span className={`block text-xs sm:text-sm font-bold ${botDifficulty === val ? 'text-amber-200' : 'text-slate-200'}`}>
                         {title}
                       </span>
-                      <span className={`mt-0.5 block text-[0.65rem] truncate font-medium ${botDifficulty === val ? 'text-cyan-300/90' : 'text-slate-400'}`}>
+                      <span className={`mt-0.5 block text-[0.65rem] truncate font-medium ${botDifficulty === val ? 'text-amber-300/90' : 'text-slate-400'}`}>
                         {botName}
                       </span>
                       <span className={`mt-1 inline-block text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${
-                        botDifficulty === val ? 'bg-cyan-400/25 text-cyan-200' : 'bg-slate-700/50 text-slate-400'
+                        botDifficulty === val ? 'bg-amber-400/25 text-amber-200' : 'bg-slate-700/50 text-slate-400'
                       }`}>
                         {level}
                       </span>
@@ -1031,16 +1035,16 @@ export default function HomePage() {
                       type="button"
                       aria-pressed={gameMode === value}
                       onClick={() => setGameMode(value)}
-                      className={`rounded-xl border p-2.5 sm:p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 cursor-pointer ${
+                      className={`rounded-xl border p-2.5 sm:p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
                         gameMode === value
-                          ? 'border-cyan-400/80 bg-cyan-400/15 text-white shadow-[0_0_15px_rgba(6,182,212,0.15)]'
+                          ? 'border-amber-400/80 bg-amber-400/15 text-white shadow-[0_0_15px_rgba(251,191,36,0.12)]'
                           : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
                       }`}
                     >
-                      <span className={`block text-xs sm:text-sm font-bold ${gameMode === value ? 'text-cyan-200' : 'text-slate-200'}`}>
+                      <span className={`block text-xs sm:text-sm font-bold ${gameMode === value ? 'text-amber-200' : 'text-slate-200'}`}>
                         {title}
                       </span>
-                      <span className={`mt-0.5 block text-[0.68rem] leading-snug ${gameMode === value ? 'text-cyan-300/80' : 'text-slate-400'}`}>
+                      <span className={`mt-0.5 block text-[0.68rem] leading-snug ${gameMode === value ? 'text-amber-300/80' : 'text-slate-400'}`}>
                         {description}
                       </span>
                     </button>
@@ -1102,11 +1106,11 @@ export default function HomePage() {
 
               {/* Custom HP / Turn Stepper if selected */}
               {gameMode === 'HP' && hpOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-300/20 transition-all overflow-hidden">
+                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
                     aria-label="Decrease HP"
                   >
                     <Minus className="w-4 h-4" />
@@ -1122,12 +1126,12 @@ export default function HomePage() {
                       placeholder="100"
                       className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <span className="text-xs font-bold text-cyan-400/80 uppercase tracking-wider select-none shrink-0">HP</span>
+                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">HP</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
                     aria-label="Increase HP"
                   >
                     <Plus className="w-4 h-4" />
@@ -1136,11 +1140,11 @@ export default function HomePage() {
               )}
 
               {gameMode === 'TURNS' && turnCountOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-300/20 transition-all overflow-hidden">
+                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 28) - 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
                     aria-label="Decrease turns"
                   >
                     <Minus className="w-4 h-4" />
@@ -1156,12 +1160,12 @@ export default function HomePage() {
                       placeholder="28"
                       className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <span className="text-xs font-bold text-cyan-400/80 uppercase tracking-wider select-none shrink-0">Turns</span>
+                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Turns</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 28) + 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
                     aria-label="Increase turns"
                   >
                     <Plus className="w-4 h-4" />
@@ -1170,15 +1174,15 @@ export default function HomePage() {
               )}
 
               {/* Opponent Preview Banner */}
-              <div className="flex items-center justify-between rounded-xl border border-cyan-500/25 bg-cyan-950/30 px-4 py-3 shadow-[0_4px_16px_rgba(6,182,212,0.1)]">
+              <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-800/60 px-4 py-3 shadow-[0_4px_16px_rgba(0,0,0,0.18)]">
                 <div className="flex items-center gap-2 text-xs sm:text-sm">
                   <span className="text-slate-400 font-medium">Matchup:</span>
                   <span className="font-bold text-white">You</span>
-                  <span className="text-cyan-400 font-bold">vs</span>
-                  <span className="font-bold text-cyan-300">{BOT_PROFILES[botDifficulty].name}</span>
+                  <span className="text-amber-400 font-bold">vs</span>
+                  <span className="font-bold text-amber-300">{BOT_PROFILES[botDifficulty].name}</span>
                 </div>
-                <span className="text-[10px] font-bold text-cyan-300/90 uppercase tracking-wider bg-cyan-400/15 border border-cyan-400/30 px-2 py-0.5 rounded-full">
-                  1v1 AI Match
+                <span className="text-[10px] font-bold text-amber-300/90 uppercase tracking-wider bg-amber-400/15 border border-amber-400/30 px-2 py-0.5 rounded-full">
+                  1v1 Match
                 </span>
               </div>
 
@@ -1188,7 +1192,7 @@ export default function HomePage() {
               <button
                 onClick={handleCreateBot}
                 disabled={loading}
-                className="w-full rounded-xl sm:rounded-2xl border border-cyan-400/40 bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_10px_25px_rgba(6,182,212,0.25)] transition-all hover:from-cyan-300 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px cursor-pointer flex items-center justify-center gap-2"
+                className="w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-gradient-to-r from-amber-400 to-amber-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_10px_25px_rgba(245,158,11,0.2)] transition-all hover:from-amber-300 hover:to-amber-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px cursor-pointer flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
