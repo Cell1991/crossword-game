@@ -2,3 +2,8 @@
 Music by Kevin MacLeod (incompetech.com)
 Licensed under Creative Commons: By Attribution 3.0
 http://creativecommons.org/licenses/by/3.0/
+
+"Wooden UI SFX Pack" (sfx-select.mp3 = Confirm 1, sfx-place.mp3 = Error 1)
+By JDSherbert
+
+"escapism" (escapism.mp3) - swiftly (in-game background music)

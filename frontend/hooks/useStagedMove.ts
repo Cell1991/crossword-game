@@ -3,6 +3,7 @@
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { validateMove } from '@/lib/api';
 import { BoardCell, CellPosition, GameState, PlacedTile, Tile } from '@/lib/types';
+import { playSfx } from '@/lib/sfx';
 import { cellKey, isBlankLetter, isCellCommitted } from '@/lib/tiles';
 
 /** Wait this long after the last change before asking the server whether the placement is valid. */
@@ -103,6 +104,7 @@ export function useStagedMove({
       letter = designatedLetter;
       value = 0;
     }
+    playSfx('place');
     setTemporaryTiles(previous => [
       ...previous.filter(staged => staged.tile_id !== tile.id),
       { row: cell.row, col: cell.col, tile_id: tile.id, letter, value },
@@ -157,6 +159,7 @@ export function useStagedMove({
       }
       return;
     }
+    if (selectedTileId !== tile.id) playSfx('select');
     setSelectedTileId(previous => previous === tile.id ? null : tile.id);
   }, [selectedTileId]);
 
@@ -166,6 +169,7 @@ export function useStagedMove({
     const upper = chosenLetter.toUpperCase();
     setDesignatedBlankLetters(previous => ({ ...previous, [tileId]: upper }));
     if (row !== undefined && col !== undefined) {
+      playSfx('place');
       setTemporaryTiles(previous => [
         ...previous.filter(tile => tile.tile_id !== tileId && !(tile.row === row && tile.col === col)),
         { row, col, tile_id: tileId, letter: upper, value: 0 },

@@ -30,6 +30,7 @@ import { CardRevealOverlay, PendingEffectBanner, ToastStack } from '@/components
 import { BlankTilePickerModal } from '@/components/game/BlankTilePickerModal';
 import { ConfirmExitModal } from '@/components/game/ConfirmExitModal';
 import { MobileInfoModal } from '@/components/game/MobileInfoModal';
+import BackgroundMusic from '@/components/audio/BackgroundMusic';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 
 const EMPTY_TILES: Tile[] = [];
@@ -369,6 +370,8 @@ export default function GamePage() {
           />
         )}
       />
+
+      <BackgroundMusic src="/audio/escapism.mp3" />
 
       {pendingEffect && (
         <PendingEffectBanner
