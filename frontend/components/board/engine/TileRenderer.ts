@@ -236,12 +236,12 @@ export class TileRenderer {
       if (!lowPower || isCorrectPlacement || isRemote) {
         ctx.save();
         ctx.shadowColor = isCorrectPlacement
-          ? 'rgba(52, 211, 153, 0.9)'
+          ? 'rgba(34, 197, 94, 0.85)'
           : isRemote
           ? 'rgba(6, 182, 212, 0.8)'
           : shadowFill;
         ctx.shadowBlur = isCorrectPlacement
-          ? Math.max(8, cellSize * 0.22)
+          ? Math.max(14, cellSize * 0.32)
           : isRemote
           ? Math.max(8, cellSize * 0.2)
           : Math.max(4, cellSize * 0.1);
@@ -250,6 +250,17 @@ export class TileRenderer {
       drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
       ctx.fill();
       if (!lowPower || isCorrectPlacement || isRemote) ctx.restore();
+
+      // Atmospheric outer green aura on the board under the tile (rendered BEFORE the face so gold stays 100% pure)
+      if (isCorrectPlacement && !lowPower) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(34, 197, 94, 0.9)';
+        ctx.shadowBlur = Math.max(12, cellSize * 0.28);
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.35)';
+        drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+        ctx.fill();
+        ctx.restore();
+      }
     }
 
     // 2. Tile face fill
@@ -376,12 +387,26 @@ export class TileRenderer {
       return;
     } else if (isCorrectPlacement) {
       ctx.save();
-      ctx.shadowColor = 'rgba(52, 211, 153, 0.95)';
-      ctx.shadowBlur = Math.max(12, cellSize * 0.32);
-      ctx.strokeStyle = '#6ee7b7';
-      ctx.lineWidth = Math.max(2.5, cellSize * 0.055);
+
+      // Razor-sharp, clean, vibrant warm emerald border - zero inner blur to preserve pure gold face
+      const greenGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW, y + pad + tileW);
+      greenGrad.addColorStop(0, '#86efac');  // Crisp warm lime-mint highlight
+      greenGrad.addColorStop(0.3, '#4ade80'); // Radiant neon emerald
+      greenGrad.addColorStop(0.7, '#22c55e'); // Rich tournament green
+      greenGrad.addColorStop(1, '#16a34a');  // Deep pure emerald
+
+      ctx.strokeStyle = greenGrad;
+      ctx.lineWidth = Math.max(2.2, cellSize * 0.052);
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
+
+      // Subtle inner bright glint rim
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.lineWidth = 1;
+      const innerPad = 1;
+      drawRoundedRect(ctx, x + pad + innerPad, y + pad + innerPad, tileW - innerPad * 2, tileW - innerPad * 2, Math.max(1, radius - innerPad));
+      ctx.stroke();
+
       ctx.restore();
     } else if (isGolden) {
       ctx.strokeStyle = isTemporary ? '#f5d98a' : 'rgba(226, 184, 93, 0.9)';
@@ -474,5 +499,120 @@ export class TileRenderer {
         ctx.restore();
       }
     }
+  }
+
+  public static renderGhostTile(
+    context: TileRenderContext,
+    row: number,
+    col: number,
+    letter: string,
+    value: number
+  ): void {
+    const { ctx, offset, cellSize, lowPower, tilePalette } = context;
+    const x = offset.x + col * cellSize;
+    const y = offset.y + row * cellSize;
+    const pad = Math.max(1, cellSize * 0.05);
+    const tileW = cellSize - pad * 2;
+    const radius = Math.max(2, cellSize * 0.12);
+
+    ctx.save();
+
+    // 1. Solid frosted dark-amber base: cleanly blocks underlying multiplier text (2L, 3L, etc.)
+    ctx.fillStyle = 'rgba(15, 12, 6, 0.92)';
+    drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+    ctx.fill();
+
+    // 2. Luminous holographic gold glass gradient
+    const glassGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW * 0.5, y + pad + tileW);
+    glassGrad.addColorStop(0, 'rgba(254, 240, 138, 0.45)');
+    glassGrad.addColorStop(0.3, 'rgba(245, 158, 11, 0.25)');
+    glassGrad.addColorStop(0.7, 'rgba(217, 119, 6, 0.30)');
+    glassGrad.addColorStop(1, 'rgba(146, 64, 14, 0.45)');
+    ctx.fillStyle = glassGrad;
+    drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+    ctx.fill();
+
+    // 3. Top glass specular reflection sheen
+    ctx.save();
+    ctx.beginPath();
+    drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+    ctx.clip();
+    const sheenGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad, y + pad + tileW * 0.55);
+    sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.35)');
+    sheenGrad.addColorStop(0.5, 'rgba(254, 240, 138, 0.15)');
+    sheenGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = sheenGrad;
+    ctx.fillRect(x + pad, y + pad, tileW, tileW * 0.55);
+
+    // Diagonal light sweep
+    const sweepGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW, y + pad + tileW);
+    sweepGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    sweepGrad.addColorStop(0.45, 'rgba(254, 240, 138, 0.22)');
+    sweepGrad.addColorStop(0.55, 'rgba(255, 255, 255, 0.32)');
+    sweepGrad.addColorStop(0.65, 'rgba(254, 240, 138, 0.15)');
+    sweepGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = sweepGrad;
+    ctx.fillRect(x + pad, y + pad, tileW, tileW);
+    ctx.restore();
+
+    // 4. Dual border with soft ambient glow
+    ctx.save();
+    if (!lowPower) {
+      ctx.shadowColor = 'rgba(245, 158, 11, 0.75)';
+      ctx.shadowBlur = Math.max(6, cellSize * 0.22);
+    }
+    ctx.strokeStyle = '#fde047';
+    ctx.lineWidth = Math.max(1.8, cellSize * 0.045);
+    drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+    ctx.stroke();
+
+    // Inner subtle gold highlight rim
+    ctx.strokeStyle = 'rgba(254, 240, 138, 0.5)';
+    ctx.lineWidth = 1;
+    drawRoundedRect(ctx, x + pad + 1.2, y + pad + 1.2, tileW - 2.4, tileW - 2.4, Math.max(1, radius - 1));
+    ctx.stroke();
+    ctx.restore();
+
+    // 5. Letter & Score Rendering (Matching real game tile aesthetics with high contrast)
+    if (cellSize >= 12 && letter) {
+      const fontSize = Math.max(12, Math.round(cellSize * 0.70));
+      ctx.font = `italic 900 ${fontSize}px 'Inter Black Italic', -apple-system, BlinkMacSystemFont, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const textX = x + cellSize / 2;
+      const textY = y + cellSize / 2 + fontSize * 0.04;
+
+      // Dark drop stroke for supreme contrast against any board cell
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#020617';
+      ctx.lineWidth = Math.max(2.2, fontSize * 0.11);
+      ctx.strokeText(letter, textX, textY);
+
+      // Letter face: Golden radiant gradient
+      const letterGrad = ctx.createLinearGradient(0, y + cellSize * 0.25, 0, y + cellSize * 0.75);
+      letterGrad.addColorStop(0, '#ffffff');
+      letterGrad.addColorStop(0.4, '#fef08a');
+      letterGrad.addColorStop(1, '#f59e0b');
+      ctx.fillStyle = letterGrad;
+      ctx.fillText(letter, textX, textY);
+
+      // Score subscript
+      if (cellSize >= 18 && value > 0) {
+        const numFontSize = Math.max(8, Math.round(cellSize * 0.24));
+        ctx.font = `italic 900 ${numFontSize}px 'Inter Black Italic', sans-serif`;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'bottom';
+        const numX = x + cellSize - pad * 1.5;
+        const numY = y + cellSize - pad * 1.5;
+
+        ctx.strokeStyle = '#020617';
+        ctx.lineWidth = Math.max(1.6, numFontSize * 0.16);
+        ctx.strokeText(`${value}`, numX, numY);
+        ctx.fillStyle = '#fef08a';
+        ctx.fillText(`${value}`, numX, numY);
+      }
+    }
+
+    ctx.restore();
   }
 }

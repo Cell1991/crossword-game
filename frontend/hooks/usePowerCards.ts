@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { playCard, UseCardPayload } from '@/lib/api';
-import { BoardCard, BoardCell, CellPosition, PlacedTile } from '@/lib/types';
+import { BoardCard, BoardCell, CellPosition, HintSuggestion, PlacedTile } from '@/lib/types';
 import { isCellCommitted } from '@/lib/tiles';
 import { GameToasts } from './useGameToasts';
 
 /** How long the HINT card's suggested cell stays highlighted. */
-const HINT_HIGHLIGHT_MS = 5000;
+const HINT_HIGHLIGHT_MS = 15000;
 
 interface UsePowerCardsOptions {
   gameId: string;
@@ -28,7 +28,10 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   // recall *is* the cancel, so no extra confirmation step is needed for this path.
   const [deferredFreezeTileId, setDeferredFreezeTileId] = useState<string | null>(null);
   const [hintCell, setHintCell] = useState<CellPosition | null>(null);
+  const [hintSuggestions, setHintSuggestions] = useState<HintSuggestion[]>([]);
+  const [activeHintIndex, setActiveHintIndex] = useState<number>(0);
   const [busy, setBusy] = useState(false);
+  const hasLoadedFromStorageRef = useRef(false);
 
   useEffect(() => {
     if (deferredFreezeTileId && !temporaryTiles.some(t => t.tile_id === deferredFreezeTileId)) {
@@ -36,19 +39,72 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     }
   }, [deferredFreezeTileId, temporaryTiles]);
 
+  // Load persisted hints when player ID and game ID become available
+  useEffect(() => {
+    if (typeof window === 'undefined' || !gameId || !myPlayerId) return;
+    if (hasLoadedFromStorageRef.current) return;
+    try {
+      const key = `crossword_hint_${gameId}_${myPlayerId}`;
+      const stored = sessionStorage.getItem(key) || localStorage.getItem(key);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed.suggestions) && parsed.suggestions.length > 0) {
+          setHintSuggestions(parsed.suggestions);
+          const activeIdx = typeof parsed.activeIndex === 'number' ? parsed.activeIndex : 0;
+          setActiveHintIndex(activeIdx);
+          const firstTile = parsed.suggestions[activeIdx]?.tiles?.[0];
+          if (firstTile) {
+            setHintCell({ row: firstTile.row, col: firstTile.col });
+          }
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      hasLoadedFromStorageRef.current = true;
+    }
+  }, [gameId, myPlayerId]);
+
+  // Persist hint suggestions and active index across page reloads (only after initial load completed)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !gameId || !myPlayerId || !hasLoadedFromStorageRef.current) return;
+    const key = `crossword_hint_${gameId}_${myPlayerId}`;
+    if (hintSuggestions.length > 0) {
+      const data = JSON.stringify({ suggestions: hintSuggestions, activeIndex: activeHintIndex });
+      sessionStorage.setItem(key, data);
+      localStorage.setItem(key, data);
+    } else {
+      sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
+    }
+  }, [activeHintIndex, gameId, hintSuggestions, myPlayerId]);
+
+  const clearHints = useCallback(() => {
+    hasLoadedFromStorageRef.current = true;
+    setHintSuggestions([]);
+    setActiveHintIndex(0);
+    setHintCell(null);
+    if (typeof window !== 'undefined' && gameId && myPlayerId) {
+      const key = `crossword_hint_${gameId}_${myPlayerId}`;
+      sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
+    }
+  }, [gameId, myPlayerId]);
+
   const runCard = useCallback(async (payload: UseCardPayload, failureMessage = 'Failed to use card') => {
     if (!myPlayerId || busy) return;
     setBusy(true);
     try {
       const result = await playCard(gameId, myPlayerId, payload);
       if (payload.card === 'HINT') {
-        if (result.found && typeof result.row === 'number' && typeof result.col === 'number') {
-          setHintCell({ row: result.row, col: result.col });
-          setTimeout(() => setHintCell(null), HINT_HIGHLIGHT_MS);
+        const suggestions: HintSuggestion[] = (result.suggestions as HintSuggestion[] | undefined) ?? [];
+        if (result.found && suggestions.length > 0) {
+          setHintSuggestions(suggestions);
+          setActiveHintIndex(0);
+          const firstTile = suggestions[0].tiles[0];
+          if (firstTile) setHintCell({ row: firstTile.row, col: firstTile.col });
         } else {
-          // The hint search found nothing this time; the card stays in hand (see cards.py) so it's
-          // worth telling the player explicitly rather than leaving the click looking like a no-op.
-          flashInfo('No valid move found with your current rack — Hint card kept, try again');
+          flashInfo('No valid words can be formed with your current rack tiles — Hint card returned.');
         }
       }
       await reload();
@@ -110,10 +166,12 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   }, [armedCard, pendingArmedCell, myPlayerId, busy, flashError, gameId, reload]);
 
   const cancelPendingArmedCell = useCallback(() => setPendingArmedCell(null), []);
-
   const cancelArm = useCallback(() => { setArmedCard(null); setPendingArmedCell(null); }, []);
-
   const cancelDeferredFreeze = useCallback(() => setDeferredFreezeTileId(null), []);
+
+  const activeHintTiles = hintSuggestions.length > 0
+    ? (hintSuggestions[activeHintIndex]?.tiles ?? null)
+    : null;
 
   return {
     armedCard,
@@ -125,6 +183,11 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     deferredFreezeTileId,
     cancelDeferredFreeze,
     hintCell,
+    hintSuggestions,
+    activeHintIndex,
+    setActiveHintIndex,
+    clearHints,
+    activeHintTiles,
     busy,
     playSimpleCard,
     playTargetedCard,
@@ -134,3 +197,4 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     playArmedCardAt,
   };
 }
+

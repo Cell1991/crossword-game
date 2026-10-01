@@ -1,32 +1,33 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 
-const DEFAULT_VOLUME = 0.5;
-const INTRO_FADE_MS = 2500;
+const DEFAULT_VOLUME = 1.0;
+const INTRO_FADE_MS = 600;
 const CROSSFADE_S = 6;
 const MUTE_KEY = 'wordx.music.muted';
 const VOLUME_KEY = 'wordx.music.volume';
-const TIME_KEY = 'wordx.music.time';
 
 interface BackgroundMusicProps {
-  src: string;
-  credit?: string;
+  src?: string;
 }
 
 /**
- * Background track that loops without a gap: two copies of the audio take turns,
- * and the next copy fades in while the current one fades out near its end.
- * (`audio.loop` restarts abruptly with a silent hitch.)
- * Browsers block autoplay, so playback starts on the first user gesture.
+ * Global background music manager.
+ * Mounted in root layout to guarantee continuous, gapless playback across Home & Lobby navigations.
+ * Automatically paused when entering active gameplay (/game/*).
+ * Visual controls are hidden per user request; audio defaults to full volume (1.0).
  */
-export default function BackgroundMusic({ src, credit }: BackgroundMusicProps) {
+export default function BackgroundMusic({
+  src = '/audio/autumn-day.mp3',
+}: BackgroundMusicProps) {
+  const pathname = usePathname();
   const controlsRef = useRef<{ play: () => void; pause: () => void }>({ play: () => {}, pause: () => {} });
   const mutedRef = useRef(false);
   const volumeRef = useRef(DEFAULT_VOLUME);
-  const [muted, setMuted] = useState(false);
-  const [volume, setVolume] = useState(DEFAULT_VOLUME);
+
+  const isGamePage = Boolean(pathname?.startsWith('/game'));
 
   useEffect(() => {
     let savedMuted = false;
@@ -35,19 +36,17 @@ export default function BackgroundMusic({ src, credit }: BackgroundMusicProps) {
     try {
       const raw = localStorage.getItem(VOLUME_KEY);
       const parsed = raw === null ? NaN : Number(raw);
-      if (Number.isFinite(parsed)) savedVolume = Math.min(1, Math.max(0, parsed));
+      if (Number.isFinite(parsed) && parsed > 0) {
+        savedVolume = Math.min(1, Math.max(0.1, parsed));
+      }
     } catch { /* storage unavailable */ }
+
     mutedRef.current = savedMuted;
     volumeRef.current = savedVolume;
-    queueMicrotask(() => { setMuted(savedMuted); setVolume(savedVolume); });
 
     const players = [new Audio(src), new Audio(src)];
     players.forEach((p) => { p.preload = 'auto'; p.volume = 0; });
-    // Pages remount the player on navigation; resume where the last page left off.
-    try {
-      const saved = Number(sessionStorage.getItem(TIME_KEY));
-      if (Number.isFinite(saved) && saved > 0) players[0].currentTime = saved;
-    } catch { /* storage unavailable */ }
+
     let active = 0;
     let introStart = 0;
     let raf: number | null = null;
@@ -79,13 +78,14 @@ export default function BackgroundMusic({ src, credit }: BackgroundMusicProps) {
 
     const stopLoop = () => { if (raf) cancelAnimationFrame(raf); raf = null; };
     const play = () => {
+      if (mutedRef.current || pathname?.startsWith('/game')) return;
       const cur = players[active];
       cur.play().then(() => {
         started = true;
         introStart = performance.now();
         stopLoop();
         raf = requestAnimationFrame(tick);
-      }).catch(() => { /* blocked; waits for a gesture */ });
+      }).catch(() => { /* blocked; waits for user gesture */ });
     };
     const pause = () => { stopLoop(); players.forEach((p) => p.pause()); };
     controlsRef.current = { play, pause };
@@ -93,72 +93,31 @@ export default function BackgroundMusic({ src, credit }: BackgroundMusicProps) {
     const onGesture = () => {
       window.removeEventListener('pointerdown', onGesture);
       window.removeEventListener('keydown', onGesture);
-      if (!mutedRef.current && !started) play();
+      if (!mutedRef.current && !started && !pathname?.startsWith('/game')) play();
     };
     window.addEventListener('pointerdown', onGesture);
     window.addEventListener('keydown', onGesture);
-    if (!savedMuted) play();
+    if (!savedMuted && !pathname?.startsWith('/game')) play();
 
     return () => {
       window.removeEventListener('pointerdown', onGesture);
       window.removeEventListener('keydown', onGesture);
-      if (started) {
-        try { sessionStorage.setItem(TIME_KEY, String(players[active].currentTime)); } catch { /* storage unavailable */ }
-      }
       pause();
       controlsRef.current = { play: () => {}, pause: () => {} };
     };
-  }, [src]);
+  }, [pathname, src]);
 
-  const changeVolume = (value: number) => {
-    volumeRef.current = value;
-    setVolume(value);
-    try { localStorage.setItem(VOLUME_KEY, String(value)); } catch { /* storage unavailable */ }
-    // Dragging up from zero counts as unmuting; dragging to zero mutes.
-    const shouldMute = value === 0;
-    if (shouldMute !== mutedRef.current) {
-      mutedRef.current = shouldMute;
-      setMuted(shouldMute);
-      try { localStorage.setItem(MUTE_KEY, shouldMute ? '1' : '0'); } catch { /* storage unavailable */ }
-      if (shouldMute) controlsRef.current.pause();
-      else controlsRef.current.play();
+  // Pause when on game page; resume when returning to Home/Lobby
+  useEffect(() => {
+    if (isGamePage) {
+      controlsRef.current.pause();
+    } else {
+      if (!mutedRef.current) {
+        controlsRef.current.play();
+      }
     }
-  };
+  }, [isGamePage]);
 
-  const toggle = () => {
-    const next = !muted;
-    if (!next && volumeRef.current === 0) changeVolume(DEFAULT_VOLUME);
-    mutedRef.current = next;
-    setMuted(next);
-    try { localStorage.setItem(MUTE_KEY, next ? '1' : '0'); } catch { /* storage unavailable */ }
-    if (next) controlsRef.current.pause();
-    else controlsRef.current.play();
-  };
-
-  return (
-    <div className="fixed bottom-4 right-4 z-20 flex items-end gap-3">
-      {credit && <p className="hidden text-[0.65rem] text-slate-500 sm:block">{credit}</p>}
-      <div className="group flex flex-col items-center gap-3">
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.01}
-          value={muted ? 0 : volume}
-          onChange={(e) => changeVolume(Number(e.target.value))}
-          aria-label="Music volume"
-          style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
-          className="h-24 w-1 cursor-pointer accent-amber-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
-        />
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={muted ? 'Unmute music' : 'Mute music'}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-slate-900/70 text-slate-300 backdrop-blur-md transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200"
-        >
-          {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-        </button>
-      </div>
-    </div>
-  );
+  // Visual controls hidden per request; audio continues playing in background at full volume
+  return null;
 }

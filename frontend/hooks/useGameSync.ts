@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getGameState, resolvePendingEffect, StoredSession } from '@/lib/api';
-import { CardReveal, GameState, MoveHistoryEntry, WebSocketEvent } from '@/lib/types';
+import { BoardCell, CardReveal, GameState, MoveHistoryEntry, WebSocketEvent } from '@/lib/types';
 import { useGameSocket } from './useGameSocket';
 import { GameToasts } from './useGameToasts';
 
@@ -123,6 +123,25 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       case 'MOVE_COMMITTED':
       case 'TURN_PASSED':
       case 'TURN_STARTED': {
+        if (event.type === 'MOVE_COMMITTED' && event.payload?.boardState) {
+          const newBoard = event.payload.boardState as Record<string, BoardCell>;
+          replaceGameState(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              board_state: newBoard,
+              current_player_id: (event.payload.nextPlayerId as string | null | undefined) ?? prev.current_player_id,
+              turn_number: (event.payload.turnNumber as number | undefined) ?? prev.turn_number,
+              pending_effect: event.payload.pendingEffect !== undefined ? (event.payload.pendingEffect as any) : prev.pending_effect,
+              players: prev.players.map(p => {
+                if (p.id === event.payload.playerId && typeof event.payload.playerTotalScore === 'number') {
+                  return { ...p, score: event.payload.playerTotalScore };
+                }
+                return p;
+              }),
+            };
+          });
+        }
         loadGameState();
         const wordsFormed = event.payload?.wordsFormed ?? [];
         if (event.type === 'MOVE_COMMITTED' && wordsFormed.length > 0) {
@@ -182,10 +201,29 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       case 'PLAYER_RECONNECTED':
       case 'PLAYER_DISCONNECTED':
       case 'EFFECT_PENDING':
-      case 'EFFECT_RESOLVED':
-      case 'REMATCH_CREATED':
         loadGameState();
         break;
+      case 'EFFECT_RESOLVED': {
+        if (event.payload?.applied && typeof event.payload.applied === 'object') {
+          const applied = event.payload.applied as Record<string, number>;
+          replaceGameState(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              pending_effect: null,
+              players: prev.players.map(p => {
+                const dmg = applied[p.id];
+                if (dmg && dmg > 0) {
+                  return { ...p, hp: Math.max(0, p.hp - dmg) };
+                }
+                return p;
+              }),
+            };
+          });
+        }
+        loadGameState();
+        break;
+      }
     }
   }, [flashInfo, loadGameState, myPlayerId, players, replaceGameState]);
 
@@ -213,9 +251,10 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
   useEffect(() => {
     if (!pendingEffectExpiry) return;
     const msRemaining = Date.parse(pendingEffectExpiry) - (Date.now() + clockOffsetRef.current);
+    const delay = Math.min(1200, Math.max(0, msRemaining));
     const timer = window.setTimeout(() => {
       void resolvePendingEffect(gameId).then(() => loadGameState()).catch(() => {});
-    }, Math.max(0, msRemaining));
+    }, delay);
     return () => window.clearTimeout(timer);
   }, [pendingEffectExpiry, gameId, loadGameState]);
 

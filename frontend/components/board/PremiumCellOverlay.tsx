@@ -6,10 +6,8 @@ import {
   CENTER_COL,
   CENTER_ROW,
   DOUBLE_LETTER,
-  DOUBLE_WORD,
   SECRET_POWER,
   TRIPLE_LETTER,
-  TRIPLE_WORD,
 } from '@/lib/board';
 import { BoardCamera } from '@/hooks/useBoardCamera';
 import { BoardModel } from '@/lib/engine/boardModel';
@@ -17,8 +15,6 @@ import { BoardModel } from '@/lib/engine/boardModel';
 const toCells = (keys: Set<string>) => [...keys].map((key) => key.split('_').map(Number) as [number, number]);
 const POWER_CELLS = toCells(SECRET_POWER);
 const DOUBLE_CELLS = toCells(DOUBLE_LETTER);
-const DOUBLE_WORD_CELLS = toCells(DOUBLE_WORD);
-const TRIPLE_WORD_CELLS = toCells(TRIPLE_WORD);
 const TRIPLE_CELLS = toCells(TRIPLE_LETTER);
 
 interface PremiumCellOverlayProps {
@@ -76,8 +72,6 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
   const powerEchoes = useMemo(() => candidateEchoes.filter(e => e.type === 'power'), [candidateEchoes]);
   const tripleEchoes = useMemo(() => candidateEchoes.filter(e => e.type === 'triple'), [candidateEchoes]);
   const doubleEchoes = useMemo(() => candidateEchoes.filter(e => e.type === 'double'), [candidateEchoes]);
-  const doubleWordEchoes = useMemo(() => candidateEchoes.filter(e => e.type === 'double-word'), [candidateEchoes]);
-  const tripleWordEchoes = useMemo(() => candidateEchoes.filter(e => e.type === 'triple-word'), [candidateEchoes]);
 
   const baseCellSize = camera.baseCellSize;
   const squareSize = baseCellSize - 2;
@@ -151,7 +145,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
             >
               <span className="board-fire-core absolute inset-[18%] rounded-full bg-red-400/40" />
               <span
-                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white"
+                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white font-bold"
                 style={{ fontSize: `${baseFontSize}px` }}
               >
                 3<span className="board-premium-letter">L</span>
@@ -189,7 +183,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
               <i className="board-earth-speck absolute left-[22%] top-[27%] h-1 w-1 rounded-full" />
               <i className="board-earth-speck absolute right-[20%] top-[38%] h-1 w-1 rounded-full [animation-delay:0.7s]" />
               <span
-                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white"
+                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white font-bold"
                 style={{ fontSize: `${baseFontSize}px` }}
               >
                 2<span className="board-premium-letter">L</span>
@@ -198,75 +192,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
           );
         })}
 
-        {/* 4. Double Word Cosmic Violet Cells (2W) */}
-        {[
-          ...DOUBLE_WORD_CELLS.filter(([r, c]) => !isCellOccupied(r, c)).map(([r, c]) => {
-            const alpha = model.getCellAlpha(r, c);
-            return { row: r, col: c, isSolid: true, alpha, isEcho: false };
-          }),
-          ...doubleWordEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
-        ].map(({ row, col, isSolid, alpha, isEcho }) => {
-          if (alpha <= 0.01) return null;
-          return (
-            <span
-              key={`double-word-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              className={`absolute border border-purple-400/70 bg-purple-950/30 transition-[opacity,filter] duration-300 ${isSolid ? 'board-double-word-aura' : ''}`}
-              style={{
-                left: `${col * baseCellSize + 1}px`,
-                top: `${row * baseCellSize + 1}px`,
-                width: `${squareSize}px`,
-                height: `${squareSize}px`,
-                borderRadius: isEcho ? '6px' : '4px',
-                opacity: alpha,
-                filter: isSolid ? 'brightness(1.15)' : undefined,
-              }}
-            >
-              <span className="board-cosmic-glow absolute inset-[12%] rounded-full" />
-              <span
-                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-purple-100"
-                style={{ fontSize: `${baseFontSize}px` }}
-              >
-                2<span className="board-premium-letter board-premium-letter-w text-purple-200">W</span>
-              </span>
-            </span>
-          );
-        })}
-
-        {/* 5. Triple Word Amber / Egg Cells (3W) */}
-        {[
-          ...TRIPLE_WORD_CELLS.filter(([r, c]) => !isCellOccupied(r, c)).map(([r, c]) => {
-            const alpha = model.getCellAlpha(r, c);
-            return { row: r, col: c, isSolid: true, alpha, isEcho: false };
-          }),
-          ...tripleWordEchoes.filter(e => !isCellOccupied(e.row, e.col)).map(e => ({ row: e.row, col: e.col, isSolid: e.isSolid, alpha: e.alpha, isEcho: true })),
-        ].map(({ row, col, isSolid, alpha, isEcho }) => {
-          if (alpha <= 0.01) return null;
-          return (
-            <span
-              key={`triple-word-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              className={`absolute border border-amber-400/70 bg-amber-950/30 transition-[opacity,filter] duration-300 ${isSolid ? 'board-triple-word-aura' : ''}`}
-              style={{
-                left: `${col * baseCellSize + 1}px`,
-                top: `${row * baseCellSize + 1}px`,
-                width: `${squareSize}px`,
-                height: `${squareSize}px`,
-                borderRadius: isEcho ? '6px' : '4px',
-                opacity: alpha,
-                filter: isSolid ? 'brightness(1.15)' : undefined,
-              }}
-            >
-              <span className="board-egg-glow absolute inset-[12%] rounded-full" />
-              <span
-                className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-amber-100"
-                style={{ fontSize: `${baseFontSize}px` }}
-              >
-                3<span className="board-premium-letter board-premium-letter-w text-amber-200">W</span>
-              </span>
-            </span>
-          );
-        })}
-
-        {/* 6. Center Start Star */}
+        {/* 4. Center Start Star */}
         {!isCellOccupied(CENTER_ROW, CENTER_COL) && (
           <span
             className="absolute border border-amber-300/35 shadow-[0_0_18px_rgba(251,191,36,0.25)] board-center-pulse"

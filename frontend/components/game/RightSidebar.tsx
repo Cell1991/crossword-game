@@ -210,7 +210,7 @@ export const RightSidebar = memo(function RightSidebar({
                         )}
                         {isDead && (
                           <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-md bg-rose-950/80 border border-rose-500/50 text-rose-300 text-[9px] font-black uppercase tracking-wider shrink-0 shadow-sm">
-                            ☠️ ตายแล้ว
+                            ☠️ DEAD
                           </span>
                         )}
                         {player.has_shield && !isDead && (

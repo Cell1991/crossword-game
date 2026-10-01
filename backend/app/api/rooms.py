@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.session import get_db
@@ -7,15 +7,23 @@ from app.schemas.room import (
     CreateRoomResponse,
     JoinRoomRequest,
     JoinRoomResponse,
-    RoomDetailResponse
+    RoomDetailResponse,
+    RoomSummaryResponse
 )
 from app.schemas.player import PlayerOut
 from app.schemas.events import WebSocketEvent, EventType
 from app.services.room_service import RoomService
 from app.websocket.connection_manager import manager
-from app.database.state import player_rack
 
 router = APIRouter(prefix="/rooms", tags=["Rooms"])
+
+@router.get("", response_model=list[RoomSummaryResponse])
+@router.get("/", response_model=list[RoomSummaryResponse], include_in_schema=False)
+async def list_rooms(response: Response, db: AsyncSession = Depends(get_db)):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return await RoomService.list_active_rooms(db)
 
 @router.post("", response_model=CreateRoomResponse)
 async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)):
@@ -23,7 +31,9 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
         db, req.host_name, req.turn_time_limit,
         is_debug=req.is_debug, game_mode=req.game_mode, max_turns=req.max_turns,
         starting_hp=req.starting_hp,
+        max_players=req.max_players,
     )
+    await db.commit()
     return CreateRoomResponse(
         room_id=room.id,
         game_id=game.id,
@@ -35,6 +45,8 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
         game_mode=room.game_mode,
         max_turns=room.max_turns,
         starting_hp=room.starting_hp,
+        max_players=room.max_players,
+        created_at=room.created_at,
     )
 
 @router.post("/{game_pin}/join", response_model=JoinRoomResponse)
@@ -59,7 +71,15 @@ async def join_room(game_pin: str, req: JoinRoomRequest, db: AsyncSession = Depe
         player_id=player.id,
         session_token=player.session_token,
         display_name=player.display_name,
-        is_host=player.is_host
+        is_host=player.is_host,
+        game_pin=room.game_pin,
+        host_player_id=room.host_player_id,
+        turn_time_limit=room.turn_time_limit,
+        game_mode=room.game_mode,
+        max_turns=room.max_turns,
+        starting_hp=room.starting_hp,
+        max_players=room.max_players,
+        created_at=room.created_at,
     )
 
 @router.post("/{game_pin}/leave")
@@ -79,7 +99,10 @@ async def leave_room(
     return {"status": "left", "host_player_id": room.host_player_id}
 
 @router.get("/{game_pin}", response_model=RoomDetailResponse)
-async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
+async def get_room(game_pin: str, response: Response, db: AsyncSession = Depends(get_db)):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     room, players = await RoomService.get_room_details(db, game_pin)
     player_outs = [
         PlayerOut(
@@ -92,7 +115,7 @@ async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
             has_shield=getattr(p, 'has_shield', False),
             turn_order=p.turn_order,
             connection_status=p.connection_status,
-            rack_count=len(await player_rack(db, p.id))
+            rack_count=len(p.rack) if (p.rack is not None and isinstance(p.rack, list)) else 0
         )
         for p in players
     ]
@@ -109,6 +132,7 @@ async def get_room(game_pin: str, db: AsyncSession = Depends(get_db)):
         max_turns=room.max_turns,
         starting_hp=room.starting_hp,
         is_debug=room.is_debug,
+        max_players=room.max_players,
     )
 
 @router.post("/{game_pin}/start")

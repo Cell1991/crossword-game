@@ -1,5 +1,22 @@
 import { CellPosition } from '@/lib/types';
 
+function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+): void {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
 export class FXRenderer {
   public static renderHint(
     ctx: CanvasRenderingContext2D,
@@ -40,23 +57,93 @@ export class FXRenderer {
     offset: { x: number; y: number },
     cellSize: number
   ): void {
-    const previewX = offset.x + cell.col * cellSize;
-    const previewY = offset.y + cell.row * cellSize;
-    ctx.strokeStyle = isValid ? '#38bdf8' : '#f87171';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(previewX + 1, previewY + 1, cellSize - 2, cellSize - 2);
+    const pad = Math.max(1, cellSize * 0.06);
+    const x = offset.x + cell.col * cellSize + pad;
+    const y = offset.y + cell.row * cellSize + pad;
+    const w = cellSize - pad * 2;
+    const radius = Math.max(2, cellSize * 0.12);
+
+    ctx.save();
+    ctx.lineWidth = Math.max(2, cellSize * 0.04);
+    if (isValid === false) {
+      ctx.strokeStyle = '#f87171';
+      ctx.shadowColor = 'rgba(239, 68, 68, 0.65)';
+    } else {
+      ctx.strokeStyle = '#fbbf24';
+      ctx.shadowColor = 'rgba(245, 158, 11, 0.65)';
+    }
+    ctx.shadowBlur = Math.max(4, cellSize * 0.15);
+    drawRoundedRect(ctx, x, y, w, w, radius);
+    ctx.stroke();
+    ctx.restore();
   }
 
   public static renderSelection(
     ctx: CanvasRenderingContext2D,
     cell: CellPosition,
     offset: { x: number; y: number },
-    cellSize: number
+    cellSize: number,
+    isValid?: boolean | null
   ): void {
-    const sx = offset.x + cell.col * cellSize;
-    const sy = offset.y + cell.row * cellSize;
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 2.5;
-    ctx.strokeRect(sx + 1, sy + 1, cellSize - 2, cellSize - 2);
+    const pad = Math.max(1, cellSize * 0.06);
+    const x = offset.x + cell.col * cellSize + pad;
+    const y = offset.y + cell.row * cellSize + pad;
+    const w = cellSize - pad * 2;
+    const radius = Math.max(2, cellSize * 0.12);
+
+    ctx.save();
+
+    if (isValid === true) {
+      // 1. Radiant Emerald Victory Halo
+      ctx.shadowColor = 'rgba(34, 197, 94, 0.85)';
+      ctx.shadowBlur = Math.max(12, cellSize * 0.32);
+
+      const haloGrad = ctx.createLinearGradient(x, y, x + w, y + w);
+      haloGrad.addColorStop(0, '#86efac');  // Crisp warm lime-mint
+      haloGrad.addColorStop(0.3, '#4ade80'); // Radiant neon emerald
+      haloGrad.addColorStop(0.7, '#22c55e'); // Rich tournament green
+      haloGrad.addColorStop(1, '#16a34a');  // Deep pure emerald
+
+      ctx.strokeStyle = haloGrad;
+      ctx.lineWidth = Math.max(2.5, cellSize * 0.055);
+      drawRoundedRect(ctx, x, y, w, w, radius);
+      ctx.stroke();
+
+      // Crystal edge specular accent
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.lineWidth = 1;
+      const innerPad = 1;
+      drawRoundedRect(ctx, x + innerPad, y + innerPad, w - innerPad * 2, w - innerPad * 2, Math.max(1, radius - innerPad));
+      ctx.stroke();
+    } else {
+      // 1. Ambient Warm Golden Aura
+      ctx.shadowColor = 'rgba(245, 158, 11, 0.85)';
+      ctx.shadowBlur = Math.max(6, cellSize * 0.22);
+
+      // 2. Luxury Amber-Gold Gradient Ring
+      const haloGrad = ctx.createLinearGradient(x, y, x + w, y + w);
+      haloGrad.addColorStop(0, '#fef08a');   // Radiant pale gold highlight
+      haloGrad.addColorStop(0.35, '#fbbf24'); // Vibrant amber gold
+      haloGrad.addColorStop(0.7, '#f59e0b');  // Deep warm amber
+      haloGrad.addColorStop(1, '#d97706');    // Rich dark gold
+
+      ctx.strokeStyle = haloGrad;
+      ctx.lineWidth = Math.max(2, cellSize * 0.045);
+      drawRoundedRect(ctx, x, y, w, w, radius);
+      ctx.stroke();
+
+      // 3. Subtle Crystal Edge Specular Accent
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.lineWidth = 1;
+      const innerPad = 1;
+      drawRoundedRect(ctx, x + innerPad, y + innerPad, w - innerPad * 2, w - innerPad * 2, Math.max(1, radius - innerPad));
+      ctx.stroke();
+    }
+
+    ctx.restore();
   }
 }

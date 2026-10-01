@@ -43,5 +43,7 @@ class Settings(BaseModel):
     SHIELD_WINDOW_SECONDS: float = 1
     # Enables /api/debug/* (god-mode HP/rack/card edits, reveal-all racks) for solo bug testing.
     DEBUG_MODE: bool = os.getenv("DEBUG_MODE", "true").lower() == "true"
+    # Auto-dissolve inactive waiting rooms after this many minutes
+    ROOM_EXPIRY_MINUTES: int = 10
 
 settings = Settings()

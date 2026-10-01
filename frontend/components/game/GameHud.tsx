@@ -2,9 +2,23 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Maximize, Minimize, ScrollText } from 'lucide-react';
+import { BookOpen, Eye, Maximize, Minimize, ScrollText } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { TurnBanner } from './TurnBanner';
+
+const SpectatorBadge: React.FC<{ count: number; className?: string }> = ({ count, className = '' }) => {
+  if (count <= 0) return null;
+  return (
+    <div
+      className={`inline-flex items-center gap-1.5 rounded-lg border border-sky-500/35 bg-gradient-to-r from-sky-950/70 via-slate-900/80 to-sky-950/70 px-2 py-1 text-xs font-semibold text-sky-300 shadow-[0_0_10px_rgba(56,189,248,0.2)] ring-1 ring-sky-400/25 whitespace-nowrap shrink-0 select-none ${className}`}
+      title={`${count} spectator${count > 1 ? 's' : ''} watching`}
+      aria-label={`${count} spectator${count > 1 ? 's' : ''} watching`}
+    >
+      <Eye className="h-3.5 w-3.5 text-sky-400 drop-shadow-[0_0_4px_#38bdf8] shrink-0" />
+      <span className="font-mono text-sky-200 tabular-nums">{count}</span>
+    </div>
+  );
+};
 
 interface GameHudProps {
   isSpectator: boolean;
@@ -19,8 +33,10 @@ interface GameHudProps {
   maxTurns: number | null;
   onExit: () => void;
   onOpenInfo: () => void;
+  onOpenGuide?: () => void;
   /** The turn countdown, rendered by its own component so its tick stays local. */
   timer: React.ReactNode;
+  debugSlot?: React.ReactNode;
 }
 
 /** Top HUD. On a phone it wraps: controls and counters on the first row, the turn banner below. */
@@ -37,7 +53,9 @@ export const GameHud: React.FC<GameHudProps> = ({
   maxTurns,
   onExit,
   onOpenInfo,
+  onOpenGuide,
   timer,
+  debugSlot,
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -116,20 +134,23 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={onOpenInfo}
-            className="lg:hidden flex-1 max-w-[160px] flex items-center justify-center gap-1.5 rounded-lg border border-cyan-500/40 bg-gradient-to-r from-cyan-950/70 via-slate-900/80 to-slate-900/90 px-2.5 py-1 text-xs font-bold text-cyan-300 hover:from-cyan-900/80 hover:to-slate-800 hover:text-white shadow-[0_0_10px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/20 transition-all cursor-pointer active:scale-95 select-none shrink truncate"
+            className="lg:hidden flex items-center justify-center gap-1.5 rounded-lg border border-cyan-500/40 bg-gradient-to-r from-cyan-950/70 via-slate-900/80 to-slate-900/90 px-2.5 py-1 text-xs font-bold text-cyan-300 hover:from-cyan-900/80 hover:to-slate-800 hover:text-white shadow-[0_0_10px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/20 transition-all cursor-pointer active:scale-95 select-none shrink-0"
             title="Match stats, word history, and tile bag"
             aria-label="Open match stats, word history, and tile bag"
           >
             <ScrollText className="h-3.5 w-3.5 text-cyan-300 drop-shadow-[0_0_4px_#22d3ee] shrink-0" />
-            <span className="tracking-wide font-extrabold text-[11px] sm:text-xs truncate">Log & Stats</span>
+            <span className="tracking-wide font-extrabold text-[11px] sm:text-xs whitespace-nowrap">Stats</span>
           </button>
         </div>
 
-        {/* Right: spectators, desktop timer, desktop TurnBanner, and Fullscreen button */}
+        {/* Right: desktop spectators, debug button, desktop timer, desktop TurnBanner, and Fullscreen button */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
           {spectatorCount > 0 && (
-            <span className="whitespace-nowrap text-xs text-slate-400" title="Spectators watching">👁 {spectatorCount}</span>
+            <div className="hidden lg:inline-flex shrink-0">
+              <SpectatorBadge count={spectatorCount} />
+            </div>
           )}
+          {debugSlot}
           <div className="hidden lg:flex items-center gap-2">
             {timer}
             <TurnBanner
@@ -141,6 +162,17 @@ export const GameHud: React.FC<GameHudProps> = ({
               maxTurns={maxTurns}
             />
           </div>
+          {onOpenGuide && (
+            <button
+              type="button"
+              onClick={onOpenGuide}
+              className="rounded-lg border border-slate-700 p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer active:scale-95 shrink-0"
+              title="Game Guide & Cards"
+              aria-label="Open Game Guide & Cards"
+            >
+              <BookOpen className="h-4 w-4 text-cyan-300" />
+            </button>
+          )}
           <button
             type="button"
             onClick={toggleFullscreen}
@@ -153,7 +185,7 @@ export const GameHud: React.FC<GameHudProps> = ({
         </div>
       </div>
 
-      {/* ROW 2 (Mobile Only): Dedicated Turn Indicator & Countdown Bar */}
+      {/* ROW 2 (Mobile Only): Dedicated Turn Indicator, Spectator Count & Countdown Bar */}
       <div className="lg:hidden flex items-center justify-between gap-2 px-2.5 py-1 bg-slate-950/70 border-t border-slate-800/60 select-none">
         <div className="min-w-0 flex-1">
           <TurnBanner
@@ -166,7 +198,10 @@ export const GameHud: React.FC<GameHudProps> = ({
             maxTurns={maxTurns}
           />
         </div>
-        {timer && <div className="shrink-0">{timer}</div>}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {spectatorCount > 0 && <SpectatorBadge count={spectatorCount} />}
+          {timer && <div className="shrink-0">{timer}</div>}
+        </div>
       </div>
     </div>
   );

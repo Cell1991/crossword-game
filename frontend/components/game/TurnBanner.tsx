@@ -26,10 +26,10 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
   if (isEliminated) {
     return (
       <div className="flex items-center gap-2 select-none min-w-0">
-        <div className="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-rose-500/50 bg-gradient-to-r from-rose-950/90 via-slate-900/80 to-rose-950/90 px-2.5 py-1 text-xs font-medium text-rose-200 shadow-[0_0_14px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/30 truncate">
+        <div className="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-rose-500/50 bg-gradient-to-r from-rose-950/90 via-slate-900/80 to-rose-950/90 px-2.5 py-1 text-xs font-medium text-rose-200 shadow-[0_0_14px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/30 min-w-0 truncate">
           <span className="text-sm shrink-0">☠️</span>
           <span className="font-extrabold tracking-wide text-rose-300 uppercase text-[11px] sm:text-xs shrink-0">
-            คุณตายแล้ว
+            KNOCKED OUT
           </span>
           {currentPlayer && (
             <>
@@ -58,15 +58,15 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
   if (isMyTurn) {
     return (
       <div className="flex items-center gap-2 select-none min-w-0">
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-400/60 bg-gradient-to-r from-emerald-950/80 via-teal-950/60 to-slate-900/80 px-2.5 py-1 text-xs font-bold text-emerald-200 shadow-[0_0_14px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/30">
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-400/60 bg-gradient-to-r from-emerald-950/80 via-teal-950/60 to-slate-900/80 px-2.5 py-1 text-xs font-bold text-emerald-200 shadow-[0_0_14px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/30 shrink-0">
           <div className="relative flex items-center justify-center shrink-0">
             <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] animate-ping absolute" />
             <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
           </div>
-          <span className="font-black tracking-wider text-emerald-300 drop-shadow-[0_0_6px_rgba(52,211,153,0.6)] uppercase text-[11px] sm:text-xs">
+          <span className="font-black tracking-wider text-emerald-300 drop-shadow-[0_0_6px_rgba(52,211,153,0.6)] uppercase text-[11px] sm:text-xs whitespace-nowrap">
             YOUR TURN
           </span>
-          <span className="font-mono text-[10px] sm:text-xs font-semibold px-1.5 py-0.2 rounded-md bg-emerald-900/60 border border-emerald-500/40 text-emerald-200">
+          <span className="font-mono text-[10px] sm:text-xs font-semibold px-1.5 py-0.2 rounded-md bg-emerald-900/60 border border-emerald-500/40 text-emerald-200 shrink-0">
             T{turnNumber}{maxTurns ? `/${maxTurns}` : ''}
           </span>
         </div>
@@ -76,7 +76,7 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
 
   return (
     <div className="flex items-center gap-2 select-none min-w-0">
-      <div className="flex items-center gap-2 rounded-xl border border-indigo-500/40 bg-gradient-to-r from-indigo-950/80 via-slate-900/70 to-slate-950/80 px-2.5 py-1 text-xs font-medium text-slate-200 shadow-[0_0_12px_rgba(99,102,241,0.2)] ring-1 ring-indigo-500/20 truncate">
+      <div className="flex items-center gap-2 rounded-xl border border-indigo-500/40 bg-gradient-to-r from-indigo-950/80 via-slate-900/70 to-slate-950/80 px-2.5 py-1 text-xs font-medium text-slate-200 shadow-[0_0_12px_rgba(99,102,241,0.2)] ring-1 ring-indigo-500/20 min-w-0 truncate">
         <Hourglass className="w-3.5 h-3.5 text-indigo-400 animate-spin shrink-0" style={{ animationDuration: '4s' }} />
         <span className="truncate text-[11px] sm:text-xs">
           <strong className="text-amber-300 font-bold">{currentPlayer?.display_name || 'Opponent'}</strong>&apos;s Turn

@@ -126,6 +126,21 @@ export interface ViewportRect {
   height: number;
 }
 
+export interface HintTile {
+  row: number;
+  col: number;
+  letter: string;
+  value: number;
+}
+
+export interface HintSuggestion {
+  word: string;
+  score: number;
+  direction: 'across' | 'down';
+  tiles: HintTile[];
+  bingo_bonus?: number;
+}
+
 /** Mirrors backend MoveService.CARD_TYPES (backend/app/services/move_service.py). */
 export const CARD_TYPES = [
   'HINT', 'SPY_SWAP', 'DESTROY_TILE', 'HEAL', 'DOUBLE_DAMAGE', 'SHIELD', 'FREEZE_TILE',
@@ -142,6 +157,7 @@ export interface ValidateMoveResponse {
   reason?: string | null;
   words_formed: WordFormed[];
   estimated_score: number;
+  bingo_bonus?: number;
 }
 
 export interface CommitMoveResponse {
@@ -150,8 +166,9 @@ export interface CommitMoveResponse {
   turn_number: number;
   words_formed: WordFormed[];
   score_earned: number;
+  bingo_bonus?: number;
   next_player_id?: string | null;
-  game_over: boolean;
+  game_over?: boolean;
   winner_id?: string | null;
   card_awarded?: string | null;
 }
@@ -167,6 +184,8 @@ export interface CreateRoomResponse {
   game_mode: GameMode;
   max_turns: number | null;
   starting_hp?: number | null;
+  max_players?: number | null;
+  created_at?: string;
 }
 
 export interface JoinRoomResponse {
@@ -175,6 +194,14 @@ export interface JoinRoomResponse {
   session_token: string;
   display_name: string;
   is_host: boolean;
+  game_pin?: string;
+  host_player_id?: string;
+  turn_time_limit?: TurnTimeLimit;
+  game_mode?: GameMode;
+  max_turns?: number | null;
+  starting_hp?: number | null;
+  max_players?: number | null;
+  created_at?: string;
 }
 
 export interface RematchResponse extends JoinRoomResponse {
@@ -195,7 +222,23 @@ export interface RoomDetailResponse {
   game_mode: GameMode;
   max_turns: number | null;
   starting_hp?: number | null;
+  max_players?: number | null;
   is_debug: boolean;
+}
+
+export interface RoomSummary {
+  id: string;
+  game_pin: string;
+  status: string;
+  host_name: string;
+  player_count: number;
+  max_players: number | null;
+  turn_time_limit: TurnTimeLimit;
+  game_mode: GameMode;
+  max_turns: number | null;
+  starting_hp?: number | null;
+  is_debug: boolean;
+  created_at: string;
 }
 
 export interface ExchangeTilesResponse {
@@ -225,7 +268,8 @@ export type WebSocketEventType =
   | 'EFFECT_PENDING'
   | 'EFFECT_RESOLVED'
   | 'CARD_USED'
-  | 'REMATCH_CREATED';
+  | 'REMATCH_CREATED'
+  | 'ROOM_EXPIRED';
 
 export interface WebSocketEvent {
   type: WebSocketEventType;
@@ -243,6 +287,9 @@ export interface WebSocketEvent {
     card?: string;
     /** MOVE_COMMITTED: the private-card reveal animation follows this event. */
     cardAwarded?: string | null;
+    /** EFFECT_RESOLVED: HP damage applied per player */
+    applied?: Record<string, number>;
+    [key: string]: unknown;
   };
   timestamp: string;
 }

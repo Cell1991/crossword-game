@@ -1,4 +1,4 @@
-import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
+import { BoardCell, CellPosition, HintTile, PlacedTile } from '@/lib/types';
 import { TilePalette } from '@/lib/tileTheme';
 import { BoardModel } from '@/lib/engine/boardModel';
 import { BoardCompositor, SceneRenderConfig } from './engine/BoardCompositor';
@@ -25,6 +25,7 @@ export interface BoardScene {
   draggingTileId: string | null;
   frozenTile: CellPosition | null;
   hintCell: CellPosition | null;
+  hintTiles?: HintTile[] | null;
   pendingArmedCell: CellPosition | null;
   pendingArmedCard?: string | null;
   lowPower: boolean;

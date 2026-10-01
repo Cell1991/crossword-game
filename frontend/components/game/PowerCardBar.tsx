@@ -64,7 +64,7 @@ const CARD_META: Record<string, CardStyleConfig> = {
   },
   HINT: {
     icon: cardIcon('HINT', 'h-4 w-4 text-amber-300', '×2'),
-    label: 'Spell Word',
+    label: 'Hint',
     ownTurnOnly: true,
     bgGradient: 'from-amber-950/90 via-yellow-950/70 to-slate-950/90',
     borderColor: 'border-amber-500/50 hover:border-amber-400/90',
@@ -309,9 +309,15 @@ export const PowerCardBar = memo(function PowerCardBar({
                       selected ? 'border-emerald-300 ring-2 ring-emerald-400 shadow-[0_0_14px_rgba(16,185,129,0.7)] scale-105' : 'border-amber-100/80 hover:brightness-105'
                     }`}
                   >
-                    <span className="tile-letter tile-letter-orange text-[26px] leading-none font-maple">
-                      {tile.letter}
-                    </span>
+                    {isBlankLetter(tile.letter) ? (
+                      <svg viewBox="0 0 24 24" className="tile-blank-star w-6 h-6 animate-pulse text-amber-300" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+                        <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+                      </svg>
+                    ) : (
+                      <span className="tile-letter tile-letter-orange text-[26px] leading-none font-maple">
+                        {tile.letter}
+                      </span>
+                    )}
                     <span className="tile-score-blue absolute bottom-0.5 right-1 text-[10px] font-maple">
                       {tile.value}
                     </span>
@@ -481,26 +487,40 @@ export const PowerCardBar = memo(function PowerCardBar({
   if (confirmingSimpleCard) {
     const meta = CARD_META[confirmingSimpleCard];
     const isHeal = confirmingSimpleCard === 'HEAL';
+    const isHint = confirmingSimpleCard === 'HINT';
+    const isShield = confirmingSimpleCard === 'SHIELD';
     return (
       <div className={`flex flex-wrap items-center justify-between sm:justify-center gap-2 sm:gap-4 rounded-2xl border px-4 py-2 text-xs backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 ${
-        isHeal
+        isHint
+          ? 'border-amber-500/80 bg-gradient-to-r from-amber-950/95 via-yellow-950/90 to-slate-950/95 text-amber-100 shadow-[0_8px_30px_rgba(245,158,11,0.4)] ring-1 ring-amber-500/50'
+          : isHeal
           ? 'border-rose-500/80 bg-gradient-to-r from-rose-950/95 via-pink-950/90 to-slate-950/95 text-rose-100 shadow-[0_8px_30px_rgba(244,63,94,0.4)] ring-1 ring-rose-500/50'
           : 'border-blue-500/80 bg-gradient-to-r from-blue-950/95 via-indigo-950/90 to-slate-950/95 text-blue-100 shadow-[0_8px_30px_rgba(59,130,246,0.4)] ring-1 ring-blue-500/50'
       }`}>
         <div className="flex items-center gap-2.5">
           <div className={`flex items-center justify-center w-8 h-8 rounded-xl border ${
-            isHeal
+            isHint
+              ? 'bg-amber-500/20 border-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+              : isHeal
               ? 'bg-rose-500/20 border-rose-400/60 shadow-[0_0_12px_rgba(244,63,94,0.5)]'
               : 'bg-blue-500/20 border-blue-400/60 shadow-[0_0_12px_rgba(59,130,246,0.5)]'
           }`}>
             {meta?.icon}
           </div>
           <div>
-            <span className={`text-[10px] uppercase font-extrabold tracking-wider ${isHeal ? 'text-rose-400' : 'text-blue-400'}`}>
+            <span className={`text-[10px] uppercase font-extrabold tracking-wider ${
+              isHint ? 'text-amber-400' : isHeal ? 'text-rose-400' : 'text-blue-400'
+            }`}>
               Confirm Action
             </span>
             <p className="font-bold text-slate-100">
-              {isHeal ? 'Use Heal card now?' : `Use ${meta?.label || confirmingSimpleCard}?`}
+              {isHint
+                ? 'Use Hint card to reveal the top 3 best word placements?'
+                : isHeal
+                ? 'Use Heal card to restore +1 HP?'
+                : isShield
+                ? 'Use Shield card to protect yourself from attacks & tile swaps?'
+                : `Use ${meta?.label || confirmingSimpleCard}?`}
             </p>
           </div>
         </div>
@@ -513,14 +533,16 @@ export const PowerCardBar = memo(function PowerCardBar({
               setConfirmingSimpleCard(null);
             }}
             className={`group relative flex items-center gap-1.5 rounded-xl px-4 py-1.5 font-black hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all cursor-pointer ${
-              isHeal
+              isHint
+                ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-neutral-950 shadow-[0_0_16px_rgba(245,158,11,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                : isHeal
                 ? 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white shadow-[0_0_16px_rgba(244,63,94,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)]'
-                : 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-[0_0_16px_rgba(59,130,246,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white shadow-[0_0_16px_rgba(59,130,246,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)]'
             }`}
           >
             <div className="pointer-events-none absolute inset-x-1.5 top-0.5 h-1/2 rounded-t-lg bg-gradient-to-b from-white/25 to-transparent" />
-            <Check className="w-4 h-4 stroke-[3] text-white" />
-            <span className="tracking-wide uppercase text-[11px] sm:text-xs">Confirm {meta?.label || 'Heal'}</span>
+            <Check className={`w-4 h-4 stroke-[3] ${isHint ? 'text-neutral-950' : 'text-white'}`} />
+            <span className="tracking-wide uppercase text-[11px] sm:text-xs">Confirm {meta?.label || 'Card'}</span>
           </button>
           <button
             type="button"
@@ -565,8 +587,8 @@ export const PowerCardBar = memo(function PowerCardBar({
                   setSpyOwnTileIds([]);
                 } else if (card === 'BAN_LETTER') {
                   setPickingLetter(true);
-                } else if (card === 'HEAL') {
-                  setConfirmingSimpleCard('HEAL');
+                } else if (card === 'HEAL' || card === 'HINT' || card === 'SHIELD') {
+                  setConfirmingSimpleCard(card as SimpleCard);
                 } else {
                   onUseSimple(card as SimpleCard);
                 }

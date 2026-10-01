@@ -8,9 +8,11 @@ from app.database.models import Game, GamePlayer, GameRoom
 from app.database.session import get_db
 from app.database.state import player_cards, player_rack, replace_game_tiles, replace_player_cards
 from app.game.tiles import DEFAULT_LETTER_VALUES
+from app.schemas.events import WebSocketEvent, EventType
 from app.schemas.game import GameStateResponse
 from app.services.game_service import GameService
 from app.services.move_service import MoveService
+from app.websocket.connection_manager import manager
 
 router = APIRouter(prefix="/debug/games/{game_id}/players/{player_id}", tags=["Debug"])
 
@@ -43,7 +45,13 @@ async def set_hp(game_id: str, player_id: str, request: SetHpRequest, db: AsyncS
     await _require_debug_mode(db, game_id)
     _, player = await _load_game_and_player(db, game_id, player_id)
     player.hp = max(0, request.hp)
-    return await GameService.get_game_state(db, game_id, reveal_all=True)
+    await db.commit()
+    state = await GameService.get_game_state(db, game_id, reveal_all=True)
+    await manager.broadcast(game_id, WebSocketEvent(
+        type=EventType.SNAPSHOT,
+        payload=state.model_dump()
+    ).model_dump())
+    return state
 
 
 class SetRackTileRequest(BaseModel):
@@ -67,7 +75,13 @@ async def set_rack_tile(game_id: str, player_id: str, request: SetRackTileReques
     player.rack = rack
     players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game_id))).scalars().all()
     await replace_game_tiles(db, game_id, game.tile_bag, players)
-    return await GameService.get_game_state(db, game_id, reveal_all=True)
+    await db.commit()
+    state = await GameService.get_game_state(db, game_id, reveal_all=True)
+    await manager.broadcast(game_id, WebSocketEvent(
+        type=EventType.SNAPSHOT,
+        payload=state.model_dump()
+    ).model_dump())
+    return state
 
 
 class GrantCardRequest(BaseModel):
@@ -85,4 +99,37 @@ async def grant_card(game_id: str, player_id: str, request: GrantCardRequest, db
     cards.append(card)
     player.cards = cards
     await replace_player_cards(db, player_id, cards)
-    return await GameService.get_game_state(db, game_id, reveal_all=True)
+    await db.commit()
+    state = await GameService.get_game_state(db, game_id, reveal_all=True)
+    await manager.broadcast(game_id, WebSocketEvent(
+        type=EventType.SNAPSHOT,
+        payload=state.model_dump()
+    ).model_dump())
+    return state
+
+
+@router.delete("/cards", response_model=GameStateResponse)
+async def clear_cards(
+    game_id: str,
+    player_id: str,
+    card_index: int | None = None,
+    db: AsyncSession = Depends(get_db)
+):
+    await _require_debug_mode(db, game_id)
+    _, player = await _load_game_and_player(db, game_id, player_id)
+    cards = await player_cards(db, player_id)
+    if card_index is not None:
+        if 0 <= card_index < len(cards):
+            cards.pop(card_index)
+    else:
+        cards = []
+    player.cards = cards
+    await replace_player_cards(db, player_id, cards)
+    await db.commit()
+    state = await GameService.get_game_state(db, game_id, reveal_all=True)
+    await manager.broadcast(game_id, WebSocketEvent(
+        type=EventType.SNAPSHOT,
+        payload=state.model_dump()
+    ).model_dump())
+    return state
+

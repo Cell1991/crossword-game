@@ -12,6 +12,7 @@ class CreateRoomRequest(BaseModel):
     game_mode: Literal["HP", "TURNS"] = "HP"
     max_turns: Optional[int] = Field(None, ge=1, le=500)
     starting_hp: Optional[int] = Field(None, ge=10, le=1000)
+    max_players: Optional[int] = Field(4, ge=2, le=100, description="Maximum players allowed (None for unlimited)")
 
     @model_validator(mode="after")
     def validate_game_mode_settings(self):
@@ -31,9 +32,11 @@ class CreateRoomResponse(BaseModel):
     session_token: str
     display_name: str
     turn_time_limit: Optional[int] = None
-    game_mode: Literal["HP", "TURNS"]
+    game_mode: str = "HP"
     max_turns: Optional[int] = None
-    starting_hp: Optional[int] = None
+    starting_hp: Optional[int] = 100
+    max_players: Optional[int] = 4
+    created_at: Optional[datetime] = None
 
 class JoinRoomRequest(BaseModel):
     game_pin: str = Field(..., min_length=6, max_length=6, description="6-digit numeric game PIN")
@@ -45,6 +48,14 @@ class JoinRoomResponse(BaseModel):
     session_token: str
     display_name: str
     is_host: bool
+    game_pin: Optional[str] = None
+    host_player_id: Optional[str] = None
+    turn_time_limit: Optional[int] = None
+    game_mode: str = "HP"
+    max_turns: Optional[int] = None
+    starting_hp: Optional[int] = 100
+    max_players: Optional[int] = 4
+    created_at: Optional[datetime] = None
 
 class RematchResponse(JoinRoomResponse):
     game_pin: str
@@ -58,9 +69,24 @@ class RoomDetailResponse(BaseModel):
     host_player_id: str
     players: list[PlayerOut]
     spectator_count: int = 0
-    created_at: datetime
+    created_at: Optional[datetime] = None
     turn_time_limit: Optional[int] = None
-    game_mode: Literal["HP", "TURNS"]
+    game_mode: str = "HP"
     max_turns: Optional[int] = None
-    starting_hp: Optional[int] = None
+    starting_hp: Optional[int] = 100
     is_debug: bool = False
+    max_players: Optional[int] = 4
+
+class RoomSummaryResponse(BaseModel):
+    id: str
+    game_pin: str
+    status: str = "WAITING"
+    host_name: str = "Host"
+    player_count: int = 1
+    max_players: Optional[int] = 4
+    turn_time_limit: Optional[int] = None
+    game_mode: str = "HP"
+    max_turns: Optional[int] = None
+    starting_hp: Optional[int] = 100
+    is_debug: bool = False
+    created_at: Optional[datetime] = None

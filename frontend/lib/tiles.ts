@@ -5,7 +5,9 @@ export const RACK_SIZE = 7;
 
 /** A blank tile arrives as `BLANK` (or `?`) until the player names the letter it stands for. */
 export function isBlankLetter(letter: string): boolean {
-  return letter.toUpperCase() === 'BLANK' || letter === '?';
+  if (!letter) return false;
+  const upper = letter.toUpperCase();
+  return upper === 'BLANK' || letter === '?' || letter === '*' || letter === '_' || letter === '✦';
 }
 
 /** Board cells are keyed `row_col`, the same way the server keys `board_state`. */

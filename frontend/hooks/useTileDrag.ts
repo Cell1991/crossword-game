@@ -115,21 +115,18 @@ export function useTileDrag(options: UseTileDragOptions) {
     if (!targetCell) return;
 
     const occupiedByCommitted = isCellCommitted(latest.boardState, targetCell.row, targetCell.col);
-    const occupiedByPending = latest.temporaryTiles.some(tile =>
-      tile.row === targetCell.row &&
-      tile.col === targetCell.col &&
-      !(session.source === 'board' && tile.tile_id === session.tile.id)
-    );
     const targetPendingTile = latest.temporaryTiles.find(tile =>
       tile.row === targetCell.row &&
       tile.col === targetCell.col &&
       tile.tile_id !== session.tile.id
     );
 
-    if (session.source === 'board' && session.origin && targetPendingTile && !occupiedByCommitted) {
-      latest.swapStagedTiles(session.tile.id, session.origin, targetPendingTile);
-    } else if (!occupiedByCommitted && !occupiedByPending) {
-      latest.stageTile(session.tile, targetCell);
+    if (!occupiedByCommitted) {
+      if (session.source === 'board' && session.origin && targetPendingTile) {
+        latest.swapStagedTiles(session.tile.id, session.origin, targetPendingTile);
+      } else {
+        latest.stageTile(session.tile, targetCell);
+      }
     }
     pointerRef.current = null;
   }, [endDrag]);
@@ -181,13 +178,8 @@ export function useTileDrag(options: UseTileDragOptions) {
   const dragHoverIsValid = useMemo(() => {
     if (!dragSession || !dragHoverCell) return null;
     const committed = isCellCommitted(boardState, dragHoverCell.row, dragHoverCell.col);
-    const pending = temporaryTiles.some(tile =>
-      tile.row === dragHoverCell.row &&
-      tile.col === dragHoverCell.col &&
-      !(dragSession.source === 'board' && tile.tile_id === dragSession.tile.id)
-    );
-    return !committed && (!pending || dragSession.source === 'board');
-  }, [boardState, dragHoverCell, dragSession, temporaryTiles]);
+    return !committed;
+  }, [boardState, dragHoverCell, dragSession]);
 
   return {
     dragSession,

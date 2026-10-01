@@ -1,4 +1,4 @@
-import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
+import { BoardCell, CellPosition, HintTile, PlacedTile } from '@/lib/types';
 import { TilePalette } from '@/lib/tileTheme';
 import { BoardModel } from '@/lib/engine/boardModel';
 import { GridRenderer } from './GridRenderer';
@@ -21,6 +21,7 @@ export interface SceneRenderConfig {
   draggingTileId: string | null;
   frozenTile: CellPosition | null;
   hintCell: CellPosition | null;
+  hintTiles?: HintTile[] | null;
   pendingArmedCell: CellPosition | null;
   pendingArmedCard?: string | null;
   lowPower: boolean;
@@ -99,10 +100,20 @@ export class BoardCompositor {
       }
     }
 
-    // 4. Layer 3: Hint & Action Reticles
-    if (config.hintCell && isCellVisible(config.hintCell.row, config.hintCell.col)) {
-      FXRenderer.renderHint(ctx, config.hintCell, offset, cellSize);
+    // 3.5 Layer 2.5: Hint Ghost Tiles (suggested word placements for unplaced cells)
+    if (config.hintTiles && config.hintTiles.length > 0) {
+      for (let i = 0; i < config.hintTiles.length; i++) {
+        const ht = config.hintTiles[i];
+        if (!isCellVisible(ht.row, ht.col)) continue;
+        const isOccupiedByCommitted = Boolean(config.boardState[`${ht.row}_${ht.col}`]);
+        const isOccupiedByTemporary = config.temporaryTiles.some(t => t.row === ht.row && t.col === ht.col && t.tile_id !== config.draggingTileId);
+        if (!isOccupiedByCommitted && !isOccupiedByTemporary) {
+          TileRenderer.renderGhostTile(tileContext, ht.row, ht.col, ht.letter, ht.value);
+        }
+      }
     }
+
+    // 4. Layer 3: Action Reticles
     if (config.pendingArmedCell && isCellVisible(config.pendingArmedCell.row, config.pendingArmedCell.col)) {
       FXRenderer.renderPendingArmed(ctx, config.pendingArmedCell, offset, cellSize, config.pendingArmedCard);
     }
@@ -142,9 +153,14 @@ export class BoardCompositor {
       }
     }
 
-    // 7. Layer 6: Selection Box
+    // 7. Layer 6: Selection Box (only drawn when cell is not occupied by a temporary tile)
     if (config.selectedCell && isCellVisible(config.selectedCell.row, config.selectedCell.col)) {
-      FXRenderer.renderSelection(ctx, config.selectedCell, offset, cellSize);
+      const isTemporary = config.temporaryTiles.some(
+        t => t.row === config.selectedCell!.row && t.col === config.selectedCell!.col
+      );
+      if (!isTemporary) {
+        FXRenderer.renderSelection(ctx, config.selectedCell, offset, cellSize, config.temporaryTilesValid);
+      }
     }
 
     ctx.restore();

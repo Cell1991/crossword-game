@@ -23,6 +23,7 @@ class ValidateMoveResponse(BaseModel):
     reason: Optional[str] = None
     words_formed: list[WordFormed] = []
     estimated_score: int = 0
+    bingo_bonus: int = 0
 
 class CommitMoveRequest(BaseModel):
     placed_tiles: list[PlacedTileInput]
@@ -36,6 +37,7 @@ class CommitMoveResponse(BaseModel):
     turn_number: int
     words_formed: list[WordFormed]
     score_earned: int
+    bingo_bonus: int = 0
     next_player_id: Optional[str]
     game_over: bool = False
     winner_id: Optional[str] = None

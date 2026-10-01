@@ -5,6 +5,7 @@ export const dynamicParams = true;
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { Bug, Eye } from 'lucide-react';
 import { commitMove, exchangeTiles, expireTurn, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
 import { buildRackSlots } from '@/lib/rack';
 import { GameState, Tile, Player } from '@/lib/types';
@@ -27,10 +28,12 @@ import { GameHud } from '@/components/game/GameHud';
 import { TurnTimer } from '@/components/game/TurnTimer';
 import { GameOverScreen } from '@/components/game/GameOverScreen';
 import { CardRevealOverlay, PendingEffectBanner, ToastStack } from '@/components/game/GameOverlays';
+import { HintSuggestionsOverlay } from '@/components/game/HintSuggestionsOverlay';
 import { BlankTilePickerModal } from '@/components/game/BlankTilePickerModal';
 import { ConfirmExitModal } from '@/components/game/ConfirmExitModal';
 import { MobileInfoModal } from '@/components/game/MobileInfoModal';
 import BackgroundMusic from '@/components/audio/BackgroundMusic';
+import { GameGuideModal } from '@/components/game/GameGuideModal';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 
 const EMPTY_TILES: Tile[] = [];
@@ -71,7 +74,7 @@ export default function GamePage() {
   }, [debugSessions, isDebug, myPlayerId, reconcile, switchSession]);
 
   const sync = useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnapshot: handleSnapshot });
-  const { gameState, reload } = sync;
+  const { gameState, reload, setGameState } = sync;
 
   const isMyTurn = gameState?.current_player_id === myPlayerId;
   const myPlayer = gameState?.players.find(p => p.id === myPlayerId);
@@ -126,6 +129,9 @@ export default function GamePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isDebugOpen, setIsDebugOpen] = useState(false);
 
   const seatReturningTile = useCallback((tileId: string, targetSlot: number) => {
     seatReturning(tileId, targetSlot, pendingTileIds);
@@ -166,11 +172,37 @@ export default function GamePage() {
       handleTurnChange(gameState);
       clearRemotePlacements();
       setExchangeTileIds(null);
+      cards.clearHints();
     }
     turnKeyRef.current = nextTurnKey;
-  }, [clearRemotePlacements, gameState, handleTurnChange]);
+  }, [cards, clearRemotePlacements, gameState, handleTurnChange]);
 
   const handleTimeUp = useCallback(() => expireTurn(gameId).then(() => reload()), [gameId, reload]);
+
+  const handleSelectHint = useCallback((index: number) => {
+    cards.setActiveHintIndex(index);
+    const suggestion = cards.hintSuggestions[index];
+    if (suggestion && serverRack.length > 0) {
+      staged.stageHintTiles(suggestion.tiles, serverRack);
+    }
+  }, [cards, serverRack, staged]);
+
+  // When hint suggestions arrive or change, automatically stage tiles onto the board
+  const prevHintKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (cards.hintSuggestions.length > 0) {
+      const activeSuggestion = cards.hintSuggestions[cards.activeHintIndex];
+      const hintKey = `${cards.activeHintIndex}:${activeSuggestion?.word ?? ''}`;
+      if (activeSuggestion && serverRack.length > 0) {
+        if (prevHintKeyRef.current !== hintKey) {
+          prevHintKeyRef.current = hintKey;
+          staged.stageHintTiles(activeSuggestion.tiles, serverRack);
+        }
+      }
+    } else {
+      prevHintKeyRef.current = null;
+    }
+  }, [cards.activeHintIndex, cards.hintSuggestions, serverRack, staged]);
 
   // Handlers below are stable callbacks: TileRack, PowerCardBar and RightSidebar are memoised
   // so a drag crossing into another cell does not re-render them.
@@ -213,13 +245,14 @@ export default function GamePage() {
     try {
       await exchangeTiles(gameId, myPlayerId, exchangeTileIds);
       setExchangeTileIds(null);
+      cards.clearHints();
       reload();
     } catch (error: unknown) {
       flashError(error instanceof Error ? error.message : 'Failed to exchange tiles');
     } finally {
       setIsSubmitting(false);
     }
-  }, [exchangeTileIds, flashError, gameId, myPlayerId, reload]);
+  }, [cards, exchangeTileIds, flashError, gameId, myPlayerId, reload]);
 
   const handleConfirmMove = useCallback(async () => {
     if (!myPlayerId || temporaryTiles.length === 0) return;
@@ -229,24 +262,63 @@ export default function GamePage() {
         : validationReason || 'Fix the invalid word before confirming');
       return;
     }
+    const tilesToCommit = [...temporaryTiles];
     setIsSubmitting(true);
     try {
       const freezeTileId = cards.deferredFreezeTileId ?? undefined;
-      await commitMove(gameId, myPlayerId, temporaryTiles, freezeTileId);
+      const wasBingo = tilesToCommit.length >= 7;
+      await commitMove(gameId, myPlayerId, tilesToCommit, freezeTileId);
+      if (wasBingo) {
+        toasts.flashInfo('🎉 BINGO! All 7 tiles placed (+50 Bonus Points)!');
+      }
+
+      // Optimistically bake placed tiles directly into board_state and remove them from rack
+      // BEFORE clearing staged move so tiles never vanish from the board for even a fraction of a second!
+      const committedTileIds = new Set(tilesToCommit.map(t => t.tile_id));
+      setGameState(prev => {
+        if (!prev) return prev;
+        const nextBoard = { ...prev.board_state };
+        for (const t of tilesToCommit) {
+          nextBoard[`${t.row}_${t.col}`] = {
+            row: t.row,
+            col: t.col,
+            letter: t.letter,
+            value: t.value,
+            player_id: myPlayerId,
+            turn_number: prev.turn_number,
+          };
+        }
+        return {
+          ...prev,
+          board_state: nextBoard,
+          players: prev.players.map(p => {
+            if (p.id === myPlayerId && p.rack) {
+              return {
+                ...p,
+                rack: p.rack.filter(tile => !committedTileIds.has(tile.id)),
+              };
+            }
+            return p;
+          }),
+        };
+      });
+
       clearStagedMove();
+      cards.clearHints();
       reload();
     } catch (error: unknown) {
       flashError(error instanceof Error ? error.message : 'Failed to commit move');
     } finally {
       setIsSubmitting(false);
     }
-  }, [cards.deferredFreezeTileId, clearStagedMove, flashError, gameId, myPlayerId, reload, setError, temporaryTiles, validationReason, validationState]);
+  }, [cards, clearStagedMove, flashError, gameId, myPlayerId, reload, setError, setGameState, temporaryTiles, toasts, validationReason, validationState]);
 
   const handlePassTurn = useCallback(async () => {
     if (!myPlayerId) return;
     setIsSubmitting(true);
     try {
       await passTurn(gameId, myPlayerId);
+      cards.clearHints();
       reload();
     } catch (error: unknown) {
       flashError(error instanceof Error ? error.message : 'Failed to pass turn');
@@ -258,7 +330,7 @@ export default function GamePage() {
   // The game UI needs the browser session and a game snapshot first. This loading view reads no
   // client-only state, so the server and the client's first paint render it identically (no
   // hydration mismatch) while the session/state fetch that used to show a blank screen resolves.
-  if (!hydrated || !session || sync.loading || !gameState) {
+  if (!hydrated || !session || sync.loading || !gameState || isLeaving) {
     return (
       <div
         className="flex h-screen w-screen items-center justify-center"
@@ -326,15 +398,22 @@ export default function GamePage() {
 
   const handleExit = () => {
     if (isSpectator) {
-      router.push('/');
+      setIsLeaving(true);
+      sessionStore.remove(gameId);
+      router.replace('/');
       return;
     }
     setIsExitModalOpen(true);
   };
 
   const handleConfirmExit = () => {
+    setIsLeaving(true);
     setIsExitModalOpen(false);
-    void leaveGame(gameId, myPlayerId ?? '').finally(() => router.push('/'));
+    sessionStore.remove(gameId);
+    router.replace('/');
+    if (myPlayerId) {
+      void leaveGame(gameId, myPlayerId).catch(() => {});
+    }
   };
 
   return (
@@ -358,6 +437,25 @@ export default function GamePage() {
         maxTurns={gameState.max_turns}
         onExit={handleExit}
         onOpenInfo={() => setIsMobileInfoOpen(true)}
+        onOpenGuide={() => setIsGuideOpen(true)}
+        debugSlot={
+          isDebug ? (
+            <button
+              type="button"
+              onClick={() => setIsDebugOpen(prev => !prev)}
+              className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-bold transition-all cursor-pointer active:scale-95 shrink-0 select-none ${
+                isDebugOpen
+                  ? 'border-rose-400 bg-rose-950/80 text-rose-200 shadow-[0_0_12px_rgba(244,63,94,0.45)] ring-1 ring-rose-400/50'
+                  : 'border-rose-500/40 bg-rose-950/40 text-rose-300 hover:bg-rose-900/60 hover:text-white hover:border-rose-400/70 shadow-[0_0_8px_rgba(244,63,94,0.2)]'
+              }`}
+              title="Toggle Sandbox Developer Tools"
+              aria-label="Toggle Sandbox Developer Tools"
+            >
+              <Bug className="h-3.5 w-3.5 text-rose-400 drop-shadow-[0_0_4px_#fb7185] shrink-0" />
+              <span className="tracking-wide">Debug</span>
+            </button>
+          ) : undefined
+        }
         timer={(
           <TurnTimer
             turnTimeLimit={gameState.turn_time_limit}
@@ -388,7 +486,18 @@ export default function GamePage() {
       <div className="relative z-10 flex flex-1 min-h-0">
         {/* Board canvas takes full space */}
         <div className="relative min-w-0 flex-1">
-          <ToastStack info={toasts.info} error={toasts.error} />
+          {/* Top Overlays Stack: Toasts & Hint Suggestions (stacked vertically, never overlapping) */}
+          <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex w-full max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-col items-center gap-2.5 sm:top-4">
+            {cards.hintSuggestions.length > 0 && (
+              <HintSuggestionsOverlay
+                suggestions={cards.hintSuggestions}
+                activeIndex={cards.activeHintIndex}
+                onSelectIndex={handleSelectHint}
+                onDismiss={cards.clearHints}
+              />
+            )}
+            <ToastStack info={toasts.info} error={toasts.error} inline />
+          </div>
           <div className="absolute inset-0 z-10">
             <BoardCanvas
               containerRef={boardRef}
@@ -410,6 +519,7 @@ export default function GamePage() {
               camera={camera}
               frozenTile={gameState.frozen_tile}
               hintCell={cards.hintCell}
+              hintTiles={cards.activeHintTiles}
               pendingArmedCell={cards.pendingArmedCell ?? deferredFreezeCell}
               pendingArmedCard={cards.armedCard ?? (cards.deferredFreezeTileId ? 'FREEZE_TILE' : null)}
             />
@@ -458,17 +568,18 @@ export default function GamePage() {
       {/* Bottom: Tile rack (spectators and eliminated players have no active rack) */}
       <div className="relative z-10 shrink-0 px-1.5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1.5 sm:p-3">
         {isSpectator ? (
-          <p className="py-3 text-center text-sm text-sky-300">
-            👁 You are watching this game. Players&apos; tiles stay hidden.
-          </p>
+          <div className="flex items-center justify-center gap-2 py-2.5 px-4 text-center text-xs sm:text-sm text-sky-300 bg-sky-950/40 border border-sky-500/25 rounded-xl shadow-[0_0_12px_rgba(56,189,248,0.1)] ring-1 ring-sky-400/15 max-w-md mx-auto select-none">
+            <Eye className="h-4 w-4 text-sky-400 drop-shadow-[0_0_4px_#38bdf8] shrink-0" />
+            <span>You are watching this game. Players&apos; tiles stay hidden.</span>
+          </div>
         ) : isEliminated ? (
           <div className="flex flex-col items-center justify-center py-3.5 px-4 sm:px-6 rounded-2xl border border-rose-500/50 bg-gradient-to-r from-rose-950/85 via-slate-900/90 to-rose-950/85 text-center shadow-[0_0_24px_rgba(244,63,94,0.25)] ring-1 ring-rose-500/30 max-w-lg mx-auto">
             <div className="flex items-center gap-2 text-rose-300 font-black text-sm sm:text-base tracking-wide uppercase">
               <span className="text-xl">☠️</span>
-              <span>คุณตายแล้ว (Knocked Out)</span>
+              <span>You Have Been Knocked Out</span>
             </div>
             <p className="text-xs text-slate-300 mt-1">
-              พลังชีวิต (HP) ของคุณหมดลงแล้ว คุณกำลังรับชมการเล่นของผู้เล่นที่เหลืออยู่ในห้อง
+              Your HP reached 0. You are now spectating the remaining players in the room.
             </p>
           </div>
         ) : (
@@ -520,6 +631,7 @@ export default function GamePage() {
               placementValid={validationState}
               isSubmitting={isSubmitting}
               estimatedScore={staged.estimatedScore}
+              isBingoBonus={temporaryTiles.length >= 7}
             />
         )}
       </div>
@@ -535,8 +647,15 @@ export default function GamePage() {
       <ConfirmExitModal
         isOpen={isExitModalOpen}
         isSpectator={isSpectator}
+        isLeaving={isLeaving}
         onConfirm={handleConfirmExit}
         onClose={() => setIsExitModalOpen(false)}
+      />
+
+      {/* Game Guide Modal */}
+      <GameGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
       />
 
       {isDebug && (
@@ -545,6 +664,8 @@ export default function GamePage() {
           players={gameState.players ?? []}
           sessions={debugSessions}
           activePlayerId={myPlayerId}
+          isOpen={isDebugOpen}
+          onClose={() => setIsDebugOpen(false)}
           onSwitchPlayer={switchSession}
           onGameState={sync.setGameState}
         />

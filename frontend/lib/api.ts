@@ -2,6 +2,7 @@ import {
   CreateRoomResponse,
   JoinRoomResponse,
   RoomDetailResponse,
+  RoomSummary,
   GameState,
   PlacedTile,
   ValidateMoveResponse,
@@ -29,7 +30,10 @@ function getErrorMessage(error: unknown, fallback: string): string {
 }
 
 export const getApiBase = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    const base = process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+    return base.endsWith('/api') ? base : `${base}/api`;
+  }
   if (typeof window !== 'undefined') {
     // Use the frontend origin so public tunnels do not expose a private backend port.
     return '/api';
@@ -53,8 +57,15 @@ export interface StoredSession {
   displayName: string;
   isHost: boolean;
   gamePin?: string;
+  hostPlayerId?: string;
   /** Watching only: no seat, no token, no rack. */
   isSpectator?: boolean;
+  turnTimeLimit?: TurnTimeLimit;
+  gameMode?: GameMode;
+  maxTurns?: number | null;
+  startingHp?: number | null;
+  maxPlayers?: number | null;
+  createdAt?: string;
 }
 
 export const sessionStore = {
@@ -72,6 +83,13 @@ export const sessionStore = {
     if (typeof window === 'undefined') return null;
     const lastId = sessionStorage.getItem('crossword_last_game_id');
     return lastId ? this.get(lastId) : null;
+  },
+  remove(gameId: string) {
+    if (typeof window === 'undefined') return;
+    sessionStorage.removeItem(`crossword_session_${gameId}`);
+    if (sessionStorage.getItem('crossword_last_game_id') === gameId) {
+      sessionStorage.removeItem('crossword_last_game_id');
+    }
   }
 };
 
@@ -96,6 +114,7 @@ export async function createRoom(
   maxTurns: number | null = null,
   isDebug = false,
   startingHp: number | null = null,
+  maxPlayers: number | null = 4,
 ): Promise<CreateRoomResponse> {
   const res = await fetch(`${getApiBase()}/rooms`, {
     method: 'POST',
@@ -107,6 +126,7 @@ export async function createRoom(
       max_turns: gameMode === 'TURNS' ? maxTurns : null,
       starting_hp: gameMode === 'HP' ? startingHp : null,
       is_debug: isDebug,
+      max_players: maxPlayers,
     }),
   });
   if (!res.ok) {
@@ -135,11 +155,56 @@ export async function joinRoom(gamePin: string, playerName: string): Promise<Joi
   return res.json();
 }
 
+export async function getRooms(): Promise<RoomSummary[]> {
+  // 1. Query Next.js serverless route handler first (instant response, zero CORS, direct Neon DB connection)
+  try {
+    const localRes = await fetch(`/api/rooms?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json' },
+    });
+    if (localRes && localRes.ok) {
+      const data = await localRes.json();
+      if (Array.isArray(data)) return data;
+    }
+  } catch {
+    // If not in browser or running outside Next.js, fall back to backend API
+  }
+
+  // 2. Fall back to backend API URL (Render or local backend server)
+  const base = getApiBase();
+  const url = `${base}/rooms?_t=${Date.now()}`;
+  let res = await fetch(url, {
+    cache: 'no-store',
+    headers: { 'Accept': 'application/json' },
+  }).catch(() => null);
+
+  // If initial request failed with 404, 307, 308, or network error, attempt fallback with trailing slash
+  if (!res || !res.ok) {
+    const fallbackRes = await fetch(`${base}/rooms/?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json' },
+    }).catch(() => null);
+
+    if (fallbackRes && fallbackRes.ok) {
+      res = fallbackRes;
+    }
+  }
+
+  if (!res || !res.ok) {
+    const err = res ? await res.json().catch(() => ({})) : {};
+    throw new Error(err.detail || `Failed to fetch rooms (${res?.status ?? 'network'})`);
+  }
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
 export async function getRoom(gamePin: string): Promise<RoomDetailResponse> {
-  const res = await fetch(`${getApiBase()}/rooms/${gamePin}`);
+  const res = await fetch(`${getApiBase()}/rooms/${gamePin}?_t=${Date.now()}`, {
+    cache: 'no-store',
+  });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Failed to fetch room');
+    throw new Error(err.detail || `Failed to fetch room (${res.status})`);
   }
   return res.json();
 }
@@ -216,6 +281,19 @@ export async function debugGrantCard(gameId: string, playerId: string, card: str
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Failed to grant card');
+  }
+  return res.json();
+}
+
+/** Debug-only: clear all cards (or a specific card index) for a player. */
+export async function debugClearCards(gameId: string, playerId: string, cardIndex?: number): Promise<GameState> {
+  const query = cardIndex !== undefined ? `?card_index=${cardIndex}` : '';
+  const res = await fetch(`${getApiBase()}/debug/games/${gameId}/players/${playerId}/cards${query}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to clear cards');
   }
   return res.json();
 }

@@ -7,21 +7,27 @@ import { Crown, User, CheckCircle2 } from 'lucide-react';
 interface PlayerListProps {
   players: Player[];
   myPlayerId?: string | null;
+  maxPlayers?: number | null;
 }
 
-export const PlayerList: React.FC<PlayerListProps> = ({ players, myPlayerId }) => {
+export const PlayerList: React.FC<PlayerListProps> = ({ players, myPlayerId, maxPlayers }) => {
   return (
     <div className="flex flex-col w-full max-w-md mx-auto">
       <div className="flex items-center justify-between mb-3 px-1">
         <span className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-          PLAYERS ({players.length})
+          PLAYERS ({players.length}{maxPlayers ? `/${maxPlayers}` : ''})
         </span>
         <span className="text-xs text-emerald-400 flex items-center gap-1 font-medium">
           <CheckCircle2 className="w-3.5 h-3.5" /> Lobby Ready
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      {players.length === 0 ? (
+        <div className="flex items-center justify-center py-6 text-slate-400 text-xs sm:text-sm animate-pulse">
+          Connecting to lobby...
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {players.map((p) => {
           const isMe = p.id === myPlayerId;
           return (
@@ -50,7 +56,8 @@ export const PlayerList: React.FC<PlayerListProps> = ({ players, myPlayerId }) =
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

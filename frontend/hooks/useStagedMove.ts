@@ -2,12 +2,12 @@
 
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { validateMove } from '@/lib/api';
-import { BoardCell, CellPosition, GameState, PlacedTile, Tile } from '@/lib/types';
+import { BoardCell, CellPosition, GameState, HintTile, PlacedTile, Tile } from '@/lib/types';
 import { playSfx } from '@/lib/sfx';
 import { cellKey, isBlankLetter, isCellCommitted } from '@/lib/tiles';
 
 /** Wait this long after the last change before asking the server whether the placement is valid. */
-const VALIDATE_DEBOUNCE_MS = 400;
+const VALIDATE_DEBOUNCE_MS = 150;
 
 interface BlankPickerTarget {
   tileId: string;
@@ -106,7 +106,7 @@ export function useStagedMove({
     }
     playSfx('place');
     setTemporaryTiles(previous => [
-      ...previous.filter(staged => staged.tile_id !== tile.id),
+      ...previous.filter(staged => staged.tile_id !== tile.id && !(staged.row === cell.row && staged.col === cell.col)),
       { row: cell.row, col: cell.col, tile_id: tile.id, letter, value },
     ]);
     setSelectedTileId(null);
@@ -136,17 +136,19 @@ export function useStagedMove({
     if (!canStageMove) return;
     if (isCellCommitted(boardState, row, col)) return;
 
+    if (selectedTileId) {
+      const tile = rackTiles.find(rackTile => rackTile.id === selectedTileId);
+      if (tile && !temporaryTiles.some(staged => staged.tile_id === selectedTileId)) {
+        stageTile(tile, { row, col });
+        return;
+      }
+    }
+
     if (temporaryTiles.some(tile => tile.row === row && tile.col === col)) {
       setTemporaryTiles(previous => previous.filter(tile => !(tile.row === row && tile.col === col)));
       setSelectedTileId(null);
       return;
     }
-
-    if (!selectedTileId) return;
-    const tile = rackTiles.find(rackTile => rackTile.id === selectedTileId);
-    if (!tile) return;
-    if (temporaryTiles.some(staged => staged.tile_id === selectedTileId)) return;
-    stageTile(tile, { row, col });
   }, [boardState, canStageMove, selectedTileId, stageTile, temporaryTiles]);
 
   /** A tap on a rack tile selects it (blanks first ask for their letter). */
@@ -218,6 +220,38 @@ export function useStagedMove({
     ));
   }, [myPlayerId]);
 
+  /** Automatically stages a hint suggestion's tiles from rack onto the board. */
+  const stageHintTiles = useCallback((hintTiles: HintTile[], rack: Tile[]) => {
+    const availableRack = [...rack];
+    const newPlaced: PlacedTile[] = [];
+    const newBlankLetters: Record<string, string> = {};
+
+    for (const ht of hintTiles) {
+      let matchedIdx = availableRack.findIndex(t => t.letter.toUpperCase() === ht.letter.toUpperCase());
+      if (matchedIdx === -1) {
+        matchedIdx = availableRack.findIndex(t => isBlankLetter(t.letter));
+      }
+      if (matchedIdx !== -1) {
+        const [matchedTile] = availableRack.splice(matchedIdx, 1);
+        if (isBlankLetter(matchedTile.letter)) {
+          newBlankLetters[matchedTile.id] = ht.letter.toUpperCase();
+        }
+        newPlaced.push({
+          row: ht.row,
+          col: ht.col,
+          tile_id: matchedTile.id,
+          letter: ht.letter.toUpperCase(),
+          value: isBlankLetter(matchedTile.letter) ? 0 : matchedTile.value,
+        });
+      }
+    }
+
+    setDesignatedBlankLetters(prev => ({ ...prev, ...newBlankLetters }));
+    setTemporaryTiles(newPlaced);
+    setSelectedTileId(null);
+    setSelectedCell(null);
+  }, []);
+
   return {
     temporaryTiles,
     pendingTileIds,
@@ -229,6 +263,7 @@ export function useStagedMove({
     designatedBlankLetters,
     blankPickerTarget,
     stageTile,
+    stageHintTiles,
     swapStagedTiles,
     unstageTile,
     handleCellClick,

@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -8,8 +9,8 @@ from app.core.config import settings
 from app.core.security import generate_game_pin, generate_session_token
 from app.database.models import GameRoom, Game, GamePlayer, get_utc_now
 from app.game.tiles import TileService
-from app.database.state import replace_game_tiles
 from app.websocket.connection_manager import manager
+from app.schemas.events import WebSocketEvent, EventType
 
 class RoomService:
 
@@ -22,16 +23,9 @@ class RoomService:
         game_mode: str = "HP",
         max_turns: int | None = None,
         starting_hp: int | None = None,
+        max_players: int | None = 4,
     ) -> tuple[GameRoom, Game, GamePlayer]:
-        # Generate unique 6-digit PIN
-        for _ in range(10):
-            pin = generate_game_pin()
-            existing = await db.execute(select(GameRoom).where(GameRoom.game_pin == pin))
-            if not existing.scalar_one_or_none():
-                break
-        else:
-            raise HTTPException(status_code=500, detail="Could not generate unique game PIN")
-
+        pin = generate_game_pin()
         room_id = str(uuid.uuid4())
         host_id = str(uuid.uuid4())
         session_token = generate_session_token()
@@ -51,6 +45,8 @@ class RoomService:
             game_mode=game_mode,
             max_turns=max_turns,
             starting_hp=hp_setting,
+            max_players=max_players,
+            created_at=get_utc_now(),
         )
         game = Game(
             id=room_id,
@@ -79,28 +75,37 @@ class RoomService:
         db.add(game)
         db.add(host_player)
         await db.flush()
-        await replace_game_tiles(db, room_id, tile_bag, [host_player])
 
         return room, game, host_player
 
     @staticmethod
     async def join_room(db: AsyncSession, game_pin: str, player_name: str) -> tuple[GameRoom, Game, GamePlayer]:
-        stmt = select(GameRoom).where(GameRoom.game_pin == game_pin)
-        res = await db.execute(stmt)
-        room = res.scalar_one_or_none()
-
-        if not room:
+        stmt = (
+            select(GameRoom, GamePlayer)
+            .outerjoin(GamePlayer, GamePlayer.game_id == GameRoom.id)
+            .where(GameRoom.game_pin == game_pin)
+            .order_by(GamePlayer.turn_order)
+        )
+        rows = (await db.execute(stmt)).all()
+        if not rows:
             raise HTTPException(status_code=404, detail="Invalid Game PIN: Room not found")
 
+        room = rows[0][0]
+        if room.status == "EXPIRED" or RoomService.is_room_expired(room):
+            room.status = "EXPIRED"
+            await db.commit()
+            raise HTTPException(
+                status_code=410,
+                detail=f"This room has expired because the game was not started within {settings.ROOM_EXPIRY_MINUTES} minutes."
+            )
         if room.status != "WAITING":
             raise HTTPException(status_code=400, detail="Game has already started or finished")
 
         # Check existing players
-        stmt_players = select(GamePlayer).where(GamePlayer.game_id == room.id)
-        res_players = await db.execute(stmt_players)
-        existing_players = res_players.scalars().all()
+        existing_players = [row[1] for row in rows if row[1] is not None]
+        room_max_players = getattr(room, "max_players", None)
 
-        if len(existing_players) >= settings.MAX_PLAYERS:
+        if room_max_players is not None and len(existing_players) >= room_max_players:
             spectator_count = manager.spectator_count(room.id)
             if spectator_count < settings.MAX_SPECTATORS:
                 raise HTTPException(
@@ -130,10 +135,10 @@ class RoomService:
         db.add(new_player)
         await db.flush()
 
-        stmt_game = select(Game).where(Game.id == room.id)
-        game = (await db.execute(stmt_game)).scalar_one()
+        # Shared PK between GameRoom and Game avoids redundant select(Game) network roundtrip
+        stub_game = type("StubGame", (), {"id": room.id})()
 
-        return room, game, new_player
+        return room, stub_game, new_player
 
     @staticmethod
     async def leave_room(db: AsyncSession, game_pin: str, player_id: str) -> GameRoom:
@@ -207,23 +212,44 @@ class RoomService:
 
     @staticmethod
     async def get_room_details(db: AsyncSession, game_pin: str) -> tuple[GameRoom, list[GamePlayer]]:
-        stmt = select(GameRoom).where(GameRoom.game_pin == game_pin)
-        res = await db.execute(stmt)
-        room = res.scalar_one_or_none()
-        if not room:
+        stmt = (
+            select(GameRoom, GamePlayer)
+            .outerjoin(GamePlayer, GamePlayer.game_id == GameRoom.id)
+            .where(GameRoom.game_pin == game_pin)
+            .order_by(GamePlayer.turn_order)
+        )
+        rows = (await db.execute(stmt)).all()
+        if not rows:
             raise HTTPException(status_code=404, detail="Room not found")
 
-        stmt_players = select(GamePlayer).where(GamePlayer.game_id == room.id).order_by(GamePlayer.turn_order)
-        players = (await db.execute(stmt_players)).scalars().all()
+        room = rows[0][0]
+        if room.status == "EXPIRED" or RoomService.is_room_expired(room):
+            room.status = "EXPIRED"
+            await db.commit()
+            raise HTTPException(
+                status_code=410,
+                detail=f"This room has expired because the game was not started within {settings.ROOM_EXPIRY_MINUTES} minutes."
+            )
+        players = [row[1] for row in rows if row[1] is not None]
 
-        return room, list(players)
+        return room, players
 
     @staticmethod
     async def start_game(db: AsyncSession, room_id: str, host_player_id: str) -> Game:
-        stmt = select(GameRoom).where(GameRoom.id == room_id)
-        room = (await db.execute(stmt)).scalar_one_or_none()
-        if not room:
+        stmt = (
+            select(GameRoom, Game, GamePlayer)
+            .join(Game, Game.id == GameRoom.id)
+            .outerjoin(GamePlayer, GamePlayer.game_id == GameRoom.id)
+            .where(GameRoom.id == room_id)
+            .order_by(GamePlayer.turn_order)
+        )
+        rows = (await db.execute(stmt)).all()
+        if not rows:
             raise HTTPException(status_code=404, detail="Room not found")
+
+        room = rows[0][0]
+        game = rows[0][1]
+        players = [row[2] for row in rows if row[2] is not None]
 
         if room.host_player_id != host_player_id:
             raise HTTPException(status_code=403, detail="Only the host can start the game")
@@ -231,17 +257,10 @@ class RoomService:
         if room.status != "WAITING":
             raise HTTPException(status_code=400, detail="Game has already started")
 
-        stmt_players = select(GamePlayer).where(GamePlayer.game_id == room.id).order_by(GamePlayer.turn_order)
-        players = (await db.execute(stmt_players)).scalars().all()
         if len(players) < settings.MIN_PLAYERS:
             raise HTTPException(status_code=400, detail=f"At least {settings.MIN_PLAYERS} players are needed to start")
 
         # Deal starting rack to each player
-        stmt_game = select(Game).where(Game.id == room.id)
-        game = (await db.execute(stmt_game)).scalar_one()
-
-        # Base starting HP, +20 per player beyond the first two (a 4-player free-for-all takes damage
-        # from three opponents each round, so a flat base would knock players out too fast).
         base_hp = room.starting_hp if room.starting_hp is not None else 100
         starting_hp = base_hp + max(0, len(players) - 2) * 20
         bag = list(game.tile_bag)
@@ -260,7 +279,110 @@ class RoomService:
         room.started_at = get_utc_now()
         game.turn_started_at = get_utc_now()
 
-        await replace_game_tiles(db, game.id, bag, players)
-
         await db.flush()
         return game
+
+    @staticmethod
+    async def list_active_rooms(db: AsyncSession, limit: int = 30) -> list[dict]:
+        stmt = (
+            select(GameRoom, GamePlayer)
+            .outerjoin(GamePlayer, GamePlayer.game_id == GameRoom.id)
+            .where(GameRoom.status.in_(["WAITING", "PLAYING"]))
+            .order_by(GameRoom.created_at.desc().nullslast())
+        )
+        rows = (await db.execute(stmt)).all()
+
+        rooms_map: dict[str, tuple[GameRoom, list[GamePlayer]]] = {}
+        for room, player in rows:
+            if room.id not in rooms_map:
+                rooms_map[room.id] = (room, [])
+            if player is not None:
+                rooms_map[room.id][1].append(player)
+
+        results = []
+        has_expired_updates = False
+        for room, players in rooms_map.values():
+            try:
+                if not players:
+                    continue
+                if room.status == "WAITING" and RoomService.is_room_expired(room):
+                    room.status = "EXPIRED"
+                    has_expired_updates = True
+                    continue
+
+                host = next((p for p in players if p.is_host or p.id == room.host_player_id), players[0])
+                host_name = (host.display_name or "Host").strip() or "Host"
+                results.append({
+                    "id": str(room.id),
+                    "game_pin": str(room.game_pin),
+                    "status": str(room.status),
+                    "host_name": host_name,
+                    "player_count": len(players),
+                    "max_players": getattr(room, "max_players", None),
+                    "turn_time_limit": room.turn_time_limit,
+                    "game_mode": str(room.game_mode or "HP").upper(),
+                    "max_turns": room.max_turns,
+                    "starting_hp": room.starting_hp if room.starting_hp is not None else 100,
+                    "is_debug": bool(room.is_debug),
+                    "created_at": room.created_at or get_utc_now(),
+                })
+                if len(results) >= limit:
+                    break
+            except Exception:
+                continue
+
+        if has_expired_updates:
+            try:
+                await db.commit()
+            except Exception:
+                pass
+
+        return results
+
+    @staticmethod
+    def is_room_expired(room: GameRoom, timeout_minutes: int | None = None) -> bool:
+        if timeout_minutes is None:
+            timeout_minutes = settings.ROOM_EXPIRY_MINUTES
+        if room.status != "WAITING":
+            return False
+        if not room.created_at:
+            # Stale waiting room with missing timestamp is treated as expired
+            return True
+        created_at = room.created_at
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        now = datetime.now(timezone.utc)
+        diff = (now - created_at).total_seconds()
+        return diff >= (timeout_minutes * 60)
+
+    @staticmethod
+    async def expire_inactive_rooms(db: AsyncSession, timeout_minutes: int | None = None) -> list[str]:
+        """
+        Check for rooms that are still WAITING after timeout_minutes (default 10) and dissolve them.
+        Kicks all players out and marks room as EXPIRED.
+        """
+        if timeout_minutes is None:
+            timeout_minutes = settings.ROOM_EXPIRY_MINUTES
+
+        stmt = select(GameRoom).where(GameRoom.status == "WAITING")
+        rooms = (await db.execute(stmt)).scalars().all()
+
+        expired_room_ids = []
+        for room in rooms:
+            if RoomService.is_room_expired(room, timeout_minutes):
+                room.status = "EXPIRED"
+                expired_room_ids.append(room.id)
+                # Broadcast ROOM_EXPIRED to any connected WebSockets
+                await manager.broadcast(room.id, WebSocketEvent(
+                    type=EventType.ROOM_EXPIRED,
+                    payload={
+                        "roomId": room.id,
+                        "gamePin": room.game_pin,
+                        "reason": f"Room dissolved after {timeout_minutes} minutes of inactivity."
+                    }
+                ).model_dump())
+
+        if expired_room_ids:
+            await db.flush()
+
+        return expired_room_ids
