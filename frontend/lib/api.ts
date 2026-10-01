@@ -172,6 +172,19 @@ export async function getRooms(): Promise<RoomSummary[]> {
     }
   }
 
+  // If backend returns 405 (pending Render deploy) or 404/500/network error,
+  // query the Next.js API route handler on Vercel: /api/rooms
+  if (!res || !res.ok) {
+    const localRes = await fetch(`/api/rooms?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json' },
+    }).catch(() => null);
+
+    if (localRes && localRes.ok) {
+      res = localRes;
+    }
+  }
+
   if (!res || !res.ok) {
     const err = res ? await res.json().catch(() => ({})) : {};
     throw new Error(err.detail || `Failed to fetch rooms (${res?.status ?? 'network'})`);
