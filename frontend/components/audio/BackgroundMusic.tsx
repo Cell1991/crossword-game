@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { Volume2, VolumeX } from 'lucide-react';
 
-const DEFAULT_VOLUME = 0.85;
+const DEFAULT_VOLUME = 1.0;
 const INTRO_FADE_MS = 600;
 const CROSSFADE_S = 6;
 const MUTE_KEY = 'wordx.music.muted';
@@ -18,6 +17,7 @@ interface BackgroundMusicProps {
  * Global background music manager.
  * Mounted in root layout to guarantee continuous, gapless playback across Home & Lobby navigations.
  * Automatically paused when entering active gameplay (/game/*).
+ * Visual controls are hidden per user request; audio defaults to full volume (1.0).
  */
 export default function BackgroundMusic({
   src = '/audio/autumn-day.mp3',
@@ -26,8 +26,6 @@ export default function BackgroundMusic({
   const controlsRef = useRef<{ play: () => void; pause: () => void }>({ play: () => {}, pause: () => {} });
   const mutedRef = useRef(false);
   const volumeRef = useRef(DEFAULT_VOLUME);
-  const [muted, setMuted] = useState(false);
-  const [volume, setVolume] = useState(DEFAULT_VOLUME);
 
   const isGamePage = Boolean(pathname?.startsWith('/game'));
 
@@ -45,8 +43,6 @@ export default function BackgroundMusic({
 
     mutedRef.current = savedMuted;
     volumeRef.current = savedVolume;
-    setMuted(savedMuted);
-    setVolume(savedVolume);
 
     const players = [new Audio(src), new Audio(src)];
     players.forEach((p) => { p.preload = 'auto'; p.volume = 0; });
@@ -82,7 +78,6 @@ export default function BackgroundMusic({
 
     const stopLoop = () => { if (raf) cancelAnimationFrame(raf); raf = null; };
     const play = () => {
-      // Don't play if currently on game screen or user muted
       if (mutedRef.current || pathname?.startsWith('/game')) return;
       const cur = players[active];
       cur.play().then(() => {
@@ -123,56 +118,6 @@ export default function BackgroundMusic({
     }
   }, [isGamePage]);
 
-  const changeVolume = (value: number) => {
-    volumeRef.current = value;
-    setVolume(value);
-    try { localStorage.setItem(VOLUME_KEY, String(value)); } catch { /* storage unavailable */ }
-    const shouldMute = value === 0;
-    if (shouldMute !== mutedRef.current) {
-      mutedRef.current = shouldMute;
-      setMuted(shouldMute);
-      try { localStorage.setItem(MUTE_KEY, shouldMute ? '1' : '0'); } catch { /* storage unavailable */ }
-      if (shouldMute) controlsRef.current.pause();
-      else if (!isGamePage) controlsRef.current.play();
-    }
-  };
-
-  const toggle = () => {
-    const next = !muted;
-    if (!next && volumeRef.current === 0) changeVolume(DEFAULT_VOLUME);
-    mutedRef.current = next;
-    setMuted(next);
-    try { localStorage.setItem(MUTE_KEY, next ? '1' : '0'); } catch { /* storage unavailable */ }
-    if (next) controlsRef.current.pause();
-    else if (!isGamePage) controlsRef.current.play();
-  };
-
-  // Don't render the music control widget in gameplay
-  if (isGamePage) return null;
-
-  return (
-    <div className="fixed bottom-4 right-4 z-20 flex items-end gap-3 transition-opacity duration-300">
-      <div className="group flex flex-col items-center gap-3">
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.01}
-          value={muted ? 0 : volume}
-          onChange={(e) => changeVolume(Number(e.target.value))}
-          aria-label="Music volume"
-          style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
-          className="h-24 w-1 cursor-pointer accent-amber-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
-        />
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={muted ? 'Unmute music' : 'Mute music'}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-slate-900/70 text-slate-300 backdrop-blur-md transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 shadow-lg cursor-pointer active:scale-95"
-        >
-          {muted ? <VolumeX size={18} /> : <Volume2 size={18} className="text-amber-300" />}
-        </button>
-      </div>
-    </div>
-  );
+  // Visual controls hidden per request; audio continues playing in background at full volume
+  return null;
 }
