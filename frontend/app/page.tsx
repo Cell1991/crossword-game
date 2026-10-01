@@ -197,7 +197,7 @@ export default function HomePage() {
       <ParticleField className="pointer-events-none fixed inset-0 h-full w-full" />
       <FullscreenButton className="fixed top-3.5 right-3.5 z-40" />
 
-      <div className={`relative z-10 my-auto flex w-full flex-col items-center gap-6 sm:gap-8 transition-all duration-300 ${mode === 'join' ? 'max-w-[28rem] sm:max-w-[32rem]' : 'max-w-[28rem]'}`}>
+      <div className="relative z-10 my-auto flex w-full max-w-[28rem] flex-col items-center gap-6 sm:gap-8">
         {/* Logo / Title */}
         <div className="relative text-center flex flex-col items-center">
           {/* 3D Cube Logo with layered glowing aura */}
@@ -523,11 +523,11 @@ export default function HomePage() {
                   type="button"
                   onClick={() => fetchRooms(true)}
                   disabled={loadingRooms}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50 cursor-pointer"
-                  title="Refresh active rooms"
+                  aria-label="Refresh"
+                  title="Refresh rooms"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50 cursor-pointer"
                 >
-                  <RefreshCw className={`h-3.5 w-3.5 ${loadingRooms ? 'animate-spin text-indigo-400' : ''}`} />
-                  <span className="hidden sm:inline">Refresh</span>
+                  <RefreshCw className={`h-4 w-4 ${loadingRooms ? 'animate-spin text-indigo-400' : ''}`} />
                 </button>
               </div>
 
@@ -545,35 +545,12 @@ export default function HomePage() {
                 />
               </div>
 
-              {/* Active Rooms */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-300">Active Rooms</span>
-                    {rooms.length > 0 && (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                        {rooms.filter(r => r.status === 'WAITING').length} Open
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-slate-400">Click a room to join</span>
-                </div>
-
-                <div className="max-h-[175px] sm:max-h-[200px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                  {loadingRooms && rooms.length === 0 ? (
-                    <div className="space-y-2 py-1">
-                      {[1, 2].map(i => (
-                        <div key={i} className="h-14 rounded-xl border border-white/5 bg-slate-800/30 animate-pulse" />
-                      ))}
-                    </div>
-                  ) : rooms.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-5 px-3 rounded-xl border border-dashed border-white/10 bg-slate-800/20 text-center">
-                      <Users className="h-6 w-6 text-slate-500 mb-1.5 opacity-60" />
-                      <p className="text-xs font-semibold text-slate-300">No active rooms right now</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Create a room or enter a PIN below</p>
-                    </div>
-                  ) : (
-                    rooms.map(room => {
+              {/* Open Rooms (Clean list if any open rooms exist) */}
+              {rooms.length > 0 && (
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-300">Open Rooms ({rooms.length})</label>
+                  <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+                    {rooms.map(room => {
                       const isFull = room.player_count >= room.max_players;
                       const isWaiting = room.status === 'WAITING';
                       const isSelected = pin === room.game_pin;
@@ -581,87 +558,44 @@ export default function HomePage() {
                         <div
                           key={room.id}
                           onClick={() => handleSelectRoom(room)}
-                          className={`group relative flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer ${
+                          className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
                             isSelected
-                              ? 'border-indigo-400/80 bg-indigo-500/15 shadow-[0_0_15px_rgba(99,102,241,0.15)]'
-                              : 'border-white/10 bg-slate-800/40 hover:border-white/20 hover:bg-slate-800/70'
+                              ? 'border-indigo-400/80 bg-indigo-500/15'
+                              : 'border-white/10 bg-slate-800/40 hover:bg-slate-800/70 hover:border-white/20'
                           }`}
                         >
-                          {/* Host & Meta */}
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/25 to-purple-500/25 border border-indigo-400/30 text-indigo-200 font-bold text-xs sm:text-sm shadow-inner">
-                              {room.host_name ? room.host_name.charAt(0).toUpperCase() : 'H'}
-                            </div>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-xs sm:text-sm text-white truncate max-w-[100px] sm:max-w-[140px]">
-                                  {room.host_name}
-                                </span>
-                                <span className="font-mono text-[10px] font-semibold text-indigo-300 bg-indigo-500/15 border border-indigo-500/25 px-1.5 py-0.2 rounded tracking-wide">
-                                  #{room.game_pin}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5 mt-0.5 text-[10px] sm:text-[11px] text-slate-400">
-                                <span>
-                                  {room.game_mode === 'HP' ? `${room.starting_hp ?? 100} HP` : `${room.max_turns ?? 7} Turns`}
-                                </span>
-                                <span className="text-slate-600">•</span>
-                                <span>
-                                  {room.turn_time_limit ? `${room.turn_time_limit}s` : 'No limit'}
-                                </span>
-                              </div>
-                            </div>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="font-semibold text-xs sm:text-sm text-white truncate max-w-[120px]">
+                              {room.host_name}
+                            </span>
+                            <span className="font-mono text-[10px] font-semibold text-indigo-300 bg-indigo-500/15 border border-indigo-500/25 px-1.5 py-0.5 rounded">
+                              #{room.game_pin}
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              {room.game_mode === 'HP' ? `${room.starting_hp ?? 100} HP` : `${room.max_turns ?? 7}T`}
+                            </span>
                           </div>
-
-                          {/* Players count & Button */}
-                          <div className="flex items-center gap-2 shrink-0">
-                            <div className="text-right">
-                              <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-300">
-                                <Users className="h-3 w-3 text-slate-400" />
-                                {room.player_count}/{room.max_players}
-                              </span>
-                              <span className={`block text-[9px] sm:text-[10px] font-medium ${
-                                !isWaiting ? 'text-amber-400' : isFull ? 'text-slate-400' : 'text-emerald-400'
-                              }`}>
-                                {!isWaiting ? 'In Game' : isFull ? 'Full' : 'Open'}
-                              </span>
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleQuickAction(room);
-                              }}
-                              disabled={loading}
-                              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-md ${
-                                !isWaiting || isFull
-                                  ? 'border border-sky-400/40 bg-sky-500/20 text-sky-200 hover:bg-sky-500/30'
-                                  : 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-indigo-500/25'
-                              }`}
-                            >
-                              {!isWaiting || isFull ? 'Watch' : 'Join'}
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleQuickAction(room);
+                            }}
+                            disabled={loading}
+                            className="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-500 hover:bg-indigo-400 text-white transition-all cursor-pointer active:scale-95"
+                          >
+                            {!isWaiting || isFull ? 'Watch' : 'Join'}
+                          </button>
                         </div>
                       );
-                    })
-                  )}
+                    })}
+                  </div>
                 </div>
-              </div>
-
-              {/* Divider */}
-              <div className="relative my-0.5 flex items-center justify-center">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/[0.08]" />
-                </div>
-                <span className="relative bg-slate-900/95 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                  Or Enter PIN Manually
-                </span>
-              </div>
+              )}
 
               {/* Game PIN */}
               <div>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-300">Game PIN</label>
                 <input
                   type="text"
                   value={pin}
