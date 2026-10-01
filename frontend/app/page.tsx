@@ -27,7 +27,8 @@ export default function HomePage() {
   const [customTurnCount, setCustomTurnCount] = useState('28');
   const [hpOption, setHpOption] = useState('100');
   const [customHp, setCustomHp] = useState('100');
-  const [maxPlayers, setMaxPlayers] = useState<number>(4);
+  const [playerLimitOption, setPlayerLimitOption] = useState<'4' | 'unlimited' | 'custom'>('4');
+  const [customMaxPlayers, setCustomMaxPlayers] = useState('4');
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [roomsError, setRoomsError] = useState<string | null>(null);
@@ -83,6 +84,17 @@ export default function HomePage() {
       setError('Starting HP must be between 10 and 1000');
       return;
     }
+    const parsedCustomPlayers = Number(customMaxPlayers);
+    if (playerLimitOption === 'custom' && (!Number.isInteger(parsedCustomPlayers) || parsedCustomPlayers < 2 || parsedCustomPlayers > 50)) {
+      setError('Player limit must be between 2 and 50');
+      return;
+    }
+    const maxPlayers = playerLimitOption === 'unlimited'
+      ? null
+      : playerLimitOption === 'custom'
+        ? parsedCustomPlayers
+        : 4;
+
     setLoading(true);
     setError('');
     try {
@@ -106,7 +118,7 @@ export default function HomePage() {
         gameMode: res.game_mode,
         maxTurns: res.max_turns,
         startingHp: res.starting_hp,
-        maxPlayers: res.max_players ?? maxPlayers,
+        maxPlayers: res.max_players !== undefined ? res.max_players : maxPlayers,
         createdAt: res.created_at,
       });
       router.push(`/lobby/${res.game_pin}`);
@@ -537,23 +549,62 @@ export default function HomePage() {
               <fieldset>
                 <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Player Limit</legend>
                 <div className="grid grid-cols-3 gap-2">
-                  {[2, 3, 4].map((limit) => (
+                  {([
+                    ['4', '4 Players'],
+                    ['unlimited', 'Unlimited'],
+                    ['custom', 'Custom'],
+                  ] as const).map(([val, label]) => (
                     <button
-                      key={limit}
+                      key={val}
                       type="button"
-                      aria-pressed={maxPlayers === limit}
-                      onClick={() => setMaxPlayers(limit)}
+                      aria-pressed={playerLimitOption === val}
+                      onClick={() => setPlayerLimitOption(val)}
                       className={`rounded-xl border py-2 sm:py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
-                        maxPlayers === limit
+                        playerLimitOption === val
                           ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
                           : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
                       }`}
                     >
-                      {limit} Players
+                      {label}
                     </button>
                   ))}
                 </div>
               </fieldset>
+
+              {/* Custom Player Limit Stepper */}
+              {playerLimitOption === 'custom' && (
+                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setCustomMaxPlayers(prev => String(Math.max(2, (Number(prev) || 4) - 1)))}
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    aria-label="Decrease player limit"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
+                    <input
+                      type="number"
+                      min={2}
+                      max={50}
+                      value={customMaxPlayers}
+                      onChange={event => setCustomMaxPlayers(event.target.value)}
+                      aria-label="Custom player limit"
+                      placeholder="4"
+                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Players</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomMaxPlayers(prev => String(Math.min(50, (Number(prev) || 4) + 1)))}
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    aria-label="Increase player limit"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
 
               {/* Your Name */}
               <div>
@@ -670,7 +721,7 @@ export default function HomePage() {
                 ) : rooms.length > 0 ? (
                   <div className="max-h-52 overflow-y-auto grid grid-cols-2 gap-2 pr-1 custom-scrollbar">
                     {rooms.map(room => {
-                      const isFull = room.player_count >= room.max_players;
+                      const isFull = Boolean(room.max_players && room.player_count >= room.max_players);
                       const isWaiting = room.status === 'WAITING';
                       const isSelected = pin === room.game_pin;
                       return (
@@ -698,7 +749,7 @@ export default function HomePage() {
                               </span>
                               <span className="text-slate-500">•</span>
                               <span className={isFull ? 'text-amber-400 font-medium' : 'text-emerald-400 font-medium'}>
-                                {room.player_count}/{room.max_players || 4}
+                                {room.player_count}{room.max_players ? `/${room.max_players}` : ' Players'}
                               </span>
                             </div>
                           </div>

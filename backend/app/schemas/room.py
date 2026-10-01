@@ -12,7 +12,7 @@ class CreateRoomRequest(BaseModel):
     game_mode: Literal["HP", "TURNS"] = "HP"
     max_turns: Optional[int] = Field(None, ge=1, le=500)
     starting_hp: Optional[int] = Field(None, ge=10, le=1000)
-    max_players: int = Field(4, ge=2, le=4, description="Maximum players allowed (2-4)")
+    max_players: Optional[int] = Field(4, ge=2, le=100, description="Maximum players allowed (None for unlimited)")
 
     @model_validator(mode="after")
     def validate_game_mode_settings(self):
@@ -35,7 +35,7 @@ class CreateRoomResponse(BaseModel):
     game_mode: str = "HP"
     max_turns: Optional[int] = None
     starting_hp: Optional[int] = 100
-    max_players: int = 4
+    max_players: Optional[int] = 4
     created_at: Optional[datetime] = None
 
 class JoinRoomRequest(BaseModel):
@@ -54,7 +54,7 @@ class JoinRoomResponse(BaseModel):
     game_mode: str = "HP"
     max_turns: Optional[int] = None
     starting_hp: Optional[int] = 100
-    max_players: int = 4
+    max_players: Optional[int] = 4
     created_at: Optional[datetime] = None
 
 class RematchResponse(JoinRoomResponse):
@@ -75,7 +75,7 @@ class RoomDetailResponse(BaseModel):
     max_turns: Optional[int] = None
     starting_hp: Optional[int] = 100
     is_debug: bool = False
-    max_players: int = 4
+    max_players: Optional[int] = 4
 
 class RoomSummaryResponse(BaseModel):
     id: str
@@ -83,7 +83,7 @@ class RoomSummaryResponse(BaseModel):
     status: str = "WAITING"
     host_name: str = "Host"
     player_count: int = 1
-    max_players: int = 4
+    max_players: Optional[int] = 4
     turn_time_limit: Optional[int] = None
     game_mode: str = "HP"
     max_turns: Optional[int] = None

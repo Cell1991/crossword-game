@@ -64,7 +64,7 @@ export interface StoredSession {
   gameMode?: GameMode;
   maxTurns?: number | null;
   startingHp?: number | null;
-  maxPlayers?: number;
+  maxPlayers?: number | null;
   createdAt?: string;
 }
 
@@ -114,7 +114,7 @@ export async function createRoom(
   maxTurns: number | null = null,
   isDebug = false,
   startingHp: number | null = null,
-  maxPlayers: number = 4,
+  maxPlayers: number | null = 4,
 ): Promise<CreateRoomResponse> {
   const res = await fetch(`${getApiBase()}/rooms`, {
     method: 'POST',

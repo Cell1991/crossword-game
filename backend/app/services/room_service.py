@@ -23,7 +23,7 @@ class RoomService:
         game_mode: str = "HP",
         max_turns: int | None = None,
         starting_hp: int | None = None,
-        max_players: int = 4,
+        max_players: int | None = 4,
     ) -> tuple[GameRoom, Game, GamePlayer]:
         pin = generate_game_pin()
         room_id = str(uuid.uuid4())
@@ -103,9 +103,9 @@ class RoomService:
 
         # Check existing players
         existing_players = [row[1] for row in rows if row[1] is not None]
-        room_max_players = getattr(room, "max_players", None) or settings.MAX_PLAYERS
+        room_max_players = getattr(room, "max_players", None)
 
-        if len(existing_players) >= room_max_players:
+        if room_max_players is not None and len(existing_players) >= room_max_players:
             spectator_count = manager.spectator_count(room.id)
             if spectator_count < settings.MAX_SPECTATORS:
                 raise HTTPException(
@@ -318,7 +318,7 @@ class RoomService:
                     "status": str(room.status),
                     "host_name": host_name,
                     "player_count": len(players),
-                    "max_players": getattr(room, "max_players", None) or settings.MAX_PLAYERS,
+                    "max_players": getattr(room, "max_players", None),
                     "turn_time_limit": room.turn_time_limit,
                     "game_mode": str(room.game_mode or "HP").upper(),
                     "max_turns": room.max_turns,

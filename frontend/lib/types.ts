@@ -184,7 +184,7 @@ export interface CreateRoomResponse {
   game_mode: GameMode;
   max_turns: number | null;
   starting_hp?: number | null;
-  max_players?: number;
+  max_players?: number | null;
   created_at?: string;
 }
 
@@ -200,7 +200,7 @@ export interface JoinRoomResponse {
   game_mode?: GameMode;
   max_turns?: number | null;
   starting_hp?: number | null;
-  max_players?: number;
+  max_players?: number | null;
   created_at?: string;
 }
 
@@ -222,7 +222,7 @@ export interface RoomDetailResponse {
   game_mode: GameMode;
   max_turns: number | null;
   starting_hp?: number | null;
-  max_players?: number;
+  max_players?: number | null;
   is_debug: boolean;
 }
 
@@ -232,7 +232,7 @@ export interface RoomSummary {
   status: string;
   host_name: string;
   player_count: number;
-  max_players: number;
+  max_players: number | null;
   turn_time_limit: TurnTimeLimit;
   game_mode: GameMode;
   max_turns: number | null;
