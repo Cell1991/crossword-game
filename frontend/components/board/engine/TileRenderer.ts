@@ -9,6 +9,8 @@ export interface TileRenderContext {
   lowPower: boolean;
   tilePalette: TilePalette;
   temporaryTilesValid: boolean | null;
+  animTime?: number;
+  tileAnimations?: Map<string, number>;
 }
 
 function drawRoundedRect(
@@ -195,15 +197,40 @@ export class TileRenderer {
     isRemote = false,
     isFrozen = false
   ): void {
-    const { ctx, offset, cellSize, lowPower, tilePalette, temporaryTilesValid } = context;
+    const { ctx, offset, cellSize, lowPower, tilePalette, temporaryTilesValid, animTime, tileAnimations } = context;
     const x = offset.x + col * cellSize;
     const y = offset.y + row * cellSize;
     const pad = Math.max(1, cellSize * 0.06);
     const tileW = cellSize - pad * 2;
     const radius = Math.max(2, cellSize * 0.12);
 
+    // Animation physics (spring drop & bounce when placed)
+    const animStart = tileAnimations?.get(`${row}_${col}`);
+    let scale = 1.0;
+    let bounceY = 0;
+    let animProgress = 1.0;
+    if (animStart && animTime) {
+      const elapsed = animTime - animStart;
+      if (elapsed >= 0 && elapsed < 320) {
+        animProgress = elapsed / 320;
+        // Elastic spring formula: starts elevated and slightly larger, lands with a micro-bounce
+        scale = 1.0 + 0.26 * Math.exp(-animProgress * 5) * Math.cos(animProgress * 10);
+        bounceY = -Math.max(0, 1 - animProgress) * cellSize * 0.16;
+      }
+    }
+
     const isGolden = !isRemote && !isFrozen && (!isTemporary || temporaryTilesValid === true);
     const isCorrectPlacement = !isRemote && isTemporary && temporaryTilesValid === true;
+
+    const cx = x + cellSize / 2;
+    const cy = y + cellSize / 2;
+    const hasTransform = scale !== 1.0 || bounceY !== 0;
+    if (hasTransform) {
+      ctx.save();
+      ctx.translate(cx, cy + bounceY);
+      ctx.scale(scale, scale);
+      ctx.translate(-cx, -cy);
+    }
 
     // 1. Shadow layer & Outer Aura
     if (isFrozen) {
@@ -498,6 +525,39 @@ export class TileRenderer {
         ctx.fillText(`${effectiveValue}`, numX, numY);
         ctx.restore();
       }
+    }
+
+    // Shimmer wave gleam across valid placements
+    if (isCorrectPlacement && animTime && !lowPower) {
+      const phase = (animTime / 1400) % 1;
+      const gleamX = x + pad + (tileW * 2.2) * phase - tileW * 0.6;
+      const gleamGrad = ctx.createLinearGradient(gleamX - 18, y + pad, gleamX + 18, y + pad + tileW);
+      gleamGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+      gleamGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.42)');
+      gleamGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.save();
+      ctx.beginPath();
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.clip();
+      ctx.fillStyle = gleamGrad;
+      ctx.fillRect(x + pad, y + pad, tileW, tileW);
+      ctx.restore();
+    }
+
+    if (hasTransform) {
+      ctx.restore();
+    }
+
+    // Landing drop shockwave on the board
+    if (animStart && animProgress < 1.0 && !lowPower) {
+      ctx.save();
+      ctx.beginPath();
+      const waveRadius = (tileW * 0.48) + (cellSize * 0.38) * animProgress;
+      ctx.arc(cx, cy, waveRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(251, 191, 36, ${(1 - animProgress) * 0.55})`;
+      ctx.lineWidth = Math.max(1.2, cellSize * 0.04 * (1 - animProgress));
+      ctx.stroke();
+      ctx.restore();
     }
   }
 

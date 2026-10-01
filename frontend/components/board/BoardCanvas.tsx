@@ -94,6 +94,9 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   /** Fingers on the board. Two of them pinch: zoom by how far they spread, pan by how their midpoint moves. */
   const touchPointsRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; x: number; y: number } | null>(null);
+  const tilePlacementTimesRef = useRef<Map<string, number>>(new Map());
+  const prevTemporaryTilesRef = useRef<PlacedTile[]>([]);
+  const animFrameRef = useRef<number | null>(null);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -112,8 +115,66 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       lowPower,
       tilePalette: window.innerWidth >= 1024 ? TILE_THEME.desktop : TILE_THEME.mobile,
       model: modelRef.current,
+      animTime: performance.now(),
+      tileAnimations: tilePlacementTimesRef.current,
     });
   }, [camera, lowPower]);
+
+  // Track tile placement timestamps and drive active spring & gleam animations
+  useEffect(() => {
+    const prevMap = new Map(prevTemporaryTilesRef.current.map(t => [t.tile_id, t]));
+    const now = performance.now();
+    let hasNew = false;
+    for (const t of temporaryTiles) {
+      const prev = prevMap.get(t.tile_id);
+      if (!prev || prev.row !== t.row || prev.col !== t.col) {
+        tilePlacementTimesRef.current.set(`${t.row}_${t.col}`, now);
+        tilePlacementTimesRef.current.set(t.tile_id, now);
+        hasNew = true;
+      }
+    }
+    // Clean up placements that were unstaged/recalled
+    const currentKeys = new Set(temporaryTiles.map(t => `${t.row}_${t.col}`));
+    for (const key of Array.from(tilePlacementTimesRef.current.keys())) {
+      if (key.includes('_') && !currentKeys.has(key)) {
+        tilePlacementTimesRef.current.delete(key);
+      }
+    }
+    prevTemporaryTilesRef.current = temporaryTiles;
+
+    const startAnimLoop = () => {
+      if (animFrameRef.current) return;
+      const step = (time: number) => {
+        draw();
+        let stillAnimating = false;
+        for (const ts of tilePlacementTimesRef.current.values()) {
+          if (time - ts < 350) {
+            stillAnimating = true;
+            break;
+          }
+        }
+        if (stillAnimating || (temporaryTilesValid === true && temporaryTiles.length > 0)) {
+          animFrameRef.current = requestAnimationFrame(step);
+        } else {
+          animFrameRef.current = null;
+        }
+      };
+      animFrameRef.current = requestAnimationFrame(step);
+    };
+
+    if (hasNew || (temporaryTilesValid === true && temporaryTiles.length > 0)) {
+      startAnimLoop();
+    }
+  }, [temporaryTiles, temporaryTilesValid, draw]);
+
+  useEffect(() => {
+    return () => {
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+        animFrameRef.current = null;
+      }
+    };
+  }, []);
 
   // New board content: remember it for the imperative draws and draw it before the browser paints.
   useLayoutEffect(() => {

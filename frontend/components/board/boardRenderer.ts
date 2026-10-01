@@ -31,6 +31,8 @@ export interface BoardScene {
   lowPower: boolean;
   tilePalette: TilePalette;
   model?: BoardModel;
+  animTime?: number;
+  tileAnimations?: Map<string, number>;
 }
 
 const sharedModel = new BoardModel();

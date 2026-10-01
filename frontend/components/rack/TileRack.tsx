@@ -5,6 +5,7 @@ import { Tile } from '@/lib/types';
 import { isBlankLetter } from '@/lib/tiles';
 import { moveFixedElement } from '@/lib/dom';
 import { RotateCcw, Check, SkipForward, Shuffle, ArrowLeftRight, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { FloatingTile } from './FloatingTile';
 
 interface TileRackProps {
@@ -212,15 +213,29 @@ export const TileRack = memo(function TileRack({
         <div className="relative order-1 flex w-full max-w-full shrink-0 flex-col items-center lg:order-2 lg:w-auto">
 
           {/* Mobile Score Badge above Tray */}
-          {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
-            <div className="lg:hidden w-full flex justify-center mb-1.5 pointer-events-none">
-              <span className={`font-extrabold tracking-widest text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${
-                placementValid === false ? 'text-rose-400' : 'text-emerald-400 animate-pulse'
-              }`}>
-                {placementValid === false ? 'INVALID' : `+${estimatedScore} PTS`}
-              </span>
-            </div>
-          )}
+          <AnimatePresence>
+            {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
+              <motion.div
+                key="mobile-score-badge"
+                initial={{ scale: 0.7, opacity: 0, y: 4 }}
+                animate={{
+                  scale: 1,
+                  opacity: 1,
+                  y: 0,
+                  x: placementValid === false ? [-4, 4, -3, 3, -1, 1, 0] : 0,
+                }}
+                exit={{ scale: 0.7, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 22 }}
+                className="lg:hidden w-full flex justify-center mb-1.5 pointer-events-none"
+              >
+                <span className={`font-extrabold tracking-widest text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${
+                  placementValid === false ? 'text-rose-400' : 'text-emerald-400'
+                }`}>
+                  {placementValid === false ? 'INVALID' : `+${estimatedScore} PTS`}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Tray Stand (Blue Theme) */}
           <div className="w-full overflow-x-auto overflow-y-hidden pt-3.5 -mt-3.5 pb-1.5 -mb-1.5 px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible lg:pt-0 lg:mt-0 lg:pb-0 lg:mb-0">
@@ -276,8 +291,8 @@ export const TileRack = memo(function TileRack({
                   <span className="absolute inset-[7px] rounded-md border border-dashed border-sky-400/20" />
                 </div>
 
-                {/* Tile Button */}
-                <button
+                {/* Tile Button with spring physics */}
+                <motion.button
                   key={tile.id}
                   data-rack-slot={slotIndex}
                   data-rack-tile-id={tile.id}
@@ -287,6 +302,9 @@ export const TileRack = memo(function TileRack({
                   onPointerUp={handlePointerUp}
                   disabled={!canStageMove}
                   aria-pressed={isExchanging ? isMarkedForExchange : undefined}
+                  whileHover={canStageMove && !isDragging ? { scale: 1.06, y: -4 } : undefined}
+                  whileTap={canStageMove ? { scale: 0.94 } : undefined}
+                  transition={{ type: 'spring', stiffness: 450, damping: 25 }}
                   className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-100/80 font-sans transition-all select-none touch-none overflow-hidden sm:rounded-xl ${
                     isDragging
                       ? 'z-20 scale-105 -translate-y-2.5 opacity-40 shadow-2xl cursor-grabbing'
@@ -297,7 +315,7 @@ export const TileRack = memo(function TileRack({
                       : isSelected
                       ? '-translate-y-2.5 border-2 border-cyan-300 shadow-[0_0_18px_rgba(59,130,246,0.55)] ring-4 ring-cyan-400/60'
                       : canStageMove
-                      ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_6px_12px_rgba(74,34,8,0.48),0_2px_4px_rgba(34,24,20,0.35)] hover:brightness-110 hover:-translate-y-1 active:translate-y-0.5 cursor-pointer'
+                      ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_6px_12px_rgba(74,34,8,0.48),0_2px_4px_rgba(34,24,20,0.35)] hover:brightness-110 cursor-pointer'
                       : 'opacity-65 cursor-not-allowed shadow-md'
                   }`}
                 >
@@ -321,7 +339,7 @@ export const TileRack = memo(function TileRack({
                   <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[10px] font-maple sm:bottom-1 sm:right-1.5 sm:text-[13px] lg:text-[18px] leading-none">
                     {tile.value}
                   </span>
-                </button>
+                </motion.button>
               </div>
             );
           })}
@@ -345,14 +363,17 @@ export const TileRack = memo(function TileRack({
           <div className="flex w-auto justify-center items-center gap-1 p-0 lg:p-2 lg:bg-slate-900/85 lg:backdrop-blur-xl lg:border lg:border-slate-700/60 lg:rounded-2xl lg:shadow-xl lg:shadow-black/60 lg:ring-1 lg:ring-cyan-500/15 min-h-[44px] sm:min-h-[58px]">
             {isExchanging ? (
               <div className="flex items-center gap-2 px-1">
-                <button
+                <motion.button
                   onClick={onCancelExchange}
                   disabled={isSubmitting}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all bg-rose-950/80 text-rose-300 hover:bg-rose-900 border border-rose-700/60 cursor-pointer shadow-md shadow-rose-950/50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.94 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-colors bg-rose-950/80 text-rose-300 hover:bg-rose-900 border border-rose-700/60 cursor-pointer shadow-md shadow-rose-950/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X className="w-4 h-4 text-rose-400" />
                   <span className="hidden xs:inline sm:inline">Cancel</span>
-                </button>
+                </motion.button>
                 <span className="text-xs text-slate-400 max-w-[150px] leading-tight">
                   {exchangeCount > tileBagCount
                     ? `Only ${tileBagCount} left`
@@ -362,41 +383,50 @@ export const TileRack = memo(function TileRack({
             ) : (
               <>
                 {/* Cancel Move */}
-                <button
+                <motion.button
                   onClick={onCancelMove}
                   disabled={!hasTemporaryTiles || isSubmitting}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
+                  whileHover={hasTemporaryTiles ? { scale: 1.05 } : undefined}
+                  whileTap={hasTemporaryTiles ? { scale: 0.94 } : undefined}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-colors ${
                     hasTemporaryTiles
-                      ? 'bg-rose-950/70 text-rose-300 hover:bg-rose-900/90 border border-rose-600/60 cursor-pointer shadow-md shadow-rose-950/40 active:scale-95'
+                      ? 'bg-rose-950/70 text-rose-300 hover:bg-rose-900/90 border border-rose-600/60 cursor-pointer shadow-md shadow-rose-950/40'
                       : 'bg-slate-800/40 text-slate-600 border border-slate-800/60 cursor-not-allowed'
                   }`}
                   title="Recall placed tiles to rack"
                 >
                   <RotateCcw className={`w-4 h-4 ${hasTemporaryTiles ? 'text-rose-400' : 'text-slate-600'}`} />
                   <span className="hidden xs:inline sm:inline">Cancel</span>
-                </button>
+                </motion.button>
 
                 {/* Shuffle */}
-                <button
+                <motion.button
                   onClick={onShuffleRack}
                   disabled={tileCount < 2 || isSubmitting}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
+                  whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.05 } : undefined}
+                  whileTap={tileCount >= 2 && !isSubmitting ? { scale: 0.94 } : undefined}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-colors cursor-pointer"
                   title="Shuffle rack tiles"
                 >
                   <Shuffle className="w-4 h-4 text-amber-400" />
                   <span className="hidden xs:inline sm:inline">Shuffle</span>
-                </button>
+                </motion.button>
 
                 {/* Exchange */}
-                <button
+                <motion.button
                   onClick={onStartExchange}
                   disabled={!canStartExchange}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-all cursor-pointer"
+                  whileHover={canStartExchange ? { scale: 1.05 } : undefined}
+                  whileTap={canStartExchange ? { scale: 0.94 } : undefined}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-colors cursor-pointer"
                   title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
                 >
                   <ArrowLeftRight className="w-4 h-4 text-sky-400" />
                   <span className="hidden xs:inline sm:inline">Swap</span>
-                </button>
+                </motion.button>
               </>
             )}
           </div>
@@ -414,46 +444,63 @@ export const TileRack = memo(function TileRack({
                 {isExchanging ? 'Confirm Action' : 'Turn Actions'}
               </span>
             </div>
-            {/* Points / Validity preview badge & Bingo indicator */}
-            {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
-              <div className="flex items-center">
-                {placementValid === false ? (
-                  <span className="text-[11px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-lg border bg-gradient-to-r from-rose-950/90 to-rose-900/80 border-rose-500/70 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] animate-pulse">
-                    INVALID
-                  </span>
-                ) : isBingoBonus ? (
-                  <div className="flex items-center rounded-lg border border-amber-500/70 bg-slate-950/90 shadow-[0_0_16px_rgba(245,158,11,0.35)] overflow-hidden text-[11px] font-black tracking-wider uppercase">
-                    <span className="flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-amber-500/30 to-yellow-500/20 text-amber-300 border-r border-amber-500/50">
-                      <span>🎉</span>
-                      <span>BINGO</span>
+            {/* Points / Validity preview badge & Bingo indicator with smooth pop and shake animations */}
+            <AnimatePresence mode="wait">
+              {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
+                <motion.div
+                  key={placementValid === false ? 'invalid' : isBingoBonus ? 'bingo' : 'valid'}
+                  initial={{ scale: 0.7, opacity: 0, y: 3 }}
+                  animate={{
+                    scale: 1,
+                    opacity: 1,
+                    y: 0,
+                    x: placementValid === false ? [-4, 4, -3, 3, -1, 1, 0] : 0,
+                  }}
+                  exit={{ scale: 0.7, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 450, damping: 24 }}
+                  className="flex items-center"
+                >
+                  {placementValid === false ? (
+                    <span className="text-[11px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-lg border bg-gradient-to-r from-rose-950/90 to-rose-900/80 border-rose-500/70 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                      INVALID
                     </span>
-                    <span className="px-2.5 py-0.5 bg-emerald-950/70 text-emerald-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  ) : isBingoBonus ? (
+                    <div className="flex items-center rounded-lg border border-amber-500/70 bg-slate-950/90 shadow-[0_0_16px_rgba(245,158,11,0.35)] overflow-hidden text-[11px] font-black tracking-wider uppercase">
+                      <span className="flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-amber-500/30 to-yellow-500/20 text-amber-300 border-r border-amber-500/50">
+                        <span>🎉</span>
+                        <span>BINGO</span>
+                      </span>
+                      <span className="px-2.5 py-0.5 bg-emerald-950/70 text-emerald-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                        +{estimatedScore} PTS
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-[11px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-lg border bg-gradient-to-r from-emerald-950/90 to-emerald-900/80 border-emerald-500/70 text-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                       +{estimatedScore} PTS
                     </span>
-                  </div>
-                ) : (
-                  <span className="text-[11px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-lg border bg-gradient-to-r from-emerald-950/90 to-emerald-900/80 border-emerald-500/70 text-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                    +{estimatedScore} PTS
-                  </span>
-                )}
-              </div>
-            )}
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="relative flex w-auto flex-wrap items-center justify-center gap-1 p-0 lg:p-2 lg:bg-slate-900/85 lg:backdrop-blur-xl lg:border lg:border-slate-700/60 lg:rounded-2xl lg:shadow-xl lg:shadow-black/60 lg:ring-1 lg:ring-emerald-500/15 min-h-[44px] sm:min-h-[58px]">
             {isExchanging ? (
-              <button
+              <motion.button
                 onClick={onConfirmExchange}
                 disabled={!canConfirmExchange}
-                className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+                whileHover={canConfirmExchange ? { scale: 1.05 } : undefined}
+                whileTap={canConfirmExchange ? { scale: 0.94 } : undefined}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-colors ${
                   canConfirmExchange
-                    ? 'bg-sky-600 text-white hover:bg-sky-500 active:scale-95 shadow-[0_0_20px_rgba(14,165,233,0.5)] cursor-pointer border-2 border-sky-400/50 ring-2 ring-sky-400/30'
+                    ? 'bg-sky-600 text-white hover:bg-sky-500 shadow-[0_0_20px_rgba(14,165,233,0.5)] cursor-pointer border-2 border-sky-400/50 ring-2 ring-sky-400/30'
                     : 'bg-slate-800/40 text-slate-600 border border-slate-800/60 cursor-not-allowed'
                 }`}
               >
                 <ArrowLeftRight className="w-4 h-4" />
                 <span>{isSubmitting ? 'Exchanging...' : `Exchange ${exchangeCount} Tile${exchangeCount === 1 ? '' : 's'}`}</span>
-              </button>
+              </motion.button>
             ) : (
               <>
                 {/* Pass Button — with inline confirm step */}
@@ -462,52 +509,73 @@ export const TileRack = memo(function TileRack({
                     <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap tracking-wide">
                       Skip?
                     </span>
-                    <button
+                    <motion.button
                       onClick={() => { setPassConfirming(false); onPassTurn(); }}
                       disabled={isSubmitting}
-                      className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-bold text-xs sm:text-sm transition-all bg-slate-700 hover:bg-slate-600 text-white border border-slate-500/70 cursor-pointer shadow-sm active:scale-95"
+                      whileHover={{ scale: 1.06 }}
+                      whileTap={{ scale: 0.93 }}
+                      transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-bold text-xs sm:text-sm transition-colors bg-slate-700 hover:bg-slate-600 text-white border border-slate-500/70 cursor-pointer shadow-sm"
                       title="Confirm pass"
                     >
                       <Check className="w-4 h-4 text-sky-400" />
                       <span>Yes</span>
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                       onClick={() => setPassConfirming(false)}
-                      className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-all bg-slate-800/60 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 border border-slate-700/50 cursor-pointer active:scale-95"
+                      whileHover={{ scale: 1.06 }}
+                      whileTap={{ scale: 0.93 }}
+                      transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-colors bg-slate-800/60 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 border border-slate-700/50 cursor-pointer"
                       title="Cancel"
                     >
                       <X className="w-4 h-4" />
-                    </button>
+                    </motion.button>
                   </>
                 ) : (
-                  <button
+                  <motion.button
                     onClick={() => setPassConfirming(true)}
                     disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
-                    className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-all ${
+                    whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.05 } : undefined}
+                    whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.94 } : undefined}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-colors ${
                       isMyTurn && !hasTemporaryTiles
-                        ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/60 cursor-pointer shadow-sm active:scale-95'
+                        ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/60 cursor-pointer shadow-sm'
                         : 'bg-slate-800/30 text-slate-600 border border-slate-800/60 cursor-not-allowed'
                     }`}
                     title="Pass your turn"
                   >
                     <SkipForward className="w-4 h-4" />
                     <span className="hidden xs:inline sm:inline">Pass</span>
-                  </button>
+                  </motion.button>
                 )}
 
-                {/* Confirm Move: Largest, prominent, glowing button */}
-                <button
+                {/* Confirm Move: Largest, prominent, breathing glowing button */}
+                <motion.button
                   onClick={onConfirmMove}
                   disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
-                  className={`flex items-center gap-1.5 px-3 sm:px-6 py-1.5 sm:py-2.5 rounded-xl font-bold text-xs sm:text-base transition-all ${
+                  whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.05 } : undefined}
+                  whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.95 } : undefined}
+                  animate={
                     isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.65)] border-2 border-emerald-300 ring-2 ring-emerald-400/40 animate-pulse hover:brightness-110 active:scale-95 cursor-pointer'
+                      ? { scale: [1, 1.03, 1] }
+                      : { scale: 1 }
+                  }
+                  transition={
+                    isMyTurn && hasTemporaryTiles && placementValid === true
+                      ? { scale: { repeat: Infinity, duration: 1.6, ease: 'easeInOut' } }
+                      : { duration: 0.2 }
+                  }
+                  className={`flex items-center gap-1.5 px-3 sm:px-6 py-1.5 sm:py-2.5 rounded-xl font-bold text-xs sm:text-base transition-colors ${
+                    isMyTurn && hasTemporaryTiles && placementValid === true
+                      ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.65)] border-2 border-emerald-300 ring-2 ring-emerald-400/40 cursor-pointer'
                       : 'bg-slate-800/40 text-slate-600 border border-slate-700/30 cursor-not-allowed'
                   }`}
                 >
                   <Check className={`w-4 h-4 sm:w-5 sm:h-5 ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]' : 'text-slate-600'}`} />
                   <span className="hidden xs:inline sm:inline">{isSubmitting ? 'Confirming...' : 'Confirm'}</span>
-                </button>
+                </motion.button>
               </>
             )}
           </div>

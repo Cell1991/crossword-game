@@ -7,6 +7,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Bug, Eye } from 'lucide-react';
 import { commitMove, exchangeTiles, executeBotMove, expireTurn, getBotPlan, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
+import confetti from 'canvas-confetti';
+import { motion, AnimatePresence } from 'motion/react';
 import { buildRackSlots } from '@/lib/rack';
 import { GameState, Tile, Player, PlacedTile } from '@/lib/types';
 import { TILE_THEME_STYLE } from '@/lib/tileTheme';
@@ -133,6 +135,7 @@ export default function GamePage() {
   const [isLeaving, setIsLeaving] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
+  const [scoreBurst, setScoreBurst] = useState<{ score: number; isBingo: boolean; key: number } | null>(null);
 
   const seatReturningTile = useCallback((tileId: string, targetSlot: number) => {
     seatReturning(tileId, targetSlot, pendingTileIds);
@@ -267,6 +270,7 @@ export default function GamePage() {
       return;
     }
     const tilesToCommit = [...temporaryTiles];
+    const moveScore = staged.estimatedScore;
     setIsSubmitting(true);
     try {
       const freezeTileId = cards.deferredFreezeTileId ?? undefined;
@@ -274,6 +278,40 @@ export default function GamePage() {
       await commitMove(gameId, myPlayerId, tilesToCommit, freezeTileId);
       if (wasBingo) {
         toasts.flashInfo('🎉 BINGO! All 7 tiles placed (+50 Bonus Points)!');
+        confetti({
+          particleCount: 90,
+          spread: 80,
+          origin: { y: 0.65 },
+          colors: ['#38bdf8', '#fbbf24', '#34d399', '#f43f5e', '#a855f7'],
+        });
+        setTimeout(() => {
+          confetti({
+            particleCount: 50,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0.15, y: 0.65 },
+            colors: ['#38bdf8', '#fbbf24', '#34d399'],
+          });
+          confetti({
+            particleCount: 50,
+            angle: 120,
+            spread: 55,
+            origin: { x: 0.85, y: 0.65 },
+            colors: ['#38bdf8', '#fbbf24', '#34d399'],
+          });
+        }, 220);
+      } else if (moveScore && moveScore >= 12) {
+        confetti({
+          particleCount: 35,
+          spread: 55,
+          origin: { y: 0.7 },
+          colors: ['#34d399', '#38bdf8', '#fbbf24'],
+        });
+      }
+
+      if (moveScore && moveScore > 0) {
+        setScoreBurst({ score: moveScore, isBingo: wasBingo, key: Date.now() });
+        setTimeout(() => setScoreBurst(null), 2400);
       }
 
       // Optimistically bake placed tiles directly into board_state and remove them from rack
@@ -315,7 +353,7 @@ export default function GamePage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [cards, clearStagedMove, flashError, gameId, myPlayerId, reload, setError, setGameState, temporaryTiles, toasts, validationReason, validationState]);
+  }, [cards, clearStagedMove, flashError, gameId, myPlayerId, reload, setError, setGameState, staged.estimatedScore, temporaryTiles, toasts, validationReason, validationState]);
 
   const handlePassTurn = useCallback(async () => {
     if (!myPlayerId) return;
@@ -772,6 +810,30 @@ export default function GamePage() {
             />
         )}
       </div>
+
+      {/* Floating Animated Score Burst Popup */}
+      <AnimatePresence>
+        {scoreBurst && (
+          <motion.div
+            key={scoreBurst.key}
+            initial={{ opacity: 0, scale: 0.6, y: 20 }}
+            animate={{ opacity: 1, scale: 1.15, y: -40 }}
+            exit={{ opacity: 0, scale: 0.8, y: -80 }}
+            transition={{ duration: 1.2, ease: 'easeOut' }}
+            className="fixed inset-x-0 bottom-40 sm:bottom-48 z-40 pointer-events-none flex flex-col items-center justify-center drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]"
+          >
+            {scoreBurst.isBingo && (
+              <span className="text-sm sm:text-base font-black tracking-widest text-amber-300 uppercase animate-bounce drop-shadow-[0_0_12px_rgba(245,158,11,0.8)]">
+                🎉 BINGO +50 BONUS!
+              </span>
+            )}
+            <div className="flex items-center gap-1.5 font-maple text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-yellow-200 to-amber-300 filter drop-shadow-[0_0_24px_rgba(16,185,129,0.7)]">
+              <span>+{scoreBurst.score}</span>
+              <span className="text-xl sm:text-2xl text-emerald-400 font-sans tracking-widest uppercase">PTS</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Wildcard Blank Tile Letter Picker Modal */}
       <BlankTilePickerModal

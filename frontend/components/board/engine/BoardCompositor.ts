@@ -27,6 +27,8 @@ export interface SceneRenderConfig {
   lowPower: boolean;
   tilePalette: TilePalette;
   model: BoardModel;
+  animTime?: number;
+  tileAnimations?: Map<string, number>;
 }
 
 /**
@@ -79,6 +81,8 @@ export class BoardCompositor {
       lowPower: config.lowPower,
       tilePalette: config.tilePalette,
       temporaryTilesValid: config.temporaryTilesValid,
+      animTime: config.animTime,
+      tileAnimations: config.tileAnimations,
     };
 
     // 3. Layer 2: Committed Board Tiles
