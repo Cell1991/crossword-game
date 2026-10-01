@@ -63,6 +63,7 @@ export interface StoredSession {
   gameMode?: GameMode;
   maxTurns?: number | null;
   startingHp?: number | null;
+  createdAt?: string;
 }
 
 export const sessionStore = {

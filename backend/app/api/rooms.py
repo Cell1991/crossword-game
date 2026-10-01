@@ -41,6 +41,7 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
         game_mode=room.game_mode,
         max_turns=room.max_turns,
         starting_hp=room.starting_hp,
+        created_at=room.created_at,
     )
 
 @router.post("/{game_pin}/join", response_model=JoinRoomResponse)

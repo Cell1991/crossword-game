@@ -34,6 +34,7 @@ class CreateRoomResponse(BaseModel):
     game_mode: Literal["HP", "TURNS"]
     max_turns: Optional[int] = None
     starting_hp: Optional[int] = None
+    created_at: Optional[datetime] = None
 
 class JoinRoomRequest(BaseModel):
     game_pin: str = Field(..., min_length=6, max_length=6, description="6-digit numeric game PIN")

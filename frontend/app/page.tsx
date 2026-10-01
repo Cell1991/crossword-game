@@ -87,6 +87,7 @@ export default function HomePage() {
         gameMode: res.game_mode,
         maxTurns: res.max_turns,
         startingHp: res.starting_hp,
+        createdAt: res.created_at,
       });
       router.push(`/lobby/${res.game_pin}`);
     } catch (error: unknown) {

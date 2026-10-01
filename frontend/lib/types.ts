@@ -184,6 +184,7 @@ export interface CreateRoomResponse {
   game_mode: GameMode;
   max_turns: number | null;
   starting_hp?: number | null;
+  created_at?: string;
 }
 
 export interface JoinRoomResponse {
