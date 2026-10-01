@@ -49,7 +49,7 @@ export default function HomePage() {
   const [customTurnCount, setCustomTurnCount] = useState('28');
   const [hpOption, setHpOption] = useState('100');
   const [customHp, setCustomHp] = useState('100');
-  const [playerLimitOption, setPlayerLimitOption] = useState<'4' | 'custom'>('4');
+  const [playerLimitOption, setPlayerLimitOption] = useState<'2' | '4' | 'custom'>('4');
   const [customMaxPlayers, setCustomMaxPlayers] = useState('4');
   const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>('medium');
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
@@ -115,7 +115,7 @@ export default function HomePage() {
       setError('Player limit must be between 2 and 50');
       return;
     }
-    const maxPlayers = playerLimitOption === 'custom' ? parsedCustomPlayers : 4;
+    const maxPlayers = playerLimitOption === 'custom' ? parsedCustomPlayers : (Number(playerLimitOption) || 4);
 
     setLoading(true);
     setError('');
@@ -140,7 +140,7 @@ export default function HomePage() {
         gameMode: res.game_mode,
         maxTurns: res.max_turns,
         startingHp: res.starting_hp,
-        maxPlayers: res.max_players || maxPlayers || 4,
+        maxPlayers: res.max_players ?? maxPlayers,
         createdAt: res.created_at,
       });
       router.push(`/lobby/${res.game_pin}`);
@@ -654,8 +654,9 @@ export default function HomePage() {
               {/* Player Limit */}
               <fieldset>
                 <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Player Limit</legend>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {([
+                    ['2', '2 Players'],
                     ['4', '4 Players'],
                     ['custom', 'Custom'],
                   ] as const).map(([val, label]) => (

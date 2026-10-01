@@ -145,7 +145,7 @@ export async function GET() {
           r.starting_hp,
           r.is_debug,
           r.created_at,
-          4 AS max_players,
+          COALESCE(r.max_players, 4) AS max_players,
           COALESCE(p.display_name, 'Host') AS host_name,
           COALESCE((
             SELECT count(*)::int 

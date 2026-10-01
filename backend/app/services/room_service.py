@@ -204,6 +204,7 @@ class RoomService:
             db, player.display_name, room.turn_time_limit,
             is_debug=room.is_debug, game_mode=room.game_mode, max_turns=room.max_turns,
             starting_hp=room.starting_hp,
+            max_players=room.max_players,
         )
         room.rematch_pin = new_room.game_pin
         await db.flush()
