@@ -717,41 +717,43 @@ export default function HomePage() {
                     </button>
                   </div>
                 ) : rooms.length > 0 ? (
-                  <div className="max-h-52 overflow-y-auto grid grid-cols-2 gap-2 pr-1 custom-scrollbar">
+                  <div className="max-h-52 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 pr-1 custom-scrollbar">
                     {rooms.map(room => {
                       const isFull = Boolean(room.max_players && room.player_count >= room.max_players);
                       const isPlaying = room.status === 'PLAYING';
                       const isSelected = pin === room.game_pin;
+                      const isSingle = rooms.length === 1;
                       return (
                         <div
                           key={room.id}
                           onClick={() => handleSelectRoom(room)}
                           className={`group relative flex items-center gap-2.5 p-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none active:scale-[0.98] ${
+                            isSingle ? 'sm:col-span-2' : ''
+                          } ${
                             isSelected
                               ? 'border-amber-400 bg-slate-800/90 shadow-[0_0_15px_rgba(245,158,11,0.2)] ring-1 ring-amber-400/50'
                               : 'border-white/10 bg-slate-800/50 hover:bg-slate-800/80 hover:border-white/20'
                           }`}
                         >
-                          {/* Host Avatar Badge */}
-                          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-xs sm:text-sm shadow-[0_2px_10px_rgba(245,158,11,0.25)]">
+                          {/* Host Avatar Badge - Clean, balanced, no protruding dots */}
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-xs sm:text-sm shadow-[0_2px_10px_rgba(245,158,11,0.25)]">
                             {(room.host_name || 'H').charAt(0).toUpperCase()}
-                            {isPlaying && (
-                              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5" title="Match in progress">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500 border border-slate-900"></span>
-                              </span>
-                            )}
                           </div>
 
                           <div className="min-w-0 flex-1 flex flex-col justify-center">
-                            <div className="flex items-center justify-between gap-1">
+                            <div className="flex items-center justify-between gap-1.5">
                               <span className="font-bold text-xs text-white group-hover:text-amber-200 transition-colors truncate" title={room.host_name}>
                                 {room.host_name}
                               </span>
-                              {isPlaying && (
-                                <span className="inline-flex items-center gap-0.5 rounded bg-sky-500/15 border border-sky-400/30 px-1 py-0.5 text-[8px] font-black uppercase tracking-wider text-sky-300 shrink-0">
-                                  <Eye className="h-2 w-2" />
-                                  Live
+                              {isPlaying ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 border border-rose-500/25 px-1.5 py-0.5 text-[9px] font-bold text-rose-400 shrink-0">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                  LIVE
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-400 shrink-0">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                  Open
                                 </span>
                               )}
                             </div>
@@ -760,15 +762,9 @@ export default function HomePage() {
                                 #{room.game_pin}
                               </span>
                               <span className="text-slate-500">•</span>
-                              {isPlaying ? (
-                                <span className="text-sky-300 font-medium">
-                                  {room.player_count} Playing
-                                </span>
-                              ) : (
-                                <span className={isFull ? 'text-amber-400 font-medium' : 'text-emerald-400 font-medium'}>
-                                  {room.player_count}{room.max_players ? `/${room.max_players}` : ' Players'}
-                                </span>
-                              )}
+                              <span className={isPlaying ? 'text-slate-300 font-medium' : isFull ? 'text-amber-400 font-medium' : 'text-emerald-400 font-medium'}>
+                                {room.player_count}{room.max_players ? `/${room.max_players}` : ''} Players
+                              </span>
                             </div>
                           </div>
                         </div>
