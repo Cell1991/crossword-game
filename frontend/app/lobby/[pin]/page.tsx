@@ -9,7 +9,7 @@ import { PlayerList } from '@/components/lobby/PlayerList';
 import ParticleField from '@/components/effects/ParticleField';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import { GameMode, Player } from '@/lib/types';
-import { Clock, AlertTriangle } from 'lucide-react';
+import { Clock } from 'lucide-react';
 
 /** Matches MIN_PLAYERS on the backend: a host may start alone and play solo. */
 const MIN_PLAYERS = 1;
@@ -244,7 +244,11 @@ export default function LobbyPage() {
         {/* PIN Display */}
         <PinDisplay pin={pin} />
 
-        <div className="flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-5 gap-y-1.5 text-xs sm:text-sm text-slate-300 bg-slate-900/70 border border-slate-700/50 rounded-xl px-4 py-2 shadow-lg backdrop-blur-sm">
+        <div className={`flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-5 gap-y-1.5 text-xs sm:text-sm text-slate-300 rounded-xl px-4 py-2 shadow-lg backdrop-blur-sm transition-all duration-300 border ${
+          timeLeft <= 120
+            ? 'bg-rose-950/30 border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.1)]'
+            : 'bg-slate-900/70 border-slate-700/50'
+        }`}>
           <span className="flex items-center gap-1.5">
             <strong className="font-bold text-slate-200">Mode</strong>
             <span className="font-semibold text-amber-300">{gameMode === 'HP' ? `HP Battle (${startingHp ?? 100} HP)` : `Turn Count (${maxTurns} turns)`}</span>
@@ -260,21 +264,15 @@ export default function LobbyPage() {
             title="Room will automatically dissolve after 10 minutes of inactivity if not started"
           >
             <Clock className={`w-3.5 h-3.5 ${timeLeft <= 120 ? 'text-rose-400 animate-pulse' : 'text-amber-400'}`} />
-            <strong className="font-bold text-slate-200">Auto-close</strong>
+            <strong className={`font-bold ${timeLeft <= 120 ? 'text-rose-200' : 'text-slate-200'}`}>
+              {timeLeft <= 120 ? 'Closing in' : 'Auto-close'}
+            </strong>
             <span className={`font-mono font-bold tracking-wider ${timeLeft <= 120 ? 'text-rose-400 animate-pulse' : 'text-amber-300'}`}>
               {formatCountdown(timeLeft)}
             </span>
           </span>
           {isDebugRoom && <span className="font-semibold text-rose-300">🐞 Debug room</span>}
         </div>
-
-        {/* Warning banner when less than 2 minutes remain */}
-        {timeLeft <= 120 && timeLeft > 0 && (
-          <div className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs sm:text-sm font-medium animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.15)]">
-            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>Room dissolves in <strong className="font-mono font-bold text-rose-200">{formatCountdown(timeLeft)}</strong> if not started!</span>
-          </div>
-        )}
 
         {/* Player List */}
         <div className="w-full bg-slate-900/80 border border-slate-700/50 rounded-3xl p-6 shadow-2xl backdrop-blur-sm">
