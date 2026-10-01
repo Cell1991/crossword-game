@@ -236,12 +236,12 @@ export class TileRenderer {
       if (!lowPower || isCorrectPlacement || isRemote) {
         ctx.save();
         ctx.shadowColor = isCorrectPlacement
-          ? 'rgba(16, 185, 129, 0.95)'
+          ? 'rgba(34, 197, 94, 0.85)'
           : isRemote
           ? 'rgba(6, 182, 212, 0.8)'
           : shadowFill;
         ctx.shadowBlur = isCorrectPlacement
-          ? Math.max(16, cellSize * 0.42)
+          ? Math.max(14, cellSize * 0.32)
           : isRemote
           ? Math.max(8, cellSize * 0.2)
           : Math.max(4, cellSize * 0.1);
@@ -250,6 +250,17 @@ export class TileRenderer {
       drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
       ctx.fill();
       if (!lowPower || isCorrectPlacement || isRemote) ctx.restore();
+
+      // Atmospheric outer green aura on the board under the tile (rendered BEFORE the face so gold stays 100% pure)
+      if (isCorrectPlacement && !lowPower) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(34, 197, 94, 0.9)';
+        ctx.shadowBlur = Math.max(12, cellSize * 0.28);
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.35)';
+        drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+        ctx.fill();
+        ctx.restore();
+      }
     }
 
     // 2. Tile face fill
@@ -377,33 +388,22 @@ export class TileRenderer {
     } else if (isCorrectPlacement) {
       ctx.save();
 
-      // Layer A: Wide atmospheric emerald bloom aura
-      ctx.shadowColor = 'rgba(16, 185, 129, 0.95)';
-      ctx.shadowBlur = Math.max(16, cellSize * 0.45);
-      ctx.strokeStyle = '#10b981';
-      ctx.lineWidth = Math.max(3.2, cellSize * 0.075);
-      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-      ctx.stroke();
-
-      // Layer B: Intense core neon green-mint gradient
-      ctx.shadowColor = 'rgba(110, 231, 183, 0.9)';
-      ctx.shadowBlur = Math.max(8, cellSize * 0.2);
+      // Razor-sharp, clean, vibrant warm emerald border - zero inner blur to preserve pure gold face
       const greenGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW, y + pad + tileW);
-      greenGrad.addColorStop(0, '#d1fae5');  // Bright crystal mint highlight
-      greenGrad.addColorStop(0.25, '#6ee7b7'); // Luminous mint
-      greenGrad.addColorStop(0.65, '#10b981'); // Vibrant emerald green
-      greenGrad.addColorStop(1, '#059669');  // Deep rich emerald
+      greenGrad.addColorStop(0, '#86efac');  // Crisp warm lime-mint highlight
+      greenGrad.addColorStop(0.3, '#4ade80'); // Radiant neon emerald
+      greenGrad.addColorStop(0.7, '#22c55e'); // Rich tournament green
+      greenGrad.addColorStop(1, '#16a34a');  // Deep pure emerald
+
       ctx.strokeStyle = greenGrad;
-      ctx.lineWidth = Math.max(2.8, cellSize * 0.065);
+      ctx.lineWidth = Math.max(2.2, cellSize * 0.052);
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
 
-      // Layer C: Crisp inner specular jewel shine
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
-      ctx.lineWidth = Math.max(1, cellSize * 0.022);
-      const innerPad = Math.max(1, cellSize * 0.025);
+      // Subtle inner bright glint rim
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.lineWidth = 1;
+      const innerPad = 1;
       drawRoundedRect(ctx, x + pad + innerPad, y + pad + innerPad, tileW - innerPad * 2, tileW - innerPad * 2, Math.max(1, radius - innerPad));
       ctx.stroke();
 

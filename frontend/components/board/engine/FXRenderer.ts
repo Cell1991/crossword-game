@@ -94,25 +94,25 @@ export class FXRenderer {
     ctx.save();
 
     if (isValid === true) {
-      // 1. Radiant Emerald Victory Halo - Maximum Glow & Prominence
-      ctx.shadowColor = 'rgba(16, 185, 129, 0.95)';
-      ctx.shadowBlur = Math.max(16, cellSize * 0.45);
+      // 1. Radiant Emerald Victory Halo
+      ctx.shadowColor = 'rgba(34, 197, 94, 0.85)';
+      ctx.shadowBlur = Math.max(12, cellSize * 0.32);
 
       const haloGrad = ctx.createLinearGradient(x, y, x + w, y + w);
-      haloGrad.addColorStop(0, '#d1fae5');  // Bright crystal mint
-      haloGrad.addColorStop(0.3, '#6ee7b7'); // Luminous neon mint
-      haloGrad.addColorStop(0.7, '#10b981'); // Vibrant emerald green
-      haloGrad.addColorStop(1, '#059669');  // Deep rich emerald
+      haloGrad.addColorStop(0, '#86efac');  // Crisp warm lime-mint
+      haloGrad.addColorStop(0.3, '#4ade80'); // Radiant neon emerald
+      haloGrad.addColorStop(0.7, '#22c55e'); // Rich tournament green
+      haloGrad.addColorStop(1, '#16a34a');  // Deep pure emerald
 
       ctx.strokeStyle = haloGrad;
-      ctx.lineWidth = Math.max(3, cellSize * 0.07);
+      ctx.lineWidth = Math.max(2.5, cellSize * 0.055);
       drawRoundedRect(ctx, x, y, w, w, radius);
       ctx.stroke();
 
       // Crystal edge specular accent
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
       ctx.lineWidth = 1;
       const innerPad = 1;
       drawRoundedRect(ctx, x + innerPad, y + innerPad, w - innerPad * 2, w - innerPad * 2, Math.max(1, radius - innerPad));
