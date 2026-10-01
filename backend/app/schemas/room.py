@@ -38,6 +38,10 @@ class CreateRoomResponse(BaseModel):
     max_players: Optional[int] = 4
     created_at: Optional[datetime] = None
 
+class UpdateRoomRequest(BaseModel):
+    max_players: Optional[int] = Field(None, ge=2, le=100)
+    turn_time_limit: Optional[Literal[None, 30, 60, 90, 120]] = None
+
 class JoinRoomRequest(BaseModel):
     game_pin: str = Field(..., min_length=6, max_length=6, description="6-digit numeric game PIN")
     player_name: str = Field(..., min_length=1, max_length=32, description="Display name of the player")

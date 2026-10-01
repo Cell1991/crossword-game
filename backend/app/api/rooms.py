@@ -5,6 +5,7 @@ from app.database.session import get_db
 from app.schemas.room import (
     CreateRoomRequest,
     CreateRoomResponse,
+    UpdateRoomRequest,
     JoinRoomRequest,
     JoinRoomResponse,
     RoomDetailResponse,
@@ -97,6 +98,26 @@ async def leave_room(
     ).model_dump())
 
     return {"status": "left", "host_player_id": room.host_player_id}
+
+@router.patch("/{game_pin}", response_model=RoomDetailResponse)
+async def update_room(
+    game_pin: str,
+    req: UpdateRoomRequest,
+    x_player_id: str = Header(..., alias="X-Player-ID"),
+    db: AsyncSession = Depends(get_db)
+):
+    room = await RoomService.update_room_settings(
+        db, game_pin, x_player_id, max_players=req.max_players, turn_time_limit=req.turn_time_limit
+    )
+    await db.commit()
+
+    # Broadcast ROOM_UPDATED to all players in the lobby
+    await manager.broadcast(room.id, WebSocketEvent(
+        type=EventType.ROOM_UPDATED,
+        payload={"max_players": room.max_players, "turn_time_limit": room.turn_time_limit}
+    ).model_dump())
+
+    return await get_room(game_pin, Response(), db)
 
 @router.get("/{game_pin}", response_model=RoomDetailResponse)
 async def get_room(game_pin: str, response: Response, db: AsyncSession = Depends(get_db)):

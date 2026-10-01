@@ -49,8 +49,8 @@ export default function HomePage() {
   const [customTurnCount, setCustomTurnCount] = useState('28');
   const [hpOption, setHpOption] = useState('100');
   const [customHp, setCustomHp] = useState('100');
-  const [playerLimitOption, setPlayerLimitOption] = useState<'4' | 'custom'>('4');
-  const [customMaxPlayers, setCustomMaxPlayers] = useState('4');
+  const [playerLimitOption, setPlayerLimitOption] = useState<'4' | '6' | '8' | '10' | 'custom'>('4');
+  const [customMaxPlayers, setCustomMaxPlayers] = useState('10');
   const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>('medium');
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
@@ -115,7 +115,7 @@ export default function HomePage() {
       setError('Player limit must be between 2 and 50');
       return;
     }
-    const maxPlayers = playerLimitOption === 'custom' ? parsedCustomPlayers : 4;
+    const maxPlayers = playerLimitOption === 'custom' ? parsedCustomPlayers : (Number(playerLimitOption) || 4);
 
     setLoading(true);
     setError('');
@@ -654,9 +654,12 @@ export default function HomePage() {
               {/* Player Limit */}
               <fieldset>
                 <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Player Limit</legend>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
                   {([
-                    ['4', '4 Players'],
+                    ['4', '4P'],
+                    ['6', '6P'],
+                    ['8', '8P'],
+                    ['10', '10P'],
                     ['custom', 'Custom'],
                   ] as const).map(([val, label]) => (
                     <button
@@ -681,7 +684,7 @@ export default function HomePage() {
                 <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
                   <button
                     type="button"
-                    onClick={() => setCustomMaxPlayers(prev => String(Math.max(2, (Number(prev) || 4) - 1)))}
+                    onClick={() => setCustomMaxPlayers(prev => String(Math.max(2, (Number(prev) || 10) - 1)))}
                     className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
                     aria-label="Decrease player limit"
                   >
@@ -695,14 +698,14 @@ export default function HomePage() {
                       value={customMaxPlayers}
                       onChange={event => setCustomMaxPlayers(event.target.value)}
                       aria-label="Custom player limit"
-                      placeholder="4"
+                      placeholder="10"
                       className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                     <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Players</span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setCustomMaxPlayers(prev => String(Math.min(50, (Number(prev) || 4) + 1)))}
+                    onClick={() => setCustomMaxPlayers(prev => String(Math.min(50, (Number(prev) || 10) + 1)))}
                     className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
                     aria-label="Increase player limit"
                   >

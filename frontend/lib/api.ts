@@ -90,6 +90,12 @@ export const sessionStore = {
     if (sessionStorage.getItem('crossword_last_game_id') === gameId) {
       sessionStorage.removeItem('crossword_last_game_id');
     }
+  },
+  update(gameId: string, partial: Partial<StoredSession>) {
+    const existing = this.get(gameId);
+    if (existing) {
+      this.save({ ...existing, ...partial });
+    }
   }
 };
 
@@ -151,6 +157,26 @@ export async function joinRoom(gamePin: string, playerName: string): Promise<Joi
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Failed to join room');
+  }
+  return res.json();
+}
+
+export async function updateRoomSettings(
+  gamePin: string,
+  hostPlayerId: string,
+  settings: { max_players?: number; turn_time_limit?: number | null },
+): Promise<RoomDetailResponse> {
+  const res = await fetch(`${getApiBase()}/rooms/${gamePin}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Player-ID': hostPlayerId,
+    },
+    body: JSON.stringify(settings),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to update room settings');
   }
   return res.json();
 }

@@ -30,47 +30,50 @@ export async function GET() {
   try {
     // 1. Expire stale waiting rooms & clean up abandoned rooms in background
     const expireSql = `
-      UPDATE game_rooms 
-      SET status = 'EXPIRED' 
-      WHERE status = 'WAITING' 
-        AND (created_at IS NULL OR created_at < NOW() - INTERVAL '10 minutes');
+      DO $$
+      BEGIN
+        UPDATE game_rooms 
+        SET status = 'EXPIRED' 
+        WHERE status = 'WAITING' 
+          AND (created_at IS NULL OR created_at < NOW() - INTERVAL '10 minutes');
 
-      UPDATE game_rooms r
-      SET status = 'ABANDONED'
-      WHERE r.status = 'WAITING'
-        AND NOT EXISTS (
-          SELECT 1 FROM game_players gp 
-          WHERE gp.game_id = r.id 
-            AND gp.connection_status = 'ONLINE'
-        );
+        UPDATE game_rooms r
+        SET status = 'ABANDONED'
+        WHERE r.status = 'WAITING'
+          AND NOT EXISTS (
+            SELECT 1 FROM game_players gp 
+            WHERE gp.game_id = r.id 
+              AND gp.connection_status = 'ONLINE'
+          );
 
-      UPDATE game_rooms r
-      SET status = 'ABANDONED'
-      WHERE r.status = 'PLAYING'
-        AND NOT EXISTS (
-          SELECT 1 FROM game_players gp 
-          WHERE gp.game_id = r.id 
-            AND gp.connection_status = 'ONLINE'
-            AND gp.display_name NOT ILIKE '%bot%'
-            AND gp.display_name NOT ILIKE '%[ai]%'
-        );
+        UPDATE game_rooms r
+        SET status = 'ABANDONED'
+        WHERE r.status = 'PLAYING'
+          AND NOT EXISTS (
+            SELECT 1 FROM game_players gp 
+            WHERE gp.game_id = r.id 
+              AND gp.connection_status = 'ONLINE'
+              AND gp.display_name NOT ILIKE '%bot%'
+              AND gp.display_name NOT ILIKE '%[ai]%'
+          );
 
-      -- If any player in a game has been disconnected or offline for > 3 minutes, dissolve immediately
-      UPDATE game_rooms r
-      SET status = 'ABANDONED'
-      WHERE r.status IN ('WAITING', 'PLAYING')
-        AND EXISTS (
-          SELECT 1 FROM game_players gp 
-          WHERE gp.game_id = r.id 
-            AND gp.connection_status IN ('DISCONNECTED', 'OFFLINE')
-            AND gp.joined_at < NOW() - INTERVAL '3 minutes'
-        );
+        -- If any player in a game has been disconnected or offline for > 3 minutes, dissolve immediately
+        UPDATE game_rooms r
+        SET status = 'ABANDONED'
+        WHERE r.status IN ('WAITING', 'PLAYING')
+          AND EXISTS (
+            SELECT 1 FROM game_players gp 
+            WHERE gp.game_id = r.id 
+              AND gp.connection_status IN ('DISCONNECTED', 'OFFLINE')
+              AND gp.joined_at < NOW() - INTERVAL '3 minutes'
+          );
 
-      UPDATE game_rooms r
-      SET status = 'FINISHED'
-      WHERE r.status = 'PLAYING'
-        AND (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id) > 1
-        AND (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE') <= 1;
+        UPDATE game_rooms r
+        SET status = 'FINISHED'
+        WHERE r.status = 'PLAYING'
+          AND (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id) > 1
+          AND (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE') <= 1;
+      END $$;
     `;
     fetch(NEON_SQL_URL, {
       method: 'POST',

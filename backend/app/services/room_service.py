@@ -235,6 +235,28 @@ class RoomService:
         return room, players
 
     @staticmethod
+    async def update_room_settings(
+        db: AsyncSession,
+        game_pin: str,
+        host_player_id: str,
+        max_players: int | None = None,
+        turn_time_limit: int | None = None,
+    ) -> GameRoom:
+        room, players = await RoomService.get_room_details(db, game_pin)
+        if room.status != "WAITING":
+            raise HTTPException(status_code=400, detail="Cannot change settings after game has started")
+        if room.host_player_id != host_player_id:
+            raise HTTPException(status_code=403, detail="Only host can update room settings")
+        if max_players is not None:
+            if max_players < len(players):
+                raise HTTPException(status_code=400, detail=f"Cannot set player limit below current player count ({len(players)})")
+            room.max_players = max_players
+        if turn_time_limit is not None:
+            room.turn_time_limit = turn_time_limit
+        await db.flush()
+        return room
+
+    @staticmethod
     async def start_game(db: AsyncSession, room_id: str, host_player_id: str) -> Game:
         stmt = (
             select(GameRoom, Game, GamePlayer)
