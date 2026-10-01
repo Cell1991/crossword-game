@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, ArrowRight, BookOpen, Eye, LogIn, Minus, Plus, RefreshCw, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Eye, LogIn, Minus, Plus, RefreshCw, Users, User } from 'lucide-react';
 import { createRoom, getRoom, getRooms, joinRoom, sessionStore } from '@/lib/api';
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
@@ -560,17 +560,25 @@ export default function HomePage() {
                   type="button"
                   onClick={() => fetchRooms(true)}
                   disabled={loadingRooms}
-                  aria-label="Refresh"
-                  title="Refresh rooms"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50 cursor-pointer"
+                  aria-label="Refresh rooms"
+                  title="Refresh active rooms"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-amber-300 hover:bg-white/5 transition-colors disabled:opacity-50 cursor-pointer"
                 >
-                  <RefreshCw className={`h-4 w-4 ${loadingRooms ? 'animate-spin text-indigo-400' : ''}`} />
+                  <RefreshCw className={`h-4 w-4 ${loadingRooms ? 'animate-spin text-amber-400' : ''}`} />
                 </button>
               </div>
 
-              {/* Your Name */}
+              {/* Your Name Input */}
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-300">Your Name</label>
+                <label className="mb-1.5 flex items-center justify-between text-xs font-bold tracking-wide text-slate-300">
+                  <span className="flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5 text-amber-400" />
+                    Your Name
+                  </span>
+                  {name.trim() && (
+                    <span className="text-[10px] font-semibold text-emerald-400">Ready</span>
+                  )}
+                </label>
                 <input
                   ref={nameInputRef}
                   type="text"
@@ -578,20 +586,27 @@ export default function HomePage() {
                   onChange={e => setName(e.target.value)}
                   placeholder="Enter your name..."
                   maxLength={24}
-                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-all placeholder:text-slate-500 hover:border-white/20 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                 />
               </div>
 
               {/* Open Rooms */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-slate-300">
-                    Open Rooms {rooms.length > 0 && `(${rooms.length})`}
-                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <label className="text-xs font-bold tracking-wide text-slate-200">
+                      Open Rooms {rooms.length > 0 && `(${rooms.length})`}
+                    </label>
+                  </div>
                   {loadingRooms && (
-                    <span className="text-[10px] text-indigo-300 animate-pulse">Checking...</span>
+                    <span className="text-[10px] font-medium text-amber-300 animate-pulse">Refreshing...</span>
                   )}
                 </div>
+
                 {roomsError ? (
                   <div className="flex items-center justify-between rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
                     <span className="truncate max-w-[210px]">{roomsError}</span>
@@ -604,7 +619,7 @@ export default function HomePage() {
                     </button>
                   </div>
                 ) : rooms.length > 0 ? (
-                  <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+                  <div className="max-h-44 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                     {rooms.map(room => {
                       const isFull = room.player_count >= room.max_players;
                       const isWaiting = room.status === 'WAITING';
@@ -613,23 +628,39 @@ export default function HomePage() {
                         <div
                           key={room.id}
                           onClick={() => handleSelectRoom(room)}
-                          className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
+                          className={`group relative flex items-center justify-between p-3 rounded-2xl border transition-all duration-200 cursor-pointer ${
                             isSelected
-                              ? 'border-indigo-400/80 bg-indigo-500/15'
-                              : 'border-white/10 bg-slate-800/40 hover:bg-slate-800/70 hover:border-white/20'
+                              ? 'border-amber-400/80 bg-gradient-to-r from-amber-500/15 via-slate-800/80 to-slate-800/80 shadow-[0_0_20px_rgba(245,158,11,0.15)]'
+                              : 'border-white/10 bg-slate-800/50 hover:bg-slate-800/80 hover:border-amber-400/30'
                           }`}
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="font-semibold text-xs sm:text-sm text-white truncate max-w-[120px]">
-                              {room.host_name}
-                            </span>
-                            <span className="font-mono text-[10px] font-semibold text-indigo-300 bg-indigo-500/15 border border-indigo-500/25 px-1.5 py-0.5 rounded">
-                              #{room.game_pin}
-                            </span>
-                            <span className="text-[10px] text-slate-400">
-                              {room.game_mode === 'HP' ? `${room.starting_hp ?? 100} HP` : `${room.max_turns ?? 7}T`}
-                            </span>
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* Host Avatar Badge */}
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-sm shadow-[0_2px_10px_rgba(245,158,11,0.3)]">
+                              {(room.host_name || 'H').charAt(0).toUpperCase()}
+                            </div>
+                            
+                            <div className="min-w-0 flex flex-col gap-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-xs sm:text-sm text-white group-hover:text-amber-200 transition-colors truncate max-w-[120px]">
+                                  {room.host_name}
+                                </span>
+                                <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-400/10 border border-amber-400/25 px-1.5 py-0.5 rounded tracking-wider">
+                                  #{room.game_pin}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                                <span className="font-medium text-slate-300 bg-slate-700/60 px-1.5 py-0.5 rounded">
+                                  {room.game_mode === 'HP' ? `${room.starting_hp ?? 100} HP` : `${room.max_turns ?? 7}T`}
+                                </span>
+                                <span>•</span>
+                                <span className="text-emerald-400 font-medium">
+                                  {room.player_count}/4 Players
+                                </span>
+                              </div>
+                            </div>
                           </div>
+
                           <button
                             type="button"
                             onClick={(e) => {
@@ -637,7 +668,7 @@ export default function HomePage() {
                               handleQuickAction(room);
                             }}
                             disabled={loading}
-                            className="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-500 hover:bg-indigo-400 text-white transition-all cursor-pointer active:scale-95"
+                            className="ml-2 px-3.5 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-md shadow-amber-400/20 active:scale-95 transition-all cursor-pointer shrink-0"
                           >
                             {!isWaiting || isFull ? 'Watch' : 'Join'}
                           </button>
@@ -646,56 +677,73 @@ export default function HomePage() {
                     })}
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-white/5 bg-slate-800/30 px-3 py-2 text-center text-xs text-slate-400">
-                    No active rooms right now
+                  <div className="rounded-2xl border border-dashed border-white/10 bg-slate-800/30 p-3.5 text-center">
+                    <p className="text-xs font-medium text-slate-400">No public rooms open right now</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">Enter a 6-digit PIN below to join directly</p>
                   </div>
                 )}
               </div>
 
-              {/* Game PIN */}
+              {/* Sleek Divider */}
+              <div className="relative flex items-center justify-center my-0.5">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/[0.08]" />
+                </div>
+                <span className="relative bg-[#0d1527] px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  Or Enter PIN
+                </span>
+              </div>
+
+              {/* Integrated Game PIN Row */}
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-300">Game PIN</label>
-                <input
-                  type="text"
-                  value={pin}
-                  onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  onKeyDown={e => e.key === 'Enter' && handleJoin()}
-                  placeholder="6-digit PIN"
-                  maxLength={6}
-                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-center font-mono text-xl sm:text-2xl tracking-[0.25em] text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    value={pin}
+                    onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    onKeyDown={e => e.key === 'Enter' && handleJoin()}
+                    placeholder="Enter 6-digit PIN..."
+                    maxLength={6}
+                    className="w-full rounded-xl border border-white/10 bg-slate-800/80 pl-3.5 pr-24 py-2.5 sm:py-3 font-mono text-sm sm:text-base tracking-[0.2em] text-amber-300 outline-none transition-all placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-sans hover:border-white/20 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleJoin}
+                    disabled={loading || !pin.trim()}
+                    className="absolute right-1.5 top-1.5 bottom-1.5 flex items-center gap-1 rounded-lg bg-indigo-500 hover:bg-indigo-400 px-3.5 text-xs sm:text-sm font-bold text-white shadow-md transition-all disabled:opacity-40 disabled:hover:bg-indigo-500 active:scale-95 cursor-pointer"
+                  >
+                    {loading ? (
+                      <span className="flex items-center gap-1">
+                        <RefreshCw className="h-3 w-3 animate-spin" />
+                        Joining
+                      </span>
+                    ) : (
+                      <>
+                        <span>Join</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
-              {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
+              {error && (
+                <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300 font-medium">
+                  {error}
+                </div>
+              )}
 
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={handleJoin}
-                  disabled={loading}
-                  className="w-full rounded-xl sm:rounded-2xl border border-indigo-400/40 bg-indigo-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-white shadow-[0_10px_25px_rgba(99,102,241,0.25)] transition-all hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px cursor-pointer"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Joining Room...
-                    </span>
-                  ) : 'Join Game'}
-                </button>
-
-                <button
-                  onClick={handleWatch}
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/20 py-2.5 text-xs sm:text-sm font-medium text-slate-300 hover:text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 cursor-pointer"
-                  title="Watch the game without playing (only the PIN is needed)"
-                >
-                  <Eye className="h-4 w-4" />
-                  Watch as spectator
-                </button>
-              </div>
+              {/* Spectator Option */}
+              <button
+                type="button"
+                onClick={handleWatch}
+                disabled={loading || !pin.trim()}
+                className="flex items-center justify-center gap-1.5 py-1 text-xs font-semibold text-slate-400 hover:text-amber-300 transition-colors disabled:opacity-40 disabled:hover:text-slate-400 cursor-pointer"
+                title="Watch game without playing (requires PIN)"
+              >
+                <Eye className="h-3.5 w-3.5" />
+                <span>Watch match as spectator {pin.trim() ? `(#${pin.trim()})` : ''}</span>
+              </button>
             </div>
           )}
         </div>
