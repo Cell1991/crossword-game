@@ -492,7 +492,7 @@ export async function getBotPlan(gameId: string, difficulty?: string): Promise<B
   return res.json();
 }
 
-export async function executeBotMove(gameId: string, plan: BotPlanResponse): Promise<any> {
+export async function executeBotMove(gameId: string, plan: Partial<BotPlanResponse>): Promise<any> {
   const base = getApiBase();
   const res = await fetch(`${base}/games/${gameId}/bot/execute`, {
     method: 'POST',

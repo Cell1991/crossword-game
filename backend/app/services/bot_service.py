@@ -107,39 +107,37 @@ class BotService:
         cls, candidates: list[dict[str, Any]], difficulty: str
     ) -> list[dict[str, Any]]:
         """
-        Orders candidate moves based on bot difficulty:
-        - Easy (SparkBot): Simple, shorter words (2-4 letters, modest score 4-20 pts).
-        - Medium (Nexus AI): Tactical words (3-5 letters, 10-35 pts, solid placement).
-        - Hard (Titan AI): Top scoring moves (hits multipliers, max score, bingos).
+        Orders candidate moves strictly based on user-calibrated score targets:
+        - Easy (SparkBot): Target 2 to 10 points per turn. Simple words without length limitation.
+        - Medium (Nexus AI): Target 2 to 15 points per turn. Higher average score than Easy.
+        - Hard (Titan AI): 2 to Maximum points per turn. Top scoring moves with maximum average.
         """
         if not candidates:
             return []
 
-        # candidates from find_hint_suggestions are sorted descending by score
         sorted_by_score = list(candidates)
 
-        if difficulty == "hard":
-            # Top scoring moves first, slight randomness among top 3
-            top = sorted_by_score[:3]
-            random.shuffle(top)
-            return top + sorted_by_score[3:]
-
         if difficulty == "easy":
-            # Prefer shorter words with lower scores
-            easy_pool = [c for c in sorted_by_score if len(c.get("tiles", [])) <= 4 and c.get("score", 0) <= 22]
-            random.shuffle(easy_pool)
-            remainder = [c for c in sorted_by_score[::-1] if c not in easy_pool]
-            return easy_pool + remainder
+            # Easy target: 2 - 10 points per turn
+            pool = [c for c in sorted_by_score if 2 <= c.get("score", 0) <= 10]
+            random.shuffle(pool)
+            remainder = sorted(sorted_by_score, key=lambda c: abs(c.get("score", 0) - 6))
+            return pool + [c for c in remainder if c not in pool]
 
-        # Medium:
-        # Prefer balanced moves between 10 and 35 points with length 2 to 5
-        medium_pool = [
-            c for c in sorted_by_score
-            if 10 <= c.get("score", 0) <= 35 and 2 <= len(c.get("tiles", [])) <= 5
-        ]
-        random.shuffle(medium_pool)
-        remainder = [c for c in sorted_by_score if c not in medium_pool]
-        return medium_pool + remainder
+        if difficulty == "medium":
+            # Medium target: 2 - 15 points per turn (with higher average around 8-15)
+            pool = [c for c in sorted_by_score if 2 <= c.get("score", 0) <= 15]
+            # Sort descending to favor the higher end of the 2-15 range
+            pool.sort(key=lambda c: c.get("score", 0), reverse=True)
+            remainder = sorted(sorted_by_score, key=lambda c: abs(c.get("score", 0) - 13))
+            return pool + [c for c in remainder if c not in pool]
+
+        # Hard: 2 to Maximum points per turn (highest scoring moves first)
+        hard_pool = [c for c in sorted_by_score if c.get("score", 0) >= 2]
+        hard_pool.sort(key=lambda c: c.get("score", 0), reverse=True)
+        top = hard_pool[:2]
+        random.shuffle(top)
+        return top + hard_pool[2:]
 
     @staticmethod
     def _match_tiles_to_rack(rack: list[dict[str, Any]], tiles_to_place: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -221,9 +219,9 @@ class BotService:
                 val = DEFAULT_LETTER_VALUES.get(letter, 1)
                 if available:
                     borrowed = available.pop(0)
-                    borrowed_id = str(borrowed.get("id") or borrowed.get("tile_id"))
+                    borrowed_id = str(borrowed.get("id") or borrowed.get("tile_id") or "")
                     for r in rack:
-                        if str(r.get("id") or r.get("tile_id")) == borrowed_id:
+                        if str(r.get("id") or r.get("tile_id") or "") == borrowed_id:
                             r["letter"] = letter
                             r["value"] = val
                             matched_result.append({
@@ -231,7 +229,7 @@ class BotService:
                                 "col": int(t["col"]),
                                 "letter": letter,
                                 "value": val,
-                                "tile_id": borrowed_id,
+                                "tile_id": borrowed_id or str(uuid.uuid4())[:8],
                             })
                             break
                 else:
@@ -246,8 +244,10 @@ class BotService:
                         "tile_id": new_id,
                     })
 
-            current_player.rack = rack
-            await db.flush()
+            current_player.rack = [dict(t) for t in rack]
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(current_player, "rack")
+            await db.commit()
 
         return matched_result
 
@@ -301,7 +301,7 @@ class BotService:
             # Case 2: Active Board (connect to existing committed tiles)
             occupied = {(c["row"], c["col"]): c["letter"].upper() for c in board.values()}
 
-            lengths_to_try = (2, 3) if difficulty == "easy" else (2, 3, 4) if difficulty == "medium" else (3, 4, 5, 2)
+            lengths_to_try = (2, 3, 4, 5)
             for w_len in lengths_to_try:
                 dict_words = dictionary_service.get_words_of_length(w_len)
                 for (r, c), char in occupied.items():
@@ -331,11 +331,11 @@ class BotService:
                             valid, _, _, score, _ = RuleEngine.validate_move(board, placed, is_first_move=False)
                             if valid:
                                 valid_moves.append({"word": w, "score": score, "direction": "across", "tiles": placed})
-                                if len(valid_moves) >= 40:
+                                if len(valid_moves) >= 60:
                                     break
-                        if len(valid_moves) >= 40:
+                        if len(valid_moves) >= 60:
                             break
-                    if len(valid_moves) >= 40:
+                    if len(valid_moves) >= 60:
                         break
 
                     # 2. Vertical placements
@@ -364,13 +364,13 @@ class BotService:
                             valid, _, _, score, _ = RuleEngine.validate_move(board, placed, is_first_move=False)
                             if valid:
                                 valid_moves.append({"word": w, "score": score, "direction": "down", "tiles": placed})
-                                if len(valid_moves) >= 50:
+                                if len(valid_moves) >= 80:
                                     break
-                        if len(valid_moves) >= 50:
+                        if len(valid_moves) >= 80:
                             break
-                    if len(valid_moves) >= 50:
+                    if len(valid_moves) >= 80:
                         break
-                if len(valid_moves) >= 50:
+                if len(valid_moves) >= 80:
                     break
 
         if not valid_moves:
@@ -382,19 +382,29 @@ class BotService:
                 "difficulty": difficulty,
             }
 
-        # Sort valid moves by score
+        # Sort valid moves by score descending
         valid_moves.sort(key=lambda m: m["score"], reverse=True)
 
         if difficulty == "easy":
-            # Pick lowest scoring / simple move
-            chosen = sorted(valid_moves, key=lambda m: (m["score"], len(m["tiles"])))[0]
+            # Easy target: 2 - 10 points per turn
+            pool = [m for m in valid_moves if 2 <= m["score"] <= 10]
+            if pool:
+                chosen = random.choice(pool)
+            else:
+                chosen = sorted(valid_moves, key=lambda m: abs(m["score"] - 6))[0]
         elif difficulty == "medium":
-            # Pick balanced move from middle
-            mid_idx = len(valid_moves) // 2
-            chosen = valid_moves[mid_idx]
+            # Medium target: 2 - 15 points per turn (with higher average around 8-15)
+            pool = [m for m in valid_moves if 2 <= m["score"] <= 15]
+            if pool:
+                pool.sort(key=lambda m: m["score"], reverse=True)
+                upper_half = pool[:max(1, len(pool) // 2)]
+                chosen = random.choice(upper_half)
+            else:
+                chosen = sorted(valid_moves, key=lambda m: abs(m["score"] - 13))[0]
         else:
-            # Hard: top scoring move
-            chosen = valid_moves[0]
+            # Hard: 2 to Maximum points per turn (highest scoring moves first)
+            top_candidates = valid_moves[:min(3, len(valid_moves))]
+            chosen = random.choice(top_candidates)
 
         # Ensure bot's rack contains the tiles needed for this move
         matched_tiles = await cls._ensure_bot_rack_has_tiles(db, current_player, chosen["tiles"])

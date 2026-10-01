@@ -380,8 +380,15 @@ export default function GamePage() {
         const plan = await getBotPlan(gameId, botDifficulty);
         if (activeBotTurnKeyRef.current !== turnKey) return;
 
-        const planTiles = plan.tiles ?? [];
-        if (plan.action === 'MOVE' && planTiles.length > 0) {
+        let activePlan = plan;
+        if (activePlan.action !== 'MOVE' || !activePlan.tiles || activePlan.tiles.length === 0) {
+          await new Promise(r => setTimeout(r, 400));
+          if (activeBotTurnKeyRef.current !== turnKey) return;
+          activePlan = await getBotPlan(gameId, botDifficulty);
+        }
+
+        const planTiles = activePlan.tiles ?? [];
+        if (planTiles.length > 0) {
           // Place tiles step-by-step (one by one) with visual feedback (sound effects disabled)
           const stepDelay = botDifficulty === 'hard' ? 280 : botDifficulty === 'medium' ? 350 : 450;
           const stagedList: PlacedTile[] = [];
@@ -406,13 +413,11 @@ export default function GamePage() {
           await new Promise(r => setTimeout(r, 450));
           if (activeBotTurnKeyRef.current !== turnKey) return;
 
-          await executeBotMove(gameId, plan);
+          await executeBotMove(gameId, activePlan);
           lastCompletedBotTurnRef.current = turnKey;
         } else {
-          // Exchange tiles or pass
-          await new Promise(r => setTimeout(r, 400));
-          if (activeBotTurnKeyRef.current !== turnKey) return;
-          await executeBotMove(gameId, plan);
+          // The backend executeBotMove guarantees valid word placement
+          await executeBotMove(gameId, { action: 'MOVE', bot_player_id: gameState.current_player_id || '' });
           lastCompletedBotTurnRef.current = turnKey;
         }
 
@@ -435,16 +440,6 @@ export default function GamePage() {
           }
         } catch (retryErr) {
           console.error('Bot retry error:', retryErr);
-        }
-
-        try {
-          if (activeBotTurnKeyRef.current === turnKey && gameState.current_player_id) {
-            await passTurn(gameId, gameState.current_player_id);
-            lastCompletedBotTurnRef.current = turnKey;
-            reloadRef.current?.();
-          }
-        } catch (passErr) {
-          console.error('Bot fallback pass error:', passErr);
         }
       } finally {
         if (activeBotTurnKeyRef.current === turnKey) {

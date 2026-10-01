@@ -257,6 +257,13 @@ async def execute_bot_move(
     if not bot_player_id:
         raise HTTPException(status_code=400, detail="Missing bot_player_id")
 
+    # Bot NEVER passes: if action is not MOVE or tiles is empty, guarantee a valid move immediately
+    if action != "MOVE" or not req.get("tiles"):
+        plan = await BotService.plan_bot_move(db, game_id)
+        if plan.get("action") == "MOVE" and plan.get("tiles"):
+            req = plan
+            action = "MOVE"
+
     if action == "MOVE":
         tiles_data = req.get("tiles", [])
         placed_tiles = [PlacedTileInput(**t) for t in tiles_data]
