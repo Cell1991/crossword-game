@@ -224,11 +224,12 @@ export default function LobbyPage() {
         )}
 
         {!isHost && (
-          <div className="flex items-center gap-3 text-slate-400">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-sm">
+          <div className="flex items-center justify-center gap-2 py-2 select-none">
+            <span className="text-amber-300 text-xs sm:text-sm slow-twinkle">✨</span>
+            <p className="text-center font-bold text-xs sm:text-sm tracking-wide gold-shimmer-text">
               {isSpectator ? '👁 Watching: the board opens when the host starts' : 'Waiting for host to start...'}
-            </span>
+            </p>
+            <span className="text-amber-300 text-xs sm:text-sm slow-twinkle-delayed">✨</span>
           </div>
         )}
 
