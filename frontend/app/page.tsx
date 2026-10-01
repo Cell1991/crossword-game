@@ -718,7 +718,7 @@ export default function HomePage() {
                     </button>
                   </div>
                 ) : rooms.length > 0 ? (
-                  <div className="max-h-52 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 pr-1 custom-scrollbar">
+                  <div className="max-h-52 overflow-y-auto grid grid-cols-2 gap-2 pr-1 custom-scrollbar">
                     {rooms.map(room => {
                       const isFull = Boolean(room.max_players && room.player_count >= room.max_players);
                       const isPlaying = room.status === 'PLAYING';
@@ -728,8 +728,8 @@ export default function HomePage() {
                         <div
                           key={room.id}
                           onClick={() => handleSelectRoom(room)}
-                          className={`group relative flex items-center gap-2.5 p-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none active:scale-[0.98] ${
-                            isSingle ? 'sm:col-span-2' : ''
+                          className={`group relative flex items-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none active:scale-[0.98] ${
+                            isSingle ? 'col-span-2' : ''
                           } ${
                             isSelected
                               ? 'border-amber-400 bg-slate-800/90 shadow-[0_0_15px_rgba(245,158,11,0.2)] ring-1 ring-amber-400/50'
@@ -737,12 +737,12 @@ export default function HomePage() {
                           }`}
                         >
                           {/* Host Avatar Badge - Clean, balanced, no protruding dots */}
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-xs sm:text-sm shadow-[0_2px_10px_rgba(245,158,11,0.25)]">
+                          <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-xs sm:text-sm shadow-[0_2px_10px_rgba(245,158,11,0.25)]">
                             {(room.host_name || 'H').charAt(0).toUpperCase()}
                           </div>
 
                           <div className="min-w-0 flex-1 flex flex-col justify-center">
-                            <div className="flex items-center justify-between gap-1.5">
+                            <div className="flex items-center justify-between gap-1">
                               <span className="font-bold text-xs text-white group-hover:text-amber-200 transition-colors truncate" title={room.host_name}>
                                 {room.host_name}
                               </span>
@@ -758,12 +758,12 @@ export default function HomePage() {
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
-                              <span className="font-mono font-bold text-amber-300">
+                            <div className="flex items-center gap-1 text-[10px] mt-0.5">
+                              <span className="font-mono font-bold text-amber-300 shrink-0">
                                 #{room.game_pin}
                               </span>
-                              <span className="text-slate-500">•</span>
-                              <span className={isPlaying ? 'text-slate-300 font-medium' : isFull ? 'text-amber-400 font-medium' : 'text-emerald-400 font-medium'}>
+                              <span className="text-slate-500 shrink-0">•</span>
+                              <span className={`truncate font-medium ${isPlaying ? 'text-slate-300' : isFull ? 'text-amber-400' : 'text-emerald-400'}`}>
                                 {room.player_count}{room.max_players ? `/${room.max_players}` : ''} Players
                               </span>
                             </div>
