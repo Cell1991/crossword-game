@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import random
 from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -420,3 +422,100 @@ class BotService:
             "direction": chosen["direction"],
             "tiles": matched_tiles,
         }
+
+    @classmethod
+    async def execute_bot_move_now(
+        cls,
+        db: AsyncSession,
+        game_id: str,
+        bot_player_id: str | None = None,
+        difficulty: str | None = None,
+    ) -> dict[str, Any] | None:
+        """Executes a move for the bot immediately on this session, commits, broadcasts MOVE_COMMITTED."""
+        from app.websocket.connection_manager import manager
+        from app.schemas.events import WebSocketEvent, EventType
+        from app.schemas.move import PlacedTileInput
+
+        plan = await cls.plan_bot_move(db, game_id, difficulty)
+        bot_id = plan.get("bot_player_id") or bot_player_id
+        if not bot_id:
+            return None
+
+        action = plan.get("action", "MOVE")
+        tiles_data = plan.get("tiles", [])
+        if action != "MOVE" or not tiles_data:
+            plan = await cls.plan_bot_move(db, game_id, difficulty)
+            tiles_data = plan.get("tiles", [])
+
+        if not tiles_data:
+            return None
+
+        placed_tiles = [PlacedTileInput(**t) for t in tiles_data]
+        res, game, player = await MoveService.commit_move(db, game_id, bot_id, placed_tiles)
+        await db.commit()
+
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.MOVE_COMMITTED,
+            payload={
+                "playerId": player.id,
+                "turnNumber": game.turn_number,
+                "placedTiles": [t.model_dump() for t in placed_tiles],
+                "wordsFormed": [w.model_dump() for w in res.words_formed],
+                "scoreEarned": res.score_earned,
+                "playerTotalScore": player.score,
+                "nextPlayerId": res.next_player_id,
+                "boardState": game.board_state,
+                "pendingEffect": game.pending_effect,
+                "cardAwarded": res.card_awarded,
+            }
+        ).model_dump())
+
+        if res.game_over:
+            await manager.broadcast(game_id, WebSocketEvent(
+                type=EventType.GAME_ENDED,
+                payload={"reason": "Game completed", "winnerId": res.next_player_id},
+            ).model_dump())
+        elif res.next_player_id:
+            # If the next player is ALSO a bot, auto-advance next bot too
+            stmt_next = select(GamePlayer).where(GamePlayer.id == res.next_player_id)
+            next_p = (await db.execute(stmt_next)).scalar_one_or_none()
+            if cls.is_bot_player(next_p):
+                asyncio.create_task(
+                    cls.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+                )
+
+        return {
+            "status": "success",
+            "action": "MOVE",
+            "score_earned": res.score_earned,
+            "next_player_id": res.next_player_id,
+            "word": plan.get("word"),
+        }
+
+    @classmethod
+    async def schedule_auto_bot_turn(
+        cls,
+        game_id: str,
+        bot_player_id: str,
+        expected_turn_number: int,
+        delay_seconds: float = 3.5,
+    ) -> None:
+        """Background fallback: If the client doesn't commit the bot's turn within delay_seconds,
+        the server executes the bot's turn automatically. Guarantees the game never halts."""
+        await asyncio.sleep(delay_seconds)
+        from app.database.session import AsyncSessionLocal
+        async with AsyncSessionLocal() as db:
+            try:
+                stmt_game = select(Game).where(Game.id == game_id)
+                game = (await db.execute(stmt_game)).scalar_one_or_none()
+                if not game or game.status != "PLAYING":
+                    return
+                if game.current_player_id != bot_player_id or game.turn_number != expected_turn_number:
+                    return  # Turn already advanced by client!
+
+                await cls.execute_bot_move_now(db, game_id, bot_player_id)
+            except Exception as e:
+                logging.getLogger(__name__).error(
+                    f"Error in schedule_auto_bot_turn for game {game_id}: {e}", exc_info=True
+                )
+

@@ -344,10 +344,11 @@ export default function GamePage() {
     return 'easy';
   }, [currentTurnPlayer?.display_name]);
 
-  const isHostDriver = Boolean(
-    session?.isHost ||
-    (gameState?.players && gameState.players.find(p => !p.display_name.toLowerCase().includes('bot') && !p.display_name.toLowerCase().includes('[ai]'))?.id === myPlayerId)
+  const firstHumanPlayer = gameState?.players?.find(p =>
+    !p.display_name.toLowerCase().includes('bot') &&
+    !p.display_name.toLowerCase().includes('[ai]')
   );
+  const isHostDriver = !isSpectator && (Boolean(session?.isHost) || firstHumanPlayer?.id === myPlayerId || !firstHumanPlayer);
 
   const activeBotTurnKeyRef = useRef<string | null>(null);
   const lastCompletedBotTurnRef = useRef<string | null>(null);
@@ -371,30 +372,26 @@ export default function GamePage() {
 
     const runBotTurn = async () => {
       try {
-        // 1. Natural thinking time calibrated by difficulty
-        const thinkingMs = botDifficulty === 'hard' ? 900 : botDifficulty === 'medium' ? 1200 : 1500;
-        await new Promise(r => setTimeout(r, thinkingMs));
-        if (activeBotTurnKeyRef.current !== turnKey) return;
-
-        // 2. Fetch dictionary-valid move planned on the backend
-        const plan = await getBotPlan(gameId, botDifficulty);
-        if (activeBotTurnKeyRef.current !== turnKey) return;
+        // 1. Fetch move from backend immediately in parallel with natural "thinking" duration
+        const minThinkMs = botDifficulty === 'hard' ? 450 : botDifficulty === 'medium' ? 700 : 1000;
+        const planPromise = getBotPlan(gameId, botDifficulty);
+        const [plan] = await Promise.all([
+          planPromise,
+          new Promise(r => setTimeout(r, minThinkMs)),
+        ]);
 
         let activePlan = plan;
         if (activePlan.action !== 'MOVE' || !activePlan.tiles || activePlan.tiles.length === 0) {
-          await new Promise(r => setTimeout(r, 400));
-          if (activeBotTurnKeyRef.current !== turnKey) return;
           activePlan = await getBotPlan(gameId, botDifficulty);
         }
 
         const planTiles = activePlan.tiles ?? [];
         if (planTiles.length > 0) {
-          // Place tiles step-by-step (one by one) with visual feedback (sound effects disabled)
-          const stepDelay = botDifficulty === 'hard' ? 280 : botDifficulty === 'medium' ? 350 : 450;
+          // Place tiles step-by-step (one by one) with visual feedback on the board
+          const stepDelay = botDifficulty === 'hard' ? 240 : botDifficulty === 'medium' ? 320 : 400;
           const stagedList: PlacedTile[] = [];
 
           for (const tile of planTiles) {
-            if (activeBotTurnKeyRef.current !== turnKey) return;
             stagedList.push(tile);
             setBotStagedTiles([...stagedList]);
 
@@ -407,16 +404,12 @@ export default function GamePage() {
             await new Promise(r => setTimeout(r, stepDelay));
           }
 
-          if (activeBotTurnKeyRef.current !== turnKey) return;
-
           // Short suspense delay before committing word
-          await new Promise(r => setTimeout(r, 450));
-          if (activeBotTurnKeyRef.current !== turnKey) return;
+          await new Promise(r => setTimeout(r, 350));
 
           await executeBotMove(gameId, activePlan);
           lastCompletedBotTurnRef.current = turnKey;
         } else {
-          // The backend executeBotMove guarantees valid word placement
           await executeBotMove(gameId, { action: 'MOVE', bot_player_id: gameState.current_player_id || '' });
           lastCompletedBotTurnRef.current = turnKey;
         }
@@ -424,22 +417,15 @@ export default function GamePage() {
         setBotStagedTiles([]);
         reloadRef.current?.();
       } catch (err) {
-        console.error('Bot turn execution error, attempting 1 retry:', err);
+        console.error('Bot turn execution error, falling back to instant server execution:', err);
         try {
-          if (activeBotTurnKeyRef.current === turnKey && gameState.current_player_id) {
-            await new Promise(r => setTimeout(r, 800));
-            if (activeBotTurnKeyRef.current === turnKey) {
-              const retryPlan = await getBotPlan(gameId, botDifficulty);
-              if (activeBotTurnKeyRef.current === turnKey) {
-                await executeBotMove(gameId, retryPlan);
-                lastCompletedBotTurnRef.current = turnKey;
-                reloadRef.current?.();
-                return;
-              }
-            }
+          if (gameState.current_player_id) {
+            await executeBotMove(gameId, { action: 'MOVE', bot_player_id: gameState.current_player_id });
+            lastCompletedBotTurnRef.current = turnKey;
+            reloadRef.current?.();
           }
         } catch (retryErr) {
-          console.error('Bot retry error:', retryErr);
+          console.error('Bot fallback error:', retryErr);
         }
       } finally {
         if (activeBotTurnKeyRef.current === turnKey) {

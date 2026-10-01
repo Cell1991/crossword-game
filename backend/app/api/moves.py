@@ -41,7 +41,7 @@ async def commit_move(
         type=EventType.MOVE_COMMITTED,
         payload={
             "playerId": player.id,
-            "turnNumber": res.turn_number,
+            "turnNumber": game.turn_number,
             "placedTiles": [t.model_dump() for t in req.placed_tiles],
             "wordsFormed": [w.model_dump() for w in res.words_formed],
             "scoreEarned": res.score_earned,
@@ -61,5 +61,16 @@ async def commit_move(
                 "winnerId": res.winner_id
             }
         ).model_dump())
+    elif res.next_player_id:
+        import asyncio
+        from sqlalchemy import select
+        from app.database.models import GamePlayer
+        from app.services.bot_service import BotService
+        stmt_next = select(GamePlayer).where(GamePlayer.id == res.next_player_id)
+        next_p = (await db.execute(stmt_next)).scalar_one_or_none()
+        if BotService.is_bot_player(next_p):
+            asyncio.create_task(
+                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=3.2)
+            )
 
     return res

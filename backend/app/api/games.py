@@ -35,6 +35,20 @@ async def get_game(
         if player:
             requesting_player_id = player.id
 
+    # Auto-recovery: If current turn belongs to a Bot in an active game and it has been idle >= 2.5s, execute it!
+    from sqlalchemy import select
+    from app.database.models import Game, GamePlayer, get_utc_now
+    stmt_g = select(Game).where(Game.id == game_id)
+    game_obj = (await db.execute(stmt_g)).scalar_one_or_none()
+    if game_obj and game_obj.status == "PLAYING" and game_obj.current_player_id:
+        stmt_p = select(GamePlayer).where(GamePlayer.id == game_obj.current_player_id)
+        curr_p = (await db.execute(stmt_p)).scalar_one_or_none()
+        if BotService.is_bot_player(curr_p):
+            now = get_utc_now()
+            started = game_obj.turn_started_at or game_obj.created_at
+            if started and (now - started).total_seconds() >= 2.5:
+                await BotService.execute_bot_move_now(db, game_id, curr_p.id)
+
     # Whether racks are revealed comes from the room's own is_debug flag (see get_game_state),
     # not from anything the client claims - a client can't ask its way into seeing opponents' tiles.
     state = await GameService.get_game_state(db, game_id, requesting_player_id)
@@ -70,6 +84,15 @@ async def pass_turn(
                 "winnerId": winner_id
             }
         ).model_dump())
+    elif game.current_player_id:
+        from sqlalchemy import select
+        from app.database.models import GamePlayer
+        stmt_next = select(GamePlayer).where(GamePlayer.id == game.current_player_id)
+        next_p = (await db.execute(stmt_next)).scalar_one_or_none()
+        if BotService.is_bot_player(next_p):
+            asyncio.create_task(
+                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+            )
 
     return {
         "status": "passed",
@@ -122,6 +145,15 @@ async def exchange_tiles(
                 "winnerId": winner_id
             }
         ).model_dump())
+    elif game.current_player_id:
+        from sqlalchemy import select
+        from app.database.models import GamePlayer
+        stmt_next = select(GamePlayer).where(GamePlayer.id == game.current_player_id)
+        next_p = (await db.execute(stmt_next)).scalar_one_or_none()
+        if BotService.is_bot_player(next_p):
+            asyncio.create_task(
+                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+            )
 
     return {
         "status": "exchanged" if exchanged else "passed",
@@ -275,7 +307,7 @@ async def execute_bot_move(
             type=EventType.MOVE_COMMITTED,
             payload={
                 "playerId": player.id,
-                "turnNumber": res.turn_number,
+                "turnNumber": game.turn_number,
                 "placedTiles": [t.model_dump() for t in placed_tiles],
                 "wordsFormed": [w.model_dump() for w in res.words_formed],
                 "scoreEarned": res.score_earned,
@@ -292,6 +324,15 @@ async def execute_bot_move(
                 type=EventType.GAME_ENDED,
                 payload={"reason": "Game completed", "winnerId": res.next_player_id},
             ).model_dump())
+        elif res.next_player_id:
+            from sqlalchemy import select
+            from app.database.models import GamePlayer
+            stmt_next = select(GamePlayer).where(GamePlayer.id == res.next_player_id)
+            next_p = (await db.execute(stmt_next)).scalar_one_or_none()
+            if BotService.is_bot_player(next_p):
+                asyncio.create_task(
+                    BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+                )
 
         return {"status": "success", "action": "MOVE", "score_earned": res.score_earned, "next_player_id": res.next_player_id}
 
