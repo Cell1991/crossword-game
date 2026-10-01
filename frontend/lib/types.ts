@@ -184,6 +184,7 @@ export interface CreateRoomResponse {
   game_mode: GameMode;
   max_turns: number | null;
   starting_hp?: number | null;
+  max_players?: number;
   created_at?: string;
 }
 
@@ -199,6 +200,7 @@ export interface JoinRoomResponse {
   game_mode?: GameMode;
   max_turns?: number | null;
   starting_hp?: number | null;
+  max_players?: number;
   created_at?: string;
 }
 
@@ -220,6 +222,7 @@ export interface RoomDetailResponse {
   game_mode: GameMode;
   max_turns: number | null;
   starting_hp?: number | null;
+  max_players?: number;
   is_debug: boolean;
 }
 

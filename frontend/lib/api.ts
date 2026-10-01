@@ -64,6 +64,7 @@ export interface StoredSession {
   gameMode?: GameMode;
   maxTurns?: number | null;
   startingHp?: number | null;
+  maxPlayers?: number;
   createdAt?: string;
 }
 
@@ -113,6 +114,7 @@ export async function createRoom(
   maxTurns: number | null = null,
   isDebug = false,
   startingHp: number | null = null,
+  maxPlayers: number = 4,
 ): Promise<CreateRoomResponse> {
   const res = await fetch(`${getApiBase()}/rooms`, {
     method: 'POST',
@@ -124,6 +126,7 @@ export async function createRoom(
       max_turns: gameMode === 'TURNS' ? maxTurns : null,
       starting_hp: gameMode === 'HP' ? startingHp : null,
       is_debug: isDebug,
+      max_players: maxPlayers,
     }),
   });
   if (!res.ok) {

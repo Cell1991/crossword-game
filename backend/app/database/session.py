@@ -193,6 +193,7 @@ def _upgrade_existing_schema(connection):
             "max_turns": "INTEGER",
             "starting_hp": "INTEGER",
             "rematch_pin": "VARCHAR(6)",
+            "max_players": "INTEGER DEFAULT 4 NOT NULL",
         },
         "game_players": {
             "hp": "INTEGER DEFAULT 100 NOT NULL",

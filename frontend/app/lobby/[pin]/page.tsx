@@ -54,6 +54,7 @@ export default function LobbyPage() {
   const [gameMode, setGameMode] = useState<GameMode>(matchesCurrentPin && initialSession?.gameMode ? initialSession.gameMode : 'HP');
   const [maxTurns, setMaxTurns] = useState<number | null>(matchesCurrentPin ? (initialSession?.maxTurns ?? null) : null);
   const [startingHp, setStartingHp] = useState<number | null>(matchesCurrentPin ? (initialSession?.startingHp ?? null) : null);
+  const [maxPlayers, setMaxPlayers] = useState<number>(matchesCurrentPin && initialSession?.maxPlayers ? initialSession.maxPlayers : 4);
   const [isDebugRoom, setIsDebugRoom] = useState(false);
   const [createdAt, setCreatedAt] = useState<string | null>(matchesCurrentPin ? (initialSession?.createdAt ?? null) : null);
   const [timeLeft, setTimeLeft] = useState<number>(600);
@@ -110,6 +111,9 @@ export default function LobbyPage() {
       setGameMode(room.game_mode);
       setMaxTurns(room.max_turns);
       setStartingHp(room.starting_hp ?? null);
+      if (room.max_players) {
+        setMaxPlayers(room.max_players);
+      }
       setIsDebugRoom(room.is_debug);
       if (room.created_at) {
         setCreatedAt(room.created_at);
@@ -255,6 +259,11 @@ export default function LobbyPage() {
           </span>
           <span className="text-slate-600 hidden sm:inline">•</span>
           <span className="flex items-center gap-1.5">
+            <strong className="font-bold text-slate-200">Players</strong>
+            <span className="font-semibold text-amber-300">Max {maxPlayers}</span>
+          </span>
+          <span className="text-slate-600 hidden sm:inline">•</span>
+          <span className="flex items-center gap-1.5">
             <strong className="font-bold text-slate-200">Turn Time</strong>
             <span className="font-semibold text-amber-300">{turnTimeLimit === null ? 'Unlimited' : `${turnTimeLimit} sec`}</span>
           </span>
@@ -276,7 +285,7 @@ export default function LobbyPage() {
 
         {/* Player List */}
         <div className="w-full bg-slate-900/80 border border-slate-700/50 rounded-3xl p-6 shadow-2xl backdrop-blur-sm">
-          <PlayerList players={players} myPlayerId={myPlayerId} />
+          <PlayerList players={players} myPlayerId={myPlayerId} maxPlayers={maxPlayers} />
 
           {isHost && players.length < 2 && (
             <div className="flex items-center justify-center gap-2 mt-4 select-none">

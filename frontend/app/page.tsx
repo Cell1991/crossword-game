@@ -27,6 +27,7 @@ export default function HomePage() {
   const [customTurnCount, setCustomTurnCount] = useState('28');
   const [hpOption, setHpOption] = useState('100');
   const [customHp, setCustomHp] = useState('100');
+  const [maxPlayers, setMaxPlayers] = useState<number>(4);
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [roomsError, setRoomsError] = useState<string | null>(null);
@@ -92,6 +93,7 @@ export default function HomePage() {
         gameMode === 'TURNS' ? maxTurns : null,
         false,
         gameMode === 'HP' ? startingHp : null,
+        maxPlayers,
       );
       sessionStore.save({
         gameId: res.game_id,
@@ -104,6 +106,7 @@ export default function HomePage() {
         gameMode: res.game_mode,
         maxTurns: res.max_turns,
         startingHp: res.starting_hp,
+        maxPlayers: res.max_players ?? maxPlayers,
         createdAt: res.created_at,
       });
       router.push(`/lobby/${res.game_pin}`);
@@ -530,6 +533,28 @@ export default function HomePage() {
                 </div>
               )}
 
+              {/* Player Limit */}
+              <fieldset>
+                <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Player Limit</legend>
+                <div className="grid grid-cols-3 gap-2">
+                  {[2, 3, 4].map((limit) => (
+                    <button
+                      key={limit}
+                      type="button"
+                      aria-pressed={maxPlayers === limit}
+                      onClick={() => setMaxPlayers(limit)}
+                      className={`rounded-xl border py-2 sm:py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                        maxPlayers === limit
+                          ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
+                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                      }`}
+                    >
+                      {limit} Players
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
               {/* Your Name */}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-slate-300">Your Name</label>
@@ -654,18 +679,12 @@ export default function HomePage() {
                           onClick={() => handleSelectRoom(room)}
                           className={`group relative flex items-center gap-2.5 p-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none active:scale-[0.98] ${
                             isSelected
-                              ? 'border-amber-400 bg-gradient-to-r from-amber-500/20 via-slate-800 to-slate-800 shadow-[0_0_15px_rgba(245,158,11,0.2)] ring-1 ring-amber-400/50'
-                              : 'border-white/10 bg-slate-800/50 hover:bg-slate-800/80 hover:border-amber-400/40'
+                              ? 'border-amber-400 bg-slate-800/90 shadow-[0_0_15px_rgba(245,158,11,0.2)] ring-1 ring-amber-400/50'
+                              : 'border-white/10 bg-slate-800/50 hover:bg-slate-800/80 hover:border-white/20'
                           }`}
                         >
-                          {/* Host Avatar Badge */}
-                          <div
-                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-black text-xs transition-all ${
-                              isSelected
-                                ? 'bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 shadow-sm'
-                                : 'bg-slate-700/80 text-amber-300 border border-amber-400/20 group-hover:bg-gradient-to-br group-hover:from-amber-400 group-hover:to-orange-500 group-hover:text-slate-950'
-                            }`}
-                          >
+                          {/* Host Avatar Badge - Always vibrant gold like image 1 */}
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-xs sm:text-sm shadow-[0_2px_10px_rgba(245,158,11,0.25)]">
                             {(room.host_name || 'H').charAt(0).toUpperCase()}
                           </div>
 
@@ -679,7 +698,7 @@ export default function HomePage() {
                               </span>
                               <span className="text-slate-500">•</span>
                               <span className={isFull ? 'text-amber-400 font-medium' : 'text-emerald-400 font-medium'}>
-                                {room.player_count}/4
+                                {room.player_count}/{room.max_players || 4}
                               </span>
                             </div>
                           </div>

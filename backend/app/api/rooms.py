@@ -31,6 +31,7 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
         db, req.host_name, req.turn_time_limit,
         is_debug=req.is_debug, game_mode=req.game_mode, max_turns=req.max_turns,
         starting_hp=req.starting_hp,
+        max_players=req.max_players,
     )
     await db.commit()
     return CreateRoomResponse(
@@ -44,6 +45,7 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
         game_mode=room.game_mode,
         max_turns=room.max_turns,
         starting_hp=room.starting_hp,
+        max_players=getattr(room, "max_players", 4) or 4,
         created_at=room.created_at,
     )
 
@@ -76,6 +78,7 @@ async def join_room(game_pin: str, req: JoinRoomRequest, db: AsyncSession = Depe
         game_mode=room.game_mode,
         max_turns=room.max_turns,
         starting_hp=room.starting_hp,
+        max_players=getattr(room, "max_players", 4) or 4,
         created_at=room.created_at,
     )
 
@@ -129,6 +132,7 @@ async def get_room(game_pin: str, response: Response, db: AsyncSession = Depends
         max_turns=room.max_turns,
         starting_hp=room.starting_hp,
         is_debug=room.is_debug,
+        max_players=getattr(room, "max_players", 4) or 4,
     )
 
 @router.post("/{game_pin}/start")
