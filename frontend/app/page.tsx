@@ -140,7 +140,7 @@ export default function HomePage() {
         gameMode: res.game_mode,
         maxTurns: res.max_turns,
         startingHp: res.starting_hp,
-        maxPlayers: res.max_players ?? maxPlayers,
+        maxPlayers: maxPlayers ?? res.max_players ?? 4,
         createdAt: res.created_at,
       });
       router.push(`/lobby/${res.game_pin}`);

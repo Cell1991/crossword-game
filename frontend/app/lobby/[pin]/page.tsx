@@ -3,7 +3,7 @@
 import React, { startTransition, useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { getRoom, leaveRoom, startGame, updateRoomSettings, sessionStore } from '@/lib/api';
+import { getRoom, leaveRoom, startGame, sessionStore } from '@/lib/api';
 import { PinDisplay } from '@/components/lobby/PinDisplay';
 import { PlayerList } from '@/components/lobby/PlayerList';
 import ParticleField from '@/components/effects/ParticleField';
@@ -213,17 +213,6 @@ export default function LobbyPage() {
     router.push('/');
   };
 
-  const handleUpdateMaxPlayers = async (newLimit: number) => {
-    if (!myPlayerId || !isHost) return;
-    try {
-      await updateRoomSettings(pin, myPlayerId, { max_players: newLimit });
-      setMaxPlayers(newLimit);
-      if (gameId) sessionStore.update(gameId, { maxPlayers: newLimit });
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to update player limit');
-    }
-  };
-
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4 gap-6 overflow-hidden">
       <ParticleField className="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-80" />
@@ -278,35 +267,11 @@ export default function LobbyPage() {
             </div>
 
             {/* Players */}
-            <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-800/40 border border-white/5 relative">
+            <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-800/40 border border-white/5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Players</span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-xs sm:text-sm font-bold text-amber-300">
-                  {maxPlayers ? `${maxPlayers} Players` : '4 Players'}
-                </span>
-                {isHost && (
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      disabled={maxPlayers ? maxPlayers <= Math.max(2, players.length) : false}
-                      onClick={() => handleUpdateMaxPlayers((maxPlayers || 4) - 1)}
-                      className="w-5 h-5 rounded-md flex items-center justify-center bg-slate-700/80 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all border border-white/10"
-                      title="Decrease player limit"
-                    >
-                      -
-                    </button>
-                    <button
-                      type="button"
-                      disabled={maxPlayers ? maxPlayers >= 50 : false}
-                      onClick={() => handleUpdateMaxPlayers((maxPlayers || 4) + 1)}
-                      className="w-5 h-5 rounded-md flex items-center justify-center bg-slate-700/80 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all border border-white/10"
-                      title="Increase player limit"
-                    >
-                      +
-                    </button>
-                  </div>
-                )}
-              </div>
+              <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300">
+                {maxPlayers ? `${maxPlayers} Players` : '4 Players'}
+              </span>
             </div>
 
             {/* Turn Time */}
