@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 /** How long a flashed toast stays on screen. */
 const TOAST_MS = 4000;
@@ -9,20 +9,48 @@ const TOAST_MS = 4000;
 export function useGameToasts() {
   const [info, setInfo] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const infoTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const errorTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const dismissInfo = useCallback(() => {
+    if (infoTimerRef.current) clearTimeout(infoTimerRef.current);
+    setInfo(null);
+  }, []);
+
+  const dismissError = useCallback(() => {
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    setError('');
+  }, []);
 
   /** Shows an info line that clears itself after a few seconds. */
   const flashInfo = useCallback((message: string) => {
+    if (infoTimerRef.current) clearTimeout(infoTimerRef.current);
     setInfo(message);
-    setTimeout(() => setInfo(null), TOAST_MS);
+    infoTimerRef.current = setTimeout(() => {
+      setInfo(null);
+      infoTimerRef.current = null;
+    }, TOAST_MS);
   }, []);
 
   /** Shows an error that clears itself after a few seconds. */
   const flashError = useCallback((message: string) => {
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     setError(message);
-    setTimeout(() => setError(''), TOAST_MS);
+    errorTimerRef.current = setTimeout(() => {
+      setError('');
+      errorTimerRef.current = null;
+    }, TOAST_MS);
   }, []);
 
-  return useMemo(() => ({ info, error, setError, flashInfo, flashError }), [info, error, flashInfo, flashError]);
+  return useMemo(() => ({
+    info,
+    error,
+    setError,
+    flashInfo,
+    flashError,
+    dismissInfo,
+    dismissError,
+  }), [info, error, flashInfo, flashError, dismissInfo, dismissError]);
 }
 
 export type GameToasts = ReturnType<typeof useGameToasts>;

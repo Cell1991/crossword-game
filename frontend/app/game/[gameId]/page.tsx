@@ -665,7 +665,13 @@ export default function GamePage() {
                 onDismiss={cards.clearHints}
               />
             )}
-            <ToastStack info={toasts.info} error={toasts.error} inline />
+            <ToastStack
+              info={toasts.info}
+              error={toasts.error}
+              onDismissInfo={toasts.dismissInfo}
+              onDismissError={toasts.dismissError}
+              inline
+            />
           </div>
           <div className="absolute inset-0 z-10">
             <BoardCanvas

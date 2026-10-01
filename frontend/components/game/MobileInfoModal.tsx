@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { ScrollText, X, Sparkles } from 'lucide-react';
 import { Player, MoveHistoryEntry } from '@/lib/types';
 import { RightSidebar } from './RightSidebar';
@@ -32,31 +33,48 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
   moveHistory = [],
   cardUseEffects = {},
 }) => {
-  // Prevent body scroll when modal is open on mobile
+  // Prevent body scroll when modal is open on mobile & handle Escape
   useEffect(() => {
     if (!isOpen) return;
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
+  }, [isOpen, onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/30 backdrop-blur-[2px] animate-in fade-in duration-200"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Match Status and Scoreboard"
-    >
-      {/* Translucent Glassmorphism Modal Dialog Card */}
-      <div
-        className="relative w-full max-w-md max-h-[88vh] flex flex-col rounded-3xl bg-slate-950/75 backdrop-blur-xl border border-cyan-500/30 shadow-[0_16px_50px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.15),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20 overflow-hidden animate-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="mobile-info-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.16 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/40 backdrop-blur-[4px]"
+          onClick={onClose}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Match Status and Scoreboard"
+        >
+          {/* Translucent Glassmorphism Modal Dialog Card */}
+          <motion.div
+            key="mobile-info-card"
+            initial={{ opacity: 0, scale: 0.93, y: 14 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 380 }}
+            className="relative w-full max-w-md max-h-[88vh] flex flex-col rounded-3xl bg-slate-950/85 backdrop-blur-xl border border-cyan-500/30 shadow-[0_16px_50px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.15),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Top Atmospheric Aura Highlight */}
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-cyan-400 to-purple-500 shadow-[0_0_12px_rgba(6,182,212,0.8)]" />
 
@@ -103,7 +121,9 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
             cardUseEffects={cardUseEffects}
           />
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
   );
 };

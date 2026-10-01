@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { LogOut, X } from 'lucide-react';
 
 interface ConfirmExitModalProps {
@@ -18,20 +19,39 @@ export function ConfirmExitModal({
   onConfirm,
   onClose,
 }: ConfirmExitModalProps) {
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isLeaving) onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isLeaving, onClose]);
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="exit-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md animate-fadeIn"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-[22rem] sm:max-w-sm rounded-[1.75rem] border border-rose-500/30 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-900/95 p-6 text-center shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_35px_rgba(244,63,94,0.25)] ring-1 ring-white/10"
-        onClick={e => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="confirm-exit-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.16 }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="exit-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md"
+          onClick={onClose}
+        >
+          <motion.div
+            key="confirm-exit-card"
+            initial={{ opacity: 0, scale: 0.93, y: 14 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 380 }}
+            className="relative w-full max-w-[22rem] sm:max-w-sm rounded-[1.75rem] border border-rose-500/30 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-900/95 p-6 text-center shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_35px_rgba(244,63,94,0.25)] ring-1 ring-white/10"
+            onClick={e => e.stopPropagation()}
+          >
         {/* Top luminous accent beam */}
         <span className="absolute inset-x-10 top-0 h-0.5 bg-gradient-to-r from-transparent via-rose-400 to-transparent shadow-[0_0_10px_#fb7185]" />
 
@@ -78,8 +98,10 @@ export function ConfirmExitModal({
           >
             {isLeaving ? 'Leaving...' : 'Leave Game'}
           </button>
-        </div>
-      </div>
-    </div>
-  );
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
 }

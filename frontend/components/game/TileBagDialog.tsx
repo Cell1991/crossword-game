@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { motion } from 'motion/react';
 import { Layers, X } from 'lucide-react';
 import { TILE_THEME_STYLE } from '@/lib/tileTheme';
 
@@ -35,15 +36,23 @@ export const TileBagDialog: React.FC<TileBagDialogProps> = ({ tileBagCount, tile
   if (!mounted) return null;
 
   return createPortal(
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.16 }}
       style={TILE_THEME_STYLE}
-      className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-150 select-none"
+      className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md select-none"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <section
+      <motion.section
+        initial={{ opacity: 0, scale: 0.93, y: 14 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ type: 'spring', damping: 26, stiffness: 380 }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="remaining-letters-title"
@@ -53,7 +62,7 @@ export const TileBagDialog: React.FC<TileBagDialogProps> = ({ tileBagCount, tile
             closeButtonRef.current?.focus();
           }
         }}
-        className="flex max-h-[88vh] sm:max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-amber-500/40 bg-slate-950/95 shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_35px_rgba(251,191,36,0.2),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-amber-400/20 animate-in zoom-in-95 duration-150"
+        className="flex max-h-[88vh] sm:max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-amber-500/40 bg-slate-950/95 shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_35px_rgba(251,191,36,0.2),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-amber-400/20"
       >
         {/* Top Atmospheric Aura */}
         <div className="h-1 w-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
@@ -129,8 +138,8 @@ export const TileBagDialog: React.FC<TileBagDialogProps> = ({ tileBagCount, tile
             </span>
           </div>
         </div>
-      </section>
-    </div>,
+      </motion.section>
+    </motion.div>,
     document.body
   );
 };

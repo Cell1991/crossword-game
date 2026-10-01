@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -16,20 +17,39 @@ export const BlankTilePickerModal: React.FC<BlankTilePickerModalProps> = ({
   onSelect,
   onClose,
 }) => {
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-[10000] flex items-end justify-center px-3 pb-24 sm:items-center sm:pb-0"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <div
-        role="dialog"
-        aria-label="Choose a letter for the wildcard blank tile"
-        className="pointer-events-auto relative w-full max-w-[31rem] overflow-hidden rounded-[1.35rem] border border-cyan-400/45 bg-[#071326]/[.98] p-4 text-white shadow-[0_18px_55px_rgba(0,0,0,0.7),0_0_34px_rgba(14,165,233,0.2)] animate-fadeIn"
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="blank-tile-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-[10000] flex items-end justify-center px-3 pb-24 sm:items-center sm:pb-0 bg-slate-950/60 backdrop-blur-sm"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) onClose();
+          }}
+        >
+          <motion.div
+            key="blank-tile-dialog"
+            initial={{ opacity: 0, scale: 0.93, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 12 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 380 }}
+            role="dialog"
+            aria-label="Choose a letter for the wildcard blank tile"
+            className="pointer-events-auto relative w-full max-w-[31rem] overflow-hidden rounded-[1.35rem] border border-cyan-400/45 bg-[#071326]/[.98] p-4 text-white shadow-[0_18px_55px_rgba(0,0,0,0.7),0_0_34px_rgba(14,165,233,0.2)]"
+          >
         <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300 to-transparent opacity-80" />
         <div className="pointer-events-none absolute -right-14 -top-16 h-40 w-40 rounded-full bg-cyan-400/10 blur-3xl" />
 
@@ -70,7 +90,9 @@ export const BlankTilePickerModal: React.FC<BlankTilePickerModalProps> = ({
           ))}
         </div>
 
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
