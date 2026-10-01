@@ -1,6 +1,7 @@
 import uuid
 from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import select
 from fastapi import HTTPException
 
