@@ -246,39 +246,60 @@ export default function LobbyPage() {
         {/* PIN Display */}
         <PinDisplay pin={pin} />
 
-        <div className={`flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-5 gap-y-1.5 text-xs sm:text-sm text-slate-300 rounded-xl px-4 py-2 shadow-lg backdrop-blur-sm transition-all duration-300 border ${
+        <div className={`w-full rounded-2xl border p-2 sm:p-2.5 shadow-lg backdrop-blur-md transition-all duration-300 ${
           timeLeft <= 120
             ? 'bg-rose-950/30 border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.1)]'
-            : 'bg-slate-900/70 border-slate-700/50'
+            : 'bg-slate-900/80 border-slate-700/50'
         }`}>
-          <span className="flex items-center gap-1.5">
-            <strong className="font-bold text-slate-200">Mode</strong>
-            <span className="font-semibold text-amber-300">{gameMode === 'HP' ? `HP Battle (${startingHp ?? 100} HP)` : `Turn Count (${maxTurns} turns)`}</span>
-          </span>
-          <span className="text-slate-600 hidden sm:inline">•</span>
-          <span className="flex items-center gap-1.5">
-            <strong className="font-bold text-slate-200">Players</strong>
-            <span className="font-semibold text-amber-300">{maxPlayers ? `Max ${maxPlayers}` : 'Unlimited'}</span>
-          </span>
-          <span className="text-slate-600 hidden sm:inline">•</span>
-          <span className="flex items-center gap-1.5">
-            <strong className="font-bold text-slate-200">Turn Time</strong>
-            <span className="font-semibold text-amber-300">{turnTimeLimit === null ? 'Unlimited' : `${turnTimeLimit} sec`}</span>
-          </span>
-          <span className="text-slate-600 hidden sm:inline">•</span>
-          <span
-            className="flex items-center gap-1.5"
-            title="Room will automatically dissolve after 10 minutes of inactivity if not started"
-          >
-            <Clock className={`w-3.5 h-3.5 ${timeLeft <= 120 ? 'text-rose-400 animate-pulse' : 'text-amber-400'}`} />
-            <strong className={`font-bold ${timeLeft <= 120 ? 'text-rose-200' : 'text-slate-200'}`}>
-              {timeLeft <= 120 ? 'Closing in' : 'Auto-close'}
-            </strong>
-            <span className={`font-mono font-bold tracking-wider ${timeLeft <= 120 ? 'text-rose-400 animate-pulse' : 'text-amber-300'}`}>
-              {formatCountdown(timeLeft)}
-            </span>
-          </span>
-          {isDebugRoom && <span className="font-semibold text-rose-300">🐞 Debug room</span>}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 text-center">
+            {/* Mode */}
+            <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-800/40 border border-white/5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mode</span>
+              <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300 truncate max-w-full">
+                {gameMode === 'HP' ? `HP Battle (${startingHp ?? 100})` : `${maxTurns} Turns`}
+              </span>
+            </div>
+
+            {/* Players */}
+            <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-800/40 border border-white/5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Players</span>
+              <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300">
+                {maxPlayers ? `${maxPlayers} Players` : 'Unlimited'}
+              </span>
+            </div>
+
+            {/* Turn Time */}
+            <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-800/40 border border-white/5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Turn Time</span>
+              <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300">
+                {turnTimeLimit === null ? 'Unlimited' : `${turnTimeLimit}s`}
+              </span>
+            </div>
+
+            {/* Auto-close */}
+            <div className={`flex flex-col items-center justify-center py-2 px-1.5 rounded-xl border ${
+              timeLeft <= 120
+                ? 'bg-rose-900/30 border-rose-500/40'
+                : 'bg-slate-800/40 border-white/5'
+            }`}>
+              <span className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${
+                timeLeft <= 120 ? 'text-rose-300' : 'text-slate-400'
+              }`}>
+                <Clock className={`w-3 h-3 ${timeLeft <= 120 ? 'text-rose-400 animate-pulse' : 'text-amber-400'}`} />
+                {timeLeft <= 120 ? 'Closing' : 'Auto-close'}
+              </span>
+              <span className={`mt-0.5 font-mono text-xs sm:text-sm font-bold ${
+                timeLeft <= 120 ? 'text-rose-400 animate-pulse' : 'text-amber-300'
+              }`}>
+                {formatCountdown(timeLeft)}
+              </span>
+            </div>
+          </div>
+          {isDebugRoom && (
+            <div className="mt-1.5 text-center text-xs font-semibold text-rose-300">
+              🐞 Debug room
+            </div>
+          )}
         </div>
 
         {/* Player List */}
