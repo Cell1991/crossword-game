@@ -153,9 +153,14 @@ export class BoardCompositor {
       }
     }
 
-    // 7. Layer 6: Selection Box
+    // 7. Layer 6: Selection Box (only drawn when cell is not occupied by a temporary tile)
     if (config.selectedCell && isCellVisible(config.selectedCell.row, config.selectedCell.col)) {
-      FXRenderer.renderSelection(ctx, config.selectedCell, offset, cellSize, config.temporaryTilesValid);
+      const isTemporary = config.temporaryTiles.some(
+        t => t.row === config.selectedCell!.row && t.col === config.selectedCell!.col
+      );
+      if (!isTemporary) {
+        FXRenderer.renderSelection(ctx, config.selectedCell, offset, cellSize, config.temporaryTilesValid);
+      }
     }
 
     ctx.restore();
