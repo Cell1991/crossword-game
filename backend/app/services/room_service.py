@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -9,6 +10,7 @@ from app.core.security import generate_game_pin, generate_session_token
 from app.database.models import GameRoom, Game, GamePlayer, get_utc_now
 from app.game.tiles import TileService
 from app.websocket.connection_manager import manager
+from app.schemas.events import WebSocketEvent, EventType
 
 class RoomService:
 
@@ -86,6 +88,13 @@ class RoomService:
             raise HTTPException(status_code=404, detail="Invalid Game PIN: Room not found")
 
         room = rows[0][0]
+        if room.status == "EXPIRED" or RoomService.is_room_expired(room):
+            room.status = "EXPIRED"
+            await db.flush()
+            raise HTTPException(
+                status_code=410,
+                detail=f"This room has expired because the game was not started within {settings.ROOM_EXPIRY_MINUTES} minutes."
+            )
         if room.status != "WAITING":
             raise HTTPException(status_code=400, detail="Game has already started or finished")
 
@@ -210,6 +219,13 @@ class RoomService:
             raise HTTPException(status_code=404, detail="Room not found")
 
         room = rows[0][0]
+        if room.status == "EXPIRED" or RoomService.is_room_expired(room):
+            room.status = "EXPIRED"
+            await db.flush()
+            raise HTTPException(
+                status_code=410,
+                detail=f"This room has expired because the game was not started within {settings.ROOM_EXPIRY_MINUTES} minutes."
+            )
         players = [row[1] for row in rows if row[1] is not None]
 
         return room, players
@@ -283,6 +299,9 @@ class RoomService:
         for room, players in rooms_map.values():
             if not players:
                 continue
+            if room.status == "WAITING" and RoomService.is_room_expired(room):
+                room.status = "EXPIRED"
+                continue
             host = next((p for p in players if p.is_host or p.id == room.host_player_id), players[0])
             results.append({
                 "id": room.id,
@@ -302,3 +321,47 @@ class RoomService:
                 break
 
         return results
+
+    @staticmethod
+    def is_room_expired(room: GameRoom, timeout_minutes: int | None = None) -> bool:
+        if timeout_minutes is None:
+            timeout_minutes = settings.ROOM_EXPIRY_MINUTES
+        if room.status != "WAITING" or not room.created_at:
+            return False
+        created_at = room.created_at
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        now = datetime.now(timezone.utc)
+        return (now - created_at) >= timedelta(minutes=timeout_minutes)
+
+    @staticmethod
+    async def expire_inactive_rooms(db: AsyncSession, timeout_minutes: int | None = None) -> list[str]:
+        """
+        Check for rooms that are still WAITING after timeout_minutes (default 10) and dissolve them.
+        Kicks all players out and marks room as EXPIRED.
+        """
+        if timeout_minutes is None:
+            timeout_minutes = settings.ROOM_EXPIRY_MINUTES
+
+        stmt = select(GameRoom).where(GameRoom.status == "WAITING")
+        rooms = (await db.execute(stmt)).scalars().all()
+
+        expired_room_ids = []
+        for room in rooms:
+            if RoomService.is_room_expired(room, timeout_minutes):
+                room.status = "EXPIRED"
+                expired_room_ids.append(room.id)
+                # Broadcast ROOM_EXPIRED to any connected WebSockets
+                await manager.broadcast(room.id, WebSocketEvent(
+                    type=EventType.ROOM_EXPIRED,
+                    payload={
+                        "roomId": room.id,
+                        "gamePin": room.game_pin,
+                        "reason": f"Room dissolved after {timeout_minutes} minutes of inactivity."
+                    }
+                ).model_dump())
+
+        if expired_room_ids:
+            await db.flush()
+
+        return expired_room_ids

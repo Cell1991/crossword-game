@@ -195,3 +195,39 @@ async def test_list_rooms():
         assert found["starting_hp"] == 100
         assert found["turn_time_limit"] == 60
 
+@pytest.mark.asyncio
+async def test_room_expiration():
+    from datetime import datetime, timezone, timedelta
+    from app.database.session import AsyncSessionLocal
+    from app.database.models import GameRoom
+    from app.services.room_service import RoomService
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # Create a room
+        res = await client.post("/api/rooms", json={"host_name": "TestHost"})
+        assert res.status_code == 200
+        pin = res.json()["game_pin"]
+
+        # Fast forward room created_at to 11 minutes ago
+        async with AsyncSessionLocal() as db:
+            from sqlalchemy import select
+            room = (await db.execute(select(GameRoom).where(GameRoom.game_pin == pin))).scalar_one()
+            room.created_at = datetime.now(timezone.utc) - timedelta(minutes=11)
+            await db.commit()
+
+        # 1. Attempting to get room details should return 410 Gone
+        get_res = await client.get(f"/api/rooms/{pin}")
+        assert get_res.status_code == 410
+        assert "expired" in get_res.json()["detail"].lower()
+
+        # 2. Attempting to join should return 410 Gone
+        join_res = await client.post(f"/api/rooms/{pin}/join", json={"game_pin": pin, "player_name": "LatePlayer"})
+        assert join_res.status_code == 410
+
+        # 3. Active rooms list should not include this expired room
+        list_res = await client.get("/api/rooms")
+        assert list_res.status_code == 200
+        rooms = list_res.json()
+        assert not any(r["game_pin"] == pin for r in rooms)
+

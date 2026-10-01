@@ -88,6 +88,15 @@ export default function LobbyPage() {
   const fetchRoom = useCallback(async () => {
     try {
       const room = await getRoom(pin);
+      if (room.status === 'EXPIRED') {
+        setError('This room has been dissolved due to 10 minutes of inactivity.');
+        setTimeout(() => {
+          const session = sessionStore.getLast();
+          if (session?.gameId) sessionStore.remove(session.gameId);
+          router.replace('/');
+        }, 2200);
+        return;
+      }
       setPlayers(room.players);
       setHostPlayerId(room.host_player_id);
       setTurnTimeLimit(room.turn_time_limit);
@@ -103,7 +112,19 @@ export default function LobbyPage() {
       }
     } catch (error: unknown) {
       setLoading(false);
-      setError(error instanceof Error ? error.message : 'Failed to fetch room');
+      const msg = error instanceof Error ? error.message : 'Failed to fetch room';
+      setError(msg);
+      if (
+        msg.toLowerCase().includes('expired') ||
+        msg.toLowerCase().includes('dissolved') ||
+        msg.toLowerCase().includes('not found')
+      ) {
+        setTimeout(() => {
+          const session = sessionStore.getLast();
+          if (session?.gameId) sessionStore.remove(session.gameId);
+          router.replace('/');
+        }, 2200);
+      }
     }
   }, [pin, router]);
 

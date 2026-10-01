@@ -257,7 +257,8 @@ export type WebSocketEventType =
   | 'EFFECT_PENDING'
   | 'EFFECT_RESOLVED'
   | 'CARD_USED'
-  | 'REMATCH_CREATED';
+  | 'REMATCH_CREATED'
+  | 'ROOM_EXPIRED';
 
 export interface WebSocketEvent {
   type: WebSocketEventType;

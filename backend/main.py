@@ -1,21 +1,44 @@
+import asyncio
 from datetime import datetime, timedelta
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.database.session import init_db
+from app.database.session import init_db, AsyncSessionLocal
+from app.services.room_service import RoomService
 from app.api import rooms, games, moves, cards, debug, dictionary
 from app.websocket import handlers
 
 # Global tracker for 7-day inactivity sleep
 last_user_activity = datetime.now()
 
+async def cleanup_expired_rooms_loop():
+    while True:
+        try:
+            await asyncio.sleep(20)
+            async with AsyncSessionLocal() as db:
+                expired = await RoomService.expire_inactive_rooms(db, timeout_minutes=settings.ROOM_EXPIRY_MINUTES)
+                if expired:
+                    await db.commit()
+        except asyncio.CancelledError:
+            break
+        except Exception:
+            pass
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database tables on startup
     await init_db()
-    yield
+    cleanup_task = asyncio.create_task(cleanup_expired_rooms_loop())
+    try:
+        yield
+    finally:
+        cleanup_task.cancel()
+        try:
+            await cleanup_task
+        except asyncio.CancelledError:
+            pass
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
