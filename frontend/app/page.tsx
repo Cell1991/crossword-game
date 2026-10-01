@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, ArrowRight, BookOpen, Clock, Eye, LogIn, Minus, Plus, RefreshCw, Users, User, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Bot, Clock, Eye, LogIn, Minus, Plus, RefreshCw, Users, User, X } from 'lucide-react';
 import { createRoom, getRoom, getRooms, joinRoom, sessionStore } from '@/lib/api';
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
@@ -11,7 +11,29 @@ import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
 
-type Mode = 'home' | 'create' | 'join';
+type Mode = 'home' | 'create' | 'join' | 'bot';
+type BotDifficulty = 'easy' | 'medium' | 'hard';
+
+export const BOT_PROFILES: Record<BotDifficulty, { name: string; title: string; desc: string; badge: string }> = {
+  easy: {
+    name: 'SparkBot',
+    title: 'Easy',
+    desc: 'Novice AI • Relaxed word strategy',
+    badge: 'Novice',
+  },
+  medium: {
+    name: 'Nexus AI',
+    title: 'Medium',
+    desc: 'Tactical AI • Balanced & strategic',
+    badge: 'Tactical',
+  },
+  hard: {
+    name: 'Titan AI',
+    title: 'Hard',
+    desc: 'Master AI • Aggressive & high scoring',
+    badge: 'Master',
+  },
+};
 
 export default function HomePage() {
   const router = useRouter();
@@ -29,6 +51,7 @@ export default function HomePage() {
   const [customHp, setCustomHp] = useState('100');
   const [playerLimitOption, setPlayerLimitOption] = useState<'4' | 'custom'>('4');
   const [customMaxPlayers, setCustomMaxPlayers] = useState('4');
+  const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>('medium');
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [roomsError, setRoomsError] = useState<string | null>(null);
@@ -55,6 +78,9 @@ export default function HomePage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'bot') {
+        setMode('bot');
+      }
       if (params.get('kicked') === 'expired') {
         setError('This room has been dissolved due to 10 minutes of inactivity.');
         window.history.replaceState({}, '', '/');
@@ -120,6 +146,64 @@ export default function HomePage() {
       router.push(`/lobby/${res.game_pin}`);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Failed to create room');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateBot = async () => {
+    if (!name.trim()) { setError('Please enter your name'); return; }
+    const maxTurns = turnCountOption === 'custom' ? Number(customTurnCount) : Number(turnCountOption);
+    if (gameMode === 'TURNS' && (!Number.isInteger(maxTurns) || maxTurns < 1 || maxTurns > 500)) {
+      setError('Turn count must be between 1 and 500');
+      return;
+    }
+    const startingHp = hpOption === 'custom' ? Number(customHp) : Number(hpOption);
+    if (gameMode === 'HP' && (!Number.isInteger(startingHp) || startingHp < 10 || startingHp > 1000)) {
+      setError('Starting HP must be between 10 and 1000');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    try {
+      const selectedBot = BOT_PROFILES[botDifficulty];
+      const botDisplayName = `${selectedBot.name} [Bot]`;
+
+      const res = await createRoom(
+        name.trim(),
+        turnTimeLimit,
+        gameMode,
+        gameMode === 'TURNS' ? maxTurns : null,
+        false,
+        gameMode === 'HP' ? startingHp : null,
+        2,
+      );
+
+      sessionStore.save({
+        gameId: res.game_id,
+        playerId: res.host_player_id,
+        token: res.session_token,
+        displayName: res.display_name,
+        isHost: true,
+        gamePin: res.game_pin,
+        turnTimeLimit: res.turn_time_limit,
+        gameMode: res.game_mode,
+        maxTurns: res.max_turns,
+        startingHp: res.starting_hp,
+        maxPlayers: 2,
+        createdAt: res.created_at,
+      });
+
+      try {
+        await joinRoom(res.game_pin, botDisplayName);
+      } catch (botErr) {
+        console.warn('Bot auto-join notice:', botErr);
+      }
+
+      router.push(`/lobby/${res.game_pin}?bot=${botDifficulty}`);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to create bot room');
     } finally {
       setLoading(false);
     }
@@ -338,21 +422,39 @@ export default function HomePage() {
                 </span>
                 <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
               </button>
-              <button
-                onClick={() => { setMode('join'); setError(''); }}
-                className="group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-4 py-3.5 sm:px-5 sm:py-4 text-left text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200/30 hover:from-indigo-300/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
-              >
-                <span className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-300/15 text-indigo-200">
-                    <LogIn className="h-5 w-5" strokeWidth={2.2} />
+              <div className="flex items-stretch gap-2 sm:gap-2.5 w-full">
+                <button
+                  onClick={() => { setMode('join'); setError(''); }}
+                  className="group flex flex-1 items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-3.5 py-3 sm:px-5 sm:py-4 text-left text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200/30 hover:from-indigo-300/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0 min-w-0"
+                >
+                  <span className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-300/15 text-indigo-200">
+                      <LogIn className="h-5 w-5" strokeWidth={2.2} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[0.62rem] sm:text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Have a PIN?</span>
+                      <span className="block text-base sm:text-lg font-bold tracking-tight truncate">Join Game</span>
+                    </span>
                   </span>
-                  <span>
-                    <span className="block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Have a PIN?</span>
-                    <span className="block text-lg font-bold tracking-tight">Join Game</span>
+                  <ArrowRight className="h-4 sm:h-5 w-4 sm:w-5 shrink-0 text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-white ml-1" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => { setMode('bot'); setError(''); }}
+                  title="Play vs Bot"
+                  aria-label="Play with Bot"
+                  className="group relative flex flex-col items-center justify-center shrink-0 w-20 sm:w-24 rounded-xl sm:rounded-2xl border border-cyan-400/30 bg-gradient-to-b from-cyan-950/40 via-slate-800/80 to-cyan-950/30 px-2 py-2 text-center text-white shadow-[0_8px_24px_rgba(6,182,212,0.15)] transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-400/60 hover:from-cyan-900/50 hover:to-slate-800 hover:shadow-[0_12px_28px_rgba(6,182,212,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0 cursor-pointer overflow-hidden"
+                >
+                  <div className="pointer-events-none absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80" />
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-400/15 text-cyan-300 border border-cyan-400/25 group-hover:scale-110 group-hover:bg-cyan-400/25 transition-all">
+                    <Bot className="h-4.5 w-4.5" strokeWidth={2.2} />
                   </span>
-                </span>
-                <ArrowRight className="h-5 w-5 text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-white" />
-              </button>
+                  <span className="mt-1 block text-[0.62rem] sm:text-[0.65rem] font-bold uppercase tracking-wider text-cyan-200 group-hover:text-white transition-colors leading-tight">
+                    VS Bot
+                  </span>
+                </button>
+              </div>
 
               <button
                 type="button"
@@ -852,6 +954,271 @@ export default function HomePage() {
                     ? `Watch live match #${pin.trim()}`
                     : `Watch as spectator ${pin.trim() ? `(#${pin.trim()})` : ''}`}
                 </span>
+              </button>
+            </div>
+          )}
+
+          {mode === 'bot' && (
+            <div className="flex flex-col gap-3.5 sm:gap-4">
+              {/* Header */}
+              <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { setMode('home'); setError(''); }}
+                    className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
+                    aria-label="Back"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                      <span>Play vs Bot</span>
+                      <span className="flex items-center gap-1 rounded-full bg-cyan-400/15 border border-cyan-400/30 px-2 py-0.5 text-[10px] font-bold text-cyan-300 uppercase tracking-wider">
+                        <Bot className="w-3 h-3" /> 1v1 AI
+                      </span>
+                    </h2>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bot Difficulty Selection */}
+              <fieldset>
+                <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Bot Difficulty</legend>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    ['easy', 'Easy', 'SparkBot', 'Novice'],
+                    ['medium', 'Medium', 'Nexus AI', 'Tactical'],
+                    ['hard', 'Hard', 'Titan AI', 'Master'],
+                  ] as const).map(([val, title, botName, level]) => (
+                    <button
+                      key={val}
+                      type="button"
+                      aria-pressed={botDifficulty === val}
+                      onClick={() => setBotDifficulty(val)}
+                      className={`rounded-xl border p-2 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 cursor-pointer ${
+                        botDifficulty === val
+                          ? 'border-cyan-400/80 bg-cyan-400/15 text-white shadow-[0_0_15px_rgba(6,182,212,0.18)]'
+                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <span className={`block text-xs sm:text-sm font-bold ${botDifficulty === val ? 'text-cyan-200' : 'text-slate-200'}`}>
+                        {title}
+                      </span>
+                      <span className={`mt-0.5 block text-[0.65rem] truncate font-medium ${botDifficulty === val ? 'text-cyan-300/90' : 'text-slate-400'}`}>
+                        {botName}
+                      </span>
+                      <span className={`mt-1 inline-block text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${
+                        botDifficulty === val ? 'bg-cyan-400/25 text-cyan-200' : 'bg-slate-700/50 text-slate-400'
+                      }`}>
+                        {level}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              {/* Game Mode */}
+              <fieldset>
+                <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Game Mode</legend>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    ['HP', 'HP Battle', 'Score drains health'],
+                    ['TURNS', 'Turn Count', 'Highest score wins'],
+                  ] as const).map(([value, title, description]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={gameMode === value}
+                      onClick={() => setGameMode(value)}
+                      className={`rounded-xl border p-2.5 sm:p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 cursor-pointer ${
+                        gameMode === value
+                          ? 'border-cyan-400/80 bg-cyan-400/15 text-white shadow-[0_0_15px_rgba(6,182,212,0.15)]'
+                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <span className={`block text-xs sm:text-sm font-bold ${gameMode === value ? 'text-cyan-200' : 'text-slate-200'}`}>
+                        {title}
+                      </span>
+                      <span className={`mt-0.5 block text-[0.68rem] leading-snug ${gameMode === value ? 'text-cyan-300/80' : 'text-slate-400'}`}>
+                        {description}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              {/* Settings 2-Column: (Starting HP / Turn Count) + Turn Time */}
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                {gameMode === 'HP' ? (
+                  <div>
+                    <label htmlFor="bot-starting-hp" className="mb-1.5 block text-xs font-semibold text-slate-300">Starting HP</label>
+                    <CustomSelect
+                      id="bot-starting-hp"
+                      value={hpOption}
+                      onChange={setHpOption}
+                      options={[
+                        { value: '50', label: '50 HP' },
+                        { value: '100', label: '100 HP' },
+                        { value: '150', label: '150 HP' },
+                        { value: '200', label: '200 HP' },
+                        { value: 'custom', label: 'Custom' },
+                      ]}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label htmlFor="bot-max-turns" className="mb-1.5 block text-xs font-semibold text-slate-300">Game Length</label>
+                    <CustomSelect
+                      id="bot-max-turns"
+                      value={turnCountOption}
+                      onChange={setTurnCountOption}
+                      options={[
+                        { value: '7', label: '7 Turns' },
+                        { value: '14', label: '14 Turns' },
+                        { value: '21', label: '21 Turns' },
+                        { value: 'custom', label: 'Custom' },
+                      ]}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="bot-turn-time" className="mb-1.5 block text-xs font-semibold text-slate-300">Turn Time</label>
+                  <CustomSelect
+                    id="bot-turn-time"
+                    value={turnTimeLimit === null ? '' : String(turnTimeLimit)}
+                    onChange={val => setTurnTimeLimit(val === '' ? null : Number(val) as TurnTimeLimit)}
+                    options={[
+                      { value: '', label: 'Unlimited' },
+                      { value: '30', label: '30 sec' },
+                      { value: '60', label: '60 sec' },
+                      { value: '90', label: '90 sec' },
+                      { value: '120', label: '120 sec' },
+                    ]}
+                  />
+                </div>
+              </div>
+
+              {/* Custom HP / Turn Stepper if selected */}
+              {gameMode === 'HP' && hpOption === 'custom' && (
+                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-300/20 transition-all overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    aria-label="Decrease HP"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
+                    <input
+                      type="number"
+                      min={10}
+                      max={1000}
+                      value={customHp}
+                      onChange={event => setCustomHp(event.target.value)}
+                      aria-label="Custom starting HP"
+                      placeholder="100"
+                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="text-xs font-bold text-cyan-400/80 uppercase tracking-wider select-none shrink-0">HP</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    aria-label="Increase HP"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {gameMode === 'TURNS' && turnCountOption === 'custom' && (
+                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-300/20 transition-all overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 28) - 1)))}
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    aria-label="Decrease turns"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
+                    <input
+                      type="number"
+                      min={1}
+                      max={500}
+                      value={customTurnCount}
+                      onChange={event => setCustomTurnCount(event.target.value)}
+                      aria-label="Custom turn count"
+                      placeholder="28"
+                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="text-xs font-bold text-cyan-400/80 uppercase tracking-wider select-none shrink-0">Turns</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 28) + 1)))}
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    aria-label="Increase turns"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Your Name */}
+              <div>
+                <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-slate-300">
+                  <User className="h-3.5 w-3.5 text-cyan-400" />
+                  <span>Your Name</span>
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleCreateBot()}
+                  placeholder="Enter your name..."
+                  maxLength={24}
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20"
+                />
+              </div>
+
+              {/* Opponent Preview Banner */}
+              <div className="flex items-center justify-between rounded-xl border border-cyan-500/20 bg-cyan-950/20 px-3.5 py-2.5">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-slate-400">Matchup:</span>
+                  <span className="font-bold text-white truncate max-w-[90px]">{name.trim() || 'You'}</span>
+                  <span className="text-cyan-400 font-bold">vs</span>
+                  <span className="font-bold text-cyan-300">{BOT_PROFILES[botDifficulty].name}</span>
+                </div>
+                <span className="text-[10px] font-semibold text-cyan-400/80 uppercase tracking-wider">1v1 AI Match</span>
+              </div>
+
+              {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
+
+              {/* Action Button */}
+              <button
+                onClick={handleCreateBot}
+                disabled={loading}
+                className="w-full rounded-xl sm:rounded-2xl border border-cyan-400/40 bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_10px_25px_rgba(6,182,212,0.25)] transition-all hover:from-cyan-300 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px cursor-pointer flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-slate-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Setting up Bot Room...
+                  </span>
+                ) : (
+                  <>
+                    <Bot className="h-5 w-5" strokeWidth={2.2} />
+                    <span>Start Bot Match</span>
+                  </>
+                )}
               </button>
             </div>
           )}
