@@ -153,12 +153,31 @@ export async function joinRoom(gamePin: string, playerName: string): Promise<Joi
 }
 
 export async function getRooms(): Promise<RoomSummary[]> {
-  const res = await fetch(`${getApiBase()}/rooms`, { cache: 'no-store' });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Failed to fetch rooms');
+  const base = getApiBase();
+  const url = `${base}/rooms?_t=${Date.now()}`;
+  let res = await fetch(url, {
+    cache: 'no-store',
+    headers: { 'Accept': 'application/json' },
+  }).catch(() => null);
+
+  // If initial request failed with 404, 307, 308, or network error, attempt fallback with trailing slash
+  if (!res || !res.ok) {
+    const fallbackRes = await fetch(`${base}/rooms/?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json' },
+    }).catch(() => null);
+
+    if (fallbackRes && fallbackRes.ok) {
+      res = fallbackRes;
+    }
   }
-  return res.json();
+
+  if (!res || !res.ok) {
+    const err = res ? await res.json().catch(() => ({})) : {};
+    throw new Error(err.detail || `Failed to fetch rooms (${res?.status ?? 'network'})`);
+  }
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getRoom(gamePin: string): Promise<RoomDetailResponse> {

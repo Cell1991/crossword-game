@@ -285,7 +285,7 @@ class RoomService:
             select(GameRoom, GamePlayer)
             .outerjoin(GamePlayer, GamePlayer.game_id == GameRoom.id)
             .where(GameRoom.status.in_(["WAITING", "PLAYING"]))
-            .order_by(GameRoom.created_at.desc())
+            .order_by(GameRoom.created_at.desc().nullslast())
         )
         rows = (await db.execute(stmt)).all()
 
@@ -297,29 +297,42 @@ class RoomService:
                 rooms_map[room.id][1].append(player)
 
         results = []
+        has_expired_updates = False
         for room, players in rooms_map.values():
-            if not players:
+            try:
+                if not players:
+                    continue
+                if room.status == "WAITING" and RoomService.is_room_expired(room):
+                    room.status = "EXPIRED"
+                    has_expired_updates = True
+                    continue
+
+                host = next((p for p in players if p.is_host or p.id == room.host_player_id), players[0])
+                host_name = (host.display_name or "Host").strip() or "Host"
+                results.append({
+                    "id": str(room.id),
+                    "game_pin": str(room.game_pin),
+                    "status": str(room.status),
+                    "host_name": host_name,
+                    "player_count": len(players),
+                    "max_players": settings.MAX_PLAYERS,
+                    "turn_time_limit": room.turn_time_limit,
+                    "game_mode": str(room.game_mode or "HP").upper(),
+                    "max_turns": room.max_turns,
+                    "starting_hp": room.starting_hp if room.starting_hp is not None else 100,
+                    "is_debug": bool(room.is_debug),
+                    "created_at": room.created_at or get_utc_now(),
+                })
+                if len(results) >= limit:
+                    break
+            except Exception:
                 continue
-            if room.status == "WAITING" and RoomService.is_room_expired(room):
-                room.status = "EXPIRED"
-                continue
-            host = next((p for p in players if p.is_host or p.id == room.host_player_id), players[0])
-            results.append({
-                "id": room.id,
-                "game_pin": room.game_pin,
-                "status": room.status,
-                "host_name": host.display_name,
-                "player_count": len(players),
-                "max_players": settings.MAX_PLAYERS,
-                "turn_time_limit": room.turn_time_limit,
-                "game_mode": room.game_mode,
-                "max_turns": room.max_turns,
-                "starting_hp": room.starting_hp,
-                "is_debug": room.is_debug,
-                "created_at": room.created_at or get_utc_now(),
-            })
-            if len(results) >= limit:
-                break
+
+        if has_expired_updates:
+            try:
+                await db.commit()
+            except Exception:
+                pass
 
         return results
 
@@ -327,13 +340,17 @@ class RoomService:
     def is_room_expired(room: GameRoom, timeout_minutes: int | None = None) -> bool:
         if timeout_minutes is None:
             timeout_minutes = settings.ROOM_EXPIRY_MINUTES
-        if room.status != "WAITING" or not room.created_at:
+        if room.status != "WAITING":
             return False
+        if not room.created_at:
+            # Stale waiting room with missing timestamp is treated as expired
+            return True
         created_at = room.created_at
         if created_at.tzinfo is None:
             created_at = created_at.replace(tzinfo=timezone.utc)
         now = datetime.now(timezone.utc)
-        return (now - created_at) >= timedelta(minutes=timeout_minutes)
+        diff = (now - created_at).total_seconds()
+        return diff >= (timeout_minutes * 60)
 
     @staticmethod
     async def expire_inactive_rooms(db: AsyncSession, timeout_minutes: int | None = None) -> list[str]:

@@ -31,9 +31,9 @@ class CreateRoomResponse(BaseModel):
     session_token: str
     display_name: str
     turn_time_limit: Optional[int] = None
-    game_mode: Literal["HP", "TURNS"]
+    game_mode: str = "HP"
     max_turns: Optional[int] = None
-    starting_hp: Optional[int] = None
+    starting_hp: Optional[int] = 100
     created_at: Optional[datetime] = None
 
 class JoinRoomRequest(BaseModel):
@@ -49,9 +49,9 @@ class JoinRoomResponse(BaseModel):
     game_pin: Optional[str] = None
     host_player_id: Optional[str] = None
     turn_time_limit: Optional[int] = None
-    game_mode: Optional[Literal["HP", "TURNS"]] = "HP"
+    game_mode: str = "HP"
     max_turns: Optional[int] = None
-    starting_hp: Optional[int] = None
+    starting_hp: Optional[int] = 100
     created_at: Optional[datetime] = None
 
 class RematchResponse(JoinRoomResponse):
@@ -68,21 +68,21 @@ class RoomDetailResponse(BaseModel):
     spectator_count: int = 0
     created_at: Optional[datetime] = None
     turn_time_limit: Optional[int] = None
-    game_mode: Literal["HP", "TURNS"]
+    game_mode: str = "HP"
     max_turns: Optional[int] = None
-    starting_hp: Optional[int] = None
+    starting_hp: Optional[int] = 100
     is_debug: bool = False
 
 class RoomSummaryResponse(BaseModel):
     id: str
     game_pin: str
-    status: str
-    host_name: str
-    player_count: int
+    status: str = "WAITING"
+    host_name: str = "Host"
+    player_count: int = 1
     max_players: int = 4
     turn_time_limit: Optional[int] = None
-    game_mode: Literal["HP", "TURNS"]
+    game_mode: str = "HP"
     max_turns: Optional[int] = None
-    starting_hp: Optional[int] = None
+    starting_hp: Optional[int] = 100
     is_debug: bool = False
     created_at: Optional[datetime] = None

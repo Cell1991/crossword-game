@@ -29,15 +29,18 @@ export default function HomePage() {
   const [customHp, setCustomHp] = useState('100');
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
+  const [roomsError, setRoomsError] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const fetchRooms = useCallback(async (showLoading = true) => {
     if (showLoading) setLoadingRooms(true);
     try {
       const data = await getRooms();
-      setRooms(data);
+      setRooms(Array.isArray(data) ? data : []);
+      setRoomsError(null);
     } catch (err) {
       console.error('Failed to fetch rooms:', err);
+      setRoomsError(err instanceof Error ? err.message : 'Unable to load rooms');
     } finally {
       if (showLoading) setLoadingRooms(false);
     }
@@ -562,7 +565,18 @@ export default function HomePage() {
                     <span className="text-[10px] text-indigo-300 animate-pulse">Checking...</span>
                   )}
                 </div>
-                {rooms.length > 0 ? (
+                {roomsError ? (
+                  <div className="flex items-center justify-between rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
+                    <span className="truncate max-w-[210px]">{roomsError}</span>
+                    <button
+                      type="button"
+                      onClick={() => fetchRooms(true)}
+                      className="font-semibold text-amber-300 hover:text-amber-200 underline cursor-pointer shrink-0 ml-2"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : rooms.length > 0 ? (
                   <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
                     {rooms.map(room => {
                       const isFull = room.player_count >= room.max_players;

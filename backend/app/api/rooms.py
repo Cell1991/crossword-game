@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.session import get_db
@@ -19,7 +19,10 @@ router = APIRouter(prefix="/rooms", tags=["Rooms"])
 
 @router.get("", response_model=list[RoomSummaryResponse])
 @router.get("/", response_model=list[RoomSummaryResponse], include_in_schema=False)
-async def list_rooms(db: AsyncSession = Depends(get_db)):
+async def list_rooms(response: Response, db: AsyncSession = Depends(get_db)):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     return await RoomService.list_active_rooms(db)
 
 @router.post("", response_model=CreateRoomResponse)
