@@ -82,7 +82,8 @@ export class FXRenderer {
     ctx: CanvasRenderingContext2D,
     cell: CellPosition,
     offset: { x: number; y: number },
-    cellSize: number
+    cellSize: number,
+    isValid?: boolean | null
   ): void {
     const pad = Math.max(1, cellSize * 0.06);
     const x = offset.x + cell.col * cellSize + pad;
@@ -92,30 +93,56 @@ export class FXRenderer {
 
     ctx.save();
 
-    // 1. Ambient Warm Golden Aura
-    ctx.shadowColor = 'rgba(245, 158, 11, 0.85)';
-    ctx.shadowBlur = Math.max(6, cellSize * 0.22);
+    if (isValid === true) {
+      // 1. Radiant Emerald Victory Halo - Maximum Glow & Prominence
+      ctx.shadowColor = 'rgba(16, 185, 129, 0.95)';
+      ctx.shadowBlur = Math.max(16, cellSize * 0.45);
 
-    // 2. Luxury Amber-Gold Gradient Ring
-    const haloGrad = ctx.createLinearGradient(x, y, x + w, y + w);
-    haloGrad.addColorStop(0, '#fef08a');   // Radiant pale gold highlight
-    haloGrad.addColorStop(0.35, '#fbbf24'); // Vibrant amber gold
-    haloGrad.addColorStop(0.7, '#f59e0b');  // Deep warm amber
-    haloGrad.addColorStop(1, '#d97706');    // Rich dark gold
+      const haloGrad = ctx.createLinearGradient(x, y, x + w, y + w);
+      haloGrad.addColorStop(0, '#d1fae5');  // Bright crystal mint
+      haloGrad.addColorStop(0.3, '#6ee7b7'); // Luminous neon mint
+      haloGrad.addColorStop(0.7, '#10b981'); // Vibrant emerald green
+      haloGrad.addColorStop(1, '#059669');  // Deep rich emerald
 
-    ctx.strokeStyle = haloGrad;
-    ctx.lineWidth = Math.max(2, cellSize * 0.045);
-    drawRoundedRect(ctx, x, y, w, w, radius);
-    ctx.stroke();
+      ctx.strokeStyle = haloGrad;
+      ctx.lineWidth = Math.max(3, cellSize * 0.07);
+      drawRoundedRect(ctx, x, y, w, w, radius);
+      ctx.stroke();
 
-    // 3. Subtle Crystal Edge Specular Accent
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-    ctx.lineWidth = 1;
-    const innerPad = 1;
-    drawRoundedRect(ctx, x + innerPad, y + innerPad, w - innerPad * 2, w - innerPad * 2, Math.max(1, radius - innerPad));
-    ctx.stroke();
+      // Crystal edge specular accent
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+      ctx.lineWidth = 1;
+      const innerPad = 1;
+      drawRoundedRect(ctx, x + innerPad, y + innerPad, w - innerPad * 2, w - innerPad * 2, Math.max(1, radius - innerPad));
+      ctx.stroke();
+    } else {
+      // 1. Ambient Warm Golden Aura
+      ctx.shadowColor = 'rgba(245, 158, 11, 0.85)';
+      ctx.shadowBlur = Math.max(6, cellSize * 0.22);
+
+      // 2. Luxury Amber-Gold Gradient Ring
+      const haloGrad = ctx.createLinearGradient(x, y, x + w, y + w);
+      haloGrad.addColorStop(0, '#fef08a');   // Radiant pale gold highlight
+      haloGrad.addColorStop(0.35, '#fbbf24'); // Vibrant amber gold
+      haloGrad.addColorStop(0.7, '#f59e0b');  // Deep warm amber
+      haloGrad.addColorStop(1, '#d97706');    // Rich dark gold
+
+      ctx.strokeStyle = haloGrad;
+      ctx.lineWidth = Math.max(2, cellSize * 0.045);
+      drawRoundedRect(ctx, x, y, w, w, radius);
+      ctx.stroke();
+
+      // 3. Subtle Crystal Edge Specular Accent
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.lineWidth = 1;
+      const innerPad = 1;
+      drawRoundedRect(ctx, x + innerPad, y + innerPad, w - innerPad * 2, w - innerPad * 2, Math.max(1, radius - innerPad));
+      ctx.stroke();
+    }
 
     ctx.restore();
   }

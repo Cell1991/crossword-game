@@ -155,7 +155,7 @@ export class BoardCompositor {
 
     // 7. Layer 6: Selection Box
     if (config.selectedCell && isCellVisible(config.selectedCell.row, config.selectedCell.col)) {
-      FXRenderer.renderSelection(ctx, config.selectedCell, offset, cellSize);
+      FXRenderer.renderSelection(ctx, config.selectedCell, offset, cellSize, config.temporaryTilesValid);
     }
 
     ctx.restore();

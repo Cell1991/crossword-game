@@ -236,12 +236,12 @@ export class TileRenderer {
       if (!lowPower || isCorrectPlacement || isRemote) {
         ctx.save();
         ctx.shadowColor = isCorrectPlacement
-          ? 'rgba(52, 211, 153, 0.9)'
+          ? 'rgba(16, 185, 129, 0.95)'
           : isRemote
           ? 'rgba(6, 182, 212, 0.8)'
           : shadowFill;
         ctx.shadowBlur = isCorrectPlacement
-          ? Math.max(8, cellSize * 0.22)
+          ? Math.max(16, cellSize * 0.42)
           : isRemote
           ? Math.max(8, cellSize * 0.2)
           : Math.max(4, cellSize * 0.1);
@@ -376,12 +376,37 @@ export class TileRenderer {
       return;
     } else if (isCorrectPlacement) {
       ctx.save();
-      ctx.shadowColor = 'rgba(52, 211, 153, 0.95)';
-      ctx.shadowBlur = Math.max(12, cellSize * 0.32);
-      ctx.strokeStyle = '#6ee7b7';
-      ctx.lineWidth = Math.max(2.5, cellSize * 0.055);
+
+      // Layer A: Wide atmospheric emerald bloom aura
+      ctx.shadowColor = 'rgba(16, 185, 129, 0.95)';
+      ctx.shadowBlur = Math.max(16, cellSize * 0.45);
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = Math.max(3.2, cellSize * 0.075);
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
+
+      // Layer B: Intense core neon green-mint gradient
+      ctx.shadowColor = 'rgba(110, 231, 183, 0.9)';
+      ctx.shadowBlur = Math.max(8, cellSize * 0.2);
+      const greenGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW, y + pad + tileW);
+      greenGrad.addColorStop(0, '#d1fae5');  // Bright crystal mint highlight
+      greenGrad.addColorStop(0.25, '#6ee7b7'); // Luminous mint
+      greenGrad.addColorStop(0.65, '#10b981'); // Vibrant emerald green
+      greenGrad.addColorStop(1, '#059669');  // Deep rich emerald
+      ctx.strokeStyle = greenGrad;
+      ctx.lineWidth = Math.max(2.8, cellSize * 0.065);
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
+
+      // Layer C: Crisp inner specular jewel shine
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+      ctx.lineWidth = Math.max(1, cellSize * 0.022);
+      const innerPad = Math.max(1, cellSize * 0.025);
+      drawRoundedRect(ctx, x + pad + innerPad, y + pad + innerPad, tileW - innerPad * 2, tileW - innerPad * 2, Math.max(1, radius - innerPad));
+      ctx.stroke();
+
       ctx.restore();
     } else if (isGolden) {
       ctx.strokeStyle = isTemporary ? '#f5d98a' : 'rgba(226, 184, 93, 0.9)';
