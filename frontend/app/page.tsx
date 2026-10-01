@@ -202,19 +202,6 @@ export default function HomePage() {
     }
   };
 
-  const handleQuickAction = async (room: RoomSummary) => {
-    setPin(room.game_pin);
-    if (room.status === 'PLAYING' || room.player_count >= room.max_players) {
-      await executeWatch(room.game_pin);
-      return;
-    }
-    if (!name.trim()) {
-      setError('Please enter your name first');
-      nameInputRef.current?.focus();
-      return;
-    }
-    await executeJoin(room.game_pin, name.trim());
-  };
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-x-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(99,102,241,0.16),transparent_30%),linear-gradient(135deg,#020617_0%,#0f172a_58%,#171942_100%)] px-4 py-6 sm:py-12">
@@ -665,45 +652,37 @@ export default function HomePage() {
                         <div
                           key={room.id}
                           onClick={() => handleSelectRoom(room)}
-                          className={`group relative flex items-center justify-between p-2 sm:p-2.5 rounded-xl border transition-all duration-200 cursor-pointer ${
+                          className={`group relative flex items-center gap-2.5 p-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none active:scale-[0.98] ${
                             isSelected
-                              ? 'border-amber-400/80 bg-gradient-to-r from-amber-500/15 via-slate-800/80 to-slate-800/80 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
-                              : 'border-white/10 bg-slate-800/50 hover:bg-slate-800/80 hover:border-amber-400/30'
+                              ? 'border-amber-400 bg-gradient-to-r from-amber-500/20 via-slate-800 to-slate-800 shadow-[0_0_15px_rgba(245,158,11,0.2)] ring-1 ring-amber-400/50'
+                              : 'border-white/10 bg-slate-800/50 hover:bg-slate-800/80 hover:border-amber-400/40'
                           }`}
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            {/* Host Avatar Badge */}
-                            <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-xs shadow-sm">
-                              {(room.host_name || 'H').charAt(0).toUpperCase()}
-                            </div>
-                            
-                            <div className="min-w-0 flex flex-col gap-0.5">
-                              <span className="font-bold text-xs text-white group-hover:text-amber-200 transition-colors truncate max-w-[60px] sm:max-w-[75px]" title={room.host_name}>
-                                {room.host_name}
-                              </span>
-                              <div className="flex items-center gap-1 text-[10px]">
-                                <span className="font-mono font-bold text-amber-300">
-                                  #{room.game_pin}
-                                </span>
-                                <span className="text-slate-500">•</span>
-                                <span className="text-emerald-400 font-medium">
-                                  {room.player_count}/4
-                                </span>
-                              </div>
-                            </div>
+                          {/* Host Avatar Badge */}
+                          <div
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-black text-xs transition-all ${
+                              isSelected
+                                ? 'bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 shadow-sm'
+                                : 'bg-slate-700/80 text-amber-300 border border-amber-400/20 group-hover:bg-gradient-to-br group-hover:from-amber-400 group-hover:to-orange-500 group-hover:text-slate-950'
+                            }`}
+                          >
+                            {(room.host_name || 'H').charAt(0).toUpperCase()}
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleQuickAction(room);
-                            }}
-                            disabled={loading}
-                            className="ml-1 px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-sm active:scale-95 transition-all cursor-pointer shrink-0"
-                          >
-                            {!isWaiting || isFull ? 'Watch' : 'Join'}
-                          </button>
+                          <div className="min-w-0 flex-1 flex flex-col justify-center">
+                            <span className="font-bold text-xs text-white group-hover:text-amber-200 transition-colors truncate" title={room.host_name}>
+                              {room.host_name}
+                            </span>
+                            <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
+                              <span className="font-mono font-bold text-amber-300">
+                                #{room.game_pin}
+                              </span>
+                              <span className="text-slate-500">•</span>
+                              <span className={isFull ? 'text-amber-400 font-medium' : 'text-emerald-400 font-medium'}>
+                                {room.player_count}/4
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       );
                     })}
