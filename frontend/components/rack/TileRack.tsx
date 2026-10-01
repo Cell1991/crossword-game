@@ -294,6 +294,7 @@ export const TileRack = memo(function TileRack({
                 {/* Tile Button with spring physics */}
                 <motion.button
                   key={tile.id}
+                  layout={!isDragging}
                   data-rack-slot={slotIndex}
                   data-rack-tile-id={tile.id}
                   onClick={() => handleTileClick(tile)}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { memo, useCallback, useRef, useState } from 'react';
+import { motion } from 'motion/react';
 import { MoveHistoryEntry, Player, WordDefinition } from '@/lib/types';
 import {
   Trophy,
@@ -238,9 +239,15 @@ export const RightSidebar = memo(function RightSidebar({
 
                     {/* Score & Connection Status */}
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-sm font-bold font-mono text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.4)]">
+                      <motion.span
+                        key={player.score}
+                        initial={{ scale: 1.28, color: '#facc15' }}
+                        animate={{ scale: 1, color: '#34d399' }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                        className="text-sm font-bold font-mono text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.4)] inline-block"
+                      >
                         {player.score}
-                      </span>
+                      </motion.span>
                       {player.connection_status === 'ONLINE' ? (
                         <Wifi className="w-3.5 h-3.5 text-emerald-400/80" />
                       ) : (

@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { motion } from 'motion/react';
 import { Player } from '@/lib/types';
 import { Sparkles, Hourglass, Bot } from 'lucide-react';
 
@@ -30,6 +31,13 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
       (currentPlayer.display_name.toLowerCase().includes('bot') ||
         currentPlayer.display_name.toLowerCase().includes('[ai]'))
   );
+
+  // Tactile haptic feedback when it becomes the player's turn (supported on mobile/tablets)
+  useEffect(() => {
+    if (isMyTurn && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try { navigator.vibrate([25, 40, 25]); } catch {}
+    }
+  }, [isMyTurn]);
 
   if (isEliminated) {
     return (
@@ -66,7 +74,12 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
   if (isMyTurn) {
     return (
       <div className="flex items-center gap-2 select-none min-w-0">
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-400/60 bg-gradient-to-r from-emerald-950/80 via-teal-950/60 to-slate-900/80 px-2.5 py-1 text-xs font-bold text-emerald-200 shadow-[0_0_14px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/30 shrink-0">
+        <motion.div
+          initial={{ scale: 0.88, opacity: 0.6 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+          className="flex items-center gap-2 rounded-xl border border-emerald-400/60 bg-gradient-to-r from-emerald-950/80 via-teal-950/60 to-slate-900/80 px-2.5 py-1 text-xs font-bold text-emerald-200 shadow-[0_0_14px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/30 shrink-0"
+        >
           <div className="relative flex items-center justify-center shrink-0">
             <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] animate-ping absolute" />
             <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
@@ -77,7 +90,7 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
           <span className="font-mono text-[10px] sm:text-xs font-semibold px-1.5 py-0.2 rounded-md bg-emerald-900/60 border border-emerald-500/40 text-emerald-200 shrink-0">
             T{turnNumber}{maxTurns ? `/${maxTurns}` : ''}
           </span>
-        </div>
+        </motion.div>
       </div>
     );
   }

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'motion/react';
 import { Player } from '@/lib/types';
 import { Crown, User, CheckCircle2, Bot } from 'lucide-react';
 
@@ -33,8 +34,11 @@ export const PlayerList: React.FC<PlayerListProps> = ({ players, myPlayerId, max
           const isMe = p.id === myPlayerId;
           const isBot = p.display_name.toLowerCase().includes('bot') || p.display_name.toLowerCase().includes('[ai]');
           return (
-            <div
+            <motion.div
               key={p.id}
+              initial={{ opacity: 0, scale: 0.92, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 25 }}
               className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
                 isMe
                   ? 'bg-amber-950/40 border-amber-500/50 shadow-md shadow-amber-950/20'
@@ -73,7 +77,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({ players, myPlayerId, max
                   <Bot className="w-3 h-3" /> AI Bot
                 </span>
               ) : null}
-            </div>
+            </motion.div>
           );
         })}
         </div>
