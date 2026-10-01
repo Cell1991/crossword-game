@@ -104,7 +104,7 @@ export function useStagedMove({
       value = 0;
     }
     setTemporaryTiles(previous => [
-      ...previous.filter(staged => staged.tile_id !== tile.id),
+      ...previous.filter(staged => staged.tile_id !== tile.id && !(staged.row === cell.row && staged.col === cell.col)),
       { row: cell.row, col: cell.col, tile_id: tile.id, letter, value },
     ]);
     setSelectedTileId(null);
@@ -134,17 +134,19 @@ export function useStagedMove({
     if (!canStageMove) return;
     if (isCellCommitted(boardState, row, col)) return;
 
+    if (selectedTileId) {
+      const tile = rackTiles.find(rackTile => rackTile.id === selectedTileId);
+      if (tile && !temporaryTiles.some(staged => staged.tile_id === selectedTileId)) {
+        stageTile(tile, { row, col });
+        return;
+      }
+    }
+
     if (temporaryTiles.some(tile => tile.row === row && tile.col === col)) {
       setTemporaryTiles(previous => previous.filter(tile => !(tile.row === row && tile.col === col)));
       setSelectedTileId(null);
       return;
     }
-
-    if (!selectedTileId) return;
-    const tile = rackTiles.find(rackTile => rackTile.id === selectedTileId);
-    if (!tile) return;
-    if (temporaryTiles.some(staged => staged.tile_id === selectedTileId)) return;
-    stageTile(tile, { row, col });
   }, [boardState, canStageMove, selectedTileId, stageTile, temporaryTiles]);
 
   /** A tap on a rack tile selects it (blanks first ask for their letter). */
