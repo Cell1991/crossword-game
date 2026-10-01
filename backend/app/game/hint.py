@@ -49,7 +49,7 @@ def find_hint_suggestions(
         return []
 
     rack_counts = Counter(rack_letters)
-    blanks = rack_counts.get("?", 0) + rack_counts.get("*", 0)
+    blanks = rack_counts.get("?", 0) + rack_counts.get("*", 0) + rack_counts.get("BLANK", 0)
 
     is_board_empty = len(board_cells) == 0 or is_first_move
     candidates: list[dict[str, Any]] = []

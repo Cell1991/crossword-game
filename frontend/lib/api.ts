@@ -460,3 +460,50 @@ export async function getWordDefinition(word: string): Promise<WordDefinition | 
   }
 }
 
+export interface BotPlanResponse {
+  action: 'MOVE' | 'PASS' | 'EXCHANGE';
+  bot_player_id: string;
+  bot_name: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  word?: string;
+  score?: number;
+  direction?: 'across' | 'down';
+  tiles?: Array<{
+    row: number;
+    col: number;
+    letter: string;
+    value: number;
+    tile_id: string;
+  }>;
+  tile_ids?: string[];
+}
+
+export async function getBotPlan(gameId: string, difficulty?: string): Promise<BotPlanResponse> {
+  const base = getApiBase();
+  const query = difficulty ? `?difficulty=${encodeURIComponent(difficulty)}` : '';
+  const res = await fetch(`${base}/games/${gameId}/bot/plan${query}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(getErrorMessage(err, 'Failed to plan bot move'));
+  }
+  return res.json();
+}
+
+export async function executeBotMove(gameId: string, plan: BotPlanResponse): Promise<any> {
+  const base = getApiBase();
+  const res = await fetch(`${base}/games/${gameId}/bot/execute`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(plan),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(getErrorMessage(err, 'Failed to execute bot move'));
+  }
+  return res.json();
+}
+
+

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Player } from '@/lib/types';
-import { Sparkles, Hourglass } from 'lucide-react';
+import { Sparkles, Hourglass, Bot } from 'lucide-react';
 
 interface TurnBannerProps {
   isMyTurn: boolean;
@@ -23,6 +23,12 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
   maxTurns,
   mobile = false,
 }) => {
+  const isBot = Boolean(
+    currentPlayer &&
+      (currentPlayer.display_name.toLowerCase().includes('bot') ||
+        currentPlayer.display_name.toLowerCase().includes('[ai]'))
+  );
+
   if (isEliminated) {
     return (
       <div className="flex items-center gap-2 select-none min-w-0">
@@ -67,6 +73,22 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
             YOUR TURN
           </span>
           <span className="font-mono text-[10px] sm:text-xs font-semibold px-1.5 py-0.2 rounded-md bg-emerald-900/60 border border-emerald-500/40 text-emerald-200 shrink-0">
+            T{turnNumber}{maxTurns ? `/${maxTurns}` : ''}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isBot) {
+    return (
+      <div className="flex items-center gap-2 select-none min-w-0">
+        <div className="flex items-center gap-2 rounded-xl border border-cyan-500/50 bg-gradient-to-r from-cyan-950/80 via-slate-900/70 to-cyan-950/80 px-2.5 py-1 text-xs font-medium text-cyan-200 shadow-[0_0_14px_rgba(6,182,212,0.25)] ring-1 ring-cyan-500/30 min-w-0 truncate">
+          <Bot className="w-3.5 h-3.5 text-cyan-400 animate-pulse shrink-0" />
+          <span className="truncate text-[11px] sm:text-xs">
+            <strong className="text-cyan-300 font-bold">{currentPlayer?.display_name}</strong> is thinking...
+          </span>
+          <span className="font-mono text-[10px] sm:text-xs font-semibold px-1.5 py-0.2 rounded-md bg-cyan-950/80 border border-cyan-700/60 text-cyan-300 shrink-0">
             T{turnNumber}{maxTurns ? `/${maxTurns}` : ''}
           </span>
         </div>

@@ -6,9 +6,9 @@ export const dynamicParams = true;
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Bug, Eye } from 'lucide-react';
-import { commitMove, exchangeTiles, expireTurn, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
+import { commitMove, exchangeTiles, executeBotMove, expireTurn, getBotPlan, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
 import { buildRackSlots } from '@/lib/rack';
-import { GameState, Tile, Player } from '@/lib/types';
+import { GameState, Tile, Player, PlacedTile } from '@/lib/types';
 import { TILE_THEME_STYLE } from '@/lib/tileTheme';
 import { isBlankLetter } from '@/lib/tiles';
 import { useBoardCamera } from '@/hooks/useBoardCamera';
@@ -126,6 +126,7 @@ export default function GamePage() {
   const rackRef = useRef<HTMLDivElement>(null);
   /** Tiles picked to swap with the bag; `null` while the player is not exchanging. */
   const [exchangeTileIds, setExchangeTileIds] = useState<string[] | null>(null);
+  const [botStagedTiles, setBotStagedTiles] = useState<PlacedTile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
@@ -173,6 +174,7 @@ export default function GamePage() {
       clearRemotePlacements();
       setExchangeTileIds(null);
       cards.clearHints();
+      setBotStagedTiles([]);
     }
     turnKeyRef.current = nextTurnKey;
   }, [cards, clearRemotePlacements, gameState, handleTurnChange]);
@@ -326,6 +328,121 @@ export default function GamePage() {
       setIsSubmitting(false);
     }
   }, [flashError, gameId, myPlayerId, reload]);
+
+  // --- Bot Player Turn Automation & Step-by-Step Animated Tile Placement ---
+  const currentTurnPlayer = gameState?.players?.find(p => p.id === gameState?.current_player_id);
+  const isBotTurn = Boolean(
+    currentTurnPlayer &&
+    (currentTurnPlayer.display_name.toLowerCase().includes('bot') ||
+     currentTurnPlayer.display_name.toLowerCase().includes('[ai]'))
+  );
+
+  const botDifficulty = useMemo<'easy' | 'medium' | 'hard'>(() => {
+    const name = currentTurnPlayer?.display_name?.toLowerCase() || '';
+    if (name.includes('hard') || name.includes('titan')) return 'hard';
+    if (name.includes('medium') || name.includes('nexus')) return 'medium';
+    return 'easy';
+  }, [currentTurnPlayer?.display_name]);
+
+  const isHostDriver = Boolean(
+    session?.isHost ||
+    (gameState?.players && gameState.players.find(p => !p.display_name.toLowerCase().includes('bot') && !p.display_name.toLowerCase().includes('[ai]'))?.id === myPlayerId)
+  );
+
+  const botProcessingRef = useRef(false);
+  const lastProcessedTurnRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!gameState || gameState.status !== 'PLAYING') return;
+    if (!isBotTurn || !currentTurnPlayer || !isHostDriver) return;
+
+    const turnKey = `${gameState.turn_number}:${gameState.current_player_id}`;
+    if (lastProcessedTurnRef.current === turnKey || botProcessingRef.current) return;
+
+    let isMounted = true;
+    botProcessingRef.current = true;
+
+    const runBotTurn = async () => {
+      try {
+        // 1. Natural thinking time calibrated by difficulty
+        const thinkingMs = botDifficulty === 'hard' ? 1400 : botDifficulty === 'medium' ? 1900 : 2500;
+        await new Promise(r => setTimeout(r, thinkingMs));
+        if (!isMounted) return;
+
+        // 2. Fetch dictionary-valid move planned on the backend
+        const plan = await getBotPlan(gameId, botDifficulty);
+        if (!isMounted) return;
+
+        const planTiles = plan.tiles ?? [];
+        if (plan.action === 'MOVE' && planTiles.length > 0) {
+          // Place tiles step-by-step (one by one) with audio and visual feedback
+          const stepDelay = botDifficulty === 'hard' ? 320 : botDifficulty === 'medium' ? 400 : 520;
+          const stagedList: PlacedTile[] = [];
+
+          for (const tile of planTiles) {
+            if (!isMounted) return;
+            stagedList.push(tile);
+            setBotStagedTiles([...stagedList]);
+
+            // Play realistic placement sound effect
+            try {
+              const sfx = new Audio('/audio/sfx-place.mp3');
+              sfx.volume = 0.65;
+              void sfx.play().catch(() => {});
+            } catch {
+              // Sound play may be ignored if unprompted by user gesture
+            }
+
+            // Broadcast staging to other players / spectators
+            sync.sendMessage({
+              type: 'STAGING_CHANGE',
+              placements: stagedList.map(t => ({ row: t.row, col: t.col })),
+            });
+
+            await new Promise(r => setTimeout(r, stepDelay));
+          }
+
+          if (!isMounted) return;
+
+          // Short suspense delay before committing word
+          await new Promise(r => setTimeout(r, 650));
+          if (!isMounted) return;
+
+          await executeBotMove(gameId, plan);
+          lastProcessedTurnRef.current = turnKey;
+        } else {
+          // Exchange tiles or pass
+          await new Promise(r => setTimeout(r, 600));
+          if (!isMounted) return;
+          await executeBotMove(gameId, plan);
+          lastProcessedTurnRef.current = turnKey;
+        }
+
+        setBotStagedTiles([]);
+        reload();
+      } catch (err) {
+        console.error('Bot turn execution error:', err);
+        try {
+          if (gameState.current_player_id) {
+            await passTurn(gameId, gameState.current_player_id);
+            lastProcessedTurnRef.current = turnKey;
+            reload();
+          }
+        } catch {}
+      } finally {
+        if (isMounted) {
+          botProcessingRef.current = false;
+          setBotStagedTiles([]);
+        }
+      }
+    };
+
+    void runBotTurn();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [botDifficulty, currentTurnPlayer, gameId, gameState, isBotTurn, isHostDriver, reload, sync]);
 
   // The game UI needs the browser session and a game snapshot first. This loading view reads no
   // client-only state, so the server and the client's first paint render it identically (no
@@ -502,9 +619,9 @@ export default function GamePage() {
             <BoardCanvas
               containerRef={boardRef}
               boardState={boardState}
-              temporaryTiles={temporaryTiles}
-              remotePlacements={sync.remotePlacements}
-              temporaryTilesValid={validationState}
+              temporaryTiles={isBotTurn && botStagedTiles.length > 0 ? botStagedTiles : temporaryTiles}
+              remotePlacements={isBotTurn && botStagedTiles.length > 0 ? botStagedTiles.map(t => ({ row: t.row, col: t.col })) : sync.remotePlacements}
+              temporaryTilesValid={isBotTurn && botStagedTiles.length > 0 ? true : validationState}
               selectedCell={staged.selectedCell}
               onCellClick={handleCellClick}
               onStartPendingDrag={startPendingDrag}

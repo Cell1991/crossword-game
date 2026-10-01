@@ -1,16 +1,18 @@
 import asyncio
 from collections import defaultdict
-from typing import Optional
+from typing import Optional, Any
 from fastapi import APIRouter, Depends, Header, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.session import get_db
 from app.schemas.game import GameStateResponse
-from app.schemas.move import ExchangeTilesRequest
+from app.schemas.move import ExchangeTilesRequest, PlacedTileInput
 from app.schemas.room import RematchResponse
 from app.schemas.events import WebSocketEvent, EventType
 from app.services.game_service import GameService
 from app.services.room_service import RoomService
+from app.services.move_service import MoveService
+from app.services.bot_service import BotService
 from app.websocket.connection_manager import manager
 
 router = APIRouter(prefix="/games", tags=["Games"])
@@ -231,3 +233,87 @@ async def rematch(
         is_host=player.is_host,
         created=created,
     )
+
+
+@router.post("/{game_id}/bot/plan")
+async def plan_bot_move(
+    game_id: str,
+    difficulty: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Calculates the bot's next move based on its rack and difficulty setting."""
+    return await BotService.plan_bot_move(db, game_id, difficulty)
+
+
+@router.post("/{game_id}/bot/execute")
+async def execute_bot_move(
+    game_id: str,
+    req: dict[str, Any],
+    db: AsyncSession = Depends(get_db),
+):
+    """Executes a previously planned bot move, pass, or exchange."""
+    bot_player_id = req.get("bot_player_id")
+    action = req.get("action", "PASS")
+    if not bot_player_id:
+        raise HTTPException(status_code=400, detail="Missing bot_player_id")
+
+    if action == "MOVE":
+        tiles_data = req.get("tiles", [])
+        placed_tiles = [PlacedTileInput(**t) for t in tiles_data]
+        res, game, player = await MoveService.commit_move(db, game_id, bot_player_id, placed_tiles)
+        await db.commit()
+
+        # Broadcast MOVE_COMMITTED
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.MOVE_COMMITTED,
+            payload={
+                "playerId": player.id,
+                "turnNumber": res.turn_number,
+                "placedTiles": [t.model_dump() for t in placed_tiles],
+                "wordsFormed": [w.model_dump() for w in res.words_formed],
+                "scoreEarned": res.score_earned,
+                "playerTotalScore": player.score,
+                "nextPlayerId": res.next_player_id,
+                "boardState": game.board_state,
+                "pendingEffect": game.pending_effect,
+                "cardAwarded": res.card_awarded,
+            }
+        ).model_dump())
+
+        if res.game_over:
+            await manager.broadcast(game_id, WebSocketEvent(
+                type=EventType.GAME_ENDED,
+                payload={"reason": "Game completed", "winnerId": res.next_player_id},
+            ).model_dump())
+
+        return {"status": "success", "action": "MOVE", "score_earned": res.score_earned, "next_player_id": res.next_player_id}
+
+    elif action == "EXCHANGE":
+        tile_ids = req.get("tile_ids", [])
+        game, exchanged, is_over, reason, winner_id = await GameService.exchange_tiles(db, game_id, bot_player_id, tile_ids)
+        await db.commit()
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.TILES_EXCHANGED if exchanged else EventType.TURN_PASSED,
+            payload={
+                "playerId": bot_player_id,
+                "count": len(tile_ids) if exchanged else 0,
+                "nextPlayerId": game.current_player_id,
+                "turnNumber": game.turn_number,
+            }
+        ).model_dump())
+        return {"status": "success", "action": "EXCHANGE", "next_player_id": game.current_player_id}
+
+    else:
+        game, is_over, reason, winner_id = await GameService.pass_turn(db, game_id, bot_player_id)
+        await db.commit()
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.TURN_PASSED,
+            payload={
+                "passedPlayerId": bot_player_id,
+                "nextPlayerId": game.current_player_id,
+                "turnNumber": game.turn_number,
+                "consecutivePasses": game.consecutive_passes,
+            }
+        ).model_dump())
+        return {"status": "success", "action": "PASS", "next_player_id": game.current_player_id}
+
