@@ -152,7 +152,6 @@ export default function HomePage() {
   };
 
   const handleCreateBot = async () => {
-    if (!name.trim()) { setError('Please enter your name'); return; }
     const maxTurns = turnCountOption === 'custom' ? Number(customTurnCount) : Number(turnCountOption);
     if (gameMode === 'TURNS' && (!Number.isInteger(maxTurns) || maxTurns < 1 || maxTurns > 500)) {
       setError('Turn count must be between 1 and 500');
@@ -169,9 +168,10 @@ export default function HomePage() {
     try {
       const selectedBot = BOT_PROFILES[botDifficulty];
       const botDisplayName = `${selectedBot.name} [Bot]`;
+      const hostDisplayName = name.trim() || 'Player';
 
       const res = await createRoom(
-        name.trim(),
+        hostDisplayName,
         turnTimeLimit,
         gameMode,
         gameMode === 'TURNS' ? maxTurns : null,
@@ -1169,32 +1169,17 @@ export default function HomePage() {
                 </div>
               )}
 
-              {/* Your Name */}
-              <div>
-                <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-slate-300">
-                  <User className="h-3.5 w-3.5 text-cyan-400" />
-                  <span>Your Name</span>
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleCreateBot()}
-                  placeholder="Enter your name..."
-                  maxLength={24}
-                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20"
-                />
-              </div>
-
               {/* Opponent Preview Banner */}
-              <div className="flex items-center justify-between rounded-xl border border-cyan-500/20 bg-cyan-950/20 px-3.5 py-2.5">
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-400">Matchup:</span>
-                  <span className="font-bold text-white truncate max-w-[90px]">{name.trim() || 'You'}</span>
+              <div className="flex items-center justify-between rounded-xl border border-cyan-500/25 bg-cyan-950/30 px-4 py-3 shadow-[0_4px_16px_rgba(6,182,212,0.1)]">
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <span className="text-slate-400 font-medium">Matchup:</span>
+                  <span className="font-bold text-white">You</span>
                   <span className="text-cyan-400 font-bold">vs</span>
                   <span className="font-bold text-cyan-300">{BOT_PROFILES[botDifficulty].name}</span>
                 </div>
-                <span className="text-[10px] font-semibold text-cyan-400/80 uppercase tracking-wider">1v1 AI Match</span>
+                <span className="text-[10px] font-bold text-cyan-300/90 uppercase tracking-wider bg-cyan-400/15 border border-cyan-400/30 px-2 py-0.5 rounded-full">
+                  1v1 AI Match
+                </span>
               </div>
 
               {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
