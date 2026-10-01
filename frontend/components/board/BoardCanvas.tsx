@@ -96,6 +96,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   const pinchRef = useRef<{ distance: number; x: number; y: number } | null>(null);
   const tilePlacementTimesRef = useRef<Map<string, number>>(new Map());
   const prevTemporaryTilesRef = useRef<PlacedTile[]>([]);
+  const prevRemotePlacementsRef = useRef<{ row: number; col: number }[]>([]);
   const animFrameRef = useRef<number | null>(null);
 
   const draw = useCallback(() => {
@@ -123,6 +124,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   // Track tile placement timestamps and drive active spring & gleam animations
   useEffect(() => {
     const prevMap = new Map(prevTemporaryTilesRef.current.map(t => [t.tile_id, t]));
+    const prevRemoteKeys = new Set(prevRemotePlacementsRef.current.map(r => `${r.row}_${r.col}`));
     const now = performance.now();
     let hasNew = false;
     for (const t of temporaryTiles) {
@@ -133,14 +135,25 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
         hasNew = true;
       }
     }
+    for (const r of remotePlacements) {
+      const key = `${r.row}_${r.col}`;
+      if (!prevRemoteKeys.has(key)) {
+        tilePlacementTimesRef.current.set(key, now);
+        hasNew = true;
+      }
+    }
     // Clean up placements that were unstaged/recalled
-    const currentKeys = new Set(temporaryTiles.map(t => `${t.row}_${t.col}`));
+    const currentKeys = new Set([
+      ...temporaryTiles.map(t => `${t.row}_${t.col}`),
+      ...remotePlacements.map(r => `${r.row}_${r.col}`),
+    ]);
     for (const key of Array.from(tilePlacementTimesRef.current.keys())) {
       if (key.includes('_') && !currentKeys.has(key)) {
         tilePlacementTimesRef.current.delete(key);
       }
     }
     prevTemporaryTilesRef.current = temporaryTiles;
+    prevRemotePlacementsRef.current = remotePlacements;
 
     const startAnimLoop = () => {
       if (animFrameRef.current) return;
@@ -153,7 +166,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
             break;
           }
         }
-        if (stillAnimating || (temporaryTilesValid === true && temporaryTiles.length > 0)) {
+        if (stillAnimating || (temporaryTilesValid === true && temporaryTiles.length > 0) || remotePlacements.length > 0) {
           animFrameRef.current = requestAnimationFrame(step);
         } else {
           animFrameRef.current = null;
@@ -162,10 +175,10 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       animFrameRef.current = requestAnimationFrame(step);
     };
 
-    if (hasNew || (temporaryTilesValid === true && temporaryTiles.length > 0)) {
+    if (hasNew || (temporaryTilesValid === true && temporaryTiles.length > 0) || remotePlacements.length > 0) {
       startAnimLoop();
     }
-  }, [temporaryTiles, temporaryTilesValid, draw]);
+  }, [temporaryTiles, remotePlacements, temporaryTilesValid, draw]);
 
   useEffect(() => {
     return () => {

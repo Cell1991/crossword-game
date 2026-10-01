@@ -44,10 +44,14 @@ async def get_game(
         stmt_p = select(GamePlayer).where(GamePlayer.id == game_obj.current_player_id)
         curr_p = (await db.execute(stmt_p)).scalar_one_or_none()
         if BotService.is_bot_player(curr_p):
+            from datetime import timezone
             now = get_utc_now()
             started = game_obj.turn_started_at or game_obj.created_at
-            if started and (now - started).total_seconds() >= 15.0:
-                await BotService.execute_bot_move_now(db, game_id, curr_p.id)
+            if started:
+                if started.tzinfo is None:
+                    started = started.replace(tzinfo=timezone.utc)
+                if (now - started).total_seconds() >= 15.0:
+                    await BotService.execute_bot_move_now(db, game_id, curr_p.id)
 
     # Whether racks are revealed comes from the room's own is_debug flag (see get_game_state),
     # not from anything the client claims - a client can't ask its way into seeing opponents' tiles.

@@ -25,12 +25,15 @@ class BotService:
         return "[bot]" in name_lower or "[ai]" in name_lower or "bot" in name_lower
 
     @staticmethod
-    def get_difficulty_from_name(display_name: str) -> str:
+    def get_difficulty_from_name(display_name: str | None) -> str:
+        if not display_name:
+            return "medium"
         name_lower = display_name.lower()
         if "spark" in name_lower or "easy" in name_lower or "novice" in name_lower:
             return "easy"
         if "titan" in name_lower or "hard" in name_lower or "master" in name_lower:
             return "hard"
+        return "medium"
     _WORDS_BY_CHAR: dict[str, list[str]] = {}
 
     @classmethod
@@ -69,8 +72,7 @@ class BotService:
         if not cls.is_bot_player(current_player):
             raise HTTPException(status_code=400, detail="Current turn is not assigned to a Bot")
 
-        difficulty = requested_difficulty or cls.get_difficulty_from_name(current_player.display_name)
-        difficulty = difficulty.lower()
+        difficulty = (requested_difficulty or cls.get_difficulty_from_name(current_player.display_name) or "medium").lower()
         if difficulty not in ("easy", "medium", "hard"):
             difficulty = "medium"
 

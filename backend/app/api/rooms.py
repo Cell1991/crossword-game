@@ -176,4 +176,16 @@ async def start_game(
         }
     ).model_dump())
 
+    if game.current_player_id:
+        import asyncio
+        from sqlalchemy import select
+        from app.database.models import GamePlayer
+        from app.services.bot_service import BotService
+        stmt_p = select(GamePlayer).where(GamePlayer.id == game.current_player_id)
+        first_p = (await db.execute(stmt_p)).scalar_one_or_none()
+        if BotService.is_bot_player(first_p):
+            asyncio.create_task(
+                BotService.schedule_auto_bot_turn(game.id, first_p.id, game.turn_number, delay_seconds=15.0)
+            )
+
     return {"status": "started", "game_id": game.id}
