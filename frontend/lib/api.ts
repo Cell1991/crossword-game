@@ -153,6 +153,21 @@ export async function joinRoom(gamePin: string, playerName: string): Promise<Joi
 }
 
 export async function getRooms(): Promise<RoomSummary[]> {
+  // 1. Query Next.js serverless route handler first (instant response, zero CORS, direct Neon DB connection)
+  try {
+    const localRes = await fetch(`/api/rooms?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json' },
+    });
+    if (localRes && localRes.ok) {
+      const data = await localRes.json();
+      if (Array.isArray(data)) return data;
+    }
+  } catch {
+    // If not in browser or running outside Next.js, fall back to backend API
+  }
+
+  // 2. Fall back to backend API URL (Render or local backend server)
   const base = getApiBase();
   const url = `${base}/rooms?_t=${Date.now()}`;
   let res = await fetch(url, {
@@ -169,19 +184,6 @@ export async function getRooms(): Promise<RoomSummary[]> {
 
     if (fallbackRes && fallbackRes.ok) {
       res = fallbackRes;
-    }
-  }
-
-  // If backend returns 405 (pending Render deploy) or 404/500/network error,
-  // query the Next.js API route handler on Vercel: /api/rooms
-  if (!res || !res.ok) {
-    const localRes = await fetch(`/api/rooms?_t=${Date.now()}`, {
-      cache: 'no-store',
-      headers: { 'Accept': 'application/json' },
-    }).catch(() => null);
-
-    if (localRes && localRes.ok) {
-      res = localRes;
     }
   }
 

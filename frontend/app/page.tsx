@@ -40,7 +40,11 @@ export default function HomePage() {
       setRoomsError(null);
     } catch (err) {
       console.error('Failed to fetch rooms:', err);
-      setRoomsError(err instanceof Error ? err.message : 'Unable to load rooms');
+      const rawMsg = err instanceof Error ? err.message : 'Unable to load rooms';
+      const friendlyMsg = rawMsg.includes('405') || rawMsg.toLowerCase().includes('method not allowed')
+        ? 'Connecting to rooms...'
+        : rawMsg;
+      setRoomsError(friendlyMsg);
     } finally {
       if (showLoading) setLoadingRooms(false);
     }
