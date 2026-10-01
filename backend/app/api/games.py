@@ -298,6 +298,12 @@ async def execute_bot_move(
 
     if action == "MOVE":
         tiles_data = req.get("tiles", [])
+        from sqlalchemy import select
+        from app.database.models import GamePlayer
+        stmt_player = select(GamePlayer).where(GamePlayer.id == bot_player_id)
+        bot_player = (await db.execute(stmt_player)).scalar_one_or_none()
+        if bot_player and BotService.is_bot_player(bot_player):
+            tiles_data = await BotService._ensure_bot_rack_has_tiles(db, bot_player, tiles_data)
         placed_tiles = [PlacedTileInput(**t) for t in tiles_data]
         res, game, player = await MoveService.commit_move(db, game_id, bot_player_id, placed_tiles)
         await db.commit()

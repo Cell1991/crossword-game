@@ -41,7 +41,7 @@ export async function GET() {
         AND NOT EXISTS (
           SELECT 1 FROM game_players gp 
           WHERE gp.game_id = r.id 
-            AND gp.connection_status != 'OFFLINE'
+            AND gp.connection_status = 'ONLINE'
         );
 
       UPDATE game_rooms r
@@ -50,16 +50,27 @@ export async function GET() {
         AND NOT EXISTS (
           SELECT 1 FROM game_players gp 
           WHERE gp.game_id = r.id 
-            AND gp.connection_status != 'OFFLINE'
+            AND gp.connection_status = 'ONLINE'
             AND gp.display_name NOT ILIKE '%bot%'
             AND gp.display_name NOT ILIKE '%[ai]%'
+        );
+
+      -- If any player in a game has been disconnected or offline for > 3 minutes, dissolve immediately
+      UPDATE game_rooms r
+      SET status = 'ABANDONED'
+      WHERE r.status IN ('WAITING', 'PLAYING')
+        AND EXISTS (
+          SELECT 1 FROM game_players gp 
+          WHERE gp.game_id = r.id 
+            AND gp.connection_status IN ('DISCONNECTED', 'OFFLINE')
+            AND gp.joined_at < NOW() - INTERVAL '3 minutes'
         );
 
       UPDATE game_rooms r
       SET status = 'FINISHED'
       WHERE r.status = 'PLAYING'
         AND (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id) > 1
-        AND (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id AND gp.connection_status != 'OFFLINE') <= 1;
+        AND (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE') <= 1;
     `;
     fetch(NEON_SQL_URL, {
       method: 'POST',
@@ -70,7 +81,7 @@ export async function GET() {
       body: JSON.stringify({ query: expireSql }),
     }).catch(() => {});
 
-    // 2. Fetch active rooms (WAITING with active players, PLAYING with active human players)
+    // 2. Fetch joinable active rooms (WAITING rooms only, with online host and slots available)
     const selectSql = `
       SELECT 
         r.id,
@@ -87,38 +98,17 @@ export async function GET() {
         COALESCE((
           SELECT count(*)::int 
           FROM game_players gp 
-          WHERE gp.game_id = r.id AND gp.connection_status != 'OFFLINE'
+          WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE'
         ), 1) AS player_count
       FROM game_rooms r
       LEFT JOIN game_players p ON r.host_player_id = p.id
-      WHERE (
-        (
-          r.status = 'WAITING' 
-          AND (r.created_at IS NULL OR r.created_at >= NOW() - INTERVAL '10 minutes')
-          AND EXISTS (
-            SELECT 1 FROM game_players gp 
-            WHERE gp.game_id = r.id AND gp.connection_status != 'OFFLINE'
-          )
+      WHERE r.status = 'WAITING' 
+        AND (r.created_at IS NULL OR r.created_at >= NOW() - INTERVAL '10 minutes')
+        AND EXISTS (
+          SELECT 1 FROM game_players gp 
+          WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE'
         )
-        OR
-        (
-          r.status = 'PLAYING' 
-          AND (r.started_at >= NOW() - INTERVAL '2 hours' OR (r.started_at IS NULL AND r.created_at >= NOW() - INTERVAL '2 hours'))
-          AND EXISTS (
-            SELECT 1 FROM game_players gp 
-            WHERE gp.game_id = r.id 
-              AND gp.connection_status != 'OFFLINE'
-              AND gp.display_name NOT ILIKE '%bot%'
-              AND gp.display_name NOT ILIKE '%[ai]%'
-          )
-          AND (
-            (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id) = 1
-            OR
-            (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id AND gp.connection_status != 'OFFLINE') > 1
-          )
-        )
-      )
-      ORDER BY CASE WHEN r.status = 'WAITING' THEN 0 ELSE 1 END, r.created_at DESC
+      ORDER BY r.created_at DESC
       LIMIT 20
     `;
 
@@ -150,38 +140,17 @@ export async function GET() {
           COALESCE((
             SELECT count(*)::int 
             FROM game_players gp 
-            WHERE gp.game_id = r.id AND gp.connection_status != 'OFFLINE'
+            WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE'
           ), 1) AS player_count
         FROM game_rooms r
         LEFT JOIN game_players p ON r.host_player_id = p.id
-        WHERE (
-          (
-            r.status = 'WAITING' 
-            AND (r.created_at IS NULL OR r.created_at >= NOW() - INTERVAL '10 minutes')
-            AND EXISTS (
-              SELECT 1 FROM game_players gp 
-              WHERE gp.game_id = r.id AND gp.connection_status != 'OFFLINE'
-            )
+        WHERE r.status = 'WAITING' 
+          AND (r.created_at IS NULL OR r.created_at >= NOW() - INTERVAL '10 minutes')
+          AND EXISTS (
+            SELECT 1 FROM game_players gp 
+            WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE'
           )
-          OR
-          (
-            r.status = 'PLAYING' 
-            AND (r.started_at >= NOW() - INTERVAL '2 hours' OR (r.started_at IS NULL AND r.created_at >= NOW() - INTERVAL '2 hours'))
-            AND EXISTS (
-              SELECT 1 FROM game_players gp 
-              WHERE gp.game_id = r.id 
-                AND gp.connection_status != 'OFFLINE'
-                AND gp.display_name NOT ILIKE '%bot%'
-                AND gp.display_name NOT ILIKE '%[ai]%'
-            )
-            AND (
-              (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id) = 1
-              OR
-              (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id AND gp.connection_status != 'OFFLINE') > 1
-            )
-          )
-        )
-        ORDER BY CASE WHEN r.status = 'WAITING' THEN 0 ELSE 1 END, r.created_at DESC
+        ORDER BY r.created_at DESC
         LIMIT 20
       `;
       res = await fetch(NEON_SQL_URL, {

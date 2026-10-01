@@ -190,11 +190,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       }
       case 'PLACEMENT_PREVIEW':
         if (event.payload?.playerId !== myPlayerId) {
-          if (Array.isArray(event.payload?.botTiles) && event.payload.botTiles.length > 0) {
-            setRemoteBotTiles(event.payload.botTiles as PlacedTile[]);
-          } else {
-            setRemotePlacements(event.payload?.tiles ?? []);
-          }
+          setRemotePlacements(event.payload?.tiles ?? []);
         }
         break;
       case 'GAME_ENDED':

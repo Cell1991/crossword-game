@@ -310,38 +310,29 @@ class RoomService:
                     has_expired_updates = True
                     continue
 
-                active_players = [p for p in players if p.connection_status != "OFFLINE"]
-                if not active_players:
+                online_players = [p for p in players if p.connection_status == "ONLINE"]
+                human_players = [p for p in players if not BotService.is_bot_player(p)]
+                online_humans = [p for p in human_players if p.connection_status == "ONLINE"]
+
+                # If no online humans in room, abandon it
+                if not online_humans:
                     room.status = "ABANDONED"
                     has_expired_updates = True
                     continue
-
-                human_players = [p for p in players if not BotService.is_bot_player(p)]
-                active_humans = [p for p in human_players if p.connection_status != "OFFLINE"]
 
                 if room.status == "WAITING":
                     if RoomService.is_room_expired(room):
                         room.status = "EXPIRED"
                         has_expired_updates = True
                         continue
-                    if not active_humans:
-                        room.status = "ABANDONED"
-                        has_expired_updates = True
-                        continue
-
                 elif room.status == "PLAYING":
-                    # If all humans have left the game mid-game (only bots or offline humans remain):
-                    if not active_humans:
-                        room.status = "ABANDONED"
-                        has_expired_updates = True
-                        continue
-
-                    # If multiplayer and only <= 1 player is still in the game:
-                    active_in_game = [p for p in players if p.connection_status != "OFFLINE" and p.hp > 0]
-                    if len(players) > 1 and len(active_in_game) <= 1:
+                    # If multiplayer and only <= 1 player remains online, finish/abandon room
+                    if len(players) > 1 and len(online_players) <= 1:
                         room.status = "FINISHED"
                         has_expired_updates = True
                         continue
+
+                active_players = online_players
 
                 host = next((p for p in active_players if p.is_host or p.id == room.host_player_id), active_players[0])
                 host_name = (host.display_name or "Host").strip() or "Host"

@@ -31,7 +31,20 @@ class BotService:
             return "easy"
         if "titan" in name_lower or "hard" in name_lower or "master" in name_lower:
             return "hard"
-        return "medium"
+    _WORDS_BY_CHAR: dict[str, list[str]] = {}
+
+    @classmethod
+    def _get_words_for_char(cls, char: str) -> list[str]:
+        if not cls._WORDS_BY_CHAR:
+            from app.game.dictionary import dictionary_service
+            from collections import defaultdict
+            index = defaultdict(list)
+            for length in (2, 3, 4, 5, 6):
+                for w in dictionary_service.get_words_of_length(length):
+                    for ch in set(w):
+                        index[ch].append(w)
+            cls._WORDS_BY_CHAR = dict(index)
+        return cls._WORDS_BY_CHAR.get(char, [])
 
     @classmethod
     async def plan_bot_move(
@@ -303,77 +316,89 @@ class BotService:
         else:
             # Case 2: Active Board (connect to existing committed tiles)
             occupied = {(c["row"], c["col"]): c["letter"].upper() for c in board.values()}
+            occupied_items = list(occupied.items())
+            random.shuffle(occupied_items)
 
-            lengths_to_try = (2, 3, 4, 5)
-            for w_len in lengths_to_try:
-                dict_words = dictionary_service.get_words_of_length(w_len)
-                for (r, c), char in occupied.items():
+            # Check up to 8 random board anchors using pre-indexed words containing the anchor letter
+            for (r, c), char in occupied_items[:8]:
+                char_words = cls._get_words_for_char(char)
+                # Sample a mix of short and medium words containing char
+                candidate_words = char_words[:60]
+                for w in candidate_words:
+                    w_len = len(w)
                     # 1. Horizontal placements
                     for offset in range(w_len):
+                        if w[offset] != char:
+                            continue
                         start_c = c - offset
                         end_c = start_c + w_len
                         if not (0 <= start_c and end_c <= Board.COLS):
                             continue
                         if (r, start_c - 1) in occupied or (r, end_c) in occupied:
                             continue
-                        for w in dict_words:
-                            if w[offset] != char:
-                                continue
-                            matches = True
-                            placed = []
-                            for i in range(w_len):
-                                pos = (r, start_c + i)
-                                if pos in occupied:
-                                    if occupied[pos] != w[i]:
-                                        matches = False
-                                        break
-                                else:
-                                    placed.append({"row": r, "col": start_c + i, "letter": w[i], "value": DEFAULT_LETTER_VALUES.get(w[i], 1)})
-                            if not matches or not placed:
-                                continue
-                            valid, _, _, score, _ = RuleEngine.validate_move(board, placed, is_first_move=False)
-                            if valid:
-                                valid_moves.append({"word": w, "score": score, "direction": "across", "tiles": placed})
-                                if len(valid_moves) >= 60:
+                        matches = True
+                        placed = []
+                        for i in range(w_len):
+                            pos = (r, start_c + i)
+                            if pos in occupied:
+                                if occupied[pos] != w[i]:
+                                    matches = False
                                     break
-                        if len(valid_moves) >= 60:
-                            break
-                    if len(valid_moves) >= 60:
+                            else:
+                                placed.append({
+                                    "row": r,
+                                    "col": start_c + i,
+                                    "letter": w[i],
+                                    "value": DEFAULT_LETTER_VALUES.get(w[i], 1),
+                                })
+                        if not matches or not placed:
+                            continue
+                        valid, _, _, score, _ = RuleEngine.validate_move(board, placed, is_first_move=False)
+                        if valid:
+                            valid_moves.append({"word": w, "score": score, "direction": "across", "tiles": placed})
+                            if len(valid_moves) >= 30:
+                                break
+
+                    if len(valid_moves) >= 30:
                         break
 
                     # 2. Vertical placements
                     for offset in range(w_len):
+                        if w[offset] != char:
+                            continue
                         start_r = r - offset
                         end_r = start_r + w_len
                         if not (0 <= start_r and end_r <= Board.ROWS):
                             continue
                         if (start_r - 1, c) in occupied or (end_r, c) in occupied:
                             continue
-                        for w in dict_words:
-                            if w[offset] != char:
-                                continue
-                            matches = True
-                            placed = []
-                            for i in range(w_len):
-                                pos = (start_r + i, c)
-                                if pos in occupied:
-                                    if occupied[pos] != w[i]:
-                                        matches = False
-                                        break
-                                else:
-                                    placed.append({"row": start_r + i, "col": c, "letter": w[i], "value": DEFAULT_LETTER_VALUES.get(w[i], 1)})
-                            if not matches or not placed:
-                                continue
-                            valid, _, _, score, _ = RuleEngine.validate_move(board, placed, is_first_move=False)
-                            if valid:
-                                valid_moves.append({"word": w, "score": score, "direction": "down", "tiles": placed})
-                                if len(valid_moves) >= 80:
+                        matches = True
+                        placed = []
+                        for i in range(w_len):
+                            pos = (start_r + i, c)
+                            if pos in occupied:
+                                if occupied[pos] != w[i]:
+                                    matches = False
                                     break
-                        if len(valid_moves) >= 80:
-                            break
-                    if len(valid_moves) >= 80:
+                            else:
+                                placed.append({
+                                    "row": start_r + i,
+                                    "col": c,
+                                    "letter": w[i],
+                                    "value": DEFAULT_LETTER_VALUES.get(w[i], 1),
+                                })
+                        if not matches or not placed:
+                            continue
+                        valid, _, _, score, _ = RuleEngine.validate_move(board, placed, is_first_move=False)
+                        if valid:
+                            valid_moves.append({"word": w, "score": score, "direction": "down", "tiles": placed})
+                            if len(valid_moves) >= 30:
+                                break
+
+                    if len(valid_moves) >= 30:
                         break
-                if len(valid_moves) >= 80:
+
+                if len(valid_moves) >= 30:
                     break
 
         if not valid_moves:

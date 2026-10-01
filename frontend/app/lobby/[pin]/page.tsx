@@ -114,7 +114,9 @@ export default function LobbyPage() {
       setGameMode(room.game_mode);
       setMaxTurns(room.max_turns);
       setStartingHp(room.starting_hp ?? null);
-      const effectiveMax = room.max_players || initialSession?.maxPlayers || 4;
+      const effectiveMax = (room.max_players !== undefined && room.max_players !== null)
+        ? room.max_players
+        : (initialSession?.maxPlayers ?? 4);
       setMaxPlayers(effectiveMax);
       setIsDebugRoom(room.is_debug);
       if (room.created_at) {

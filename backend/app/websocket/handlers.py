@@ -163,3 +163,28 @@ async def handle_disconnect(
             type=EventType.GAME_ENDED,
             payload={"reason": reason or "PLAYER_DISCONNECTED", "winnerId": winner_id},
         ).model_dump())
+        return
+
+    # If any player remains disconnected for over 3 minutes (180s), dissolve the room immediately!
+    used_grace = settings.DISCONNECT_GRACE_SECONDS if grace_seconds is None else grace_seconds
+    remaining_wait = max(0, 180 - used_grace)
+    await asyncio.sleep(remaining_wait)
+    if manager.is_connected(game_id, player_id):
+        return
+
+    async with AsyncSessionLocal() as db:
+        room = await db.get(GameRoom, game_id)
+        active_game = await db.get(Game, game_id)
+        if room and room.status in ("WAITING", "PLAYING"):
+            room.status = "ABANDONED"
+            if active_game:
+                active_game.status = "FINISHED"
+            await db.commit()
+            await manager.broadcast(game_id, WebSocketEvent(
+                type=EventType.ROOM_EXPIRED,
+                payload={
+                    "roomId": game_id,
+                    "gamePin": room.game_pin,
+                    "reason": f"Room dissolved: player {player_name} was disconnected for more than 3 minutes.",
+                }
+            ).model_dump())
