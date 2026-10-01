@@ -105,6 +105,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
     if (!canvas || !content) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     const dpr = canvasPixelRatio(lowPower);
     const { scale, offset } = camera.getView();
     drawBoard(ctx, dpr, {

@@ -43,8 +43,9 @@ export class BoardCompositor {
     const { width, height, offset, cellSize, model } = config;
 
     ctx.save();
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, width, height);
+    try {
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
 
     // 1. Frustum culling intersection with active board bounds
     const activeBounds = model.getActiveBounds();
@@ -178,7 +179,8 @@ export class BoardCompositor {
         FXRenderer.renderSelection(ctx, config.selectedCell, offset, cellSize, config.temporaryTilesValid);
       }
     }
-
-    ctx.restore();
+    } finally {
+      ctx.restore();
+    }
   }
 }

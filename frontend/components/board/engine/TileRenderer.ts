@@ -438,7 +438,6 @@ export class TileRenderer {
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
       ctx.restore();
-      return;
     } else if (isCorrectPlacement) {
       ctx.save();
 
@@ -725,7 +724,9 @@ export class TileRenderer {
       ctx.beginPath();
       const waveRadius = (tileW * 0.48) + (cellSize * 0.38) * animProgress;
       ctx.arc(cx, cy, waveRadius, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(251, 191, 36, ${(1 - animProgress) * 0.55})`;
+      ctx.strokeStyle = isRemote
+        ? `rgba(56, 189, 248, ${(1 - animProgress) * 0.65})`
+        : `rgba(251, 191, 36, ${(1 - animProgress) * 0.55})`;
       ctx.lineWidth = Math.max(1.2, cellSize * 0.04 * (1 - animProgress));
       ctx.stroke();
       ctx.restore();
