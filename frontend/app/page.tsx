@@ -656,7 +656,7 @@ export default function HomePage() {
                     </button>
                   </div>
                 ) : rooms.length > 0 ? (
-                  <div className="max-h-44 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                  <div className="max-h-52 overflow-y-auto grid grid-cols-2 gap-2 pr-1 custom-scrollbar">
                     {rooms.map(room => {
                       const isFull = room.player_count >= room.max_players;
                       const isWaiting = room.status === 'WAITING';
@@ -665,34 +665,29 @@ export default function HomePage() {
                         <div
                           key={room.id}
                           onClick={() => handleSelectRoom(room)}
-                          className={`group relative flex items-center justify-between p-3 rounded-2xl border transition-all duration-200 cursor-pointer ${
+                          className={`group relative flex items-center justify-between p-2 sm:p-2.5 rounded-xl border transition-all duration-200 cursor-pointer ${
                             isSelected
-                              ? 'border-amber-400/80 bg-gradient-to-r from-amber-500/15 via-slate-800/80 to-slate-800/80 shadow-[0_0_20px_rgba(245,158,11,0.15)]'
+                              ? 'border-amber-400/80 bg-gradient-to-r from-amber-500/15 via-slate-800/80 to-slate-800/80 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
                               : 'border-white/10 bg-slate-800/50 hover:bg-slate-800/80 hover:border-amber-400/30'
                           }`}
                         >
-                          <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex items-center gap-2 min-w-0">
                             {/* Host Avatar Badge */}
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-sm shadow-[0_2px_10px_rgba(245,158,11,0.3)]">
+                            <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-xs shadow-sm">
                               {(room.host_name || 'H').charAt(0).toUpperCase()}
                             </div>
                             
                             <div className="min-w-0 flex flex-col gap-0.5">
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-xs sm:text-sm text-white group-hover:text-amber-200 transition-colors truncate max-w-[120px]">
-                                  {room.host_name}
-                                </span>
-                                <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-400/10 border border-amber-400/25 px-1.5 py-0.5 rounded tracking-wider">
+                              <span className="font-bold text-xs text-white group-hover:text-amber-200 transition-colors truncate max-w-[60px] sm:max-w-[75px]" title={room.host_name}>
+                                {room.host_name}
+                              </span>
+                              <div className="flex items-center gap-1 text-[10px]">
+                                <span className="font-mono font-bold text-amber-300">
                                   #{room.game_pin}
                                 </span>
-                              </div>
-                              <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                                <span className="font-medium text-slate-300 bg-slate-700/60 px-1.5 py-0.5 rounded">
-                                  {room.game_mode === 'HP' ? `${room.starting_hp ?? 100} HP` : `${room.max_turns ?? 7}T`}
-                                </span>
-                                <span>•</span>
+                                <span className="text-slate-500">•</span>
                                 <span className="text-emerald-400 font-medium">
-                                  {room.player_count}/4 Players
+                                  {room.player_count}/4
                                 </span>
                               </div>
                             </div>
@@ -705,7 +700,7 @@ export default function HomePage() {
                               handleQuickAction(room);
                             }}
                             disabled={loading}
-                            className="ml-2 px-3.5 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-md shadow-amber-400/20 active:scale-95 transition-all cursor-pointer shrink-0"
+                            className="ml-1 px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-sm active:scale-95 transition-all cursor-pointer shrink-0"
                           >
                             {!isWaiting || isFull ? 'Watch' : 'Join'}
                           </button>
