@@ -5,7 +5,7 @@ export const dynamicParams = true;
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { Bug } from 'lucide-react';
+import { Bug, Eye } from 'lucide-react';
 import { commitMove, exchangeTiles, expireTurn, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
 import { buildRackSlots } from '@/lib/rack';
 import { GameState, Tile, Player } from '@/lib/types';
@@ -565,9 +565,10 @@ export default function GamePage() {
       {/* Bottom: Tile rack (spectators and eliminated players have no active rack) */}
       <div className="relative z-10 shrink-0 px-1.5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1.5 sm:p-3">
         {isSpectator ? (
-          <p className="py-3 text-center text-sm text-sky-300">
-            👁 You are watching this game. Players&apos; tiles stay hidden.
-          </p>
+          <div className="flex items-center justify-center gap-2 py-2.5 px-4 text-center text-xs sm:text-sm text-sky-300 bg-sky-950/40 border border-sky-500/25 rounded-xl shadow-[0_0_12px_rgba(56,189,248,0.1)] ring-1 ring-sky-400/15 max-w-md mx-auto select-none">
+            <Eye className="h-4 w-4 text-sky-400 drop-shadow-[0_0_4px_#38bdf8] shrink-0" />
+            <span>You are watching this game. Players&apos; tiles stay hidden.</span>
+          </div>
         ) : isEliminated ? (
           <div className="flex flex-col items-center justify-center py-3.5 px-4 sm:px-6 rounded-2xl border border-rose-500/50 bg-gradient-to-r from-rose-950/85 via-slate-900/90 to-rose-950/85 text-center shadow-[0_0_24px_rgba(244,63,94,0.25)] ring-1 ring-rose-500/30 max-w-lg mx-auto">
             <div className="flex items-center gap-2 text-rose-300 font-black text-sm sm:text-base tracking-wide uppercase">

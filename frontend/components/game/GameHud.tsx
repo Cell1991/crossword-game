@@ -2,9 +2,23 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { BookOpen, Maximize, Minimize, ScrollText } from 'lucide-react';
+import { BookOpen, Eye, Maximize, Minimize, ScrollText } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { TurnBanner } from './TurnBanner';
+
+const SpectatorBadge: React.FC<{ count: number; className?: string }> = ({ count, className = '' }) => {
+  if (count <= 0) return null;
+  return (
+    <div
+      className={`inline-flex items-center gap-1.5 rounded-lg border border-sky-500/35 bg-gradient-to-r from-sky-950/70 via-slate-900/80 to-sky-950/70 px-2 py-1 text-xs font-semibold text-sky-300 shadow-[0_0_10px_rgba(56,189,248,0.2)] ring-1 ring-sky-400/25 whitespace-nowrap shrink-0 select-none ${className}`}
+      title={`${count} spectator${count > 1 ? 's' : ''} watching`}
+      aria-label={`${count} spectator${count > 1 ? 's' : ''} watching`}
+    >
+      <Eye className="h-3.5 w-3.5 text-sky-400 drop-shadow-[0_0_4px_#38bdf8] shrink-0" />
+      <span className="font-mono text-sky-200 tabular-nums">{count}</span>
+    </div>
+  );
+};
 
 interface GameHudProps {
   isSpectator: boolean;
@@ -129,10 +143,12 @@ export const GameHud: React.FC<GameHudProps> = ({
           </button>
         </div>
 
-        {/* Right: spectators, debug button, desktop timer, desktop TurnBanner, and Fullscreen button */}
+        {/* Right: desktop spectators, debug button, desktop timer, desktop TurnBanner, and Fullscreen button */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
           {spectatorCount > 0 && (
-            <span className="whitespace-nowrap text-xs text-slate-400" title="Spectators watching">👁 {spectatorCount}</span>
+            <div className="hidden lg:inline-flex shrink-0">
+              <SpectatorBadge count={spectatorCount} />
+            </div>
           )}
           {debugSlot}
           <div className="hidden lg:flex items-center gap-2">
@@ -169,7 +185,7 @@ export const GameHud: React.FC<GameHudProps> = ({
         </div>
       </div>
 
-      {/* ROW 2 (Mobile Only): Dedicated Turn Indicator & Countdown Bar */}
+      {/* ROW 2 (Mobile Only): Dedicated Turn Indicator, Spectator Count & Countdown Bar */}
       <div className="lg:hidden flex items-center justify-between gap-2 px-2.5 py-1 bg-slate-950/70 border-t border-slate-800/60 select-none">
         <div className="min-w-0 flex-1">
           <TurnBanner
@@ -182,7 +198,10 @@ export const GameHud: React.FC<GameHudProps> = ({
             maxTurns={maxTurns}
           />
         </div>
-        {timer && <div className="shrink-0">{timer}</div>}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {spectatorCount > 0 && <SpectatorBadge count={spectatorCount} />}
+          {timer && <div className="shrink-0">{timer}</div>}
+        </div>
       </div>
     </div>
   );
