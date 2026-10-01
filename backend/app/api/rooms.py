@@ -18,6 +18,7 @@ from app.websocket.connection_manager import manager
 router = APIRouter(prefix="/rooms", tags=["Rooms"])
 
 @router.get("", response_model=list[RoomSummaryResponse])
+@router.get("/", response_model=list[RoomSummaryResponse], include_in_schema=False)
 async def list_rooms(db: AsyncSession = Depends(get_db)):
     return await RoomService.list_active_rooms(db)
 
@@ -28,6 +29,7 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
         is_debug=req.is_debug, game_mode=req.game_mode, max_turns=req.max_turns,
         starting_hp=req.starting_hp,
     )
+    await db.commit()
     return CreateRoomResponse(
         room_id=room.id,
         game_id=game.id,

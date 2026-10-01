@@ -58,7 +58,7 @@ class RoomDetailResponse(BaseModel):
     host_player_id: str
     players: list[PlayerOut]
     spectator_count: int = 0
-    created_at: datetime
+    created_at: Optional[datetime] = None
     turn_time_limit: Optional[int] = None
     game_mode: Literal["HP", "TURNS"]
     max_turns: Optional[int] = None
@@ -77,4 +77,4 @@ class RoomSummaryResponse(BaseModel):
     max_turns: Optional[int] = None
     starting_hp: Optional[int] = None
     is_debug: bool = False
-    created_at: datetime
+    created_at: Optional[datetime] = None

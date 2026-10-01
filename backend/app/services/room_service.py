@@ -44,6 +44,7 @@ class RoomService:
             game_mode=game_mode,
             max_turns=max_turns,
             starting_hp=hp_setting,
+            created_at=get_utc_now(),
         )
         game = Game(
             id=room_id,
@@ -315,7 +316,7 @@ class RoomService:
                 "max_turns": room.max_turns,
                 "starting_hp": room.starting_hp,
                 "is_debug": room.is_debug,
-                "created_at": room.created_at,
+                "created_at": room.created_at or get_utc_now(),
             })
             if len(results) >= limit:
                 break

@@ -36,8 +36,8 @@ export default function HomePage() {
     try {
       const data = await getRooms();
       setRooms(data);
-    } catch {
-      // Keep previous list on network issues
+    } catch (err) {
+      console.error('Failed to fetch rooms:', err);
     } finally {
       if (showLoading) setLoadingRooms(false);
     }
@@ -545,10 +545,17 @@ export default function HomePage() {
                 />
               </div>
 
-              {/* Open Rooms (Clean list if any open rooms exist) */}
-              {rooms.length > 0 && (
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-300">Open Rooms ({rooms.length})</label>
+              {/* Open Rooms */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-slate-300">
+                    Open Rooms {rooms.length > 0 && `(${rooms.length})`}
+                  </label>
+                  {loadingRooms && (
+                    <span className="text-[10px] text-indigo-300 animate-pulse">Checking...</span>
+                  )}
+                </div>
+                {rooms.length > 0 ? (
                   <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
                     {rooms.map(room => {
                       const isFull = room.player_count >= room.max_players;
@@ -590,8 +597,12 @@ export default function HomePage() {
                       );
                     })}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="rounded-xl border border-white/5 bg-slate-800/30 px-3 py-2 text-center text-xs text-slate-400">
+                    No active rooms right now
+                  </div>
+                )}
+              </div>
 
               {/* Game PIN */}
               <div>
