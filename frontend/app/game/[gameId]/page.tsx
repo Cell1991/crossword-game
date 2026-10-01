@@ -419,7 +419,24 @@ export default function GamePage() {
         setBotStagedTiles([]);
         reloadRef.current?.();
       } catch (err) {
-        console.error('Bot turn execution error:', err);
+        console.error('Bot turn execution error, attempting 1 retry:', err);
+        try {
+          if (activeBotTurnKeyRef.current === turnKey && gameState.current_player_id) {
+            await new Promise(r => setTimeout(r, 800));
+            if (activeBotTurnKeyRef.current === turnKey) {
+              const retryPlan = await getBotPlan(gameId, botDifficulty);
+              if (activeBotTurnKeyRef.current === turnKey) {
+                await executeBotMove(gameId, retryPlan);
+                lastCompletedBotTurnRef.current = turnKey;
+                reloadRef.current?.();
+                return;
+              }
+            }
+          }
+        } catch (retryErr) {
+          console.error('Bot retry error:', retryErr);
+        }
+
         try {
           if (activeBotTurnKeyRef.current === turnKey && gameState.current_player_id) {
             await passTurn(gameId, gameState.current_player_id);
