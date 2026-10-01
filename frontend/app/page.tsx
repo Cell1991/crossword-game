@@ -27,7 +27,7 @@ export default function HomePage() {
   const [customTurnCount, setCustomTurnCount] = useState('28');
   const [hpOption, setHpOption] = useState('100');
   const [customHp, setCustomHp] = useState('100');
-  const [playerLimitOption, setPlayerLimitOption] = useState<'4' | 'unlimited' | 'custom'>('4');
+  const [playerLimitOption, setPlayerLimitOption] = useState<'4' | 'custom'>('4');
   const [customMaxPlayers, setCustomMaxPlayers] = useState('4');
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
@@ -89,11 +89,7 @@ export default function HomePage() {
       setError('Player limit must be between 2 and 50');
       return;
     }
-    const maxPlayers = playerLimitOption === 'unlimited'
-      ? null
-      : playerLimitOption === 'custom'
-        ? parsedCustomPlayers
-        : 4;
+    const maxPlayers = playerLimitOption === 'custom' ? parsedCustomPlayers : 4;
 
     setLoading(true);
     setError('');
@@ -548,10 +544,9 @@ export default function HomePage() {
               {/* Player Limit */}
               <fieldset>
                 <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Player Limit</legend>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {([
                     ['4', '4 Players'],
-                    ['unlimited', 'Unlimited'],
                     ['custom', 'Custom'],
                   ] as const).map(([val, label]) => (
                     <button
@@ -559,7 +554,7 @@ export default function HomePage() {
                       type="button"
                       aria-pressed={playerLimitOption === val}
                       onClick={() => setPlayerLimitOption(val)}
-                      className={`rounded-xl border py-2 sm:py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                      className={`rounded-xl border py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
                         playerLimitOption === val
                           ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
                           : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
