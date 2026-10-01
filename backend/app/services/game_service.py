@@ -439,18 +439,39 @@ class GameService:
             raise HTTPException(status_code=404, detail="Game or player not found")
         if player.connection_status != "OFFLINE":
             player.connection_status = status
+
+        stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
+        players = (await db.execute(stmt_players)).scalars().all()
+
+        from app.services.bot_service import BotService
+
+        # Check if any human players are still in the game
+        human_players_in_game = [
+            p for p in players
+            if p.connection_status != "OFFLINE" and not BotService.is_bot_player(p)
+        ]
+
+        if not human_players_in_game:
+            # All human players left the game (only bots or offline players remain)
+            winner = await GameService.finish_game(db, game, players, None)
+            room = (await db.execute(select(GameRoom).where(GameRoom.id == game.id))).scalar_one_or_none()
+            if room:
+                room.status = "ABANDONED"
+                room.finished_at = get_utc_now()
+            await db.flush()
+            return game, True, "ALL_PLAYERS_LEFT", winner
+
         if game.status != "PLAYING" or game.current_player_id != player_id:
             await db.flush()
             return game, False, None, None
+
         if status == "DISCONNECTED":
-            players = (await db.execute(
-                select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
-            )).scalars().all()
             if GameService.next_player_after(players, player_id) is None:
                 # Nobody else is connected to take the turn (a solo game, say): keep it for when they
                 # are back instead of ending the game over a dropped connection.
                 await db.flush()
                 return game, False, None, None
+
         return await GameService.pass_turn(db, game_id, player_id)
 
     @staticmethod

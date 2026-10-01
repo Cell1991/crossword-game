@@ -155,12 +155,11 @@ class RoomService:
         # Keep seats contiguous: join_room seats newcomers at len(players).
         for seat, remaining_player in enumerate(remaining):
             remaining_player.turn_order = seat
-        if player.is_host:
-            if remaining:
-                remaining[0].is_host = True
-                room.host_player_id = remaining[0].id
-            else:
-                room.status = "ABANDONED"
+        if not remaining:
+            room.status = "ABANDONED"
+        elif player.is_host:
+            remaining[0].is_host = True
+            room.host_player_id = remaining[0].id
         await db.flush()
         return room
 
@@ -301,23 +300,56 @@ class RoomService:
 
         results = []
         has_expired_updates = False
+        from app.services.bot_service import BotService
+
         for room, players in rooms_map.values():
             try:
                 if not players:
-                    continue
-                if room.status == "WAITING" and RoomService.is_room_expired(room):
-                    room.status = "EXPIRED"
+                    room.status = "ABANDONED"
                     has_expired_updates = True
                     continue
 
-                host = next((p for p in players if p.is_host or p.id == room.host_player_id), players[0])
+                active_players = [p for p in players if p.connection_status != "OFFLINE"]
+                if not active_players:
+                    room.status = "ABANDONED"
+                    has_expired_updates = True
+                    continue
+
+                human_players = [p for p in players if not BotService.is_bot_player(p)]
+                active_humans = [p for p in human_players if p.connection_status != "OFFLINE"]
+
+                if room.status == "WAITING":
+                    if RoomService.is_room_expired(room):
+                        room.status = "EXPIRED"
+                        has_expired_updates = True
+                        continue
+                    if not active_humans:
+                        room.status = "ABANDONED"
+                        has_expired_updates = True
+                        continue
+
+                elif room.status == "PLAYING":
+                    # If all humans have left the game mid-game (only bots or offline humans remain):
+                    if not active_humans:
+                        room.status = "ABANDONED"
+                        has_expired_updates = True
+                        continue
+
+                    # If multiplayer and only <= 1 player is still in the game:
+                    active_in_game = [p for p in players if p.connection_status != "OFFLINE" and p.hp > 0]
+                    if len(players) > 1 and len(active_in_game) <= 1:
+                        room.status = "FINISHED"
+                        has_expired_updates = True
+                        continue
+
+                host = next((p for p in active_players if p.is_host or p.id == room.host_player_id), active_players[0])
                 host_name = (host.display_name or "Host").strip() or "Host"
                 results.append({
                     "id": str(room.id),
                     "game_pin": str(room.game_pin),
                     "status": str(room.status),
                     "host_name": host_name,
-                    "player_count": len(players),
+                    "player_count": len(active_players),
                     "max_players": getattr(room, "max_players", None) or 4,
                     "turn_time_limit": room.turn_time_limit,
                     "game_mode": str(room.game_mode or "HP").upper(),

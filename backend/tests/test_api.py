@@ -231,3 +231,34 @@ async def test_room_expiration():
         rooms = list_res.json()
         assert not any(r["game_pin"] == pin for r in rooms)
 
+
+@pytest.mark.asyncio
+async def test_abandoned_game_when_all_humans_leave_mid_game():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # Create room and start game
+        created = (await client.post("/api/rooms", json={"host_name": "Alice"})).json()
+        pin = created["game_pin"]
+        game_id = created["game_id"]
+        host_id = created["host_player_id"]
+
+        joined = (await client.post(f"/api/rooms/{pin}/join", json={"game_pin": pin, "player_name": "Bob"})).json()
+        bob_id = joined["player_id"]
+
+        await client.post(f"/api/rooms/{pin}/start", headers={"X-Player-ID": host_id})
+
+        # Check room is in active rooms
+        res = await client.get("/api/rooms")
+        assert any(r["game_pin"] == pin for r in res.json())
+
+        # Alice leaves mid-game
+        await client.post(f"/api/games/{game_id}/leave", headers={"X-Player-ID": host_id})
+
+        # Bob leaves mid-game too (now 0 humans remain in room)
+        await client.post(f"/api/games/{game_id}/leave", headers={"X-Player-ID": bob_id})
+
+        # Room should no longer be in active rooms list!
+        res_after = await client.get("/api/rooms")
+        assert not any(r["game_pin"] == pin for r in res_after.json())
+
+

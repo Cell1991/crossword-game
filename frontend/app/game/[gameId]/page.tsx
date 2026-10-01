@@ -523,14 +523,16 @@ export default function GamePage() {
     setIsExitModalOpen(true);
   };
 
-  const handleConfirmExit = () => {
+  const handleConfirmExit = async () => {
     setIsLeaving(true);
     setIsExitModalOpen(false);
     sessionStore.remove(gameId);
-    router.replace('/');
     if (myPlayerId) {
-      void leaveGame(gameId, myPlayerId).catch(() => {});
+      try {
+        await leaveGame(gameId, myPlayerId);
+      } catch {}
     }
+    router.replace('/');
   };
 
   return (
