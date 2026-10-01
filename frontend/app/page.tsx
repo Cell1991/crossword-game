@@ -280,12 +280,12 @@ export default function HomePage() {
                             <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide">
                               Room Dissolved
                             </h4>
-                            <span className="rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-400/30">
-                              10m Inactivity
+                            <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300 border border-amber-400/25">
+                              10m Timeout
                             </span>
                           </div>
-                          <p className="mt-1 text-xs text-slate-300 leading-relaxed">
-                            The room was automatically closed because the match did not start within 10 minutes.
+                          <p className="mt-0.5 text-xs text-slate-300">
+                            Closed after 10 minutes of inactivity.
                           </p>
                         </div>
                       </div>
@@ -714,22 +714,14 @@ export default function HomePage() {
                     })}
                   </div>
                 ) : (
-                  <div className="rounded-2xl border border-dashed border-white/10 bg-slate-800/30 p-3.5 text-center">
-                    <p className="text-xs font-medium text-slate-400">No public rooms open right now</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Enter a 6-digit PIN below to join directly</p>
+                  <div className="rounded-xl border border-dashed border-white/10 bg-slate-800/20 py-3 text-center">
+                    <p className="text-xs text-slate-400">No active rooms</p>
                   </div>
                 )}
               </div>
 
-              {/* Sleek Divider */}
-              <div className="relative flex items-center justify-center my-0.5">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/[0.08]" />
-                </div>
-                <span className="relative bg-[#0d1527] px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                  Or Enter PIN
-                </span>
-              </div>
+              {/* Clean Divider */}
+              <div className="my-0.5 border-t border-white/[0.08]" />
 
               {/* Integrated Game PIN Row */}
               <div>
@@ -739,7 +731,7 @@ export default function HomePage() {
                     value={pin}
                     onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     onKeyDown={e => e.key === 'Enter' && handleJoin()}
-                    placeholder="Enter 6-digit PIN..."
+                    placeholder="6-digit PIN..."
                     maxLength={6}
                     className="w-full rounded-xl border border-white/10 bg-slate-800/80 pl-3.5 pr-24 py-2.5 sm:py-3 font-mono text-sm sm:text-base tracking-[0.2em] text-amber-300 outline-none transition-all placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-sans hover:border-white/20 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                   />
@@ -779,7 +771,7 @@ export default function HomePage() {
                 title="Watch game without playing (requires PIN)"
               >
                 <Eye className="h-3.5 w-3.5" />
-                <span>Watch match as spectator {pin.trim() ? `(#${pin.trim()})` : ''}</span>
+                <span>Watch as spectator {pin.trim() ? `(#${pin.trim()})` : ''}</span>
               </button>
             </div>
           )}
