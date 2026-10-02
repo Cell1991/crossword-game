@@ -398,8 +398,8 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
 
-          {/* Row 2: Turn Actions (Pass & CONFIRM / PLAY MOVE) */}
-          <div className="grid grid-cols-[1fr_2fr] gap-1.5 w-full">
+          {/* Row 2: Turn Actions (CONFIRM / PLAY MOVE & Pass) */}
+          <div className="grid grid-cols-[2fr_1fr] gap-1.5 w-full">
             {isExchanging ? (
               <motion.button
                 onClick={onConfirmExchange}
@@ -417,6 +417,30 @@ export const TileRack = memo(function TileRack({
               </motion.button>
             ) : (
               <>
+                {/* Primary Confirm / Play Move Button */}
+                <motion.button
+                  onClick={onConfirmMove}
+                  disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
+                  whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.02 } : undefined}
+                  whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.96 } : undefined}
+                  className={`game-primary-action flex h-[38px] items-center justify-center gap-1.5 rounded-xl px-3 font-black text-xs sm:text-sm transition-all select-none ${
+                    isMyTurn && hasTemporaryTiles && placementValid === true
+                      ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.7)] border border-emerald-200 hover:brightness-110 cursor-pointer font-black'
+                      : isMyTurn && hasTemporaryTiles && placementValid === false
+                      ? 'bg-rose-950/90 text-rose-300 border border-rose-600/80 cursor-not-allowed'
+                      : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                  }`}
+                >
+                  <Check className={`w-4 h-4 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-slate-950' : 'text-slate-500'}`} />
+                  <span className="tracking-wide truncate font-black">
+                    {isSubmitting
+                      ? 'Submitting...'
+                      : placementValid === true && estimatedScore !== undefined && estimatedScore > 0
+                      ? `CONFIRM (+${estimatedScore})`
+                      : 'CONFIRM MOVE'}
+                  </span>
+                </motion.button>
+
                 {/* Pass Button */}
                 {passConfirming ? (
                   <div className="flex h-[38px] items-center gap-1">
@@ -456,30 +480,6 @@ export const TileRack = memo(function TileRack({
                     <span>Pass</span>
                   </motion.button>
                 )}
-
-                {/* Primary Confirm / Play Move Button */}
-                <motion.button
-                  onClick={onConfirmMove}
-                  disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
-                  whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.02 } : undefined}
-                  whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.96 } : undefined}
-                  className={`game-primary-action flex h-[38px] items-center justify-center gap-1.5 rounded-xl px-3 font-black text-xs sm:text-sm transition-all select-none ${
-                    isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.7)] border border-emerald-200 hover:brightness-110 cursor-pointer font-black'
-                      : isMyTurn && hasTemporaryTiles && placementValid === false
-                      ? 'bg-rose-950/90 text-rose-300 border border-rose-600/80 cursor-not-allowed'
-                      : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
-                  }`}
-                >
-                  <Check className={`w-4 h-4 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-slate-950' : 'text-slate-500'}`} />
-                  <span className="tracking-wide truncate font-black">
-                    {isSubmitting
-                      ? 'Submitting...'
-                      : placementValid === true && estimatedScore !== undefined && estimatedScore > 0
-                      ? `CONFIRM (+${estimatedScore})`
-                      : 'CONFIRM MOVE'}
-                  </span>
-                </motion.button>
               </>
             )}
           </div>
