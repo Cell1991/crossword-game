@@ -70,10 +70,10 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap font-mono text-xs sm:text-sm font-black px-2.5 py-1 rounded-xl border transition-all duration-200 select-none ${
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap font-mono text-xs sm:text-sm font-black px-2.5 py-1 rounded-xl border transition-all duration-200 select-none shadow-[0_4px_12px_rgba(0,0,0,0.6)] ${
         isLowTime
-          ? 'border-rose-500/90 bg-rose-950/90 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.45)] ring-1 ring-rose-400/50 animate-pulse'
-          : 'border-amber-400/40 bg-slate-900/90 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/20'
+          ? 'border-rose-400 bg-rose-950/95 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.5)] ring-1 ring-rose-400 animate-pulse'
+          : 'border-amber-400/70 bg-[#0c0803]/90 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.2)] ring-1 ring-amber-400/30'
       }`}
       title="Time left this turn"
     >
