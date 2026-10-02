@@ -2,6 +2,7 @@
 
 import React, { RefObject, useEffect, useRef, useState } from 'react';
 import { parseServerTimestamp } from '@/lib/serverTime';
+import { Timer } from 'lucide-react';
 
 /** How often the countdown refreshes. */
 const TICK_MS = 250;
@@ -22,8 +23,7 @@ interface TurnTimerProps {
 }
 
 /**
- * The turn countdown. It owns its own clock tick, so only this badge re-renders four times a
- * second rather than the whole game screen.
+ * Cyber/Tactical Turn Chronometer with glowing LED digits and emergency pulse.
  */
 export const TurnTimer: React.FC<TurnTimerProps> = ({
   turnTimeLimit,
@@ -34,7 +34,6 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
   syncedAt,
   onTimeUp,
 }) => {
-  /** The latest clock reading, tagged with the snapshot it was taken after. */
   const [tick, setTick] = useState<{ now: number; since: number } | null>(null);
   const timeoutRequestRef = useRef<{ turnNumber: number; at: number } | null>(null);
 
@@ -45,17 +44,15 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
     return () => window.clearInterval(interval);
   }, [clockOffsetRef, syncedAt]);
 
-  // A fresh snapshot resets the clock to the server's reading; ticks taken before it are stale.
   const now = tick && tick.since === syncedAt ? tick.now : syncedAt;
   const turnStartedAtMs = parseServerTimestamp(turnStartedAt);
-  const secondsRemaining = turnTimeLimit && Number.isFinite(turnStartedAtMs)
-    ? Math.max(0, turnTimeLimit - Math.floor((now - turnStartedAtMs) / 1000))
-    : null;
+  const secondsRemaining =
+    turnTimeLimit && Number.isFinite(turnStartedAtMs)
+      ? Math.max(0, turnTimeLimit - Math.floor((now - turnStartedAtMs) / 1000))
+      : null;
 
   useEffect(() => {
     if (secondsRemaining !== 0 || !turnTimeLimit || !currentPlayerId) return;
-    // The server has the final say. If it answers "not yet" (clocks never match exactly), ask again
-    // shortly instead of leaving the turn stuck at 0s.
     const lastRequest = timeoutRequestRef.current;
     if (lastRequest?.turnNumber === turnNumber && now - lastRequest.at < TIMEOUT_RETRY_MS) return;
     timeoutRequestRef.current = { turnNumber, at: now };
@@ -70,13 +67,14 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
 
   return (
     <div
-      className={`inline-flex h-full items-center justify-center whitespace-nowrap font-mono text-xs sm:text-sm font-black px-3 py-1.5 rounded-xl border transition-all duration-200 select-none shadow-[0_2px_8px_rgba(0,0,0,0.5)] ${
+      className={`inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 whitespace-nowrap font-mono text-xs sm:text-sm font-black px-3 py-1 rounded-xl border transition-all duration-200 select-none shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] ${
         isLowTime
-          ? 'border-rose-400 bg-rose-950/95 text-rose-300 shadow-[0_0_14px_rgba(244,63,94,0.5)] ring-1 ring-rose-400 animate-pulse'
-          : 'border-amber-400/70 bg-[#0d1624]/95 text-amber-200 shadow-[0_0_10px_rgba(245,158,11,0.2)] ring-1 ring-amber-400/30'
+          ? 'border-rose-400 bg-rose-950/95 text-rose-300 shadow-[0_0_18px_rgba(244,63,94,0.6)] ring-1 ring-rose-400 animate-pulse'
+          : 'border-amber-400/60 bg-[#0a1526]/95 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/30'
       }`}
-      title="Time left this turn"
+      title="Turn Time Remaining"
     >
+      <Timer className={`w-3.5 h-3.5 ${isLowTime ? 'text-rose-400 animate-spin' : 'text-amber-400'}`} style={{ animationDuration: '4s' }} />
       <span className="tabular-nums tracking-wider">{formattedTime}</span>
     </div>
   );
