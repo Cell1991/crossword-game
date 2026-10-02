@@ -623,11 +623,11 @@ body {
 
 /* Game screen frame: the header, reserved match rail, and control tray form one shell. */
 .wordx-game-shell .gameplay-top-hud {
-  min-height: 61px;
+  min-height: 60px;
   padding: 6px 16px;
-  border-bottom: 1px solid #4c5968;
-  background: linear-gradient(180deg, #303947 0%, #252d3a 100%);
-  box-shadow: inset 0 1px rgba(242,247,255,.22), inset 0 -1px rgba(0,0,0,.45), 0 5px 15px rgba(0,0,0,.66), 0 12px 25px rgba(0,0,0,.28);
+  border-bottom: 1px solid #344255;
+  background: #202a39;
+  box-shadow: inset 0 1px rgba(255,255,255,.045), 0 4px 14px rgba(0,0,0,.38);
 }
 .wordx-game-shell .gameplay-hud-cluster {
   min-height: 0;
@@ -641,10 +641,10 @@ body {
 }
 .wordx-game-shell .gameplay-hud-left > button,
 .wordx-game-shell .gameplay-hud-right > button {
-  border-color: rgba(194, 205, 219, .22);
+  border-color: #3b4b60;
   border-radius: 8px;
-  background: linear-gradient(180deg, #303948, #222a38);
-  box-shadow: inset 0 1px rgba(255,255,255,.13), 0 2px 5px rgba(0,0,0,.25);
+  background: #263344;
+  box-shadow: none;
 }
 .wordx-game-shell .gameplay-hud-left > button:hover,
 .wordx-game-shell .gameplay-hud-right > button:hover { border-color: rgba(255, 216, 127, .58); }
@@ -654,7 +654,7 @@ body {
   box-shadow: none;
 }
 .wordx-game-shell .gameplay-brand {
-  filter: drop-shadow(0 1px 1px #000) drop-shadow(0 0 6px rgba(196,226,242,.25));
+  filter: none;
 }
 .wordx-game-shell .gameplay-brand span { white-space: nowrap; }
 .wordx-game-shell .gameplay-live-indicator { background: none; }
@@ -673,76 +673,118 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   border: 0;
-  border-left: 2px solid #596575;
+  border-left: 1px solid #3c4c60;
   border-radius: 0;
-  background: linear-gradient(90deg, #242e3b 0%, #202936 15%, #1d2633 100%);
-  box-shadow: inset 1px 0 rgba(240,246,255,.2), -4px 0 0 rgba(3,7,13,.55), -13px 0 24px rgba(0,0,0,.62), -24px 0 42px rgba(0,0,0,.25);
+  background: #1b2635;
+  box-shadow: -6px 0 22px rgba(0,0,0,.42);
   backdrop-filter: none;
 }
 .wordx-game-shell .game-match-hud-content { min-height: 100%; }
-.wordx-game-shell .game-bag-panel { padding: 15px 13px 8px !important; }
+.wordx-game-shell .game-bag-panel { padding: 18px 16px 12px !important; }
 .wordx-game-shell .game-bag-panel button {
-  min-height: 128px;
-  gap: 8px;
-  border: 1px solid #77818d !important;
-  border-radius: 13px !important;
-  background: linear-gradient(145deg, #3c4551, #313946) !important;
-  box-shadow: inset 0 1px rgba(255,255,255,.21), inset 0 -2px rgba(0,0,0,.25), 0 5px 12px rgba(0,0,0,.48), 0 0 0 1px rgba(0,0,0,.3);
-}
-.wordx-game-shell .game-bag-label { color: #e1e5ea; }
-.wordx-game-shell .game-bag-count {
   display: flex;
-  width: 77px;
-  height: 77px;
+  width: 100%;
+  min-height: 88px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #394b60 !important;
+  border-radius: 10px !important;
+  background: #253244 !important;
+  box-shadow: none;
+  text-align: left;
+  cursor: pointer;
+}
+.wordx-game-shell .game-bag-panel button:hover { border-color: #68768a !important; background: #2b394b !important; }
+.wordx-game-shell .game-bag-panel button:focus-visible { outline: 2px solid #e4bf70; outline-offset: 2px; }
+.wordx-game-shell .game-bag-copy { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+.wordx-game-shell .game-section-eyebrow { color: #9ba9bb; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.wordx-game-shell .game-bag-label { color: #e9edf3; font-size: 14px; font-weight: 700; letter-spacing: .01em; }
+.wordx-game-shell .game-bag-count {
+  color: #efd08a;
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1;
+}
+.wordx-game-shell .game-score-panel { padding: 8px 16px 16px !important; }
+.wordx-game-shell .game-score-panel > .game-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 9px;
+  border-bottom: 1px solid #354356;
+}
+.wordx-game-shell .game-section-heading-title { display: flex; align-items: center; gap: 8px; color: #e1e8f0; font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.wordx-game-shell .game-section-heading-title svg { color: #d5b56b; }
+.wordx-game-shell .game-section-count { color: #9baabd; font-size: 11px; white-space: nowrap; }
+.wordx-game-shell .game-players-list { max-height: 42vh !important; overflow-y: auto; }
+.wordx-game-shell .game-player-row {
+  padding: 13px 0 12px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #344255 !important;
+  border-radius: 0 !important;
+  background: transparent;
+}
+.wordx-game-shell .game-player-row[data-current="true"] { background: #223344; }
+.wordx-game-shell .game-player-row[data-inactive="true"] { opacity: .55; }
+.wordx-game-shell .game-player-topline { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.wordx-game-shell .game-player-main { display: flex; min-width: 0; align-items: center; gap: 9px; }
+.wordx-game-shell .game-player-rank { flex: none; color: #8494a9; font-size: 11px; }
+.wordx-game-shell .game-player-crest {
+  display: flex;
+  height: 32px;
+  width: 32px;
+  flex: none;
   align-items: center;
   justify-content: center;
-  border: 5px solid #d7b975;
-  border-top-color: rgba(215,185,117,.36);
-  border-radius: 50%;
-  color: #f8d181;
-  font-size: 32px;
-  text-shadow: 0 1px 3px #000;
-  box-shadow: inset 0 1px 7px rgba(0,0,0,.65), 0 0 10px rgba(248,209,129,.13);
+  border: 1px solid #536881;
+  border-radius: 7px;
+  background: #304057;
+  color: #d6e6f3;
+  font-size: 14px;
+  font-weight: 800;
 }
-.wordx-game-shell .game-score-panel { padding: 8px 13px 13px !important; }
-.wordx-game-shell .game-score-panel > div:first-child {
-  margin-bottom: 10px;
-  padding-bottom: 9px;
-  border-color: rgba(196,205,219,.2);
-}
-.wordx-game-shell .game-players-list { max-height: 42vh !important; }
-.wordx-game-shell .game-players-list > div {
-  min-height: 69px;
-  padding: 10px !important;
-  border: 1px solid #596575;
-  border-left: 2px solid #d0b276;
-  border-radius: 11px !important;
-  background: linear-gradient(145deg, #414a57, #333c49);
-  box-shadow: inset 0 1px rgba(255,255,255,.16), 0 3px 9px rgba(0,0,0,.36);
-}
-.wordx-game-shell .game-players-list > div[data-current="true"] {
-  border-color: #baa578;
-  border-left-color: #47dec2;
-  background: linear-gradient(145deg, #40535a, #33444c);
-  box-shadow: inset 0 1px rgba(255,255,255,.2), 0 3px 10px rgba(0,0,0,.42), 0 0 0 1px rgba(217,189,125,.24);
-}
-.wordx-game-shell .game-players-list > div[data-inactive="true"] { opacity: .55; }
-.wordx-game-shell .game-player-crest { height: 36px; width: 36px; border-width: 2px; }
+.wordx-game-shell .game-player-row[data-current="true"] .game-player-crest { border-color: #5a9d91; background: #2c4a4c; color: #b8eee0; }
+.wordx-game-shell .game-player-identity { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.wordx-game-shell .game-player-name-line { display: flex; min-width: 0; align-items: center; gap: 5px; }
+.wordx-game-shell .game-player-name { overflow: hidden; color: #edf2f6; font-size: 13px; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+.wordx-game-shell .game-player-you { color: #d8bc80; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.wordx-game-shell .game-player-host { flex: none; color: #d8bb74; }
+.wordx-game-shell .game-player-shield,
+.wordx-game-shell .game-player-effect { flex: none; color: #80cadc; }
+.wordx-game-shell .game-player-subline { display: flex; align-items: center; gap: 5px; color: #99a8b9; font-size: 10px; }
+.wordx-game-shell .game-player-row[data-current="true"] .game-player-subline { color: #8bd7c0; }
+.wordx-game-shell .game-player-score { display: flex; flex: none; align-items: baseline; gap: 4px; color: #e8edf4; }
+.wordx-game-shell .game-player-score strong { font-size: 20px; font-weight: 800; line-height: 1; }
+.wordx-game-shell .game-player-score span { color: #8f9db0; font-family: inherit; font-size: 9px; text-transform: uppercase; }
+.wordx-game-shell .game-player-health { margin: 10px 0 0 41px; }
+.wordx-game-shell .game-player-health-label { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 5px; color: #9caabc; font-size: 10px; }
+.wordx-game-shell .game-player-health-track { height: 5px; overflow: hidden; border-radius: 5px; background: #0f1926; }
+.wordx-game-shell .game-player-health-fill { height: 100%; border-radius: inherit; background: #36c6a8; transition: width .3s ease; }
+.wordx-game-shell .game-player-health-fill.is-low { background: #dfaa63; }
+.wordx-game-shell .game-player-health-fill.is-shielded { background: #69c7df; }
 .wordx-game-shell .game-move-log {
   max-height: none;
   flex: 1 1 auto !important;
-  border-color: rgba(187,198,212,.22);
-  background: #1b2431;
+  border-top: 1px solid #354356;
+  border-color: #354356;
+  background: transparent;
 }
-.wordx-game-shell .game-move-log > button { padding: 12px 13px !important; }
+.wordx-game-shell .game-move-log > button { padding: 15px 16px 10px !important; color: #9baabd; }
+.wordx-game-shell .game-move-log > button:hover { color: #e6ebf1; }
+.wordx-game-shell .game-move-log .game-section-heading-title svg { color: #91b5c4; }
+.wordx-game-shell .game-move-empty { padding: 17px 3px; color: #8898ab; font-size: 11px; }
 .wordx-game-shell .game-move-log > div { max-height: 34vh; }
-.wordx-game-shell .game-move-log .overflow-hidden.border-b { margin-bottom: 5px; border: 1px solid #44505e; border-radius: 7px; background: #303947; box-shadow: inset 0 1px rgba(255,255,255,.08), 0 2px 5px rgba(0,0,0,.25); }
+.wordx-game-shell .game-move-log .overflow-hidden.border-b { margin-bottom: 0; border: 0; border-bottom: 1px solid #344255; border-radius: 0; background: transparent; box-shadow: none; }
 .wordx-game-shell .gameplay-control-stage {
   min-height: 108px;
   padding: 8px 14px max(9px, env(safe-area-inset-bottom));
-  border-top: 1px solid rgba(198,208,221,.3);
-  background: linear-gradient(180deg, #222a38, #151b27);
-  box-shadow: inset 0 1px rgba(255,255,255,.065), 0 -6px 21px rgba(0,0,0,.36);
+  border-top: 1px solid #344255;
+  background: #1d2735;
+  box-shadow: 0 -4px 16px rgba(0,0,0,.3);
   pointer-events: auto;
 }
 .wordx-game-shell .gameplay-control-content { max-width: none; }
@@ -750,10 +792,10 @@ body {
 .wordx-game-shell .game-utility-module,
 .wordx-game-shell .game-turn-module,
 .wordx-game-shell .game-rack-module {
-  border: 1px solid rgba(199,207,219,.42);
+  border: 1px solid #46546a;
   border-radius: 12px;
-  background: linear-gradient(155deg, #3b4350, #262e3b 73%);
-  box-shadow: inset 0 1px rgba(255,255,255,.17), 0 3px 9px rgba(0,0,0,.36);
+  background: #283546;
+  box-shadow: 0 2px 7px rgba(0,0,0,.2);
   backdrop-filter: none;
 }
 .wordx-game-shell .game-rack-module { padding: 8px 12px 9px; }
@@ -770,10 +812,10 @@ body {
   justify-content: center;
   gap: 1px;
   padding: 4px;
-  border: 1px solid rgba(215,223,235,.48);
+  border: 1px solid #56657a;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 22%, #596473, #2c3543 70%);
-  box-shadow: inset 0 2px rgba(255,255,255,.16), inset 0 -3px 5px rgba(0,0,0,.35), 0 2px 5px rgba(0,0,0,.38);
+  background: #344357;
+  box-shadow: inset 0 1px rgba(255,255,255,.08);
   line-height: 1;
 }
 .wordx-game-shell .game-rack-tools > div > button span,
@@ -783,10 +825,10 @@ body {
 .wordx-game-shell .game-rack-tools > div > button:disabled,
 .wordx-game-shell .game-turn-actions .game-pass-action:disabled { opacity: .5; box-shadow: inset 0 1px rgba(255,255,255,.08); }
 .wordx-game-shell .game-tile-tray {
-  border: 1px solid rgba(230,226,210,.4) !important;
+  border: 1px solid #59697c !important;
   border-radius: 10px !important;
-  background: linear-gradient(180deg, #677078, #343b47 75%) !important;
-  box-shadow: inset 0 2px rgba(255,255,255,.2), 0 5px 10px rgba(0,0,0,.33) !important;
+  background: #364455 !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.08), 0 2px 6px rgba(0,0,0,.22) !important;
 }
 .wordx-game-shell .game-power-strip { border-color: rgba(210,220,230,.25); background: rgba(8,15,28,.72); }
 .wordx-game-shell .game-primary-action:not(:disabled) {
