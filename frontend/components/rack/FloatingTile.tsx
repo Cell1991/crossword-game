@@ -24,8 +24,11 @@ export const FloatingTile: React.FC<FloatingTileProps> = ({ letter, value, posit
   return createPortal(
     <div
       ref={ref}
-      className="tile-face pointer-events-none fixed z-[9999] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 rotate-2 scale-105 flex-col items-center justify-center rounded-xl border border-amber-100/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_14px_28px_rgba(71,31,5,0.58)] overflow-hidden"
-      style={{ ...TILE_THEME_STYLE, left: position.x, top: position.y }}
+      className="tile-face pointer-events-none fixed left-0 top-0 z-[9999] flex h-14 w-14 flex-col items-center justify-center rounded-xl border border-amber-100/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_14px_28px_rgba(71,31,5,0.58)] overflow-hidden will-change-transform"
+      style={{
+        ...TILE_THEME_STYLE,
+        transform: `translate3d(${position.x}px, ${position.y}px, 0) translate(-50%, -50%) rotate(2deg) scale(1.05)`,
+      }}
       aria-hidden="true"
     >
       {/* Top Glass Specular Highlight */}

@@ -265,10 +265,9 @@ export const TileRack = memo(function TileRack({
                       <span className="absolute inset-[6px] rounded-md border border-dashed border-sky-400/20" />
                     </div>
 
-                    {/* Tile Button with spring physics */}
-                    <motion.button
+                    {/* Tile Button with GPU CSS transforms */}
+                    <button
                       key={tile.id}
-                      layout={!isDragging}
                       data-rack-slot={slotIndex}
                       data-rack-tile-id={tile.id}
                       onClick={() => handleTileClick(tile)}
@@ -277,10 +276,7 @@ export const TileRack = memo(function TileRack({
                       onPointerUp={handlePointerUp}
                       disabled={!canStageMove}
                       aria-pressed={isExchanging ? isMarkedForExchange : undefined}
-                      whileHover={canStageMove && !isDragging ? { scale: 1.06, y: -4 } : undefined}
-                      whileTap={canStageMove ? { scale: 0.94 } : undefined}
-                      transition={{ type: 'spring', stiffness: 450, damping: 25 }}
-                      className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-100/80 font-sans transition-all select-none touch-none overflow-hidden sm:rounded-xl ${
+                      className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-100/80 font-sans transition-transform duration-100 select-none touch-none overflow-hidden sm:rounded-xl active:scale-95 ${
                         isDragging
                           ? 'z-20 scale-105 -translate-y-2.5 opacity-40 shadow-2xl cursor-grabbing'
                           : isDropTarget
@@ -290,7 +286,7 @@ export const TileRack = memo(function TileRack({
                           : isSelected
                           ? '-translate-y-2.5 border-2 border-cyan-300 shadow-[0_0_18px_rgba(59,130,246,0.55)] ring-4 ring-cyan-400/60'
                           : canStageMove
-                          ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_6px_12px_rgba(74,34,8,0.48),0_2px_4px_rgba(34,24,20,0.35)] hover:brightness-110 cursor-pointer'
+                          ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_6px_12px_rgba(74,34,8,0.48),0_2px_4px_rgba(34,24,20,0.35)] hover:-translate-y-1 hover:brightness-110 cursor-pointer'
                           : 'opacity-65 cursor-not-allowed shadow-md'
                       }`}
                     >
@@ -314,7 +310,7 @@ export const TileRack = memo(function TileRack({
                       <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[9.5px] font-maple sm:bottom-1 sm:right-1.5 sm:text-[11px] leading-none">
                         {tile.value}
                       </span>
-                    </motion.button>
+                    </button>
                   </div>
                 );
               })}

@@ -268,22 +268,22 @@ export class TileRenderer {
         ctx.save();
         if (isCorrectPlacement) {
           ctx.shadowColor = 'rgba(34, 197, 94, 0.85)';
-          ctx.shadowBlur = Math.max(14, cellSize * 0.32);
+          ctx.shadowBlur = lowPower ? 2 : Math.max(14, cellSize * 0.32);
         } else if (isInvalidPlacement) {
           ctx.shadowColor = 'rgba(244, 63, 94, 0.85)';
-          ctx.shadowBlur = Math.max(14, cellSize * 0.32);
+          ctx.shadowBlur = lowPower ? 2 : Math.max(14, cellSize * 0.32);
         } else if (isPendingPlacement) {
           ctx.shadowColor = 'rgba(14, 165, 233, 0.8)';
-          ctx.shadowBlur = Math.max(12, cellSize * 0.28);
+          ctx.shadowBlur = lowPower ? 2 : Math.max(12, cellSize * 0.28);
         } else if (isLastMove) {
           ctx.shadowColor = 'rgba(245, 158, 11, 0.75)';
-          ctx.shadowBlur = Math.max(10, cellSize * 0.24);
+          ctx.shadowBlur = lowPower ? 2 : Math.max(10, cellSize * 0.24);
         } else if (isRemote) {
           ctx.shadowColor = 'rgba(6, 182, 212, 0.8)';
-          ctx.shadowBlur = Math.max(8, cellSize * 0.2);
+          ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
         } else {
           ctx.shadowColor = shadowFill;
-          ctx.shadowBlur = Math.max(4, cellSize * 0.1);
+          ctx.shadowBlur = lowPower ? 1 : Math.max(4, cellSize * 0.1);
         }
       }
       ctx.fillStyle = shadowFill;
