@@ -8,8 +8,8 @@ import { TurnBanner } from './TurnBanner';
 const SpectatorBadge: React.FC<{ count: number }> = ({ count }) => {
   if (count <= 0) return null;
   return (
-    <div className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-amber-400/60 bg-[#0c0803]/90 px-2.5 text-xs font-bold text-amber-300 shadow-[0_4px_12px_rgba(0,0,0,0.6)]" title={`${count} spectator${count > 1 ? 's' : ''} watching`} aria-label={`${count} spectator${count > 1 ? 's' : ''} watching`}>
-      <Eye className="h-3.5 w-3.5 text-amber-400" />
+    <div className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-sky-500/30 bg-[#0a1220]/90 px-2.5 text-xs font-bold text-sky-300 shadow-[0_2px_8px_rgba(0,0,0,0.4)]" title={`${count} spectator${count > 1 ? 's' : ''} watching`} aria-label={`${count} spectator${count > 1 ? 's' : ''} watching`}>
+      <Eye className="h-3.5 w-3.5 text-sky-400" />
       <span className="font-mono tabular-nums">{count}</span>
     </div>
   );
@@ -35,7 +35,7 @@ interface GameHudProps {
   debugSlot?: React.ReactNode;
 }
 
-/** Rich Gold & Black (ทองดำอร่าม) match navigation header above the playfield. */
+/** Rich Gold & Black (ทองดำอร่าม) match navigation header with modern cyan & white tactile controls. */
 export const GameHud: React.FC<GameHudProps> = ({
   isSpectator, isEliminated = false, isConnected, roomPin, myPlayerName, spectatorCount,
   isMyTurn, isBotPlacing = false, currentPlayer, nextPlayer, turnNumber, maxTurns,
@@ -79,7 +79,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   };
 
   return (
-    <div className="gameplay-top-hud-container relative z-30 w-full shrink-0 flex flex-col border-b-2 border-amber-400/80 bg-gradient-to-r from-[#1c1303] via-[#45300c] via-[#241906] via-[#4d360e] to-[#1c1303] shadow-[0_6px_30px_rgba(245,158,11,0.3),0_2px_8px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,236,179,0.45)] backdrop-blur-2xl">
+    <div className="gameplay-top-hud-container relative z-30 w-full shrink-0 flex flex-col border-b-2 border-amber-400/80 bg-gradient-to-r from-[#1c1303] via-[#45300c] via-[#241906] via-[#4d360e] to-[#1c1303] shadow-[0_6px_30px_rgba(245,158,11,0.25),0_2px_8px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,236,179,0.45)] backdrop-blur-2xl">
       {/* Top subtle golden light edge */}
       <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-300/80 to-transparent pointer-events-none" />
 
@@ -93,7 +93,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={onExit}
-            className="tactile-button flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/60 bg-[#0c0803]/90 text-amber-200 hover:text-white hover:border-amber-300 hover:bg-black hover:shadow-[0_0_16px_rgba(245,158,11,0.5)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
+            className="tactile-button flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-[#0a1220]/90 text-slate-200 hover:text-white hover:border-cyan-400/60 hover:bg-[#121f35] hover:shadow-[0_0_14px_rgba(34,211,238,0.3)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
             title={isSpectator ? 'Stop watching' : 'Exit game'}
             aria-label={isSpectator ? 'Stop watching' : 'Exit game'}
           >
@@ -104,10 +104,10 @@ export const GameHud: React.FC<GameHudProps> = ({
             <button
               type="button"
               onClick={handleCopyPin}
-              className={`tactile-button flex h-9 sm:h-10 shrink-0 items-center gap-1.5 sm:gap-2 rounded-xl border px-2.5 sm:px-3 font-mono text-xs sm:text-sm font-bold transition-all shadow-[0_4px_12px_rgba(0,0,0,0.6)] cursor-pointer ${
+              className={`tactile-button flex h-9 sm:h-10 shrink-0 items-center gap-1.5 sm:gap-2 rounded-xl border px-2.5 sm:px-3 font-mono text-xs sm:text-sm font-bold transition-all shadow-[0_2px_8px_rgba(0,0,0,0.4)] cursor-pointer ${
                 copiedPin
-                  ? 'border-emerald-400 bg-emerald-950/95 text-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.5)]'
-                  : 'border-amber-400/60 bg-[#0c0803]/90 text-amber-200 hover:border-amber-300 hover:bg-black hover:text-white hover:shadow-[0_0_16px_rgba(245,158,11,0.4)]'
+                  ? 'border-emerald-400 bg-emerald-950/95 text-emerald-300 shadow-[0_0_14px_rgba(16,185,129,0.5)]'
+                  : 'border-white/15 bg-[#0a1220]/90 text-slate-200 hover:border-cyan-400/60 hover:bg-[#121f35] hover:text-white hover:shadow-[0_0_14px_rgba(34,211,238,0.25)]'
               }`}
               title="Room PIN (click to copy)"
             >
@@ -118,18 +118,18 @@ export const GameHud: React.FC<GameHudProps> = ({
                 </>
               ) : (
                 <>
-                  <span className="text-[9px] sm:text-xs font-bold text-amber-400 uppercase tracking-wider">PIN</span>
-                  <strong className="text-xs sm:text-base font-black text-amber-100 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">#{roomPin}</strong>
+                  <span className="text-[9px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">PIN</span>
+                  <strong className="text-xs sm:text-base font-black text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">#{roomPin}</strong>
                 </>
               )}
             </button>
           )}
 
           <div
-            className={`gameplay-live-indicator flex h-9 sm:h-10 items-center gap-1.5 rounded-xl px-2.5 text-xs sm:text-sm font-black uppercase tracking-wider border shadow-[0_4px_12px_rgba(0,0,0,0.6)] ${
+            className={`gameplay-live-indicator flex h-9 sm:h-10 items-center gap-1.5 rounded-xl px-2.5 text-xs sm:text-sm font-black uppercase tracking-wider border shadow-[0_2px_8px_rgba(0,0,0,0.4)] ${
               isConnected
-                ? 'border-emerald-400/70 bg-[#07170e]/95 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
-                : 'border-rose-400/70 bg-[#1c080c]/95 text-rose-300 shadow-[0_0_12px_rgba(239,68,68,0.25)]'
+                ? 'border-emerald-400/50 bg-emerald-950/70 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                : 'border-rose-400/50 bg-rose-950/70 text-rose-300 shadow-[0_0_10px_rgba(239,68,68,0.2)]'
             }`}
             title={isConnected ? 'Live match connected' : 'Reconnecting to match'}
           >
@@ -178,11 +178,11 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={onOpenInfo}
-            className="gameplay-info-button tactile-button flex lg:hidden h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-amber-400/60 bg-[#0c0803]/90 px-2.5 sm:px-3 text-xs font-bold text-amber-200 hover:border-amber-300 hover:bg-black shadow-[0_4px_12px_rgba(0,0,0,0.6)] shrink-0 cursor-pointer"
+            className="gameplay-info-button tactile-button flex lg:hidden h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-white/15 bg-[#0a1220]/90 px-2.5 sm:px-3 text-xs font-bold text-slate-100 hover:border-cyan-400/60 shadow-[0_2px_8px_rgba(0,0,0,0.4)] shrink-0 cursor-pointer"
             title="Match stats & word history"
             aria-label="Open match stats and word history"
           >
-            <ScrollText className="h-4 w-4 text-amber-300" />
+            <ScrollText className="h-4 w-4 text-cyan-400" />
             <span>Stats</span>
           </button>
 
@@ -192,7 +192,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             <button
               type="button"
               onClick={onOpenGuide}
-              className="tactile-button hidden sm:flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-amber-400/60 bg-[#0c0803]/90 text-amber-200 hover:border-amber-300 hover:bg-black hover:text-white hover:shadow-[0_0_16px_rgba(245,158,11,0.5)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 shrink-0 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
+              className="tactile-button hidden sm:flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-white/15 bg-[#0a1220]/90 text-cyan-400 hover:border-cyan-400/70 hover:bg-[#121f35] hover:text-white hover:shadow-[0_0_14px_rgba(34,211,238,0.3)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 shrink-0 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
               title="Game Guide & Cards"
               aria-label="Open Game Guide & Cards"
             >
@@ -202,11 +202,11 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="tactile-button hidden sm:flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-amber-400/60 bg-[#0c0803]/90 text-amber-200 hover:border-amber-300 hover:bg-black hover:text-white hover:shadow-[0_0_16px_rgba(245,158,11,0.5)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 shrink-0 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
+            className="tactile-button hidden sm:flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-white/15 bg-[#0a1220]/90 text-cyan-400 hover:border-cyan-400/70 hover:bg-[#121f35] hover:text-white hover:shadow-[0_0_14px_rgba(34,211,238,0.3)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 shrink-0 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
             aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           >
-            {isFullscreen ? <Minimize className="h-4 w-4 text-amber-300" /> : <Maximize className="h-4 w-4" />}
+            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
           </button>
         </div>
       </header>
