@@ -608,16 +608,16 @@ body {
 
 /* Game screen frame: the header, reserved match rail, and control tray form one shell. */
 .wordx-game-shell .gameplay-top-hud {
-  min-height: 60px;
-  padding: 6px 16px;
-  border-bottom: 1px solid rgba(120, 160, 200, 0.18);
-  background: linear-gradient(180deg, rgba(14, 23, 38, 0.96) 0%, rgba(9, 15, 26, 0.94) 100%);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(34, 211, 197, 0.12);
+  min-height: 62px;
+  padding: 8px 18px;
+  border-bottom: 1px solid #334b68;
+  background: linear-gradient(180deg, #1C2B3E 0%, #152232 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px);
 }
 .wordx-game-shell .gameplay-hud-cluster {
   min-height: 0;
-  gap: 8px;
+  gap: 10px;
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -627,24 +627,24 @@ body {
 }
 .wordx-game-shell .gameplay-hud-left > button,
 .wordx-game-shell .gameplay-hud-right > button {
-  border-color: rgba(120, 160, 200, 0.2);
-  border-radius: 10px;
-  background: rgba(20, 35, 55, 0.65);
+  border-color: rgba(140, 180, 220, 0.25);
+  border-radius: 12px;
+  background: #25384E;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   transition: all 0.2s ease;
 }
 .wordx-game-shell .gameplay-hud-left > button:hover,
 .wordx-game-shell .gameplay-hud-right > button:hover {
-  border-color: rgba(34, 211, 197, 0.45);
-  background: rgba(25, 45, 70, 0.85);
-  box-shadow: 0 0 12px rgba(34, 211, 197, 0.2);
+  border-color: #38BDF8;
+  background: #2F4763;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
 }
 .wordx-game-shell .gameplay-hud-left > button:nth-child(2) {
-  border: 1px solid rgba(120, 160, 200, 0.2);
-  background: rgba(20, 35, 55, 0.65);
+  border: 1px solid rgba(140, 180, 220, 0.25);
+  background: #25384E;
 }
 .wordx-game-shell .gameplay-brand {
-  filter: drop-shadow(0 0 10px rgba(246, 196, 83, 0.25));
+  filter: none;
 }
 .wordx-game-shell .gameplay-brand span { white-space: nowrap; }
 .wordx-game-shell .gameplay-live-indicator { background: none; }
