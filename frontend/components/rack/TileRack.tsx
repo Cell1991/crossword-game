@@ -209,8 +209,8 @@ export const TileRack = memo(function TileRack({
 
         {/* LEFT / CENTER: 7-TILE RACK & POWER CARDS */}
         <div className="game-rack-module game-rack-center relative order-1 flex w-full max-w-full shrink-0 flex-col items-center gap-1.5 lg:w-auto overflow-visible">
-          {/* 7-Tile Stand: Top on mobile (order-1), Lower on desktop (lg:order-2) */}
-          <div className="order-1 lg:order-2 w-full overflow-x-auto overflow-y-visible px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible pt-2 -mt-1 pb-1">
+          {/* 7-Tile Stand: Row 2 */}
+          <div className="order-2 w-full overflow-x-auto overflow-y-visible px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible pt-2 -mt-1 pb-1">
             <div
               ref={rackRef}
               className={`game-tile-tray relative flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl border px-2 py-1.5 sm:w-auto sm:gap-1.5 sm:px-2.5 sm:py-1.5 min-h-[52px] sm:min-h-[56px] ${
@@ -321,9 +321,9 @@ export const TileRack = memo(function TileRack({
             </div>
           </div>
 
-          {/* Power Cards Bay: Middle on mobile (order-2), Upper on desktop (lg:order-1) */}
+          {/* Power Cards Bay: Row 1 (Top) */}
           {powerCardSlot && (
-            <div className="game-power-strip order-2 lg:order-1 flex w-full max-w-full items-center justify-center">
+            <div className="game-power-strip order-1 flex w-full max-w-full items-center justify-center">
               {powerCardSlot}
             </div>
           )}
