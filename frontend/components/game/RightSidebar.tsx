@@ -185,8 +185,23 @@ export const RightSidebar = memo(function RightSidebar({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex min-w-0 flex-1 items-center gap-2">
+                      {/* Letter crest keeps player identity visible without requiring profile photos. */}
+                      <span
+                        aria-hidden="true"
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-xs font-black uppercase shadow-inner ${
+                          isDead || hasLeft
+                            ? 'border-slate-700 bg-slate-900 text-slate-500'
+                            : isMe
+                            ? 'border-amber-300/40 bg-amber-300/10 text-amber-200'
+                            : isCurrent
+                            ? 'border-emerald-300/40 bg-emerald-300/10 text-emerald-200'
+                            : 'border-cyan-300/25 bg-cyan-300/[0.07] text-cyan-100'
+                        }`}
+                      >
+                        {player.display_name.trim().charAt(0) || '?'}
+                      </span>
                       {/* Rank Number */}
-                      <span className={`text-xs font-mono font-bold w-4 shrink-0 ${
+                      <span className={`w-4 shrink-0 text-center text-[10px] font-mono font-bold ${
                         idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-amber-600' : 'text-slate-500'
                       }`}>
                         {idx + 1}.
