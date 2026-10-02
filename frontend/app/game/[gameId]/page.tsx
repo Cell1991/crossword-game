@@ -789,8 +789,8 @@ export default function GamePage() {
 
       </main>
 
-      <footer className="gameplay-control-stage relative z-20 flex w-full shrink-0 justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-5 sm:pb-4">
-        <div className="gameplay-control-content w-full min-w-0">
+      <footer className="gameplay-control-stage absolute bottom-0 left-0 right-0 z-20 flex w-full justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-6 sm:px-5 sm:pb-4 pointer-events-none">
+        <div className="gameplay-control-content w-full min-w-0 pointer-events-auto">
           {isSpectator ? (
             <div className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-xl border border-sky-500/25 bg-sky-950/40 px-4 py-2.5 text-center text-xs text-sky-300 select-none sm:text-sm">
               <Eye className="h-4 w-4 shrink-0 text-sky-400" />
