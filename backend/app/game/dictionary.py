@@ -30,13 +30,10 @@ class DictionaryService:
         self._rebuild_indices()
 
     def _rebuild_indices(self) -> None:
-        from collections import Counter
         self._words_by_len: dict[int, list[str]] = {}
-        self._word_profiles: list[tuple[str, int, set[str], Counter]] = []
         for w in self._words:
             length = len(w)
             self._words_by_len.setdefault(length, []).append(w)
-            self._word_profiles.append((w, length, set(w), Counter(w)))
 
     def get_words_of_length(self, length: int) -> list[str]:
         if not hasattr(self, "_words_by_len") or not self._words_by_len:
@@ -50,7 +47,7 @@ class DictionaryService:
         blanks: int = 0,
         max_len: int = 15,
     ) -> dict[int, list[str]]:
-        if not hasattr(self, "_word_profiles") or not self._word_profiles:
+        if not hasattr(self, "_words_by_len") or not self._words_by_len:
             self._rebuild_indices()
 
         total_pool: dict[str, int] = {}
@@ -59,31 +56,24 @@ class DictionaryService:
         for k, v in board_counts.items():
             total_pool[k] = total_pool.get(k, 0) + v
 
-        pool_set = set(total_pool.keys())
         result: dict[int, list[str]] = {}
 
-        if blanks == 0:
-            for w, length, wset, wc in self._word_profiles:
-                if length > max_len or length < 2:
-                    continue
-                if wset.issubset(pool_set):
-                    if all(wc[ch] <= total_pool[ch] for ch in wc):
-                        result.setdefault(length, []).append(w)
-        else:
-            for w, length, wset, wc in self._word_profiles:
-                if length > max_len or length < 2:
-                    continue
+        # Check one word at a time instead of keeping a Counter and set for
+        # every dictionary entry in memory throughout the game.
+        for length, words in self._words_by_len.items():
+            if length > max_len or length < 2:
+                continue
+            for word in words:
+                used: dict[str, int] = {}
                 needed_blanks = 0
-                possible = True
-                for ch, count in wc.items():
-                    avail = total_pool.get(ch, 0)
-                    if count > avail:
-                        needed_blanks += (count - avail)
+                for letter in word:
+                    used[letter] = used.get(letter, 0) + 1
+                    if used[letter] > total_pool.get(letter, 0):
+                        needed_blanks += 1
                         if needed_blanks > blanks:
-                            possible = False
                             break
-                if possible:
-                    result.setdefault(length, []).append(w)
+                else:
+                    result.setdefault(length, []).append(word)
 
         return result
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef, useSyncExternalStore }
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowLeft, ArrowRight, BookOpen, Bot, Clock, Eye, LogIn, Minus, Plus, RefreshCw, User, X } from 'lucide-react';
-import { createRoom, getRoom, getRooms, joinRoom, startGame, sessionStore } from '@/lib/api';
+import { createRoom, getApiBase, getRoom, getRooms, joinRoom, startGame, sessionStore } from '@/lib/api';
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
 import FullscreenButton from '@/components/ui/FullscreenButton';
@@ -52,6 +52,7 @@ export default function HomePage() {
   const [name, setName] = useState('');
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
+  const [createTakingLong, setCreateTakingLong] = useState(false);
   const [error, setError] = useState('');
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [turnTimeLimit, setTurnTimeLimit] = useState<TurnTimeLimit>(null);
@@ -67,6 +68,23 @@ export default function HomePage() {
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [roomsError, setRoomsError] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const apiBase = getApiBase();
+    if (!/^https?:\/\//.test(apiBase)) return;
+    const serverBase = apiBase.endsWith('/api') ? apiBase.slice(0, -4) : apiBase;
+    // Start a sleeping hosted backend while the player fills in the room form.
+    void fetch(`${serverBase}/health`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(120_000),
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!loading || mode !== 'create') return;
+    const timer = window.setTimeout(() => setCreateTakingLong(true), 8_000);
+    return () => window.clearTimeout(timer);
+  }, [loading, mode]);
 
   const clearError = useCallback(() => {
     setError('');
@@ -133,6 +151,7 @@ export default function HomePage() {
     }
     const maxPlayers = playerLimitOption === 'custom' ? parsedCustomPlayers : (Number(playerLimitOption) || 4);
 
+    setCreateTakingLong(false);
     setLoading(true);
     clearError();
     try {
@@ -164,6 +183,7 @@ export default function HomePage() {
       setError(error instanceof Error ? error.message : 'Failed to create room');
     } finally {
       setLoading(false);
+      setCreateTakingLong(false);
     }
   };
 
@@ -769,6 +789,11 @@ export default function HomePage() {
                   </span>
                 ) : 'Create Room'}
               </button>
+              {loading && createTakingLong && (
+                <p role="status" className="text-center text-xs text-amber-200/90">
+                  Connecting to the game server. It may take about a minute to wake up after inactivity.
+                </p>
+              )}
             </div>
           )}
 

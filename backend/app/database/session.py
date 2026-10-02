@@ -63,10 +63,14 @@ async def init_db():
 
 async def _backfill_normalized_state(session: AsyncSession):
     """Backfill normalized tables once, preserving databases created by older builds."""
+    board_game_ids = set((await session.execute(select(BoardCell.game_id).distinct())).scalars())
+    tile_game_ids = set((await session.execute(select(GameTile.game_id).distinct())).scalars())
+    tile_player_ids = set((await session.execute(select(GameTile.player_id).distinct())).scalars())
+    card_player_ids = set((await session.execute(select(PlayerCard.player_id).distinct())).scalars())
+
     games = (await session.execute(select(Game))).scalars().all()
     for game in games:
-        cell_count = await session.scalar(select(func.count()).select_from(BoardCell).where(BoardCell.game_id == game.id))
-        if not cell_count and game.board_state:
+        if game.id not in board_game_ids and game.board_state:
             session.add_all([
                 BoardCell(
                     game_id=game.id,
@@ -81,8 +85,7 @@ async def _backfill_normalized_state(session: AsyncSession):
                 if cell.get("player_id") or game.current_player_id
             ])
 
-        tile_count = await session.scalar(select(func.count()).select_from(GameTile).where(GameTile.game_id == game.id))
-        if not tile_count and game.tile_bag:
+        if game.id not in tile_game_ids and game.tile_bag:
             session.add_all([
                 GameTile(
                     id=tile["id"], game_id=game.id, location="BAG", position=index,
@@ -93,8 +96,7 @@ async def _backfill_normalized_state(session: AsyncSession):
 
     players = (await session.execute(select(GamePlayer))).scalars().all()
     for player in players:
-        tile_count = await session.scalar(select(func.count()).select_from(GameTile).where(GameTile.player_id == player.id))
-        if not tile_count and player.rack:
+        if player.id not in tile_player_ids and player.rack:
             session.add_all([
                 GameTile(
                     id=tile["id"], game_id=player.game_id, player_id=player.id,
@@ -102,8 +104,7 @@ async def _backfill_normalized_state(session: AsyncSession):
                 )
                 for index, tile in enumerate(player.rack)
             ])
-        card_count = await session.scalar(select(func.count()).select_from(PlayerCard).where(PlayerCard.player_id == player.id))
-        if not card_count and player.cards:
+        if player.id not in card_player_ids and player.cards:
             session.add_all([PlayerCard(player_id=player.id, card_type=card) for card in player.cards])
 
 
@@ -130,9 +131,11 @@ async def _seed_dictionary(session: AsyncSession):
 async def _load_dictionary_from_database(session: AsyncSession):
     """Use the normalized dictionary table as the runtime source of truth."""
     await session.flush()
-    words = (await session.execute(select(DictionaryWord.word))).scalars().all()
-    if words:
-        dictionary_service._words = set(words)
+    words = await session.stream_scalars(select(DictionaryWord.word))
+    loaded = {word async for word in words}
+    if loaded:
+        dictionary_service._words = loaded
+        dictionary_service._rebuild_indices()
 
 
 async def _seed_word_definitions(session: AsyncSession):

@@ -123,19 +123,29 @@ export async function createRoom(
   startingHp: number | null = null,
   maxPlayers: number | null = 4,
 ): Promise<CreateRoomResponse> {
-  const res = await fetch(`${getApiBase()}/rooms`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      host_name: hostName,
-      turn_time_limit: turnTimeLimit,
-      game_mode: gameMode,
-      max_turns: gameMode === 'TURNS' ? maxTurns : null,
-      starting_hp: gameMode === 'HP' ? startingHp : null,
-      is_debug: isDebug,
-      max_players: maxPlayers,
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${getApiBase()}/rooms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // Free hosted backends can need a cold start before creating a room.
+      signal: AbortSignal.timeout(120_000),
+      body: JSON.stringify({
+        host_name: hostName,
+        turn_time_limit: turnTimeLimit,
+        game_mode: gameMode,
+        max_turns: gameMode === 'TURNS' ? maxTurns : null,
+        starting_hp: gameMode === 'HP' ? startingHp : null,
+        is_debug: isDebug,
+        max_players: maxPlayers,
+      }),
+    });
+  } catch (error) {
+    if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+      throw new Error('The game server did not respond. Please try again in a moment.');
+    }
+    throw error;
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Failed to create room');
