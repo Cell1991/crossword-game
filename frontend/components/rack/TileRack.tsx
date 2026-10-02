@@ -203,21 +203,9 @@ export const TileRack = memo(function TileRack({
       )}
 
       {/* Symmetrical High-Tech Gaming Pedestal Console Dock with Cyber Cyan LED Halo */}
-      <div className="game-control-layout relative flex w-full flex-row flex-wrap items-center justify-center gap-2 sm:gap-3 lg:flex-nowrap lg:gap-5">
-        {/* Glowing Cyan LED Corner Light Bars & Tech Circuit Detailing */}
-        <div aria-hidden="true" className="pedestal-led-corner pedestal-led-tl absolute -top-[2px] -left-[2px] h-6 w-14 rounded-tl-[24px] border-l-[2.5px] border-t-[2.5px] border-cyan-400 pointer-events-none shadow-[0_0_14px_#00d2ff,inset_0_0_8px_rgba(0,210,255,0.4)]">
-          <span className="absolute left-3 top-1.5 h-1 w-5 rounded-full bg-cyan-300 shadow-[0_0_6px_#38bdf8]" />
-        </div>
-        <div aria-hidden="true" className="pedestal-led-corner pedestal-led-tr absolute -top-[2px] -right-[2px] h-6 w-14 rounded-tr-[24px] border-r-[2.5px] border-t-[2.5px] border-cyan-400 pointer-events-none shadow-[0_0_14px_#00d2ff,inset_0_0_8px_rgba(0,210,255,0.4)]">
-          <span className="absolute right-3 top-1.5 h-1 w-5 rounded-full bg-cyan-300 shadow-[0_0_6px_#38bdf8]" />
-        </div>
-        <div aria-hidden="true" className="pedestal-led-corner pedestal-led-bl absolute -bottom-[2px] -left-[2px] h-6 w-14 rounded-bl-[24px] border-l-[2.5px] border-b-[2.5px] border-cyan-400 pointer-events-none shadow-[0_0_14px_#00d2ff,inset_0_0_8px_rgba(0,210,255,0.4)]">
-          <span className="absolute left-3 bottom-1.5 h-1 w-5 rounded-full bg-cyan-300 shadow-[0_0_6px_#38bdf8]" />
-        </div>
-        <div aria-hidden="true" className="pedestal-led-corner pedestal-led-br absolute -bottom-[2px] -right-[2px] h-6 w-14 rounded-br-[24px] border-r-[2.5px] border-b-[2.5px] border-cyan-400 pointer-events-none shadow-[0_0_14px_#00d2ff,inset_0_0_8px_rgba(0,210,255,0.4)]">
-          <span className="absolute right-3 bottom-1.5 h-1 w-5 rounded-full bg-cyan-300 shadow-[0_0_6px_#38bdf8]" />
-        </div>
-        <div aria-hidden="true" className="pedestal-top-glint absolute inset-x-14 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-300/90 to-transparent pointer-events-none shadow-[0_0_8px_#38bdf8]" />
+      <div className="game-control-layout relative flex w-full flex-row flex-wrap items-center justify-center gap-2 sm:gap-3 lg:flex-nowrap lg:gap-4">
+        {/* Specular Edge Highlight Trim */}
+        <div aria-hidden="true" className="pedestal-top-glint absolute inset-x-8 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent pointer-events-none" />
 
         {/* CENTER POD: 3-CARD EFFECT DECK (UPPER) + 7-TILE RACK (LOWER) */}
         <div className="game-rack-module game-rack-center relative order-1 flex w-full max-w-full shrink-0 flex-col items-center gap-1.5 lg:order-2 lg:w-auto">
