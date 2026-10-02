@@ -97,6 +97,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   const tilePlacementTimesRef = useRef<Map<string, number>>(new Map());
   const prevTemporaryTilesRef = useRef<PlacedTile[]>([]);
   const prevRemotePlacementsRef = useRef<{ row: number; col: number }[]>([]);
+  const prevBoardStateRef = useRef<Record<string, BoardCell>>({});
   const animFrameRef = useRef<number | null>(null);
 
   const draw = useCallback(() => {
@@ -126,6 +127,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   useEffect(() => {
     const prevMap = new Map(prevTemporaryTilesRef.current.map(t => [t.tile_id, t]));
     const prevRemoteKeys = new Set(prevRemotePlacementsRef.current.map(r => `${r.row}_${r.col}`));
+    const prevBoardKeys = new Set(Object.keys(prevBoardStateRef.current));
     const now = performance.now();
     let hasNew = false;
     for (const t of temporaryTiles) {
@@ -143,10 +145,19 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
         hasNew = true;
       }
     }
+    if (boardState) {
+      for (const key of Object.keys(boardState)) {
+        if (!prevBoardKeys.has(key)) {
+          tilePlacementTimesRef.current.set(key, now);
+          hasNew = true;
+        }
+      }
+    }
     // Clean up placements that were unstaged/recalled
     const currentKeys = new Set([
       ...temporaryTiles.map(t => `${t.row}_${t.col}`),
       ...remotePlacements.map(r => `${r.row}_${r.col}`),
+      ...Object.keys(boardState || {}),
     ]);
     for (const key of Array.from(tilePlacementTimesRef.current.keys())) {
       if (key.includes('_') && !currentKeys.has(key)) {
@@ -155,6 +166,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     }
     prevTemporaryTilesRef.current = temporaryTiles;
     prevRemotePlacementsRef.current = remotePlacements;
+    prevBoardStateRef.current = boardState || {};
 
     const startAnimLoop = () => {
       if (animFrameRef.current) return;
@@ -180,7 +192,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     if (hasNew) {
       startAnimLoop();
     }
-  }, [temporaryTiles, remotePlacements, draw]);
+  }, [temporaryTiles, remotePlacements, boardState, draw]);
 
   useEffect(() => {
     return () => {

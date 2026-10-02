@@ -105,7 +105,7 @@ export const CARD_DETAILS: Record<string, CardStyleData> = {
   },
 };
 
-/** Epic 3D Holographic Card Reward Discovery Modal */
+/** Epic High-Performance Card Reward Discovery Modal */
 export const EpicCardRevealOverlay: React.FC<{
   reveal: CardReveal;
   onDismiss?: () => void;
@@ -118,7 +118,7 @@ export const EpicCardRevealOverlay: React.FC<{
     element: 'SPECIAL',
     icon: <Sparkles className="w-14 h-14 text-amber-300" />,
     bgGradient: 'from-purple-950 via-slate-950 to-indigo-950',
-    borderGlow: 'border-amber-400 shadow-[0_0_40px_rgba(245,158,11,0.6)]',
+    borderGlow: 'border-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.5)]',
     badgeColor: 'bg-amber-500/30 border-amber-400/70 text-amber-200',
   };
 
@@ -126,10 +126,8 @@ export const EpicCardRevealOverlay: React.FC<{
 
   useEffect(() => {
     if (reveal.phase === 'reveal') {
-      const timer = window.setTimeout(() => {
-        setCanDismiss(true);
-      }, 500);
-      return () => window.clearTimeout(timer);
+      // Allow instant dismissal on reveal without lag
+      setCanDismiss(true);
     } else {
       setCanDismiss(false);
     }
@@ -145,76 +143,62 @@ export const EpicCardRevealOverlay: React.FC<{
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (canDismiss && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ')) {
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         onDismiss?.();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canDismiss, onDismiss]);
+  }, [onDismiss]);
 
   const handleContainerClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (canDismiss) {
-      onDismiss?.();
-    }
+    onDismiss?.();
   };
 
   return (
     <div
       onClick={handleContainerClick}
       onPointerDown={(e) => e.stopPropagation()}
-      className="pointer-events-auto fixed inset-0 z-[100] flex flex-col items-center justify-center select-none overflow-hidden backdrop-blur-md bg-slate-950/85 cursor-pointer p-4"
+      className="pointer-events-auto fixed inset-0 z-[100] flex flex-col items-center justify-center select-none overflow-hidden bg-slate-950/90 cursor-pointer p-4"
     >
-      {/* Background Subtle Ambient Radiance */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 0.6, scale: 1.2, rotate: 360 }}
-        transition={{ rotate: { duration: 30, repeat: Infinity, ease: 'linear' }, opacity: { duration: 0.5 } }}
-        className="absolute w-[600px] h-[600px] sm:w-[800px] sm:h-[800px] pointer-events-none"
+      {/* Static GPU-friendly Ambient Radiance Glow (No JS continuous loop) */}
+      <div
+        className="absolute w-[500px] h-[500px] sm:w-[700px] sm:h-[700px] pointer-events-none opacity-50 transform-gpu"
         style={{
           background:
-            'radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, rgba(168, 85, 247, 0.12) 40%, transparent 70%)',
+            'radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(168, 85, 247, 0.15) 45%, transparent 70%)',
         }}
       />
 
       {/* Top right quick close button */}
-      {reveal.phase === 'reveal' && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (canDismiss) onDismiss?.();
-          }}
-          aria-label="Close"
-          className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/25 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white transition-all shadow-2xl cursor-pointer z-30 active:scale-95"
-        >
-          <X className="w-4 h-4" />
-          <span className="text-xs font-bold">Close</span>
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onDismiss?.();
+        }}
+        aria-label="Close"
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/25 bg-slate-900/95 hover:bg-slate-800 text-slate-200 hover:text-white transition-all shadow-xl cursor-pointer z-30 active:scale-95"
+      >
+        <X className="w-4 h-4" />
+        <span className="text-xs font-bold">Close</span>
+      </button>
 
       <AnimatePresence mode="wait">
         {reveal.phase === 'lightning' ? (
           /* PHASE 1: CHARGING MYSTERY CARD BACK */
           <motion.div
             key="charging-card"
-            initial={{ scale: 0.4, y: 40, opacity: 0 }}
+            initial={{ scale: 0.7, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 1.1, opacity: 0 }}
-            transition={{ type: 'spring', damping: 14, stiffness: 180 }}
-            className="relative flex h-[340px] w-[230px] sm:h-[380px] sm:w-[260px] flex-col items-center justify-between rounded-3xl border-2 border-amber-400/90 bg-gradient-to-br from-[#1e1338] via-[#0f0926] to-[#04020a] p-5 shadow-[0_0_60px_rgba(245,158,11,0.6),inset_0_0_30px_rgba(245,158,11,0.3)] pointer-events-auto"
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="relative flex h-[340px] w-[230px] sm:h-[380px] sm:w-[260px] flex-col items-center justify-between rounded-3xl border-2 border-amber-400/90 bg-gradient-to-br from-[#1e1338] via-[#0f0926] to-[#04020a] p-5 shadow-2xl shadow-amber-500/30 pointer-events-auto transform-gpu"
           >
-            {/* Pulsing Concentric Energy Rings */}
-            <motion.div
-              animate={{ scale: [1, 1.4, 1.8], opacity: [0.8, 0.4, 0] }}
-              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeOut' }}
-              className="absolute inset-0 rounded-3xl border border-amber-300 pointer-events-none"
-            />
-
             {/* Card Header Top */}
             <div className="flex w-full items-center justify-between">
               <span className="flex items-center gap-1 font-mono text-[10px] font-black tracking-widest text-amber-300">
@@ -228,23 +212,14 @@ export const EpicCardRevealOverlay: React.FC<{
 
             {/* Centered Crackling Lightning Emblem */}
             <div className="relative flex flex-col items-center justify-center my-auto">
-              <motion.div
-                animate={{ scale: [1, 1.15, 1], rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 0.8, repeat: Infinity }}
-                className="relative flex items-center justify-center"
-              >
-                <div className="absolute h-28 w-28 rounded-full bg-amber-400/20 blur-xl animate-pulse" />
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-amber-300 bg-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.8)]">
-                  <Zap className="h-12 w-12 fill-amber-300 text-yellow-100 drop-shadow-[0_0_12px_#fef08a]" />
+              <div className="relative flex items-center justify-center">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-amber-300 bg-amber-500/20 shadow-lg shadow-amber-500/50">
+                  <Zap className="h-12 w-12 fill-amber-300 text-yellow-100 drop-shadow-[0_0_8px_#fef08a]" />
                 </div>
-              </motion.div>
-              <motion.span
-                animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 0.6, repeat: Infinity }}
-                className="mt-4 text-xs font-black uppercase tracking-[0.35em] text-amber-300"
-              >
+              </div>
+              <span className="mt-4 text-xs font-black uppercase tracking-[0.3em] text-amber-300 animate-pulse">
                 Unlocking Card…
-              </motion.span>
+              </span>
             </div>
 
             {/* Card Bottom Filigree */}
@@ -253,30 +228,25 @@ export const EpicCardRevealOverlay: React.FC<{
             </div>
           </motion.div>
         ) : (
-          /* PHASE 2: GLORIOUS 3D FAST 3-REVOLUTION REVEALED CARD */
+          /* PHASE 2: GLORIOUS 3D CARD REVEAL (GPU-ACCELERATED 180° FLIP) */
           <motion.div
             key="revealed-phase-wrapper"
-            initial={{ opacity: 0, scale: 0.7, rotateY: 1080 }}
+            initial={{ opacity: 0, scale: 0.8, rotateY: 180 }}
             animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-            exit={{ opacity: 0, scale: 0.8 }}
+            exit={{ opacity: 0, scale: 0.9 }}
             transition={{
-              rotateY: { duration: 0.75, ease: [0.25, 1, 0.5, 1] },
-              scale: { duration: 0.6, ease: 'easeOut' },
-              opacity: { duration: 0.4 },
+              rotateY: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+              scale: { duration: 0.35, ease: 'easeOut' },
+              opacity: { duration: 0.2 },
             }}
-            style={{ perspective: 1200, transformStyle: 'preserve-3d' }}
-            className="flex flex-col items-center pointer-events-auto"
+            style={{ perspective: 1000, transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
+            className="flex flex-col items-center pointer-events-auto transform-gpu will-change-transform"
           >
             <div
-              className={`relative flex h-[370px] w-[250px] sm:h-[410px] sm:w-[280px] flex-col items-center justify-between rounded-3xl border-2 ${cardInfo.borderGlow} bg-gradient-to-br ${cardInfo.bgGradient} p-5 shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden`}
+              className={`relative flex h-[370px] w-[250px] sm:h-[410px] sm:w-[280px] flex-col items-center justify-between rounded-3xl border-2 ${cardInfo.borderGlow} bg-gradient-to-br ${cardInfo.bgGradient} p-5 shadow-2xl shadow-black/80 overflow-hidden transform-gpu`}
             >
-              {/* Holographic light sheen overlay - sweeps once on reveal then completely vanishes */}
-              <motion.div
-                initial={{ x: '-150%', opacity: 0 }}
-                animate={{ x: '250%', opacity: [0, 0.6, 0.6, 0] }}
-                transition={{ duration: 0.9, ease: 'easeInOut', delay: 0.45 }}
-                className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none z-20"
-              />
+              {/* Holographic light sheen overlay */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/10 via-transparent to-black/30 pointer-events-none z-20" />
 
               {/* Top Bar: Rarity + Timing Element */}
               <div className="flex w-full items-center justify-between relative z-10">
@@ -289,70 +259,43 @@ export const EpicCardRevealOverlay: React.FC<{
                 </span>
               </div>
 
-              {/* Central Card Art Emblem — strictly matching the awarded card! */}
+              {/* Central Card Art Emblem */}
               <div className="relative flex flex-col items-center justify-center my-auto z-10">
-                <motion.div
-                  initial={{ scale: 0.4 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', damping: 14, stiffness: 220, delay: 0.4 }}
-                  className="relative flex items-center justify-center mb-3"
-                >
-                  <div className="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-3xl border border-white/20 bg-white/10 shadow-[inset_0_2px_4px_rgba(255,255,255,0.25),0_0_30px_rgba(0,0,0,0.5)] backdrop-blur-md">
-                    {cardInfo.icon}
-                  </div>
-                </motion.div>
+                <div className="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-3xl border border-white/20 bg-white/10 shadow-lg mb-3">
+                  {cardInfo.icon}
+                </div>
 
                 {/* Title & Subtitle */}
-                <motion.h3
-                  initial={{ y: 8, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="text-lg sm:text-xl font-black tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] text-center px-1"
-                >
+                <h3 className="text-lg sm:text-xl font-black tracking-tight text-white text-center px-1 drop-shadow-md">
                   {cardInfo.title}
-                </motion.h3>
-                <motion.span
-                  initial={{ y: 8, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.55 }}
-                  className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300 mt-0.5"
-                >
+                </h3>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300 mt-0.5">
                   {cardInfo.subtitle}
-                </motion.span>
+                </span>
               </div>
 
-              {/* Bottom Card Description Box — strictly matching Game Guide description */}
-              <motion.div
-                initial={{ y: 8, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="w-full rounded-xl border border-white/10 bg-black/50 p-2.5 text-center relative z-10 backdrop-blur-sm"
-              >
+              {/* Bottom Card Description Box */}
+              <div className="w-full rounded-xl border border-white/10 bg-black/60 p-2.5 text-center relative z-10">
                 <p className="text-[11px] sm:text-[11.5px] font-medium leading-snug text-slate-200">
                   {cardInfo.description}
                 </p>
-              </motion.div>
+              </div>
             </div>
 
             {/* Tap or click anywhere to close pill */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.65, duration: 0.25 }}
-              className="mt-5 flex flex-col items-center justify-center gap-2 pointer-events-auto"
-            >
+            <div className="mt-5 flex flex-col items-center justify-center gap-2 pointer-events-auto">
               <button
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  if (canDismiss) onDismiss?.();
+                  onDismiss?.();
                 }}
-                className="flex items-center gap-2 px-6 py-2 rounded-full border border-amber-400/60 bg-gradient-to-r from-amber-500/25 via-yellow-500/15 to-amber-500/25 hover:from-amber-500/40 hover:to-amber-500/40 text-amber-100 text-xs sm:text-sm font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] backdrop-blur-md transition-all active:scale-95 cursor-pointer animate-pulse"
+                className="flex items-center gap-2 px-6 py-2 rounded-full border border-amber-400/60 bg-gradient-to-r from-amber-500/30 via-yellow-500/20 to-amber-500/30 hover:from-amber-500/50 hover:to-amber-500/50 text-amber-100 text-xs sm:text-sm font-black shadow-lg shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
               >
                 <span>✕ Tap anywhere to close</span>
               </button>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -376,7 +319,7 @@ export const CardActivationOverlay: React.FC<{ event: CardCastEvent }> = ({ even
     element: 'SPECIAL',
     icon: <Sparkles className="w-8 h-8 text-amber-300" />,
     bgGradient: 'from-purple-950 via-slate-900 to-indigo-950',
-    borderGlow: 'border-amber-400 shadow-[0_0_35px_rgba(245,158,11,0.6)]',
+    borderGlow: 'border-amber-400 shadow-xl shadow-amber-500/30',
     badgeColor: 'bg-amber-500/30 border-amber-400/70 text-amber-200',
   };
 
@@ -387,14 +330,14 @@ export const CardActivationOverlay: React.FC<{ event: CardCastEvent }> = ({ even
   return (
     <div className="pointer-events-none fixed inset-x-0 top-16 sm:top-20 z-[95] flex items-center justify-center select-none px-4">
       <motion.div
-        initial={{ y: -40, scale: 0.85, opacity: 0 }}
+        initial={{ y: -30, scale: 0.9, opacity: 0 }}
         animate={{ y: 0, scale: 1, opacity: 1 }}
-        exit={{ y: -30, scale: 0.9, opacity: 0 }}
-        transition={{ type: 'spring', damping: 14, stiffness: 200 }}
-        className={`relative flex max-w-md w-full items-center gap-3.5 rounded-2xl border-2 ${cardInfo.borderGlow} bg-gradient-to-r ${cardInfo.bgGradient} p-3 sm:p-4 shadow-[0_15px_40px_rgba(0,0,0,0.85)] backdrop-blur-xl`}
+        exit={{ y: -20, scale: 0.95, opacity: 0 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
+        className={`relative flex max-w-md w-full items-center gap-3.5 rounded-2xl border-2 ${cardInfo.borderGlow} bg-gradient-to-r ${cardInfo.bgGradient} p-3 sm:p-4 shadow-2xl shadow-black/80 transform-gpu`}
       >
         {/* Animated Icon Avatar */}
-        <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+        <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 shadow-md">
           {cardInfo.icon}
         </div>
 

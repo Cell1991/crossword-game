@@ -47,6 +47,7 @@ export function useStagedMove({
   const [validationReason, setValidationReason] = useState('');
   const [blankPickerTarget, setBlankPickerTarget] = useState<BlankPickerTarget | null>(null);
   const [designatedBlankLetters, setDesignatedBlankLetters] = useState<Record<string, string>>({});
+  const isCommittingRef = useRef(false);
   const validationRequestRef = useRef(0);
   const validateTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -71,7 +72,10 @@ export function useStagedMove({
         // The word check's complaint was about tiles that are no longer on the board.
         setError('');
       });
-      sendPreview(null);
+      if (!isCommittingRef.current) {
+        sendPreview(null);
+      }
+      isCommittingRef.current = false;
       return;
     }
     // Until the new placement is checked, Confirm must not rely on the previous verdict.
@@ -194,7 +198,10 @@ export function useStagedMove({
   const deselectTile = useCallback(() => setSelectedTileId(null), []);
 
   /** Recalls every staged tile (Cancel) or forgets them once the move is committed. */
-  const clearStagedMove = useCallback(() => {
+  const clearStagedMove = useCallback((isCommitting = false) => {
+    if (isCommitting) {
+      isCommittingRef.current = true;
+    }
     setTemporaryTiles([]);
     setSelectedTileId(null);
     setSelectedCell(null);

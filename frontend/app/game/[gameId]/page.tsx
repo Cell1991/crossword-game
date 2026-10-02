@@ -345,7 +345,7 @@ export default function GamePage() {
       };
     });
 
-    clearStagedMove();
+    clearStagedMove(true);
     cards.clearHints();
 
     // 2. Authoritative background server commit

@@ -165,6 +165,7 @@ export class BoardCompositor {
 
     for (let i = 0; i < config.remotePlacements.length; i++) {
       const placement = config.remotePlacements[i];
+      if (config.boardState && config.boardState[`${placement.row}_${placement.col}`]) continue;
       if (isCellVisible(placement.row, placement.col)) {
         TileRenderer.renderTile(tileContext, placement.row, placement.col, '', 0, true, false, true);
       }

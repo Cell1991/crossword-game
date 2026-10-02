@@ -181,6 +181,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       case 'TURN_PASSED':
       case 'TURN_STARTED': {
         setRemoteBotTiles([]);
+        setRemotePlacements([]);
         if (event.type === 'MOVE_COMMITTED' && event.payload?.boardState) {
           const newBoard = event.payload.boardState as Record<string, BoardCell>;
           replaceGameState(prev => {
