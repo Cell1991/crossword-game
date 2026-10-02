@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Layers } from 'lucide-react';
+import { Layers, ChevronRight } from 'lucide-react';
 
 interface LetterBagCardProps {
   tileBagCount: number;
@@ -20,32 +20,33 @@ export const LetterBagCard: React.FC<LetterBagCardProps> = ({
         ref={buttonRef}
         type="button"
         onClick={onClick}
-        className="group relative flex w-full items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/70 border border-white/[0.08] hover:border-amber-400/40 shadow-lg hover:shadow-[0_0_16px_rgba(246,196,83,0.15)] backdrop-blur-md transition-all duration-300 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F6C453]/60 select-none overflow-hidden"
+        className="group relative flex w-full items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-[#172b47]/80 via-[#0f1d32]/90 to-[#091322]/95 hover:from-[#1e385c]/90 hover:to-[#12223b] border border-amber-400/30 hover:border-amber-400/60 shadow-[0_4px_16px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_0_20px_rgba(245,158,11,0.25)] backdrop-blur-xl transition-all duration-200 cursor-pointer text-left select-none overflow-hidden"
         aria-label={`Show letter bag breakdown, ${tileBagCount} tiles remaining`}
       >
-        {/* Subtle decorative glow orb */}
-        <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-[#F6C453]/10 rounded-full blur-lg pointer-events-none group-hover:bg-[#F6C453]/20 transition-all duration-300" />
+        {/* Decorative ambient amber warmth */}
+        <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-amber-500/10 rounded-full blur-xl pointer-events-none group-hover:bg-amber-500/20 transition-all" />
 
-        {/* Left: Section eyebrow & label with Layers icon */}
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="w-7 h-7 rounded-lg bg-[#F6C453]/10 border border-[#F6C453]/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-            <Layers className="w-3.5 h-3.5 text-[#F6C453]" />
+        {/* Left: Icon & Label */}
+        <div className="flex items-center gap-2.5 min-w-0 relative z-10">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-b from-amber-400/25 to-amber-950/40 border border-amber-400/40 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.3)] group-hover:scale-105 transition-transform">
+            <Layers className="w-4 h-4 text-amber-300 drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]" />
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-[9px] font-bold tracking-wider text-[#91A0B5] uppercase">
-              LETTER BAG
+          <div className="flex flex-col min-w-0 leading-tight">
+            <span className="text-[10px] font-black tracking-widest text-amber-300/80 uppercase font-mono">
+              TILE BAG
             </span>
-            <span className="text-xs font-bold text-[#F2F6FC] group-hover:text-white transition-colors leading-tight">
-              Tiles left
+            <span className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors">
+              Remaining Tiles
             </span>
           </div>
         </div>
 
-        {/* Right: Large prominent gold number */}
-        <div className="flex items-baseline shrink-0 z-10">
-          <span className="font-mono text-2xl sm:text-3xl font-black bg-gradient-to-b from-[#FFF0C2] via-[#F6C453] to-[#E5A720] bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(246,196,83,0.5)] tabular-nums leading-none">
+        {/* Right: Big Crisp Gold Count + Arrow */}
+        <div className="flex items-center gap-1.5 shrink-0 relative z-10">
+          <span className="text-2xl sm:text-3xl font-black font-maple bg-gradient-to-b from-amber-100 via-amber-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(245,158,11,0.6)] tabular-nums leading-none">
             {tileBagCount}
           </span>
+          <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all" />
         </div>
       </button>
     </section>
