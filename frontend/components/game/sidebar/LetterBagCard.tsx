@@ -20,7 +20,7 @@ export const LetterBagCard: React.FC<LetterBagCardProps> = ({
         ref={buttonRef}
         type="button"
         onClick={onClick}
-        className="group relative flex w-full items-center justify-between gap-2 p-2.5 rounded-xl bg-gradient-to-br from-[rgba(24,42,68,0.85)] via-[rgba(18,32,52,0.8)] to-[rgba(14,24,40,0.88)] hover:from-[rgba(30,54,88,0.9)] hover:to-[rgba(20,36,60,0.92)] border border-[rgba(120,160,200,0.22)] hover:border-[#F6C453]/50 shadow-[0_2px_12px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.08)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.35),0_0_16px_rgba(246,196,83,0.2)] transition-all duration-300 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F6C453]/60 select-none overflow-hidden"
+        className="group relative flex w-full items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/70 border border-white/[0.08] hover:border-amber-400/40 shadow-lg hover:shadow-[0_0_16px_rgba(246,196,83,0.15)] backdrop-blur-md transition-all duration-300 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F6C453]/60 select-none overflow-hidden"
         aria-label={`Show letter bag breakdown, ${tileBagCount} tiles remaining`}
       >
         {/* Subtle decorative glow orb */}

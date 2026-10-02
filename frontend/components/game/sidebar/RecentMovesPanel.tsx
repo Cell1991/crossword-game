@@ -150,8 +150,8 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                   key={entry.id}
                   className={`rounded-xl border transition-all duration-200 overflow-hidden ${
                     isExpanded
-                      ? 'bg-gradient-to-r from-[rgba(20,44,70,0.9)] via-[rgba(18,36,60,0.85)] to-[rgba(14,28,48,0.85)] border-[#22D3C5]/50 shadow-[0_0_16px_rgba(34,211,197,0.12)]'
-                      : 'bg-gradient-to-r from-[rgba(18,30,50,0.7)] to-[rgba(14,22,38,0.65)] hover:from-[rgba(22,38,62,0.8)] hover:to-[rgba(18,30,50,0.75)] border-[rgba(120,160,200,0.16)] hover:border-[rgba(120,160,200,0.28)] shadow-[0_2px_8px_rgba(0,0,0,0.2)]'
+                      ? 'bg-slate-900/80 border-cyan-400/50 shadow-[0_0_16px_rgba(34,211,197,0.12)]'
+                      : 'bg-slate-900/40 hover:bg-slate-800/50 border-white/[0.06] hover:border-white/[0.12] shadow-sm'
                   }`}
                 >
                   {/* Row Summary */}

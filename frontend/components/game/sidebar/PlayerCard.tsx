@@ -55,10 +55,10 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
     <div
       className={`relative flex items-center justify-between p-2 rounded-xl transition-all duration-200 select-none ${
         isDead || hasLeft
-          ? 'bg-[rgba(11,18,32,0.6)] border border-[rgba(120,160,200,0.08)] opacity-45'
+          ? 'bg-slate-950/40 border border-white/[0.04] opacity-45'
           : isActiveTurn
-          ? 'bg-gradient-to-r from-[rgba(20,44,70,0.92)] via-[rgba(18,36,60,0.88)] to-[rgba(16,30,52,0.85)] border border-[#22D3C5]/60 shadow-[0_0_18px_rgba(34,211,197,0.16),inset_0_1px_0_rgba(255,255,255,0.1)] ring-1 ring-[#22D3C5]/30'
-          : 'bg-gradient-to-r from-[rgba(18,30,50,0.75)] to-[rgba(14,22,38,0.7)] hover:from-[rgba(22,38,62,0.85)] hover:to-[rgba(18,30,50,0.8)] border border-[rgba(120,160,200,0.18)] hover:border-[rgba(120,160,200,0.3)] shadow-[0_2px_10px_rgba(0,0,0,0.2)]'
+          ? 'bg-slate-900/80 border border-cyan-400/60 shadow-[0_0_18px_rgba(34,211,197,0.18)] ring-1 ring-cyan-400/30'
+          : 'bg-slate-900/40 hover:bg-slate-800/50 border border-white/[0.06] hover:border-white/[0.12] shadow-sm'
       }`}
     >
       {/* Left: Avatar with 8-Segment Tactical Health Ring + Identity */}

@@ -379,14 +379,14 @@ export const TileRack = memo(function TileRack({
                   whileHover={hasTemporaryTiles ? { scale: 1.05 } : undefined}
                   whileTap={hasTemporaryTiles ? { scale: 0.94 } : undefined}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all select-none ${
                     hasTemporaryTiles
-                      ? 'bg-rose-950/70 text-rose-300 hover:bg-rose-900/90 border border-rose-600/60 cursor-pointer shadow-md shadow-rose-950/40'
-                      : 'bg-slate-800/40 text-slate-600 border border-slate-800/60 cursor-not-allowed'
+                      ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 text-white shadow-[0_0_16px_rgba(244,63,94,0.5)] border border-rose-400/80 cursor-pointer hover:brightness-110'
+                      : 'bg-[#162234]/60 text-slate-500 border border-white/[0.06] cursor-not-allowed'
                   }`}
                   title="Recall placed tiles to rack"
                 >
-                  <RotateCcw className={`w-4 h-4 ${hasTemporaryTiles ? 'text-rose-400' : 'text-slate-600'}`} />
+                  <RotateCcw className={`w-4 h-4 ${hasTemporaryTiles ? 'text-white' : 'text-slate-500'}`} />
                   <span className="hidden xs:inline sm:inline">Recall{hasTemporaryTiles ? ` ${stagedTileCount}` : ''}</span>
                 </motion.button>
 
@@ -397,7 +397,7 @@ export const TileRack = memo(function TileRack({
                   whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.05 } : undefined}
                   whileTap={tileCount >= 2 && !isSubmitting ? { scale: 0.94 } : undefined}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm text-[#F1F5F9] hover:text-white bg-gradient-to-b from-[#243a56] to-[#162539] hover:from-[#314f76] hover:to-[#20344f] disabled:text-slate-500 disabled:bg-[#162234]/60 disabled:border-white/[0.06] disabled:cursor-not-allowed border border-[rgba(140,180,220,0.25)] hover:border-amber-400/60 shadow-md hover:shadow-[0_0_14px_rgba(245,158,11,0.3)] transition-all cursor-pointer select-none"
                   title="Shuffle rack tiles"
                 >
                   <Shuffle className="w-4 h-4 text-amber-400" />
@@ -411,7 +411,7 @@ export const TileRack = memo(function TileRack({
                   whileHover={canStartExchange ? { scale: 1.05 } : undefined}
                   whileTap={canStartExchange ? { scale: 0.94 } : undefined}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 disabled:text-slate-600 disabled:bg-slate-800/30 disabled:border-slate-800/60 disabled:cursor-not-allowed border border-slate-700/70 shadow-sm transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm text-[#F1F5F9] hover:text-white bg-gradient-to-b from-[#243a56] to-[#162539] hover:from-[#314f76] hover:to-[#20344f] disabled:text-slate-500 disabled:bg-[#162234]/60 disabled:border-white/[0.06] disabled:cursor-not-allowed border border-[rgba(140,180,220,0.25)] hover:border-sky-400/60 shadow-md hover:shadow-[0_0_14px_rgba(56,189,248,0.3)] transition-all cursor-pointer select-none"
                   title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
                 >
                   <ArrowLeftRight className="w-4 h-4 text-sky-400" />
@@ -468,7 +468,7 @@ export const TileRack = memo(function TileRack({
             </AnimatePresence>
           </div>
 
-          <div className="relative flex min-h-[40px] w-auto flex-wrap items-center justify-center gap-1 sm:min-h-[46px]">
+          <div className="relative flex min-h-[40px] w-auto flex-wrap items-center justify-center gap-1.5 sm:min-h-[46px]">
             {isExchanging ? (
               <motion.button
                 onClick={onConfirmExchange}
@@ -476,10 +476,10 @@ export const TileRack = memo(function TileRack({
                 whileHover={canConfirmExchange ? { scale: 1.05 } : undefined}
                 whileTap={canConfirmExchange ? { scale: 0.94 } : undefined}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-colors ${
+                className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
                   canConfirmExchange
-                    ? 'bg-sky-600 text-white hover:bg-sky-500 shadow-[0_0_20px_rgba(14,165,233,0.5)] cursor-pointer border-2 border-sky-400/50 ring-2 ring-sky-400/30'
-                    : 'bg-slate-800/40 text-slate-600 border border-slate-800/60 cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:brightness-110 shadow-[0_0_20px_rgba(14,165,233,0.6)] cursor-pointer border border-sky-300 ring-2 ring-sky-400/40'
+                    : 'bg-[#162234]/60 text-slate-500 border border-white/[0.06] cursor-not-allowed'
                 }`}
               >
                 <ArrowLeftRight className="w-4 h-4" />
@@ -489,9 +489,9 @@ export const TileRack = memo(function TileRack({
               <>
                 {/* Pass Button — with inline confirm step */}
                 {passConfirming ? (
-                  <>
-                    <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap tracking-wide">
-                      Skip?
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] sm:text-[11px] text-slate-300 font-bold whitespace-nowrap tracking-wide">
+                      Pass?
                     </span>
                     <motion.button
                       onClick={() => { setPassConfirming(false); onPassTurn(); }}
@@ -499,10 +499,10 @@ export const TileRack = memo(function TileRack({
                       whileHover={{ scale: 1.06 }}
                       whileTap={{ scale: 0.93 }}
                       transition={{ type: 'spring', stiffness: 450, damping: 20 }}
-                      className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-bold text-xs sm:text-sm transition-colors bg-slate-700 hover:bg-slate-600 text-white border border-slate-500/70 cursor-pointer shadow-sm"
+                      className="flex items-center gap-1 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 cursor-pointer shadow-md"
                       title="Confirm pass"
                     >
-                      <Check className="w-4 h-4 text-sky-400" />
+                      <Check className="w-4 h-4 text-white" />
                       <span>Yes</span>
                     </motion.button>
                     <motion.button
@@ -510,12 +510,12 @@ export const TileRack = memo(function TileRack({
                       whileHover={{ scale: 1.06 }}
                       whileTap={{ scale: 0.93 }}
                       transition={{ type: 'spring', stiffness: 450, damping: 20 }}
-                      className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-colors bg-slate-800/60 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 border border-slate-700/50 cursor-pointer"
+                      className="flex items-center gap-1 px-2.5 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all bg-[#243a56] hover:bg-[#314f76] text-slate-300 hover:text-white border border-white/10 cursor-pointer"
                       title="Cancel"
                     >
                       <X className="w-4 h-4" />
                     </motion.button>
-                  </>
+                  </div>
                 ) : (
                   <motion.button
                     onClick={() => setPassConfirming(true)}
@@ -523,10 +523,10 @@ export const TileRack = memo(function TileRack({
                     whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.05 } : undefined}
                     whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.94 } : undefined}
                     transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                    className={`game-pass-action flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-colors ${
+                    className={`game-pass-action flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all select-none ${
                       isMyTurn && !hasTemporaryTiles
-                        ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/60 cursor-pointer shadow-sm'
-                        : 'bg-slate-800/30 text-slate-600 border border-slate-800/60 cursor-not-allowed'
+                        ? 'bg-gradient-to-b from-[#243a56] to-[#162539] hover:from-[#314f76] hover:to-[#20344f] text-[#E2E8F0] hover:text-white border border-[rgba(140,180,220,0.25)] hover:border-sky-400/50 shadow-md cursor-pointer'
+                        : 'bg-[#162234]/60 text-slate-500 border border-white/[0.06] cursor-not-allowed'
                     }`}
                     title="Pass your turn"
                   >
@@ -542,13 +542,13 @@ export const TileRack = memo(function TileRack({
                   whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.05 } : undefined}
                   whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.95 } : undefined}
                   transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-                  className={`game-primary-action flex items-center gap-1.5 rounded-lg px-3 py-2 sm:px-3 sm:py-2 font-black text-xs sm:text-xs transition-colors select-none ${
+                  className={`game-primary-action flex items-center gap-1.5 rounded-xl px-4 py-2 font-black text-xs sm:text-sm transition-all select-none ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? 'bg-emerald-300 text-slate-950 shadow-[0_4px_14px_rgba(16,185,129,0.2)] hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200/80 cursor-pointer'
-                      : 'bg-slate-800/80 text-slate-400 border border-slate-700/70 cursor-not-allowed'
+                      ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 text-slate-950 shadow-[0_0_24px_rgba(52,211,153,0.7),inset_0_1px_0_rgba(255,255,255,0.4)] border border-emerald-300 ring-2 ring-emerald-400/50 hover:brightness-110 cursor-pointer'
+                      : 'bg-[#162234]/60 text-slate-500 border border-white/[0.06] cursor-not-allowed'
                   }`}
                 >
-                  <Check className={`w-4 h-4 sm:w-5 sm:h-5 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-slate-950' : 'text-slate-600'}`} />
+                  <Check className={`w-4 h-4 sm:w-5 sm:h-5 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-slate-950' : 'text-slate-500'}`} />
                   <span className="inline tracking-wide font-black">
                     {isSubmitting
                       ? 'Submitting...'
