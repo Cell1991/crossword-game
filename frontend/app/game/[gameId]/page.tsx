@@ -351,7 +351,17 @@ export default function GamePage() {
     // 2. Authoritative background server commit
     try {
       const freezeTileId = cards.deferredFreezeTileId ?? undefined;
-      await commitMove(gameId, myPlayerId, tilesToCommit, freezeTileId);
+      const res = await commitMove(gameId, myPlayerId, tilesToCommit, freezeTileId);
+      if (res) {
+        setGameState(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            turn_number: res.turn_number ?? prev.turn_number + 1,
+            current_player_id: res.next_player_id ?? prev.current_player_id,
+          };
+        });
+      }
     } catch (error: unknown) {
       flashError(error instanceof Error ? error.message : 'Failed to commit move');
       reload();

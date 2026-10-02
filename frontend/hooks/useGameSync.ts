@@ -107,7 +107,17 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       const snapshot = `${myToken}|${JSON.stringify({ ...state, server_time: null })}`;
       if (snapshot === lastSnapshotRef.current) return;
       lastSnapshotRef.current = snapshot;
-      setGameState(state);
+      setGameState(prev => {
+        if (!prev) return state;
+        if (state.turn_number < prev.turn_number) {
+          return prev;
+        }
+        const mergedBoard = { ...prev.board_state, ...state.board_state };
+        return {
+          ...state,
+          board_state: mergedBoard,
+        };
+      });
       if (state.move_history && Array.isArray(state.move_history)) {
         const formattedHistory: MoveHistoryEntry[] = state.move_history.map(m => {
           const isMe = m.player_id === myPlayerId;
@@ -177,7 +187,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
             if (!prev) return prev;
             return {
               ...prev,
-              board_state: newBoard,
+              board_state: { ...prev.board_state, ...newBoard },
               current_player_id: (event.payload.nextPlayerId as string | null | undefined) ?? prev.current_player_id,
               turn_number: (event.payload.turnNumber as number | undefined) ?? prev.turn_number,
               pending_effect: event.payload.pendingEffect !== undefined ? (event.payload.pendingEffect as GameState['pending_effect']) : prev.pending_effect,

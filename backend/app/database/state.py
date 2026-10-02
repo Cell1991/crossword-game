@@ -2,6 +2,7 @@ from typing import Any
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.database.models import BoardCell, GameTile, PlayerCard, Game, GamePlayer
 
@@ -31,6 +32,7 @@ async def replace_board_state(db: AsyncSession, game_id: str, state: dict[str, d
     game = await db.scalar(select(Game).where(Game.id == game_id))
     if game:
         game.board_state = state
+        flag_modified(game, "board_state")
 
 
 async def replace_game_tiles(
@@ -77,3 +79,4 @@ async def replace_player_cards(db: AsyncSession, player_id: str, cards: list[str
     player = await db.scalar(select(GamePlayer).where(GamePlayer.id == player_id))
     if player:
         player.cards = cards
+        flag_modified(player, "cards")
