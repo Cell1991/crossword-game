@@ -50,8 +50,8 @@ export const RightSidebar = memo(function RightSidebar({
     <aside
       className={`flex h-full flex-col select-none ${
         mobile
-          ? 'w-full p-3 gap-3 bg-transparent'
-          : 'w-full p-3.5 gap-3.5'
+          ? 'w-full p-2.5 gap-2.5 bg-transparent'
+          : 'w-full p-2.5 gap-2.5'
       }`}
     >
       {/* 1. Letter Bag Status Card */}

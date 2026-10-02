@@ -26,18 +26,18 @@ export const PlayersPanel: React.FC<PlayersPanelProps> = ({
   return (
     <section aria-label="Players scoreboard" className="w-full shrink-0 flex flex-col">
       {/* Section Header */}
-      <div className="flex items-center justify-between px-1 pb-2">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase">
-          <Users className="w-3.5 h-3.5 text-[#22D3C5]" />
+      <div className="flex items-center justify-between px-1 pb-1.5">
+        <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase">
+          <Users className="w-3 h-3 text-[#22D3C5]" />
           <span className="text-[#F2F6FC]">PLAYERS</span>
         </div>
-        <span className="text-[11px] font-bold text-[#22D3C5] bg-[#22D3C5]/10 px-2 py-0.5 rounded-full border border-[#22D3C5]/25">
+        <span className="text-[10px] font-bold text-[#22D3C5] bg-[#22D3C5]/10 px-1.5 py-0.2 rounded-full border border-[#22D3C5]/25">
           {players.length} {players.length === 1 ? 'player' : 'players'}
         </span>
       </div>
 
       {/* Players Card List */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         {sortedPlayers.map((player, idx) => (
           <PlayerCard
             key={player.id}

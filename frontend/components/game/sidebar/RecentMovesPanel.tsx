@@ -92,23 +92,23 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
       <button
         type="button"
         onClick={onToggleOpen}
-        className="flex w-full items-center justify-between px-1 py-2 text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3C5]/60 rounded-lg group select-none"
+        className="flex w-full items-center justify-between px-1 py-1.5 text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3C5]/60 rounded-lg group select-none"
         aria-expanded={isOpen}
       >
-        <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-[#91A0B5] group-hover:text-[#F2F6FC] uppercase transition-colors">
-          <History className="w-3.5 h-3.5 text-[#91A0B5] group-hover:text-[#22D3C5] transition-colors" />
+        <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-[#91A0B5] group-hover:text-[#F2F6FC] uppercase transition-colors">
+          <History className="w-3 h-3 text-[#91A0B5] group-hover:text-[#22D3C5] transition-colors" />
           <span>RECENT MOVES</span>
         </div>
         <div className="text-[#66758A] group-hover:text-[#F2F6FC] transition-colors">
-          {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+          {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
         </div>
       </button>
 
       {/* Content Container */}
       {isOpen && (
-        <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
+        <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1 scrollbar-thin">
           {moveHistory.length === 0 ? (
-            <div className="py-6 text-center text-xs text-[#66758A] italic">
+            <div className="py-4 text-center text-[11px] text-[#66758A] italic">
               Moves will appear here
             </div>
           ) : (
@@ -150,8 +150,8 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                   key={entry.id}
                   className={`rounded-xl border transition-all duration-200 overflow-hidden ${
                     isExpanded
-                      ? 'bg-gradient-to-r from-[rgba(20,44,70,0.9)] via-[rgba(18,36,60,0.85)] to-[rgba(14,28,48,0.85)] border-[#22D3C5]/50 shadow-[0_0_20px_rgba(34,211,197,0.12)]'
-                      : 'bg-gradient-to-r from-[rgba(18,30,50,0.7)] to-[rgba(14,22,38,0.65)] hover:from-[rgba(22,38,62,0.8)] hover:to-[rgba(18,30,50,0.75)] border-[rgba(120,160,200,0.16)] hover:border-[rgba(120,160,200,0.28)] shadow-[0_2px_10px_rgba(0,0,0,0.2)]'
+                      ? 'bg-gradient-to-r from-[rgba(20,44,70,0.9)] via-[rgba(18,36,60,0.85)] to-[rgba(14,28,48,0.85)] border-[#22D3C5]/50 shadow-[0_0_16px_rgba(34,211,197,0.12)]'
+                      : 'bg-gradient-to-r from-[rgba(18,30,50,0.7)] to-[rgba(14,22,38,0.65)] hover:from-[rgba(22,38,62,0.8)] hover:to-[rgba(18,30,50,0.75)] border-[rgba(120,160,200,0.16)] hover:border-[rgba(120,160,200,0.28)] shadow-[0_2px_8px_rgba(0,0,0,0.2)]'
                   }`}
                 >
                   {/* Row Summary */}
@@ -159,39 +159,39 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                     type="button"
                     onClick={() => hasWords && toggleMoveAccordion(entry)}
                     disabled={!hasWords}
-                    className={`flex w-full items-center justify-between gap-2.5 p-2.5 text-left text-xs transition-colors ${
+                    className={`flex w-full items-center justify-between gap-2 p-2 text-left text-[11px] transition-colors ${
                       hasWords ? 'cursor-pointer hover:bg-white/[0.02]' : 'cursor-default'
                     }`}
                   >
                     {/* Left: Crest + Identity */}
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
                       <div
-                        className="w-6 h-6 rounded-full bg-[#18263a] border border-[#273a52] text-[10px] font-bold text-[#91A0B5] flex items-center justify-center shrink-0"
+                        className="w-5 h-5 rounded-full bg-[#18263a] border border-[#273a52] text-[9px] font-bold text-[#91A0B5] flex items-center justify-center shrink-0"
                         aria-hidden="true"
                       >
                         {actorInitial}
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-semibold text-[#F2F6FC] truncate">
+                        <span className="text-[11px] font-semibold text-[#F2F6FC] truncate">
                           {actorName}
                         </span>
-                        <span className="font-mono text-xs font-bold text-[#22D3C5] tracking-wide truncate">
+                        <span className="font-mono text-[11px] font-bold text-[#22D3C5] tracking-wide truncate">
                           {wordLabel}
                         </span>
                       </div>
                     </div>
 
                     {/* Right: Score + Turn indicator */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <div className="flex flex-col items-end">
                         {entry.score !== undefined && entry.score > 0 ? (
-                          <span className="font-mono font-bold text-xs text-[#F2F6FC]">
-                            +{entry.score} <span className="text-[10px] text-[#91A0B5]">PTS</span>
+                          <span className="font-mono font-bold text-[11px] text-[#F2F6FC]">
+                            +{entry.score} <span className="text-[9px] text-[#91A0B5]">PTS</span>
                           </span>
                         ) : null}
                         {entry.turn_number ? (
-                          <span className="font-mono text-[10px] text-[#66758A]">
-                            Turn {String(entry.turn_number).padStart(2, '0')}
+                          <span className="font-mono text-[9px] text-[#66758A]">
+                            T{String(entry.turn_number).padStart(2, '0')}
                           </span>
                         ) : null}
                       </div>
@@ -199,9 +199,9 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                       {hasWords && (
                         <div className="text-[#66758A]">
                           {isExpanded ? (
-                            <ChevronUp className="w-3.5 h-3.5 text-[#22D3C5]" />
+                            <ChevronUp className="w-3 h-3 text-[#22D3C5]" />
                           ) : (
-                            <ChevronDown className="w-3.5 h-3.5" />
+                            <ChevronDown className="w-3 h-3" />
                           )}
                         </div>
                       )}
