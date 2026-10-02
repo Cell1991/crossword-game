@@ -25,7 +25,7 @@ interface TileRackProps {
   onCancelExchange: () => void;
   onConfirmExchange: () => void;
   onSwapSlots: (fromSlot: number, toSlot: number) => void;
-  onStartTileDrag: (tile: Tile, clientX: number, clientY: number) => void;
+  onStartTileDrag: (tile: Tile, slotIndex: number, clientX: number, clientY: number) => void;
   onFinishTileDrag: (clientX?: number, clientY?: number) => void;
   onCancelTileDrag: () => void;
   /** The tray element; the page's board drag hit-tests drops against it. */
@@ -74,21 +74,10 @@ export const TileRack = memo(function TileRack({
   powerCardSlot,
 }: TileRackProps) {
   const [draggedSlot, setDraggedSlot] = useState<number | null>(null);
-  const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
-  /** Where the floating tile appears; after that it follows the pointer without re-rendering. */
-  const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
-  /** The tile left the stand and the board drag (which draws its own floating tile) took over. */
-  const [isHandedToBoard, setIsHandedToBoard] = useState(false);
   /** True when the user has clicked Pass once and we're waiting for confirm/cancel. */
   const [passConfirming, setPassConfirming] = useState(false);
-  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  const pointerStartRef = useRef<{ x: number; y: number; slotIndex: number; tile: Tile } | null>(null);
   const didDragRef = useRef(false);
-  const externalDragRef = useRef(false);
-  const ghostRef = useRef<HTMLDivElement>(null);
-  /** The tray's box, measured when a drag starts (the tray does not move while a tile is dragged). */
-  const rackRectRef = useRef<DOMRect | null>(null);
-  const dragPositionFrameRef = useRef<number | null>(null);
-  const pendingDragPositionRef = useRef<{ x: number; y: number } | null>(null);
 
   const tileCount = slots.reduce((total, tile) => (tile ? total + 1 : total), 0);
   const isExchanging = exchangeTileIds !== null;
@@ -97,110 +86,49 @@ export const TileRack = memo(function TileRack({
   const canStartExchange = isMyTurn && canStageMove && !hasTemporaryTiles && !isSubmitting && tileCount > 0 && tileBagCount >= 7;
   const canConfirmExchange = isMyTurn && !isSubmitting && exchangeCount > 0 && exchangeCount <= tileBagCount;
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, slotIndex: number) => {
+  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, slotIndex: number, tile: Tile) => {
     // While exchanging, a tap marks the tile instead of lifting it.
     if (!canStageMove || isExchanging) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
-    pointerStartRef.current = { x: event.clientX, y: event.clientY };
+    pointerStartRef.current = { x: event.clientX, y: event.clientY, slotIndex, tile };
     didDragRef.current = false;
-    externalDragRef.current = false;
-    rackRectRef.current = rackRef.current?.getBoundingClientRect() ?? null;
-    setDraggedSlot(slotIndex);
-    setDragOverSlot(null);
-    setDragPosition({ x: event.clientX, y: event.clientY });
   };
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>, tile: Tile) => {
+  const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
     const start = pointerStartRef.current;
-    if (!start || draggedSlot === null) return;
-    pendingDragPositionRef.current = { x: event.clientX, y: event.clientY };
-    if (dragPositionFrameRef.current === null) {
-      dragPositionFrameRef.current = window.requestAnimationFrame(() => {
-        dragPositionFrameRef.current = null;
-        const position = pendingDragPositionRef.current;
-        if (position) moveFixedElement(ghostRef.current, position.x, position.y);
-      });
-    }
-    const rackRect = rackRectRef.current;
-    const insideRack = Boolean(
-      rackRect &&
-      event.clientX >= rackRect.left &&
-      event.clientX <= rackRect.right &&
-      event.clientY >= rackRect.top &&
-      event.clientY <= rackRect.bottom
-    );
-    if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 4) {
+    if (!start) return;
+    if (!didDragRef.current && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 5) {
       didDragRef.current = true;
-      // Leaving the stand hands the tile over to the board drag, and coming back takes it
-      // over again — so a tile lifted above the rack can still be dropped on another seat.
-      if (!insideRack && !externalDragRef.current) {
-        externalDragRef.current = true;
-        setIsHandedToBoard(true);
-        onStartTileDrag(tile, event.clientX, event.clientY);
-      } else if (insideRack && externalDragRef.current) {
-        externalDragRef.current = false;
-        // The floating tile mounts again here, so it starts where the pointer is now.
-        setDragPosition({ x: event.clientX, y: event.clientY });
-        setIsHandedToBoard(false);
-        onCancelTileDrag();
-      }
+      setDraggedSlot(start.slotIndex);
+      onStartTileDrag(start.tile, start.slotIndex, event.clientX, event.clientY);
     }
-    if (!insideRack) {
-      setDragOverSlot(null);
-      return;
-    }
-    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-rack-slot]');
-    const targetSlot = target ? Number(target.dataset.rackSlot) : NaN;
-    setDragOverSlot(Number.isInteger(targetSlot) && targetSlot !== draggedSlot ? targetSlot : null);
   };
 
-  const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (dragPositionFrameRef.current !== null) {
-      window.cancelAnimationFrame(dragPositionFrameRef.current);
-      dragPositionFrameRef.current = null;
-    }
+  const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>, tile: Tile) => {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-    if (draggedSlot !== null && dragOverSlot !== null) {
-      onSwapSlots(draggedSlot, dragOverSlot);
-    } else if (externalDragRef.current) {
-      onFinishTileDrag(event.clientX, event.clientY);
-    }
+    const wasDragging = didDragRef.current;
     pointerStartRef.current = null;
+    didDragRef.current = false;
     setDraggedSlot(null);
-    setDragOverSlot(null);
-    setDragPosition(null);
-    setIsHandedToBoard(false);
-    externalDragRef.current = false;
-    pendingDragPositionRef.current = null;
-  };
 
-  const handleTileClick = (tile: Tile) => {
-    if (didDragRef.current) {
-      didDragRef.current = false;
-      return;
+    if (wasDragging) {
+      onFinishTileDrag(event.clientX, event.clientY);
+    } else {
+      if (canStageMove && !isExchanging) {
+        onSelectTile(tile);
+      }
     }
-    if (canStageMove) onSelectTile(tile);
   };
 
-  const draggedTile = draggedSlot !== null ? slots[draggedSlot] : null;
   const getDisplayLetter = (tile: Tile) => (
     isBlankLetter(tile.letter) ? designatedBlankLetters[tile.id] ?? tile.letter : tile.letter
   );
 
   return (
     <div className="game-control-deck mx-auto w-full max-w-none pointer-events-auto">
-      {draggedTile && dragPosition && !isHandedToBoard && (
-        <FloatingTile
-          ref={ghostRef}
-          letter={getDisplayLetter(draggedTile)}
-          value={draggedTile.value}
-          position={dragPosition}
-          isDesignatedBlank={isBlankLetter(draggedTile.letter) && Boolean(designatedBlankLetters[draggedTile.id])}
-        />
-      )}
 
       {/* Compact High-Tech Gaming Console Dock */}
       <div className="game-control-layout relative flex w-full flex-col lg:flex-row items-center justify-center gap-1.5 sm:gap-2 lg:gap-4">
@@ -220,7 +148,6 @@ export const TileRack = memo(function TileRack({
               } transition-all`}
             >
               {slots.map((tile, slotIndex) => {
-                const isDropTarget = dragOverSlot === slotIndex;
                 if (!tile) {
                   return (
                     <div
@@ -228,9 +155,7 @@ export const TileRack = memo(function TileRack({
                       data-rack-slot={slotIndex}
                       aria-hidden="true"
                       className={`relative shrink-0 h-[44px] w-[38px] sm:h-[46px] sm:w-[42px] rounded-[10px] border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:rounded-xl ${
-                        isDropTarget
-                          ? 'ring-2 ring-sky-400/90'
-                          : isExternalDragActive
+                        isExternalDragActive
                           ? 'ring-1 ring-sky-400/40'
                           : ''
                       }`}
@@ -244,7 +169,7 @@ export const TileRack = memo(function TileRack({
                 const displayLetter = getDisplayLetter(tile);
                 const isDesignatedBlank = isBlankLetter(tile.letter) && Boolean(designatedBlankLetters[tile.id]);
                 const isMarkedForExchange = exchangeTileIds?.includes(tile.id) ?? false;
-                const isDragging = draggedSlot === slotIndex;
+                const isDragging = draggedSlot === slotIndex || (isExternalDragActive && selectedTileId === tile.id);
                 return (
                   <div
                     key={`slot-${slotIndex}`}
@@ -255,9 +180,7 @@ export const TileRack = memo(function TileRack({
                     <div
                       aria-hidden="true"
                       className={`absolute inset-0 rounded-[10px] border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:rounded-xl ${
-                        isDropTarget
-                          ? 'ring-2 ring-sky-400/90'
-                          : isExternalDragActive
+                        isExternalDragActive
                           ? 'ring-1 ring-sky-400/40'
                           : ''
                       }`}
@@ -270,17 +193,14 @@ export const TileRack = memo(function TileRack({
                       key={tile.id}
                       data-rack-slot={slotIndex}
                       data-rack-tile-id={tile.id}
-                      onClick={() => handleTileClick(tile)}
-                      onPointerDown={(event) => handlePointerDown(event, slotIndex)}
-                      onPointerMove={(event) => handlePointerMove(event, tile)}
-                      onPointerUp={handlePointerUp}
+                      onPointerDown={(event) => handlePointerDown(event, slotIndex, tile)}
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={(event) => handlePointerUp(event, tile)}
                       disabled={!canStageMove}
                       aria-pressed={isExchanging ? isMarkedForExchange : undefined}
                       className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-100/80 font-sans transition-transform duration-100 select-none touch-none overflow-hidden sm:rounded-xl active:scale-95 ${
                         isDragging
                           ? 'z-20 scale-105 -translate-y-2.5 opacity-40 shadow-2xl cursor-grabbing'
-                          : isDropTarget
-                          ? 'translate-x-1 ring-2 ring-sky-400/80'
                           : isMarkedForExchange
                           ? '-translate-y-2.5 border-2 border-amber-100 shadow-lg shadow-amber-500/40 ring-4 ring-amber-300/70 cursor-pointer'
                           : isSelected

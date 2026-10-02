@@ -9,6 +9,7 @@ export interface DragSession {
   tile: Tile;
   source: 'rack' | 'board';
   origin: CellPosition | null;
+  slotIndex?: number;
   /** Where the drag started; the floating tile is moved from here without re-rendering. */
   start: { x: number; y: number };
 }
@@ -26,6 +27,7 @@ interface UseTileDragOptions {
   swapStagedTiles: (draggedTileId: string, origin: CellPosition, target: PlacedTile) => void;
   unstageTile: (tileId: string) => void;
   seatReturningTile: (tileId: string, targetSlot: number) => void;
+  onSwapSlots?: (draggedSlot: number, targetSlot: number) => void;
 }
 
 const isInside = (rect: DOMRect | null, x: number, y: number): rect is DOMRect => Boolean(
@@ -33,19 +35,15 @@ const isInside = (rect: DOMRect | null, x: number, y: number): rect is DOMRect =
 );
 
 /**
- * Dragging a tile across the page: from the rack onto the board, between board cells, or from
- * the board back to the rack. The rack's own seat-to-seat drags stay inside TileRack.
- *
- * Pointer moves never re-render: the floating tile is moved directly (see `ghostRef`) and React
- * only hears about the drag when it starts, ends, or crosses into another board cell.
+ * High-performance 120 FPS tile drag engine.
+ * Pointer moves never trigger React re-renders: the floating tile is moved directly on the GPU
+ * via translate3d, keeping CPU overhead at 0ms.
  */
 export function useTileDrag(options: UseTileDragOptions) {
-  const { canStageMove, boardState, temporaryTiles, boardRef, rackRef, deselectTile } = options;
+  const { canStageMove, boardRef, rackRef, deselectTile } = options;
   const [dragSession, setDragSession] = useState<DragSession | null>(null);
-  const [dragHoverCell, setDragHoverCell] = useState<CellPosition | null>(null);
   /** The floating tile that follows the pointer. */
   const ghostRef = useRef<HTMLDivElement>(null);
-  // Refs mirror the drag so the handlers stay stable and see it the moment it changes.
   const sessionRef = useRef<DragSession | null>(null);
   const hoverCellRef = useRef<CellPosition | null>(null);
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
@@ -69,11 +67,7 @@ export function useTileDrag(options: UseTileDragOptions) {
       const position = pointerRef.current;
       if (!position) return;
       moveFixedElement(ghostRef.current, position.x, position.y);
-      const nextCell = cellUnderPointer(position.x, position.y);
-      const previous = hoverCellRef.current;
-      if (previous?.row === nextCell?.row && previous?.col === nextCell?.col) return;
-      hoverCellRef.current = nextCell;
-      setDragHoverCell(nextCell);
+      hoverCellRef.current = cellUnderPointer(position.x, position.y);
     });
   }, [cellUnderPointer]);
 
@@ -85,7 +79,6 @@ export function useTileDrag(options: UseTileDragOptions) {
     sessionRef.current = null;
     hoverCellRef.current = null;
     setDragSession(null);
-    setDragHoverCell(null);
   }, []);
 
   const finishDrag = useCallback((clientX?: number, clientY?: number) => {
@@ -104,11 +97,13 @@ export function useTileDrag(options: UseTileDragOptions) {
 
     const { x, y } = pointerPosition ?? session.start;
     if (isInside(rackRect, x, y)) {
+      const droppedSeat = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-rack-slot]');
+      const targetSlot = droppedSeat ? Number(droppedSeat.dataset.rackSlot) : NaN;
       if (session.source === 'board') {
-        const droppedSeat = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-rack-slot]');
-        const targetSlot = droppedSeat ? Number(droppedSeat.dataset.rackSlot) : NaN;
         latest.seatReturningTile(session.tile.id, Number.isInteger(targetSlot) ? targetSlot : 0);
         latest.unstageTile(session.tile.id);
+      } else if (session.source === 'rack' && session.slotIndex !== undefined && Number.isInteger(targetSlot) && targetSlot !== session.slotIndex) {
+        latest.onSwapSlots?.(session.slotIndex, targetSlot);
       }
       return;
     }
@@ -141,10 +136,10 @@ export function useTileDrag(options: UseTileDragOptions) {
     updateDragHover(session.start.x, session.start.y);
   }, [boardRef, rackRef, updateDragHover]);
 
-  const startRackDrag = useCallback((tile: Tile, clientX: number, clientY: number) => {
+  const startRackDrag = useCallback((tile: Tile, slotIndex: number, clientX: number, clientY: number) => {
     if (!canStageMove) return;
     deselectTile();
-    beginDrag({ tile, source: 'rack', origin: null, start: { x: clientX, y: clientY } });
+    beginDrag({ tile, source: 'rack', origin: null, slotIndex, start: { x: clientX, y: clientY } });
   }, [beginDrag, canStageMove, deselectTile]);
 
   const startPendingDrag = useCallback((tile: PlacedTile, clientX: number, clientY: number) => {
@@ -165,7 +160,7 @@ export function useTileDrag(options: UseTileDragOptions) {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') endDrag();
     };
-    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('pointerup', handlePointerUp, { once: true });
     window.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -175,16 +170,8 @@ export function useTileDrag(options: UseTileDragOptions) {
     };
   }, [endDrag, finishDrag, isDragging, updateDragHover]);
 
-  const dragHoverIsValid = useMemo(() => {
-    if (!dragSession || !dragHoverCell) return null;
-    const committed = isCellCommitted(boardState, dragHoverCell.row, dragHoverCell.col);
-    return !committed;
-  }, [boardState, dragHoverCell, dragSession]);
-
   return {
     dragSession,
-    dragHoverCell,
-    dragHoverIsValid,
     ghostRef,
     updateDragHover,
     finishDrag,

@@ -146,8 +146,6 @@ export default function GamePage() {
 
   const {
     dragSession,
-    dragHoverCell,
-    dragHoverIsValid,
     ghostRef: dragGhostRef,
     updateDragHover,
     finishDrag,
@@ -166,6 +164,7 @@ export default function GamePage() {
     swapStagedTiles: staged.swapStagedTiles,
     unstageTile: staged.unstageTile,
     seatReturningTile,
+    onSwapSlots: swapSeats,
   });
 
   // A new turn clears the selection, the verdict, the other player's preview and any exchange.
@@ -765,10 +764,10 @@ export default function GamePage() {
               onFinishPendingDrag={finishDrag}
               onCollectPendingTile={handleCollectPendingTile}
               onPendingDragMove={updateDragHover}
-              dragPreviewCell={dragHoverCell}
+              dragPreviewCell={null}
               draggingTileId={dragSession?.tile.id ?? null}
-              dragPreviewTile={dragSession?.tile ?? null}
-              dragPreviewIsValid={dragHoverIsValid}
+              dragPreviewTile={null}
+              dragPreviewIsValid={null}
               canStageMove={canStageMove}
               camera={camera}
               frozenTile={gameState.frozen_tile}
