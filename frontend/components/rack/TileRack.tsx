@@ -191,7 +191,7 @@ export const TileRack = memo(function TileRack({
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-[74rem] flex-col items-center gap-2 border-t border-slate-700/65 bg-slate-950/95 px-1.5 py-2 pointer-events-auto sm:gap-2.5 sm:border-x sm:border-b sm:rounded-t-2xl sm:px-3 sm:py-2.5">
+    <div className="mx-auto flex w-full max-w-none flex-col items-center gap-2 border-y border-slate-800/80 bg-slate-950/95 px-2 py-2.5 pointer-events-auto sm:gap-3 sm:border-x sm:rounded-t-2xl sm:px-4 sm:py-3">
       {draggedTile && dragPosition && !isHandedToBoard && (
         <FloatingTile
           ref={ghostRef}

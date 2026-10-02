@@ -112,9 +112,9 @@ export const GameHud: React.FC<GameHudProps> = ({
   return (
     <div className="relative z-10 flex shrink-0 flex-col border-b border-slate-700/55 bg-slate-950/90">
       {/* ROW 1: System Bar (Exit, Logo, Connection, PIN, Log & Stats, Fullscreen) */}
-      <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-2 px-2.5 py-2 sm:gap-4 sm:px-5 sm:py-2.5">
+      <div className="mx-auto grid w-full max-w-[1920px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-2.5 py-2 sm:gap-x-4 sm:px-5 sm:py-2.5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         {/* Left: Exit, logo, connection, room PIN, and Log & Stats */}
-        <div className="flex flex-1 min-w-0 items-center gap-1.5 sm:gap-2.5">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2.5">
           <button
             type="button"
             onClick={onExit}
@@ -170,32 +170,34 @@ export const GameHud: React.FC<GameHudProps> = ({
             aria-label="Open match stats, word history, and tile bag"
           >
             <ScrollText className="h-3.5 w-3.5 text-cyan-300 drop-shadow-[0_0_4px_#22d3ee] shrink-0" />
-            <span className="tracking-wide font-extrabold text-[11px] sm:text-xs whitespace-nowrap">Stats</span>
+            <span className="hidden tracking-wide font-extrabold text-[11px] whitespace-nowrap sm:inline">Stats</span>
           </button>
         </div>
 
-        {/* Right: desktop spectators, debug button, desktop timer, desktop TurnBanner, and Fullscreen button */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
+        {/* Center: the active match state stays visually anchored to the board. */}
+        <div className="hidden items-center justify-center gap-2 lg:flex">
+          {timer}
+          <TurnBanner
+            isMyTurn={isMyTurn}
+            isBotPlacing={isBotPlacing}
+            isEliminated={isEliminated}
+            isSpectator={isSpectator}
+            isConnected={isConnected}
+            currentPlayer={currentPlayer}
+            nextPlayer={nextPlayer}
+            turnNumber={turnNumber}
+            maxTurns={maxTurns}
+          />
+        </div>
+
+        {/* Right: match utilities */}
+        <div className="col-start-2 row-start-1 flex items-center justify-end gap-1.5 sm:gap-2.5 lg:col-start-3 lg:row-start-1">
           {spectatorCount > 0 && (
             <div className="hidden lg:inline-flex shrink-0">
               <SpectatorBadge count={spectatorCount} />
             </div>
           )}
           {debugSlot}
-          <div className="hidden lg:flex items-center gap-2">
-            {timer}
-            <TurnBanner
-              isMyTurn={isMyTurn}
-              isBotPlacing={isBotPlacing}
-              isEliminated={isEliminated}
-              isSpectator={isSpectator}
-              isConnected={isConnected}
-              currentPlayer={currentPlayer}
-              nextPlayer={nextPlayer}
-              turnNumber={turnNumber}
-              maxTurns={maxTurns}
-            />
-          </div>
           {onOpenGuide && (
             <button
               type="button"

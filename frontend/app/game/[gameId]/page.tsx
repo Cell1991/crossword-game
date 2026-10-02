@@ -40,7 +40,7 @@ import { DebugPanel } from '@/components/debug/DebugPanel';
 
 const EMPTY_TILES: Tile[] = [];
 const EMPTY_CELL_POSITIONS: CellPosition[] = [];
-const GAME_SHELL_COLUMNS = 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_17rem] xl:grid-cols-[minmax(0,1fr)_19rem]';
+const GAME_SHELL_COLUMNS = 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_21rem] 2xl:grid-cols-[minmax(0,1fr)_23rem]';
 
 export default function GamePage() {
   const router = useRouter();
@@ -819,51 +819,51 @@ export default function GamePage() {
       {/* Bottom: Tile rack (spectators and eliminated players have no active rack) */}
       <div className={`relative z-10 mx-auto grid w-full max-w-[1920px] shrink-0 ${GAME_SHELL_COLUMNS} px-1.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1.5 sm:px-3 sm:pb-3`}>
         <div className="min-w-0">
-        {isSpectator ? (
-          <div className="flex items-center justify-center gap-2 py-2.5 px-4 text-center text-xs sm:text-sm text-sky-300 bg-sky-950/40 border border-sky-500/25 rounded-xl shadow-[0_0_12px_rgba(56,189,248,0.1)] ring-1 ring-sky-400/15 max-w-md mx-auto select-none">
-            <Eye className="h-4 w-4 text-sky-400 drop-shadow-[0_0_4px_#38bdf8] shrink-0" />
-            <span>You are watching this game. Players&apos; tiles stay hidden.</span>
-          </div>
-        ) : isEliminated ? (
-          <div className="flex flex-col items-center justify-center py-3.5 px-4 sm:px-6 rounded-2xl border border-rose-500/50 bg-gradient-to-r from-rose-950/85 via-slate-900/90 to-rose-950/85 text-center shadow-[0_0_24px_rgba(244,63,94,0.25)] ring-1 ring-rose-500/30 max-w-lg mx-auto">
-            <div className="flex items-center gap-2 text-rose-300 font-black text-sm sm:text-base tracking-wide uppercase">
-              <span className="text-xl">☠️</span>
-              <span>You Have Been Knocked Out</span>
+          {isSpectator ? (
+            <div className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-xl border border-sky-500/25 bg-sky-950/40 px-4 py-2.5 text-center text-xs text-sky-300 select-none sm:text-sm">
+              <Eye className="h-4 w-4 shrink-0 text-sky-400" />
+              <span>You are watching this game. Players&apos; tiles stay hidden.</span>
             </div>
-            <p className="text-xs text-slate-300 mt-1">
-              Your HP reached 0. You are now spectating the remaining players in the room.
-            </p>
-          </div>
-        ) : (
-          <TileRack
-            slots={rackSlots}
-            selectedTileId={staged.selectedTileId}
-            designatedBlankLetters={staged.designatedBlankLetters}
-            exchangeTileIds={exchangeTileIds}
-            tileBagCount={tileBagCount}
-            powerCardSlot={
-              <PowerCardBar
-                cards={myPlayer?.cards ?? []}
-                opponents={opponents}
-                ownRack={myRack}
-                isMyTurn={isMyTurn}
-                hasStagedMove={temporaryTiles.length > 0}
-                armedCard={cards.armedCard}
-                pendingArmedCell={cards.pendingArmedCell}
-                deferredFreezeTileId={cards.deferredFreezeTileId}
-                busy={cards.busy}
-                onUseSimple={cards.playSimpleCard}
-                onUseTargeted={cards.playTargetedCard}
-                onUseSpySwap={cards.playSpySwap}
-                onUseBanLetter={cards.playBanLetter}
-                onArmBoardCard={cards.armBoardCard}
-                onCancelArm={cards.cancelArm}
-                onConfirmArmedCell={cards.confirmArmedCardAt}
-                onCancelArmedCell={cards.cancelPendingArmedCell}
-                onCancelDeferredFreeze={cards.cancelDeferredFreeze}
-              />
-            }
-            onSelectTile={handleSelectTile}
+          ) : isEliminated ? (
+            <div className="mx-auto flex max-w-lg flex-col items-center justify-center rounded-2xl border border-rose-500/40 bg-rose-950/45 px-4 py-3.5 text-center sm:px-6">
+              <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-rose-300 sm:text-base">
+                <span className="text-xl">☠️</span>
+                <span>You Have Been Knocked Out</span>
+              </div>
+              <p className="mt-1 text-xs text-slate-300">
+                Your HP reached 0. You are now spectating the remaining players in the room.
+              </p>
+            </div>
+          ) : (
+            <TileRack
+              slots={rackSlots}
+              selectedTileId={staged.selectedTileId}
+              designatedBlankLetters={staged.designatedBlankLetters}
+              exchangeTileIds={exchangeTileIds}
+              tileBagCount={tileBagCount}
+              powerCardSlot={
+                <PowerCardBar
+                  cards={myPlayer?.cards ?? []}
+                  opponents={opponents}
+                  ownRack={myRack}
+                  isMyTurn={isMyTurn}
+                  hasStagedMove={temporaryTiles.length > 0}
+                  armedCard={cards.armedCard}
+                  pendingArmedCell={cards.pendingArmedCell}
+                  deferredFreezeTileId={cards.deferredFreezeTileId}
+                  busy={cards.busy}
+                  onUseSimple={cards.playSimpleCard}
+                  onUseTargeted={cards.playTargetedCard}
+                  onUseSpySwap={cards.playSpySwap}
+                  onUseBanLetter={cards.playBanLetter}
+                  onArmBoardCard={cards.armBoardCard}
+                  onCancelArm={cards.cancelArm}
+                  onConfirmArmedCell={cards.confirmArmedCardAt}
+                  onCancelArmedCell={cards.cancelPendingArmedCell}
+                  onCancelDeferredFreeze={cards.cancelDeferredFreeze}
+                />
+              }
+              onSelectTile={handleSelectTile}
               onCancelMove={clearStagedMove}
               onConfirmMove={handleConfirmMove}
               onPassTurn={handlePassTurn}
@@ -886,7 +886,7 @@ export default function GamePage() {
               estimatedScore={staged.estimatedScore}
               isBingoBonus={temporaryTiles.length >= 7}
             />
-        )}
+          )}
         </div>
         <div aria-hidden="true" className="hidden lg:block" />
       </div>

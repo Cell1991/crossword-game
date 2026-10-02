@@ -173,7 +173,7 @@ export const RightSidebar = memo(function RightSidebar({
               return (
                 <div
                   key={player.id}
-                  className={`relative flex flex-col rounded-xl border border-l-2 p-2.5 transition-colors duration-150 ${
+                  className={`relative flex flex-col rounded-xl border border-l-2 p-3 transition-colors duration-150 ${
                     isDead || hasLeft
                       ? 'border-slate-800 border-l-slate-700 bg-slate-900/20 opacity-55'
                       : isCurrent
@@ -183,8 +183,8 @@ export const RightSidebar = memo(function RightSidebar({
                       : 'border-slate-800/70 border-l-transparent bg-white/[0.02] hover:bg-white/[0.04]'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
                       {/* Rank Number */}
                       <span className={`text-xs font-mono font-bold w-4 shrink-0 ${
                         idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-amber-600' : 'text-slate-500'
@@ -193,8 +193,8 @@ export const RightSidebar = memo(function RightSidebar({
                       </span>
 
                       {/* Player Name */}
-                      <div className="flex items-center gap-1.5 truncate">
-                        <span className={`text-xs truncate ${
+                      <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+                        <span className={`max-w-full truncate text-sm ${
                           isDead || hasLeft 
                             ? 'text-slate-500 line-through' 
                             : isMe 
@@ -206,7 +206,7 @@ export const RightSidebar = memo(function RightSidebar({
                           {player.display_name}
                         </span>
                         {isMe && (
-                          <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/25 shrink-0">
+                          <span className="shrink-0 rounded-md border border-amber-400/25 bg-amber-400/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300">
                             YOU
                           </span>
                         )}
@@ -220,7 +220,7 @@ export const RightSidebar = memo(function RightSidebar({
                         )}
                         {player.has_shield && !isDead && (
                           <span
-                            className="flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-950/55 px-1.5 py-0.5 text-[10px] font-bold text-cyan-200"
+                            className="flex shrink-0 items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-950/55 px-1.5 py-0.5 text-[10px] font-bold text-cyan-200"
                             title="Shield Active: Blocks 1 incoming attack"
                           >
                             <Shield className="w-3 h-3 text-cyan-300 fill-cyan-400/40 drop-shadow-[0_0_4px_#38bdf8]" />
@@ -236,7 +236,7 @@ export const RightSidebar = memo(function RightSidebar({
                           </span>
                         )}
                         {isCurrent && !isDead && (
-                          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-400/25 text-[9px] font-black text-emerald-300 tracking-wider shrink-0 uppercase">
+                          <span className="flex shrink-0 items-center gap-1 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-300">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                             TURN
                           </span>
@@ -251,13 +251,13 @@ export const RightSidebar = memo(function RightSidebar({
                         initial={false}
                         animate={{ scale: 1, color: isCurrent ? '#34d399' : '#f8fafc' }}
                         transition={{ duration: 0.18 }}
-                        className={`text-sm sm:text-base font-black font-mono tabular-nums inline-block ${
+                        className={`inline-block whitespace-nowrap font-mono text-lg font-black tabular-nums ${
                           isCurrent
                             ? 'text-emerald-300'
                             : 'text-white'
                         }`}
                       >
-                        {player.score} <span className="text-[10px] font-sans font-bold text-slate-400 uppercase">pts</span>
+                        {player.score} <span className="font-sans text-[9px] font-bold uppercase text-slate-500">pts</span>
                       </motion.span>
                       {player.connection_status === 'ONLINE' ? (
                         <Wifi className="w-3.5 h-3.5 text-emerald-400/80" />
@@ -271,12 +271,12 @@ export const RightSidebar = memo(function RightSidebar({
                     const playerMaxHp = player.max_hp || maxHp;
                     const hasShield = Boolean(player.has_shield && !isDead);
                     return (
-                      <div className="relative mt-2">
-                        {/* Shield Aura Glow effect surrounding the HP bar */}
-                        {hasShield && (
-                          <div className="absolute inset-0 rounded-sm border border-cyan-300/25 pointer-events-none" />
-                        )}
-                        <div className={`h-3.5 rounded-sm relative overflow-hidden transition-all ${
+                      <div className="relative mt-2.5">
+                        <div className="mb-1 flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                          <span>Health</span>
+                          <span className="font-mono tabular-nums text-slate-300">{Math.max(0, player.hp)} / {playerMaxHp}</span>
+                        </div>
+                        <div className={`relative h-2 overflow-hidden rounded-full transition-all ${
                           hasShield
                             ? 'bg-slate-950/90 border-2 border-cyan-300 shadow-[0_0_16px_rgba(6,182,212,0.9),inset_0_0_10px_rgba(56,189,248,0.5)] ring-1 ring-cyan-200/80'
                             : 'bg-slate-950/80 border border-slate-800/60 shadow-inner'
