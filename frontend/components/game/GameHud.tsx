@@ -217,8 +217,8 @@ export const GameHud: React.FC<GameHudProps> = ({
 
       {/* ROW 2 (Mobile only): Dedicated Clean Turn Banner & Timer */}
       <div className="gameplay-mobile-turn-bar flex lg:hidden w-full items-center justify-center px-2.5 pb-2 pt-0.5 select-none">
-        <div className="w-full max-w-lg flex items-center gap-1.5 sm:gap-2">
-          <div className="flex-1 min-w-0">
+        <div className="w-full max-w-lg flex items-stretch gap-1.5 sm:gap-2">
+          <div className="flex-1 min-w-0 flex items-stretch">
             <TurnBanner
               mobile
               isMyTurn={isMyTurn}
@@ -233,7 +233,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             />
           </div>
           {timer && (
-            <div className="shrink-0 flex items-center">
+            <div className="shrink-0 flex items-stretch">
               {timer}
             </div>
           )}
