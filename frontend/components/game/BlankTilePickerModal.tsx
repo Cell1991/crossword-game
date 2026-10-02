@@ -31,27 +31,26 @@ export const BlankTilePickerModal: React.FC<BlankTilePickerModalProps> = ({
       {isOpen && (
         <motion.div
           key="blank-tile-backdrop"
-          initial={{ opacity: 0 }}
+          initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[10000] flex items-end justify-center px-3 pb-24 sm:items-center sm:pb-0 bg-slate-950/60 backdrop-blur-sm"
+          exit={{ opacity: 1 }}
+          className="fixed inset-0 z-[10000] flex items-end justify-center bg-slate-950/65 px-3 pb-24 sm:items-center sm:pb-0"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) onClose();
           }}
         >
           <motion.div
             key="blank-tile-dialog"
-            initial={{ opacity: 0, scale: 0.93, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 12 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 380 }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
             role="dialog"
+            aria-modal="true"
             aria-label="Choose a letter for the wildcard blank tile"
             className="pointer-events-auto relative w-full max-w-[31rem] overflow-hidden rounded-[1.35rem] border border-cyan-400/45 bg-[#071326]/[.98] p-4 text-white shadow-[0_18px_55px_rgba(0,0,0,0.7),0_0_34px_rgba(14,165,233,0.2)]"
           >
         <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300 to-transparent opacity-80" />
-        <div className="pointer-events-none absolute -right-14 -top-16 h-40 w-40 rounded-full bg-cyan-400/10 blur-3xl" />
 
         {/* Header */}
         <div className="relative flex items-center justify-between border-b border-cyan-400/15 pb-3">
@@ -78,12 +77,12 @@ export const BlankTilePickerModal: React.FC<BlankTilePickerModalProps> = ({
               key={letter}
               type="button"
               onClick={() => onSelect(letter)}
-              className="tile-face group relative flex h-12 w-11 flex-col items-center justify-center overflow-hidden rounded-xl border border-amber-100/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_4px_10px_rgba(0,0,0,0.5)] transition-all hover:-translate-y-0.5 hover:scale-[1.03] hover:border-amber-300 hover:brightness-110 hover:shadow-[0_0_14px_rgba(251,191,36,0.18)] active:translate-y-0 active:scale-95 sm:h-14 sm:w-13"
+              className="tile-face group relative flex h-12 w-11 flex-col items-center justify-center overflow-hidden rounded-xl border border-amber-100/70 shadow-[0_2px_5px_rgba(0,0,0,0.38)] transition-[transform,border-color,filter] hover:-translate-y-0.5 hover:scale-[1.03] hover:border-amber-300 hover:brightness-110 active:translate-y-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 sm:h-14 sm:w-13"
             >
               {/* Glass Top Bevel Highlight */}
               <div className="absolute inset-x-1 top-0.5 h-[35%] rounded-t-lg bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
 
-              <span className="tile-letter tile-letter-orange relative z-10 text-2xl font-maple sm:text-[1.7rem]">
+              <span className="blank-picker-letter relative z-10 text-2xl font-maple sm:text-[1.7rem]">
                 {letter}
               </span>
             </button>

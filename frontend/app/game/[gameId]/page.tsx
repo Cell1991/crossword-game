@@ -10,7 +10,7 @@ import { commitMove, exchangeTiles, executeBotMove, expireTurn, getBotPlan, leav
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'motion/react';
 import { buildRackSlots } from '@/lib/rack';
-import { GameState, Tile, Player, PlacedTile } from '@/lib/types';
+import { CellPosition, GameState, Tile, Player, PlacedTile } from '@/lib/types';
 import { TILE_THEME_STYLE } from '@/lib/tileTheme';
 import { isBlankLetter } from '@/lib/tiles';
 import { useBoardCamera } from '@/hooks/useBoardCamera';
@@ -39,6 +39,7 @@ import { GameGuideModal } from '@/components/game/GameGuideModal';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 
 const EMPTY_TILES: Tile[] = [];
+const EMPTY_CELL_POSITIONS: CellPosition[] = [];
 
 export default function GamePage() {
   const router = useRouter();
@@ -748,9 +749,9 @@ export default function GamePage() {
               remotePlacements={
                 isBotTurn
                   ? (botStagedTiles.length === 0 && (!sync.remoteBotTiles || sync.remoteBotTiles.length === 0)
-                      ? (sync.remotePlacements ?? [])
-                      : [])
-                  : (sync.remotePlacements ?? [])
+                      ? (sync.remotePlacements ?? EMPTY_CELL_POSITIONS)
+                      : EMPTY_CELL_POSITIONS)
+                  : (sync.remotePlacements ?? EMPTY_CELL_POSITIONS)
               }
               temporaryTilesValid={isBotTurn ? true : validationState}
               selectedCell={staged.selectedCell}

@@ -56,7 +56,7 @@ interface BoardCanvasProps {
  * the DOM update in the same frame), a camera move (subscribed directly, no React render), a
  * resize, a web font finishing loading, or a twinkle frame while there are tiles to twinkle.
  */
-export const BoardCanvas: React.FC<BoardCanvasProps> = ({
+export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   containerRef,
   boardState,
   temporaryTiles,
@@ -79,7 +79,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
   hintTiles = null,
   pendingArmedCell = null,
   pendingArmedCard = null,
-}) => {
+}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<SceneContent | null>(null);
   const modelRef = useRef(new BoardModel());
@@ -448,4 +448,4 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({
       />
     </div>
   );
-};
+});
