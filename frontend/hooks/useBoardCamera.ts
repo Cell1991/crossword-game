@@ -161,6 +161,7 @@ export function useBoardCamera() {
       const cellSize = BASE_CELL_SIZE * scale;
       const col = Math.floor((screenX - offset.x) / cellSize);
       const row = Math.floor((screenY - offset.y) / cellSize);
+      if (row < 0 || row >= BOARD_ROWS || col < 0 || col >= BOARD_COLS) return null;
       return { row, col };
     };
 
