@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useState } from 'react';
-import { History, ChevronDown, ChevronUp, Loader2, Copy, Check, Sparkles } from 'lucide-react';
+import { History, ChevronDown, ChevronUp, Loader2, Copy, Check } from 'lucide-react';
 import { MoveHistoryEntry, WordDefinition } from '@/lib/types';
 import { getWordDefinition } from '@/lib/api';
 
@@ -138,7 +138,6 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                     ? entry.text.split(':')[0]
                     : 'Player'
               );
-              const actorInitial = actorName.charAt(0).toUpperCase();
 
               const wordLabel = hasWords
                 ? words?.join(', ')
@@ -164,26 +163,14 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                       hasWords ? 'cursor-pointer hover:bg-white/[0.03]' : 'cursor-default'
                     }`}
                   >
-                    {/* Left: Avatar + Identity + Word */}
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div
-                        className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 border ${
-                          isMe
-                            ? 'bg-amber-400/20 text-amber-300 border-amber-400/40 shadow-[0_0_6px_rgba(245,158,11,0.3)]'
-                            : 'bg-slate-800 text-slate-300 border-white/10'
-                        }`}
-                        aria-hidden="true"
-                      >
-                        {actorInitial}
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className={`text-xs font-bold truncate ${isMe ? 'text-amber-300' : 'text-slate-200'}`}>
-                          {actorName}
-                        </span>
-                        <span className="font-mono text-xs font-extrabold text-cyan-300 tracking-wide truncate">
-                          {wordLabel}
-                        </span>
-                      </div>
+                    {/* Left: Identity + Word */}
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className={`text-xs font-bold truncate ${isMe ? 'text-amber-300 drop-shadow-[0_0_6px_rgba(245,158,11,0.3)]' : 'text-slate-200'}`}>
+                        {actorName}
+                      </span>
+                      <span className="font-mono text-xs font-extrabold text-cyan-300 tracking-wide truncate">
+                        {wordLabel}
+                      </span>
                     </div>
 
                     {/* Right: Score + Turn indicator */}
