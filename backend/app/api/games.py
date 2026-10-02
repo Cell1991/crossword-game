@@ -311,21 +311,16 @@ async def execute_bot_move(
     if not bot_player_id:
         raise HTTPException(status_code=400, detail="Missing bot_player_id")
 
-    # Bot NEVER passes: if action is not MOVE or tiles is empty, guarantee a valid move immediately
+    # The client sends the plan it animated. If it had no move to play, decide here instead, so the
+    # turn is still spent on whatever the rack genuinely allows (a move, an exchange, or a pass).
     if action != "MOVE" or not req.get("tiles"):
-        plan = await BotService.plan_bot_move(db, game_id)
-        if plan.get("action") == "MOVE" and plan.get("tiles"):
-            req = plan
-            action = "MOVE"
+        outcome = await BotService.execute_bot_move_now(db, game_id, bot_player_id)
+        if outcome is None:
+            raise HTTPException(status_code=409, detail="The bot has no turn to take right now")
+        return outcome
 
     if action == "MOVE":
         tiles_data = req.get("tiles", [])
-        from sqlalchemy import select
-        from app.database.models import GamePlayer
-        stmt_player = select(GamePlayer).where(GamePlayer.id == bot_player_id)
-        bot_player = (await db.execute(stmt_player)).scalar_one_or_none()
-        if bot_player and BotService.is_bot_player(bot_player):
-            tiles_data = await BotService._ensure_bot_rack_has_tiles(db, bot_player, tiles_data)
         placed_tiles = [PlacedTileInput(**t) for t in tiles_data]
         res, game, player = await MoveService.commit_move(db, game_id, bot_player_id, placed_tiles)
         await db.commit()

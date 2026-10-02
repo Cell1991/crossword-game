@@ -10,7 +10,7 @@ import { commitMove, exchangeTiles, executeBotMove, expireTurn, getBotPlan, leav
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'motion/react';
 import { buildRackSlots } from '@/lib/rack';
-import { CellPosition, GameState, Tile, Player, PlacedTile } from '@/lib/types';
+import { BotDifficulty, CellPosition, GameState, Tile, Player, PlacedTile } from '@/lib/types';
 import { TILE_THEME_STYLE } from '@/lib/tileTheme';
 import { isBlankLetter } from '@/lib/tiles';
 import { useBoardCamera } from '@/hooks/useBoardCamera';
@@ -376,23 +376,16 @@ export default function GamePage() {
 
   // --- Bot Player Turn Automation & Step-by-Step Animated Tile Placement ---
   const currentTurnPlayer = gameState?.players?.find(p => p.id === gameState?.current_player_id);
-  const isBotTurn = Boolean(
-    currentTurnPlayer &&
-    (currentTurnPlayer.display_name.toLowerCase().includes('bot') ||
-     currentTurnPlayer.display_name.toLowerCase().includes('[ai]'))
+  // Whether a seat is the AI comes from the server's own flag. Matching on the display name used to
+  // mean a human called "Robert" drove the bot automation, and renaming a bot changed its level.
+  const isBotTurn = Boolean(currentTurnPlayer?.is_bot);
+
+  const botDifficulty = useMemo<BotDifficulty>(
+    () => currentTurnPlayer?.bot_difficulty ?? 'medium',
+    [currentTurnPlayer?.bot_difficulty],
   );
 
-  const botDifficulty = useMemo<'easy' | 'medium' | 'hard'>(() => {
-    const name = currentTurnPlayer?.display_name?.toLowerCase() || '';
-    if (name.includes('hard') || name.includes('titan')) return 'hard';
-    if (name.includes('medium') || name.includes('nexus')) return 'medium';
-    return 'easy';
-  }, [currentTurnPlayer?.display_name]);
-
-  const firstHumanPlayer = gameState?.players?.find(p =>
-    !p.display_name.toLowerCase().includes('bot') &&
-    !p.display_name.toLowerCase().includes('[ai]')
-  );
+  const firstHumanPlayer = gameState?.players?.find(p => !p.is_bot);
   const isHostDriver = !isSpectator && (Boolean(session?.isHost) || firstHumanPlayer?.id === myPlayerId || !firstHumanPlayer);
 
   const lastCompletedBotTurnRef = useRef<string | null>(null);
@@ -836,6 +829,7 @@ export default function GamePage() {
                   onUseTargeted={cards.playTargetedCard}
                   onUseSpySwap={cards.playSpySwap}
                   onUseBanLetter={cards.playBanLetter}
+                  onUseMoveHeal={cards.playMoveHeal}
                   onArmBoardCard={cards.armBoardCard}
                   onCancelArm={cards.cancelArm}
                   onConfirmArmedCell={cards.confirmArmedCardAt}

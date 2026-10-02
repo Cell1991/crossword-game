@@ -20,11 +20,15 @@ import random
 
 class MoveService:
 
+    # Every card a player can hold. Must stay in step with the handlers in app/api/cards.py and
+    # with CARD_TYPES in frontend/lib/types.ts: a card missing here can never be awarded, and one
+    # missing from the frontend list is awarded but never rendered.
     CARD_TYPES = (
         "HINT", "SPY_SWAP", "DESTROY_TILE", "HEAL", "DOUBLE_DAMAGE", "SHIELD", "FREEZE_TILE",
+        "BAN_LETTER", "FREE_EXCHANGE", "DRAW_TILE", "MOVE_HEAL",
     )
     # Cards that only act on HP. Turn-count games deal no damage, so these would do nothing there.
-    HP_CARD_TYPES = frozenset({"HEAL", "DOUBLE_DAMAGE", "SHIELD"})
+    HP_CARD_TYPES = frozenset({"HEAL", "DOUBLE_DAMAGE", "SHIELD", "MOVE_HEAL"})
 
     @classmethod
     def card_pool(cls, game: Game) -> tuple[str, ...]:
@@ -169,60 +173,6 @@ class MoveService:
             bingo_bonus=50 if (valid and len(placed_tiles) >= 7) else 0,
         )
 
-    @classmethod
-    def _reconcile_bot_rack(cls, player: GamePlayer, placed_tiles: list[PlacedTileInput]) -> None:
-        """For bot players: guarantees rack contains all placed tiles to eliminate desync errors."""
-        from app.game.tiles import DEFAULT_LETTER_VALUES
-        from sqlalchemy.orm.attributes import flag_modified
-        rack = [dict(t) for t in (player.rack or [])]
-        available = [dict(t) for t in rack]
-        needed: list[PlacedTileInput] = []
-
-        for pt in placed_tiles:
-            matched_idx = None
-            pt_letter = pt.letter.upper()
-            # 1. Match exact letter and tile_id if provided
-            if pt.tile_id:
-                for idx, t in enumerate(available):
-                    t_id = t.get("id") or t.get("tile_id")
-                    t_letter = str(t.get("letter", "")).upper()
-                    if t_id == pt.tile_id and (t_letter == pt_letter or t_letter == "BLANK"):
-                        matched_idx = idx
-                        break
-
-            # 2. Match exact letter if tile_id didn't match
-            if matched_idx is None:
-                for idx, t in enumerate(available):
-                    t_letter = str(t.get("letter", "")).upper()
-                    if t_letter == pt_letter or t_letter == "BLANK":
-                        matched_idx = idx
-                        break
-
-            if matched_idx is not None:
-                available.pop(matched_idx)
-            else:
-                needed.append(pt)
-
-        if needed:
-            for pt in needed:
-                letter = pt.letter.upper()
-                val = pt.value if pt.value is not None else DEFAULT_LETTER_VALUES.get(letter, 1)
-                if available:
-                    borrowed = available.pop(0)
-                    b_id = borrowed.get("id") or borrowed.get("tile_id")
-                    for r in rack:
-                        if (r.get("id") or r.get("tile_id")) == b_id:
-                            r["letter"] = letter
-                            r["value"] = val
-                            if pt.tile_id:
-                                r["id"] = pt.tile_id
-                            break
-                else:
-                    new_id = pt.tile_id or str(uuid.uuid4())[:8]
-                    rack.append({"id": new_id, "letter": letter, "value": val})
-
-            player.rack = rack
-            flag_modified(player, "rack")
 
     @classmethod
     async def commit_move(
@@ -254,16 +204,11 @@ class MoveService:
         normalized_board = game.board_state if (game.board_state is not None and isinstance(game.board_state, dict)) else await board_state(db, game_id)
         normalized_rack = player.rack if (player.rack is not None and isinstance(player.rack, list)) else await player_rack(db, player.id)
 
-        # Check tile ownership
+        # Check tile ownership. Bots are held to this too: they used to have their rack rewritten to
+        # fit whatever they wanted to play, which let them conjure letters they never drew.
         owns_tiles, err_ownership = cls._verify_tile_ownership(normalized_rack, placed_tiles)
         if not owns_tiles:
-            from app.services.bot_service import BotService
-            if BotService.is_bot_player(player):
-                cls._reconcile_bot_rack(player, placed_tiles)
-                normalized_rack = player.rack
-                owns_tiles, err_ownership = cls._verify_tile_ownership(normalized_rack, placed_tiles)
-            if not owns_tiles:
-                raise HTTPException(status_code=400, detail=err_ownership)
+            raise HTTPException(status_code=400, detail=err_ownership)
         cls._apply_rack_values(normalized_rack, placed_tiles)
         if game.banned_letter and game.banned_until_turn and game.turn_number <= game.banned_until_turn:
             if any(tile.letter.upper() == game.banned_letter and player.id != game.banned_by_player_id for tile in placed_tiles):

@@ -247,13 +247,15 @@ async def test_ex18_exchange_is_refused_outside_an_active_game(open_table):
 
 @pytest.mark.asyncio
 async def test_ex19_knocked_out_player_cannot_exchange(open_table):
-    table = await open_table("Alice", "Bob")
-    alice, _ = table.seats
+    # Three seats: knocking a player out of a two-seat table ends the match, and a finished game
+    # rejects the exchange for being over rather than for the player being knocked out.
+    table = await open_table("Alice", "Bob", "Carol")
+    alice, _, _ = table.seats
     await table.update_player(alice, hp=0)
 
     res = await exchange(table, alice, [(await table.player(alice))["rack"][0]["id"]])
 
-    assert res.status_code == 403
+    assert res.status_code == 403, res.text
 
 
 @pytest.mark.asyncio

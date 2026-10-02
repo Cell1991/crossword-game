@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Flame, Heart, LucideIcon, Repeat2, Shield, Snowflake, Swords } from 'lucide-react';
+import { Ban, Eye, Flame, Heart, HeartPulse, LucideIcon, PlusCircle, Repeat2, Shield, Shuffle, Snowflake, Swords } from 'lucide-react';
 
 /** Each power card's icon and colour. */
 const CARD_ICONS: Record<string, [LucideIcon, string]> = {
@@ -10,6 +10,10 @@ const CARD_ICONS: Record<string, [LucideIcon, string]> = {
   SHIELD: [Shield, 'text-sky-200'],
   FREEZE_TILE: [Snowflake, 'text-sky-300'],
   DOUBLE_DAMAGE: [Swords, 'text-purple-300'],
+  BAN_LETTER: [Ban, 'text-red-300'],
+  FREE_EXCHANGE: [Shuffle, 'text-teal-300'],
+  DRAW_TILE: [PlusCircle, 'text-lime-300'],
+  MOVE_HEAL: [HeartPulse, 'text-fuchsia-300'],
 };
 
 /** The icon for `card` at `sizeClass`. Undefined for unknown cards. */

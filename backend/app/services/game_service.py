@@ -391,7 +391,9 @@ class GameService:
                 connection_status=p.connection_status,
                 rack_count=len(normalized_rack),
                 rack=p_rack
-                ,cards=normalized_cards if reveal_all or is_mine else None
+                ,cards=normalized_cards if reveal_all or is_mine else None,
+                is_bot=bool(getattr(p, 'is_bot', False)),
+                bot_difficulty=getattr(p, 'bot_difficulty', None),
             ))
 
         rematch_room = await RoomService.open_rematch_room(db, room) if room else None

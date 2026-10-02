@@ -79,7 +79,13 @@ class RoomService:
         return room, game, host_player
 
     @staticmethod
-    async def join_room(db: AsyncSession, game_pin: str, player_name: str) -> tuple[GameRoom, Game, GamePlayer]:
+    async def join_room(
+        db: AsyncSession,
+        game_pin: str,
+        player_name: str,
+        is_bot: bool = False,
+        bot_difficulty: str | None = None,
+    ) -> tuple[GameRoom, Game, GamePlayer]:
         stmt = (
             select(GameRoom, GamePlayer)
             .outerjoin(GamePlayer, GamePlayer.game_id == GameRoom.id)
@@ -129,7 +135,9 @@ class RoomService:
             rack=[],
             turn_order=len(existing_players),
             connection_status="ONLINE",
-            session_token=session_token
+            session_token=session_token,
+            is_bot=is_bot,
+            bot_difficulty=(bot_difficulty if is_bot else None),
         )
 
         db.add(new_player)
@@ -197,7 +205,10 @@ class RoomService:
 
         open_room = await RoomService.open_rematch_room(db, room)
         if open_room:
-            new_room, new_game, new_player = await RoomService.join_room(db, open_room.game_pin, player.display_name)
+            new_room, new_game, new_player = await RoomService.join_room(
+                db, open_room.game_pin, player.display_name,
+                is_bot=player.is_bot, bot_difficulty=player.bot_difficulty,
+            )
             return new_room, new_game, new_player, False
 
         new_room, new_game, new_player = await RoomService.create_room(

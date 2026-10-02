@@ -52,7 +52,9 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
 
 @router.post("/{game_pin}/join", response_model=JoinRoomResponse)
 async def join_room(game_pin: str, req: JoinRoomRequest, db: AsyncSession = Depends(get_db)):
-    room, game, player = await RoomService.join_room(db, game_pin, req.player_name)
+    room, game, player = await RoomService.join_room(
+        db, game_pin, req.player_name, is_bot=req.is_bot, bot_difficulty=req.bot_difficulty,
+    )
     # Save before telling anyone: clients reload the room the moment an event arrives.
     await db.commit()
     
@@ -136,7 +138,9 @@ async def get_room(game_pin: str, response: Response, db: AsyncSession = Depends
             has_shield=getattr(p, 'has_shield', False),
             turn_order=p.turn_order,
             connection_status=p.connection_status,
-            rack_count=len(p.rack) if (p.rack is not None and isinstance(p.rack, list)) else 0
+            rack_count=len(p.rack) if (p.rack is not None and isinstance(p.rack, list)) else 0,
+            is_bot=bool(getattr(p, 'is_bot', False)),
+            bot_difficulty=getattr(p, 'bot_difficulty', None),
         )
         for p in players
     ]

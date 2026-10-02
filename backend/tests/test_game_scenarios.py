@@ -31,9 +31,16 @@ def me(state, seat):
 
 
 async def resolve_damage(table):
-    """Fast-forward past the SHIELD window and finalize the pending DAMAGE/SWAP effect."""
+    """
+    Fast-forward past the SHIELD window and finalize the pending DAMAGE/SWAP effect.
+
+    A move only opens that window when a living opponent can actually shield; otherwise the
+    damage already landed on commit, so there is nothing pending and this is a no-op.
+    """
     async with AsyncSessionLocal() as db:
         game = await db.get(Game, table.game_id)
+        if game.pending_effect is None:
+            return None
         game.pending_effect = {
             **game.pending_effect,
             "expires_at": (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat(),
@@ -389,10 +396,9 @@ async def test_hp02_knocking_out_the_last_opponent_wins_the_game(open_table, bro
     res = await table.place(alice, ROW, COL - 1, "CAT")
 
     assert res.status_code == 200, res.text
-    # The move commits immediately, but the KO only lands once the pending damage resolves.
-    assert res.json()["game_over"] is False
-    resolved = await resolve_damage(table)
-    assert (resolved.json()["status"], resolved.json()["game_over"], resolved.json()["winner_id"]) == ("resolved", True, alice.id)
+    # Bob holds no shield, so there is no window to wait out: the damage lands on commit and
+    # takes the game with it.
+    assert (res.json()["game_over"], res.json()["winner_id"]) == (True, alice.id)
     state = await table.state()
     assert (state["status"], me(state, bob)["hp"]) == ("FINISHED", 0)
     assert any(m["type"] == "GAME_ENDED" for m in broadcasts)
@@ -580,11 +586,14 @@ async def test_lv01_player_who_leaves_is_skipped(open_table):
 async def test_lv02_last_player_standing_wins_when_everyone_else_left(open_table):
     table = await open_table("Alice", "Bob")
     alice, bob = table.seats
-    await table.act(bob, "leave")
 
-    res = await table.act(alice, "pass")
+    # Walking out hands the match to whoever is left, there and then: an abandoned room is
+    # dissolved on the spot rather than waiting for the survivor to take another turn.
+    res = await table.act(bob, "leave")
 
-    assert (res.json()["game_over"], res.json()["winner_id"]) == (True, alice.id)
+    assert res.json()["game_over"] is True
+    state = await table.state()
+    assert (state["status"], state["winner_id"]) == ("FINISHED", alice.id)
 
 
 async def test_lv03_leaving_on_your_own_turn_hands_it_to_the_next_seat(open_table):
@@ -872,7 +881,8 @@ async def test_cd08_shield_blocks_damage_for_the_blocker_only(open_table):
     await table.set_tiles(racks={alice: "CATSEIO"})
 
     await table.place(alice, ROW, COL - 1, "CAT")
-    assert (await table.act(bob, "cards/use", {"card": "SHIELD"})).json() == {"success": True, "blocked": True}
+    shield_res = await table.act(bob, "cards/use", {"card": "SHIELD"})
+    assert (shield_res.json()["success"], shield_res.json()["blocked"]) == (True, True)
     await resolve_damage(table)
 
     state = await table.state()
@@ -891,9 +901,11 @@ async def test_cd09_shield_can_be_activated_proactively(open_table):
     state = await table.state()
     assert me(state, alice)["has_shield"] is True
 
-    # Now Bob attacks Alice with a word move
+    # Now Bob attacks Alice with a word move. Arming a shield costs no turn, so Alice still holds
+    # it and has to pass before Bob can play at all.
+    assert (await table.act(alice, "pass")).status_code == 200
     await table.set_tiles(racks={bob: "CATSEIO"})
-    await table.place(bob, ROW, COL - 1, "CAT")
+    assert (await table.place(bob, ROW, COL - 1, "CAT")).status_code == 200
     await resolve_damage(table)
 
     # Alice's shield absorbed the attack: Alice took 0 damage, shield is consumed
@@ -920,7 +932,8 @@ async def test_cd10_shield_cancels_a_pending_spy_swap(open_table):
     assert swap_res.json() == {"success": True, "pending": True}
     assert (await table.state())["pending_effect"]["type"] == "SWAP"
 
-    assert (await table.act(bob, "cards/use", {"card": "SHIELD"})).json() == {"success": True, "blocked": True}
+    shield_res = await table.act(bob, "cards/use", {"card": "SHIELD"})
+    assert (shield_res.json()["success"], shield_res.json()["blocked"]) == (True, True)
 
     assert letters((await table.player(alice))["rack"]) == before_alice
     assert letters((await table.player(bob))["rack"]) == before_bob
@@ -976,8 +989,10 @@ async def test_cd10d_multi_tile_spy_swap_does_not_open_a_shield_window(open_tabl
     })
     assert swap_res.json()["pending"] is False
     assert (await table.state(alice))["pending_effect"] is None
+    # With nothing pending there is no window to block: the shield just arms for a future hit
+    # instead of undoing the swap that already completed.
     shield_res = await table.act(bob, "cards/use", {"card": "SHIELD"})
-    assert shield_res.status_code == 400
+    assert (shield_res.status_code, shield_res.json()["blocked"]) == (200, False)
     assert letters((await table.player(alice))["rack"]) != before_alice
     assert letters((await table.player(bob))["rack"]) != before_bob
 
@@ -991,7 +1006,14 @@ async def test_cd11_hint_returns_a_genuinely_valid_placement(open_table):
     res = await table.act(alice, "cards/use", {"card": "HINT"})
 
     assert res.json()["success"] is True and res.json()["found"] is True
-    placed = await table.place(alice, res.json()["row"], res.json()["col"], "CAT")
+    # Play back the suggestion itself. Hardcoding a word here only passed by luck: the hint is free
+    # to suggest any length, and a different word starting on that cell need not cover the centre.
+    suggestion = res.json()["suggestions"][0]
+    first_tile = suggestion["tiles"][0]
+    placed = await table.place(
+        alice, first_tile["row"], first_tile["col"], suggestion["word"],
+        down=suggestion["direction"] == "down",
+    )
     assert placed.status_code == 200, placed.text
 
 
@@ -1047,8 +1069,10 @@ async def test_cd14_turn_count_games_never_deal_hp_only_cards(open_table, monkey
 ])
 async def test_rt01_players_hear_about_a_turn_change_only_after_it_is_saved(open_table, monkeypatch, action, event_type):
     """Clients reload the game the moment an event arrives, so the new turn must already be committed."""
-    table = await open_table("Alice", "Bob")
-    alice, bob = table.seats
+    # Carol only has to exist: without a third seat, Alice leaving would dissolve the match and
+    # there would be no next turn to observe.
+    table = await open_table("Alice", "Bob", "Carol")
+    alice, bob, _ = table.seats
     await table.set_tiles(racks={alice: "CATSEIO"})
     seen_current_player: dict[str, str | None] = {}
 

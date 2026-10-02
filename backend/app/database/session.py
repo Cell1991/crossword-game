@@ -192,6 +192,8 @@ def _upgrade_existing_schema(connection):
             "cards": "JSON",
             "banned_letter": "VARCHAR(10)",
             "banned_until_turn": "INTEGER",
+            "is_bot": "BOOLEAN DEFAULT FALSE NOT NULL",
+            "bot_difficulty": "VARCHAR(16)",
         },
     }
 

@@ -17,31 +17,30 @@ def test_words_by_char_fast_index():
     assert any("CAT" == w for w in words_c)
 
 
-def test_order_candidates_by_difficulty():
-    mock_candidates = [
-        {"word": "AT", "score": 2},
-        {"word": "CAT", "score": 5},
-        {"word": "BOAT", "score": 9},
-        {"word": "CRANE", "score": 14},
-        {"word": "ZODIAC", "score": 35},
-        {"word": "QUARTZ", "score": 48},
-    ]
+@pytest.mark.parametrize("scores", [
+    [2, 5, 9, 14, 35, 48],   # a board offering big plays
+    [2, 3, 4, 5, 6, 7],      # a cramped board where nothing scores well
+])
+def test_order_candidates_by_difficulty_is_monotonic_in_strength(scores):
+    """
+    A harder bot must prefer a higher-scoring move than an easier one, whatever the board offers.
+    This ordering used to key off absolute point bands, so on a low-scoring board medium took the
+    best move while hard randomised below it, and Nexus beat Titan.
+    """
+    candidates = [{"word": f"W{s}", "score": s} for s in scores]
 
-    # Easy: targets 2 to 10
-    easy_res = BotService._order_candidates_by_difficulty(mock_candidates, "easy")
-    assert len(easy_res) == len(mock_candidates)
-    # The first element should be in the 2-10 range
-    assert 2 <= easy_res[0]["score"] <= 10
+    picks = {
+        level: BotService._order_candidates_by_difficulty(candidates, level)
+        for level in ("easy", "medium", "hard")
+    }
 
-    # Medium: targets 2 to 15, favoring higher average (e.g. 14, 9, 5)
-    medium_res = BotService._order_candidates_by_difficulty(mock_candidates, "medium")
-    assert 2 <= medium_res[0]["score"] <= 15
-    # Since pool is sorted descending, highest in <=15 should be first
-    assert medium_res[0]["score"] == 14
+    # Nothing may be dropped: the caller falls through this list when a move will not fit the rack.
+    for level, ordered in picks.items():
+        assert sorted(c["score"] for c in ordered) == sorted(scores), level
 
-    # Hard: picks maximum score (35 or 48)
-    hard_res = BotService._order_candidates_by_difficulty(mock_candidates, "hard")
-    assert hard_res[0]["score"] in (35, 48)
+    easy, medium, hard = (picks[level][0]["score"] for level in ("easy", "medium", "hard"))
+    assert hard == max(scores), "hard must take the best move available"
+    assert easy < medium <= hard, f"expected easy < medium <= hard, got {easy} / {medium} / {hard}"
 
 
 def test_hint_candidates_fast_speed():

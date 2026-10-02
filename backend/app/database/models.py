@@ -90,6 +90,10 @@ class GamePlayer(Base):
     connection_status = Column(String(32), default="ONLINE", nullable=False)  # ONLINE, DISCONNECTED, OFFLINE
     session_token = Column(String(128), index=True, nullable=False)
     joined_at = Column(DateTime(timezone=True), default=get_utc_now)
+    # Whether this seat is played by the AI, and how hard it plays. Stored rather than inferred from
+    # display_name: a human called "Robot" is not a bot, and renaming a bot must not change its level.
+    is_bot = Column(Boolean, default=False, nullable=False)
+    bot_difficulty = Column(String(16), nullable=True)  # easy | medium | hard
 
     game = relationship("Game", back_populates="players")
     moves = relationship("Move", back_populates="player")

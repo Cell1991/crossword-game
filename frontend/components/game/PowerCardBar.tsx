@@ -6,7 +6,10 @@ import { isBlankLetter } from '@/lib/tiles';
 import { cardIcon } from './cardIcons';
 import { X, Check, ArrowRight } from 'lucide-react';
 
-type SimpleCard = 'HINT' | 'HEAL' | 'SHIELD';
+/** Cards the server resolves from the card name alone, with no extra target payload. */
+type SimpleCard = 'HINT' | 'HEAL' | 'SHIELD' | 'DRAW_TILE' | 'FREE_EXCHANGE';
+/** The subset of those that ask for a confirmation step before being spent. */
+type ConfirmableCard = 'HINT' | 'HEAL' | 'SHIELD';
 type TargetedCard = 'DOUBLE_DAMAGE';
 type SpySwapStep = 'own' | 'opponent' | 'tiles';
 
@@ -92,6 +95,46 @@ const CARD_META: Record<string, CardStyleConfig> = {
     glowClass: 'hover:shadow-[0_0_18px_rgba(249,115,22,0.45)] hover:ring-1 hover:ring-orange-400/40',
     badgeBg: 'bg-orange-500/30 border border-orange-400/50 text-orange-200',
   },
+  BAN_LETTER: {
+    icon: cardIcon('BAN_LETTER', 'h-4 w-4 text-red-300', '×2'),
+    label: 'Ban Letter',
+    ownTurnOnly: false,
+    bgGradient: 'from-red-950/90 via-rose-950/70 to-slate-950/90',
+    borderColor: 'border-red-500/50 hover:border-red-400/90',
+    textColor: 'text-red-200 group-hover:text-white',
+    glowClass: 'hover:shadow-[0_0_18px_rgba(239,68,68,0.45)] hover:ring-1 hover:ring-red-400/40',
+    badgeBg: 'bg-red-500/30 border border-red-400/50 text-red-200',
+  },
+  FREE_EXCHANGE: {
+    icon: cardIcon('FREE_EXCHANGE', 'h-4 w-4 text-teal-300', '×2'),
+    label: 'Free Exchange',
+    ownTurnOnly: false,
+    bgGradient: 'from-teal-950/90 via-cyan-950/70 to-slate-950/90',
+    borderColor: 'border-teal-500/50 hover:border-teal-400/90',
+    textColor: 'text-teal-200 group-hover:text-white',
+    glowClass: 'hover:shadow-[0_0_18px_rgba(20,184,166,0.45)] hover:ring-1 hover:ring-teal-400/40',
+    badgeBg: 'bg-teal-500/30 border border-teal-400/50 text-teal-200',
+  },
+  DRAW_TILE: {
+    icon: cardIcon('DRAW_TILE', 'h-4 w-4 text-lime-300', '×2'),
+    label: 'Draw Tile',
+    ownTurnOnly: false,
+    bgGradient: 'from-lime-950/90 via-green-950/70 to-slate-950/90',
+    borderColor: 'border-lime-500/50 hover:border-lime-400/90',
+    textColor: 'text-lime-200 group-hover:text-white',
+    glowClass: 'hover:shadow-[0_0_18px_rgba(132,204,22,0.45)] hover:ring-1 hover:ring-lime-400/40',
+    badgeBg: 'bg-lime-500/30 border border-lime-400/50 text-lime-200',
+  },
+  MOVE_HEAL: {
+    icon: cardIcon('MOVE_HEAL', 'h-4 w-4 text-fuchsia-300', '×2'),
+    label: 'Move Heal',
+    ownTurnOnly: true,
+    bgGradient: 'from-fuchsia-950/90 via-purple-950/70 to-slate-950/90',
+    borderColor: 'border-fuchsia-500/50 hover:border-fuchsia-400/90',
+    textColor: 'text-fuchsia-200 group-hover:text-white',
+    glowClass: 'hover:shadow-[0_0_18px_rgba(217,70,239,0.45)] hover:ring-1 hover:ring-fuchsia-400/40',
+    badgeBg: 'bg-fuchsia-500/30 border border-fuchsia-400/50 text-fuchsia-200',
+  },
 };
 
 interface PowerCardBarProps {
@@ -108,6 +151,8 @@ interface PowerCardBarProps {
   onUseTargeted: (card: TargetedCard, targetPlayerId: string) => void;
   onUseSpySwap: (targetPlayerId: string, ownTileIds: string[], targetTileIndices: number[]) => void;
   onUseBanLetter: (letter: string) => void;
+  /** MOVE_HEAL heals by the staged word's value, so the caller supplies the staged tiles. */
+  onUseMoveHeal: () => void;
   onArmBoardCard: (card: BoardCard) => void;
   onCancelArm: () => void;
   onConfirmArmedCell: () => void;
@@ -129,6 +174,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   onUseTargeted,
   onUseSpySwap,
   onUseBanLetter,
+  onUseMoveHeal,
   onArmBoardCard,
   onCancelArm,
   onConfirmArmedCell,
@@ -141,7 +187,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   const [spyOwnTileIds, setSpyOwnTileIds] = useState<string[]>([]);
   const [spyTargetPlayerId, setSpyTargetPlayerId] = useState<string | null>(null);
   const [spyTargetTileIndices, setSpyTargetTileIndices] = useState<number[]>([]);
-  const [confirmingSimpleCard, setConfirmingSimpleCard] = useState<SimpleCard | null>(null);
+  const [confirmingSimpleCard, setConfirmingSimpleCard] = useState<ConfirmableCard | null>(null);
 
   const counts = new Map<string, number>();
   for (const card of cards) {
@@ -603,8 +649,10 @@ export const PowerCardBar = memo(function PowerCardBar({
                 setSpyOwnTileIds([]);
               } else if (card === 'BAN_LETTER') {
                 setPickingLetter(true);
+              } else if (card === 'MOVE_HEAL') {
+                onUseMoveHeal();
               } else if (card === 'HEAL' || card === 'HINT' || card === 'SHIELD') {
-                setConfirmingSimpleCard(card as SimpleCard);
+                setConfirmingSimpleCard(card);
               } else {
                 onUseSimple(card as SimpleCard);
               }

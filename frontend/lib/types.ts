@@ -34,7 +34,11 @@ export interface Player {
   rack_count: number;
   rack?: Tile[];
   cards?: string[] | null;
+  is_bot?: boolean;
+  bot_difficulty?: BotDifficulty | null;
 }
+
+export type BotDifficulty = 'easy' | 'medium' | 'hard';
 
 export interface GameState {
   game_id: string;
@@ -145,6 +149,7 @@ export interface HintSuggestion {
 /** Mirrors backend MoveService.CARD_TYPES (backend/app/services/move_service.py). */
 export const CARD_TYPES = [
   'HINT', 'SPY_SWAP', 'DESTROY_TILE', 'HEAL', 'DOUBLE_DAMAGE', 'SHIELD', 'FREEZE_TILE',
+  'BAN_LETTER', 'FREE_EXCHANGE', 'DRAW_TILE', 'MOVE_HEAL',
 ] as const;
 
 export interface WordFormed {

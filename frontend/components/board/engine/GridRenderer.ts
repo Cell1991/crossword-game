@@ -17,9 +17,12 @@ export interface GridRenderContext {
 }
 
 const NUM_GRID_BUCKETS = 16;
-const BUCKET_CAPACITY = 8000;
-const gridBuffer = new Float32Array(NUM_GRID_BUCKETS * BUCKET_CAPACITY);
-const gridCounts = new Int32Array(NUM_GRID_BUCKETS);
+/**
+ * Grid line segments grouped by alpha. Reused across frames and only truncated, never
+ * reallocated, so a steady-state frame allocates nothing while the board stays free to grow:
+ * the fixed-capacity buffer this replaces silently dropped lines once a view exceeded it.
+ */
+const gridBuckets: number[][] = Array.from({ length: NUM_GRID_BUCKETS }, () => []);
 
 function drawRoundedRect(
   ctx: CanvasRenderingContext2D,
@@ -44,20 +47,30 @@ export class GridRenderer {
 
     ctx.save();
 
-    // 1. Special cell background fills (2L, 3L, Power, Center Star)
+    // 1. Special cell fills (2L, 3L, Power, Center Star), collecting each cell's grid lines in
+    //    the same pass: the alpha drives both, and computing it once per cell halves the work.
+    for (const bucket of gridBuckets) bucket.length = 0;
+
     for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
       for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
+        const lineAlpha = model.getCellAlpha(r, c);
+        if (lineAlpha <= 0.005) continue;
+
+        const x = offset.x + c * cellSize;
+        const y = offset.y + r * cellSize;
+
+        const bucketIndex = Math.min(NUM_GRID_BUCKETS - 1, Math.floor(lineAlpha * NUM_GRID_BUCKETS));
+        gridBuckets[bucketIndex].push(
+          x, y, x + cellSize, y,          // top horizontal segment
+          x, y, x, y + cellSize,          // left vertical segment
+        );
+
         const isCenter = r === CENTER_ROW && c === CENTER_COL;
         const isTriple = isTripleLetterCell(r, c);
         const isDouble = isDoubleLetterCell(r, c);
         const isPower = isPowerCell(r, c);
 
         if (isTriple || isDouble || isPower || isCenter) {
-          const lineAlpha = model.getCellAlpha(r, c);
-          if (lineAlpha <= 0.005) continue;
-
-          const x = offset.x + c * cellSize;
-          const y = offset.y + r * cellSize;
           const specialRadius = Math.max(3, cellSize * 0.12);
 
           ctx.globalAlpha = lineAlpha;
@@ -99,45 +112,17 @@ export class GridRenderer {
       }
     }
 
-    // 2. Batched zero-allocation grid line stroke with smooth alpha buckets
-    gridCounts.fill(0);
-    for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
-      for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
-        const lineAlpha = model.getCellAlpha(r, c);
-        if (lineAlpha <= 0.005) continue;
-
-        const bucket = Math.min(NUM_GRID_BUCKETS - 1, Math.floor(lineAlpha * NUM_GRID_BUCKETS));
-        const count = gridCounts[bucket];
-        if (count + 8 < BUCKET_CAPACITY) {
-          const base = bucket * BUCKET_CAPACITY + count;
-          const x = offset.x + c * cellSize;
-          const y = offset.y + r * cellSize;
-          // Top horizontal segment
-          gridBuffer[base] = x;
-          gridBuffer[base + 1] = y;
-          gridBuffer[base + 2] = x + cellSize;
-          gridBuffer[base + 3] = y;
-          // Left vertical segment
-          gridBuffer[base + 4] = x;
-          gridBuffer[base + 5] = y;
-          gridBuffer[base + 6] = x;
-          gridBuffer[base + 7] = y + cellSize;
-          gridCounts[bucket] += 8;
-        }
-      }
-    }
-
+    // 2. Stroke the collected grid lines, one batched path per alpha bucket.
     ctx.strokeStyle = 'rgba(245, 190, 72, 0.24)';
     ctx.lineWidth = 1;
     for (let b = 0; b < NUM_GRID_BUCKETS; b++) {
-      const count = gridCounts[b];
-      if (count === 0) continue;
+      const segments = gridBuckets[b];
+      if (segments.length === 0) continue;
       ctx.globalAlpha = (b + 0.5) / NUM_GRID_BUCKETS;
       ctx.beginPath();
-      const base = b * BUCKET_CAPACITY;
-      for (let i = 0; i < count; i += 4) {
-        ctx.moveTo(gridBuffer[base + i], gridBuffer[base + i + 1]);
-        ctx.lineTo(gridBuffer[base + i + 2], gridBuffer[base + i + 3]);
+      for (let i = 0; i < segments.length; i += 4) {
+        ctx.moveTo(segments[i], segments[i + 1]);
+        ctx.lineTo(segments[i + 2], segments[i + 3]);
       }
       ctx.stroke();
     }

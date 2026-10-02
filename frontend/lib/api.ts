@@ -1,4 +1,5 @@
 import {
+  BotDifficulty,
   CreateRoomResponse,
   JoinRoomResponse,
   RoomDetailResponse,
@@ -172,11 +173,21 @@ export async function expireTurn(gameId: string): Promise<{ expired: boolean }> 
   return res.json();
 }
 
-export async function joinRoom(gamePin: string, playerName: string): Promise<JoinRoomResponse> {
+/** Seats a player in a room. Pass `bot` to seat an AI opponent at the given difficulty. */
+export async function joinRoom(
+  gamePin: string,
+  playerName: string,
+  bot?: { difficulty: BotDifficulty },
+): Promise<JoinRoomResponse> {
   const res = await fetch(`${getApiBase()}/rooms/${gamePin}/join`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ game_pin: gamePin, player_name: playerName }),
+    body: JSON.stringify({
+      game_pin: gamePin,
+      player_name: playerName,
+      is_bot: Boolean(bot),
+      bot_difficulty: bot?.difficulty ?? null,
+    }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

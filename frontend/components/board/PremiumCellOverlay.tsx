@@ -13,6 +13,15 @@ import { BoardCamera } from '@/hooks/useBoardCamera';
 import { BoardModel } from '@/lib/engine/boardModel';
 
 const toCells = (keys: Set<string>) => [...keys].map((key) => key.split('_').map(Number) as [number, number]);
+
+/**
+ * Lets the browser skip rendering (and animating) a badge's contents while it sits out of view.
+ * Panning moves this layer by CSS transform without re-rendering React, so culling these nodes in
+ * JS would mean putting camera coordinates into React state and re-rendering every frame;
+ * content-visibility gets the same saving natively and keeps the camera decoupled. Safe without
+ * contain-intrinsic-size because every badge is absolutely positioned at a fixed width and height.
+ */
+const CULL_OFFSCREEN: React.CSSProperties = { contentVisibility: 'auto', contain: 'content' };
 const POWER_CELLS = toCells(SECRET_POWER);
 const DOUBLE_CELLS = toCells(DOUBLE_LETTER);
 const TRIPLE_CELLS = toCells(TRIPLE_LETTER);
@@ -102,6 +111,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
                 animationDelay: `${-((row * 5 + col * 3) % 13) / 10}s`,
                 opacity: alpha,
                 filter: isSolid ? 'brightness(1.15)' : undefined,
+                ...CULL_OFFSCREEN,
               }}
             >
               <span className="board-lightning-halo absolute left-1/2 top-1/2 h-[64%] w-[64%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
@@ -138,6 +148,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
                 borderRadius: isEcho ? '6px' : '4px',
                 opacity: alpha,
                 filter: isSolid ? 'brightness(1.1)' : undefined,
+                ...CULL_OFFSCREEN,
               }}
             >
               <span className="board-fire-core absolute inset-[18%] rounded-full bg-red-400/40 pointer-events-none" />
@@ -172,6 +183,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
                 borderRadius: isEcho ? '6px' : '4px',
                 opacity: alpha,
                 filter: isSolid ? 'brightness(1.1)' : undefined,
+                ...CULL_OFFSCREEN,
               }}
             >
               <span className="board-earth-glow absolute inset-[12%] rounded-full pointer-events-none" />

@@ -121,6 +121,11 @@ async def test_current_player_leaving_advances_turn():
         joined = (await client.post(f"/api/rooms/{created['game_pin']}/join", json={
             "game_pin": created["game_pin"], "player_name": "Bob"
         })).json()
+        # Three seats: leaving a two-seat game now dissolves the match, so the turn would have
+        # nowhere to advance to. A third player keeps it alive to show the turn actually moving on.
+        await client.post(f"/api/rooms/{created['game_pin']}/join", json={
+            "game_pin": created["game_pin"], "player_name": "Carol"
+        })
         await client.post(f"/api/rooms/{created['game_pin']}/start", headers={"X-Player-ID": created["host_player_id"]})
 
         response = await client.post(

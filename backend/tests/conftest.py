@@ -200,9 +200,19 @@ async def open_table(client):
         room = created.json()
         seats = [Seat(room["host_player_id"], room["session_token"], host_name)]
         for name in guest_names:
-            joined = await client.post(
-                f"/api/rooms/{room['game_pin']}/join", json={"game_pin": room["game_pin"], "player_name": name}
-            )
+            # A name tagged "[Bot]" seats an AI opponent the way the Play-vs-Bot screen does, with
+            # SparkBot/Nexus/Titan picking easy/medium/hard to match that lobby's profiles.
+            body: dict[str, Any] = {"game_pin": room["game_pin"], "player_name": name}
+            lowered = name.lower()
+            if "[bot]" in lowered or "[ai]" in lowered:
+                body["is_bot"] = True
+                if "spark" in lowered:
+                    body["bot_difficulty"] = "easy"
+                elif "titan" in lowered:
+                    body["bot_difficulty"] = "hard"
+                else:
+                    body["bot_difficulty"] = "medium"
+            joined = await client.post(f"/api/rooms/{room['game_pin']}/join", json=body)
             assert joined.status_code == 200, joined.text
             seats.append(Seat(joined.json()["player_id"], joined.json()["session_token"], name))
         table = GameTable(client, room["game_id"], room["game_pin"], seats)

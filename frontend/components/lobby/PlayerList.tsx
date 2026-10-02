@@ -32,7 +32,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({ players, myPlayerId, max
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {players.map((p) => {
           const isMe = p.id === myPlayerId;
-          const isBot = p.display_name.toLowerCase().includes('bot') || p.display_name.toLowerCase().includes('[ai]');
+          const isBot = Boolean(p.is_bot);
           return (
             <motion.div
               key={p.id}

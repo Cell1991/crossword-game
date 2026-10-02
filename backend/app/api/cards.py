@@ -149,18 +149,6 @@ async def use_card(
         player.hp = min(max_cap, player.hp + sum(int(tile["value"]) for tile in await player_rack(db, player.id)))
         return {"success": True, "hp": player.hp}
 
-    if card == "STEAL_TILE":
-        target = await _target_player(db, game_id, request.target_player_id, player.id)
-        target_rack = await player_rack(db, target.id)
-        if not target_rack:
-            return {"success": True, "stolen": False}
-        stolen = random.choice(target_rack)
-        target.rack = [tile for tile in target_rack if tile["id"] != stolen["id"]]
-        player.rack = await player_rack(db, player.id) + [stolen]
-        players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
-        await replace_game_tiles(db, game.id, game.tile_bag, players)
-        return {"success": True, "stolen": True}
-
     if card == "SPY_SWAP":
         target = await _target_player(db, game_id, request.target_player_id, player.id)
         player_rack_items = await player_rack(db, player.id)

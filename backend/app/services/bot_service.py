@@ -8,8 +8,9 @@ from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import select
 from fastapi import HTTPException
 
+from app.core.config import settings
 from app.database.models import Game, GamePlayer
-from app.database.state import player_rack, board_state
+from app.database.state import bag_tiles, player_rack, board_state
 from app.game.hint import find_hint_suggestions
 from app.schemas.move import PlacedTileInput
 from app.services.move_service import MoveService
@@ -18,18 +19,30 @@ from app.services.game_service import GameService
 
 class BotService:
 
-    @staticmethod
-    def is_bot_player(player: GamePlayer | None) -> bool:
-        if not player or not player.display_name:
-            return False
-        name_lower = player.display_name.lower()
-        return "[bot]" in name_lower or "[ai]" in name_lower or "bot" in name_lower
+    DIFFICULTIES = ("easy", "medium", "hard")
 
     @staticmethod
-    def get_difficulty_from_name(display_name: str | None) -> str:
-        if not display_name:
-            return "medium"
-        name_lower = display_name.lower()
+    def is_bot_player(player: GamePlayer | None) -> bool:
+        """
+        Whether this seat is played by the AI, from the stored flag. Seats created before that flag
+        existed fall back to the old display-name tag so games already in flight keep running - a
+        substring match on "bot" is deliberately not used, since it also catches human names.
+        """
+        if not player:
+            return False
+        stored = getattr(player, "is_bot", None)
+        if stored is not None:
+            return bool(stored)
+        name_lower = (player.display_name or "").lower()
+        return "[bot]" in name_lower or "[ai]" in name_lower
+
+    @classmethod
+    def difficulty_of(cls, player: GamePlayer | None) -> str:
+        """The level this bot plays at, falling back to medium for anything unrecognised."""
+        stored = (getattr(player, "bot_difficulty", None) or "").lower()
+        if stored in cls.DIFFICULTIES:
+            return stored
+        name_lower = (getattr(player, "display_name", "") or "").lower()
         if "spark" in name_lower or "easy" in name_lower or "novice" in name_lower:
             return "easy"
         if "titan" in name_lower or "hard" in name_lower or "master" in name_lower:
@@ -73,9 +86,9 @@ class BotService:
         if not cls.is_bot_player(current_player):
             raise HTTPException(status_code=400, detail="Current turn is not assigned to a Bot")
 
-        difficulty = (requested_difficulty or cls.get_difficulty_from_name(current_player.display_name) or "medium").lower()
-        if difficulty not in ("easy", "medium", "hard"):
-            difficulty = "medium"
+        difficulty = (requested_difficulty or "").lower()
+        if difficulty not in cls.DIFFICULTIES:
+            difficulty = cls.difficulty_of(current_player)
 
         # Load rack and board state
         rack = await player_rack(db, current_player.id)
@@ -117,46 +130,58 @@ class BotService:
                         "tiles": matched_tiles,
                     }
 
-        # If current rack could not form any valid move, generate a guaranteed valid move!
-        # The bot NEVER passes: it always finds and places a valid word matching its difficulty.
-        return await cls._generate_guaranteed_bot_move(db, game, current_player, board, rack, difficulty)
+        # Nothing playable from this rack. A bot plays by the same rules as everyone else, so it
+        # takes the same way out a human would: swap tiles if the bag allows, otherwise pass.
+        bag = await bag_tiles(db, game_id)
+        if len(bag) >= settings.MIN_BAG_TILES_TO_EXCHANGE:
+            return {
+                "action": "EXCHANGE",
+                "bot_player_id": current_player.id,
+                "bot_name": current_player.display_name,
+                "difficulty": difficulty,
+                "tile_ids": [str(t.get("id") or t.get("tile_id")) for t in rack],
+            }
+        return {
+            "action": "PASS",
+            "bot_player_id": current_player.id,
+            "bot_name": current_player.display_name,
+            "difficulty": difficulty,
+        }
 
     @classmethod
     def _order_candidates_by_difficulty(
         cls, candidates: list[dict[str, Any]], difficulty: str
     ) -> list[dict[str, Any]]:
         """
-        Orders candidate moves strictly based on user-calibrated score targets:
-        - Easy (SparkBot): Target 2 to 10 points per turn. Simple words without length limitation.
-        - Medium (Nexus AI): Target 2 to 15 points per turn. Higher average score than Easy.
-        - Hard (Titan AI): 2 to Maximum points per turn. Top scoring moves with maximum average.
+        Order candidate moves most-preferred first for `difficulty`. Every candidate is kept so the
+        caller can fall through the list when a preferred one will not match the rack.
+
+        Each level picks by *rank* among what this rack can actually reach, not by an absolute point
+        band. Bands do not survive contact with a real board: capping medium at "2-15 points" meant
+        that whenever the board offered nothing above 15, medium took the single best move while hard
+        randomised among its top two - so medium outscored hard.
+        - Easy (SparkBot): plays from the weak end, varied so it is not always the same word.
+        - Medium (Nexus AI): strong, but gives up the very best move available.
+        - Hard (Titan AI): always the highest-scoring move it can find.
         """
         if not candidates:
             return []
 
-        sorted_by_score = list(candidates)
+        ranked = sorted(candidates, key=lambda c: c.get("score", 0), reverse=True)
 
-        if difficulty == "easy":
-            # Easy target: 2 - 10 points per turn
-            pool = [c for c in sorted_by_score if 2 <= c.get("score", 0) <= 10]
-            random.shuffle(pool)
-            remainder = sorted(sorted_by_score, key=lambda c: abs(c.get("score", 0) - 6))
-            return pool + [c for c in remainder if c not in pool]
+        if difficulty == "hard":
+            return ranked
 
         if difficulty == "medium":
-            # Medium target: 2 - 15 points per turn (with higher average around 8-15)
-            pool = [c for c in sorted_by_score if 2 <= c.get("score", 0) <= 15]
-            # Sort descending to favor the higher end of the 2-15 range
-            pool.sort(key=lambda c: c.get("score", 0), reverse=True)
-            remainder = sorted(sorted_by_score, key=lambda c: abs(c.get("score", 0) - 13))
-            return pool + [c for c in remainder if c not in pool]
+            # Hold back the top slice so Titan stays ahead, then play the best of what is left.
+            held_back = max(1, len(ranked) // 4)
+            return ranked[held_back:] + ranked[:held_back]
 
-        # Hard: 2 to Maximum points per turn (highest scoring moves first)
-        hard_pool = [c for c in sorted_by_score if c.get("score", 0) >= 2]
-        hard_pool.sort(key=lambda c: c.get("score", 0), reverse=True)
-        top = hard_pool[:2]
-        random.shuffle(top)
-        return top + hard_pool[2:]
+        # Easy: weakest first, shuffling the bottom few for variety between turns.
+        weakest_first = ranked[::-1]
+        head = weakest_first[:3]
+        random.shuffle(head)
+        return head + weakest_first[3:]
 
     @staticmethod
     def _match_tiles_to_rack(rack: list[dict[str, Any]], tiles_to_place: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -196,254 +221,62 @@ class BotService:
 
         return result
 
-    @classmethod
-    async def _ensure_bot_rack_has_tiles(
-        cls,
-        db: AsyncSession,
-        current_player: GamePlayer,
-        tiles_needed: list[dict[str, Any]],
-    ) -> list[dict[str, Any]]:
-        import uuid
-        from app.game.tiles import DEFAULT_LETTER_VALUES
-
-        rack = list(current_player.rack or [])
-        matched_result = []
-        available = list(rack)
-
-        # 1. Match tiles already in rack
-        unmatched_needed = []
-        for t in tiles_needed:
-            letter = str(t["letter"]).upper()
-            found_idx = None
-            for idx, r in enumerate(available):
-                if str(r.get("letter", "")).upper() == letter:
-                    found_idx = idx
-                    break
-            if found_idx is not None:
-                matched_tile = available.pop(found_idx)
-                matched_result.append({
-                    "row": int(t["row"]),
-                    "col": int(t["col"]),
-                    "letter": letter,
-                    "value": int(matched_tile.get("value", DEFAULT_LETTER_VALUES.get(letter, 1))),
-                    "tile_id": str(matched_tile.get("id") or matched_tile.get("tile_id") or uuid.uuid4().hex[:8]),
-                })
-            else:
-                unmatched_needed.append(t)
-
-        # 2. For remaining needed letters, adjust unused tiles in available
-        if unmatched_needed:
-            for t in unmatched_needed:
-                letter = str(t["letter"]).upper()
-                val = DEFAULT_LETTER_VALUES.get(letter, 1)
-                if available:
-                    borrowed = available.pop(0)
-                    borrowed_id = str(borrowed.get("id") or borrowed.get("tile_id") or "")
-                    for r in rack:
-                        if str(r.get("id") or r.get("tile_id") or "") == borrowed_id:
-                            r["letter"] = letter
-                            r["value"] = val
-                            matched_result.append({
-                                "row": int(t["row"]),
-                                "col": int(t["col"]),
-                                "letter": letter,
-                                "value": val,
-                                "tile_id": borrowed_id or str(uuid.uuid4())[:8],
-                            })
-                            break
-                else:
-                    new_id = str(uuid.uuid4())[:8]
-                    new_tile = {"id": new_id, "letter": letter, "value": val}
-                    rack.append(new_tile)
-                    matched_result.append({
-                        "row": int(t["row"]),
-                        "col": int(t["col"]),
-                        "letter": letter,
-                        "value": val,
-                        "tile_id": new_id,
-                    })
-
-            current_player.rack = [dict(t) for t in rack]
-            from sqlalchemy.orm.attributes import flag_modified
-            flag_modified(current_player, "rack")
-            await db.commit()
-
-        return matched_result
 
     @classmethod
-    async def _generate_guaranteed_bot_move(
-        cls,
-        db: AsyncSession,
-        game: Game,
-        current_player: GamePlayer,
-        board: dict[str, dict[str, Any]],
-        rack: list[dict[str, Any]],
-        difficulty: str,
+    async def _take_scoreless_turn(
+        cls, db: AsyncSession, game_id: str, bot_id: str, plan: dict[str, Any]
     ) -> dict[str, Any]:
-        """
-        Guaranteed bot move generator:
-        Ensures the bot NEVER passes or exchanges without placing tiles.
-        Searches all valid word attachments on the board, selects a move appropriate
-        for the difficulty setting, updates the bot's rack with the required tiles,
-        and returns action: MOVE.
-        """
-        from app.game.rules import RuleEngine
-        from app.game.dictionary import dictionary_service
-        from app.game.board import Board
-        from app.game.tiles import DEFAULT_LETTER_VALUES
+        """Spend the bot's turn on an exchange (or a pass) and broadcast it like a human's."""
+        from app.websocket.connection_manager import manager
+        from app.schemas.events import WebSocketEvent, EventType
 
-        valid_moves: list[dict[str, Any]] = []
-        is_first = len(board) == 0
-
-        if is_first:
-            # Case 1: First Move on Empty Board (must cover center (9, 13))
-            center_r, center_c = Board.CENTER[0], Board.CENTER[1]
-            if difficulty == "easy":
-                target_words = ["CAT", "DOG", "SUN", "RED", "TEA", "BOX", "RUN", "BAT", "CUP", "MAP"]
-            elif difficulty == "medium":
-                target_words = ["PLAY", "GAME", "WORD", "STAR", "GOLD", "BLUE", "FIRE", "TIME", "WIND"]
+        tile_ids = plan.get("tile_ids") or []
+        if plan.get("action") == "EXCHANGE" and tile_ids:
+            game, exchanged, is_over, reason, winner_id = await GameService.exchange_tiles(
+                db, game_id, bot_id, tile_ids
+            )
+            if exchanged:
+                await manager.broadcast(game_id, WebSocketEvent(
+                    type=EventType.TILES_EXCHANGED,
+                    payload={
+                        "playerId": bot_id,
+                        "count": len(tile_ids),
+                        "nextPlayerId": game.current_player_id,
+                        "turnNumber": game.turn_number,
+                    },
+                ).model_dump())
+                action = "EXCHANGE"
             else:
-                target_words = ["PLANET", "MASTER", "SILVER", "KNIGHT", "GALAXY", "STREAM", "ROCKET"]
-
-            for w in target_words:
-                w_len = len(w)
-                start_c = center_c - (w_len // 2)
-                placed = [
-                    {"row": center_r, "col": start_c + i, "letter": w[i], "value": DEFAULT_LETTER_VALUES.get(w[i], 1)}
-                    for i in range(w_len)
-                ]
-                valid, _, _, score, _ = RuleEngine.validate_move({}, placed, is_first_move=True)
-                if valid:
-                    valid_moves.append({"word": w, "score": score, "direction": "across", "tiles": placed})
-                    break
+                # Rules §5: asking for more tiles than the bag holds forfeits the turn as a pass.
+                action = "PASS"
         else:
-            # Case 2: Active Board (connect to existing committed tiles)
-            occupied = {(c["row"], c["col"]): c["letter"].upper() for c in board.values()}
-            occupied_items = list(occupied.items())
-            random.shuffle(occupied_items)
+            game, is_over, reason, winner_id = await GameService.pass_turn(db, game_id, bot_id)
+            action = "PASS"
 
-            # Search every anchor: a small random sample can miss a legal attachment and
-            # incorrectly make the bot pass even though playable words remain.
-            for (r, c), char in occupied_items:
-                char_words = cls._get_words_for_char(char)
-                for w in char_words:
-                    w_len = len(w)
-                    # 1. Horizontal placements
-                    for offset in range(w_len):
-                        if w[offset] != char:
-                            continue
-                        start_c = c - offset
-                        end_c = start_c + w_len
-                        if (r, start_c - 1) in occupied or (r, end_c) in occupied:
-                            continue
-                        matches = True
-                        placed = []
-                        for i in range(w_len):
-                            pos = (r, start_c + i)
-                            if pos in occupied:
-                                if occupied[pos] != w[i]:
-                                    matches = False
-                                    break
-                            else:
-                                placed.append({
-                                    "row": r,
-                                    "col": start_c + i,
-                                    "letter": w[i],
-                                    "value": DEFAULT_LETTER_VALUES.get(w[i], 1),
-                                })
-                        if not matches or not placed:
-                            continue
-                        valid, _, _, score, _ = RuleEngine.validate_move(board, placed, is_first_move=False)
-                        if valid:
-                            valid_moves.append({"word": w, "score": score, "direction": "across", "tiles": placed})
-                            if len(valid_moves) >= 30:
-                                break
+        if action == "PASS":
+            await manager.broadcast(game_id, WebSocketEvent(
+                type=EventType.TURN_PASSED,
+                payload={
+                    "passedPlayerId": bot_id,
+                    "nextPlayerId": game.current_player_id,
+                    "turnNumber": game.turn_number,
+                    "consecutivePasses": game.consecutive_passes,
+                },
+            ).model_dump())
 
-                    if len(valid_moves) >= 30:
-                        break
-
-                    # 2. Vertical placements
-                    for offset in range(w_len):
-                        if w[offset] != char:
-                            continue
-                        start_r = r - offset
-                        end_r = start_r + w_len
-                        if (start_r - 1, c) in occupied or (end_r, c) in occupied:
-                            continue
-                        matches = True
-                        placed = []
-                        for i in range(w_len):
-                            pos = (start_r + i, c)
-                            if pos in occupied:
-                                if occupied[pos] != w[i]:
-                                    matches = False
-                                    break
-                            else:
-                                placed.append({
-                                    "row": start_r + i,
-                                    "col": c,
-                                    "letter": w[i],
-                                    "value": DEFAULT_LETTER_VALUES.get(w[i], 1),
-                                })
-                        if not matches or not placed:
-                            continue
-                        valid, _, _, score, _ = RuleEngine.validate_move(board, placed, is_first_move=False)
-                        if valid:
-                            valid_moves.append({"word": w, "score": score, "direction": "down", "tiles": placed})
-                            if len(valid_moves) >= 30:
-                                break
-
-                    if len(valid_moves) >= 30:
-                        break
-
-                if len(valid_moves) >= 30:
-                    break
-
-        if not valid_moves:
-            # Absolute fallback if no valid words could be formed
-            return {
-                "action": "PASS",
-                "bot_player_id": current_player.id,
-                "bot_name": current_player.display_name,
-                "difficulty": difficulty,
-            }
-
-        # Sort valid moves by score descending
-        valid_moves.sort(key=lambda m: m["score"], reverse=True)
-
-        if difficulty == "easy":
-            # Easy target: 2 - 10 points per turn
-            pool = [m for m in valid_moves if 2 <= m["score"] <= 10]
-            if pool:
-                chosen = random.choice(pool)
-            else:
-                chosen = sorted(valid_moves, key=lambda m: abs(m["score"] - 6))[0]
-        elif difficulty == "medium":
-            # Medium target: 2 - 15 points per turn (with higher average around 8-15)
-            pool = [m for m in valid_moves if 2 <= m["score"] <= 15]
-            if pool:
-                pool.sort(key=lambda m: m["score"], reverse=True)
-                upper_half = pool[:max(1, len(pool) // 2)]
-                chosen = random.choice(upper_half)
-            else:
-                chosen = sorted(valid_moves, key=lambda m: abs(m["score"] - 13))[0]
-        else:
-            # Hard: 2 to Maximum points per turn (highest scoring moves first)
-            top_candidates = valid_moves[:min(3, len(valid_moves))]
-            chosen = random.choice(top_candidates)
-
-        # Ensure bot's rack contains the tiles needed for this move
-        matched_tiles = await cls._ensure_bot_rack_has_tiles(db, current_player, chosen["tiles"])
+        if is_over:
+            await manager.broadcast(game_id, WebSocketEvent(
+                type=EventType.GAME_ENDED,
+                payload={"reason": reason or "Game completed", "winnerId": winner_id},
+            ).model_dump())
 
         return {
-            "action": "MOVE",
-            "bot_player_id": current_player.id,
-            "bot_name": current_player.display_name,
-            "difficulty": difficulty,
-            "word": chosen["word"],
-            "score": chosen["score"],
-            "direction": chosen["direction"],
-            "tiles": matched_tiles,
+            "status": "success",
+            "action": action,
+            "score_earned": 0,
+            "next_player_id": None if is_over else game.current_player_id,
+            "turn_number": game.turn_number,
+            "word": None,
         }
 
     @classmethod
@@ -466,12 +299,21 @@ class BotService:
 
         action = plan.get("action", "MOVE")
         tiles_data = plan.get("tiles", [])
-        if action != "MOVE" or not tiles_data:
-            plan = await cls.plan_bot_move(db, game_id, difficulty)
-            tiles_data = plan.get("tiles", [])
 
-        if not tiles_data:
-            return None
+        # No playable word: take the turn the way a human would rather than stalling it. Leaving
+        # this unhandled is what used to hang a bot game on an awkward rack.
+        if action != "MOVE" or not tiles_data:
+            outcome = await cls._take_scoreless_turn(db, game_id, bot_id, plan)
+            await db.commit()
+            next_player_id = outcome["next_player_id"]
+            if next_player_id:
+                stmt_next = select(GamePlayer).where(GamePlayer.id == next_player_id)
+                next_p = (await db.execute(stmt_next)).scalar_one_or_none()
+                if cls.is_bot_player(next_p):
+                    asyncio.create_task(
+                        cls.schedule_auto_bot_turn(game_id, next_p.id, outcome["turn_number"], delay_seconds=6.0)
+                    )
+            return outcome
 
         placed_tiles = [PlacedTileInput(**t) for t in tiles_data]
         res, game, player = await MoveService.commit_move(db, game_id, bot_id, placed_tiles)

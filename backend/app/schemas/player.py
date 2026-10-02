@@ -19,3 +19,5 @@ class PlayerOut(BaseModel):
     rack_count: int = 0
     rack: Optional[list[TileSchema]] = None  # Populated only for the requesting player
     cards: Optional[list[str]] = None
+    is_bot: bool = False
+    bot_difficulty: Optional[str] = None

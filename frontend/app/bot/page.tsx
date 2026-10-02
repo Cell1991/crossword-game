@@ -91,7 +91,7 @@ export default function BotRoomCreationPage() {
       });
 
       try {
-        await joinRoom(res.game_pin, botDisplayName);
+        await joinRoom(res.game_pin, botDisplayName, { difficulty: botDifficulty });
         await startGame(res.game_pin, res.host_player_id);
         router.push(`/game/${res.game_id}`);
       } catch (startErr) {

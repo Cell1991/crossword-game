@@ -45,6 +45,10 @@ class UpdateRoomRequest(BaseModel):
 class JoinRoomRequest(BaseModel):
     game_pin: str = Field(..., min_length=6, max_length=6, description="6-digit numeric game PIN")
     player_name: str = Field(..., min_length=1, max_length=32, description="Display name of the player")
+    is_bot: bool = Field(False, description="Seat this player as an AI opponent")
+    bot_difficulty: Optional[Literal["easy", "medium", "hard"]] = Field(
+        None, description="How hard the AI plays; ignored unless is_bot is set"
+    )
 
 class JoinRoomResponse(BaseModel):
     game_id: str
