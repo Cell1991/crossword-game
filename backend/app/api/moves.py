@@ -50,6 +50,7 @@ async def commit_move(
             "boardState": game.board_state,
             "pendingEffect": game.pending_effect,
             "cardAwarded": res.card_awarded,
+            "cardsAwarded": res.cards_awarded,
         }
     ).model_dump())
 

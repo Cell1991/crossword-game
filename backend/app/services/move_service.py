@@ -349,13 +349,18 @@ class MoveService:
         # Award score
         player.score += score
 
-        card_awarded = None
-        if any(Board.is_power_cell(pt.row, pt.col) for pt in placed_tiles):
+        cards_awarded: list[str] = []
+        power_cells_hit = [pt for pt in placed_tiles if Board.is_power_cell(pt.row, pt.col)]
+        if power_cells_hit:
             cards = list(player.cards or [])
-            if len(cards) < 3:
-                card_awarded = random.choice(cls.card_pool(game))
-                cards.append(card_awarded)
-                player.cards = cards
+            pool = cls.card_pool(game)
+            for _ in power_cells_hit:
+                if len(cards) < 3:
+                    new_card = random.choice(pool)
+                    cards.append(new_card)
+                    cards_awarded.append(new_card)
+            player.cards = cards
+            flag_modified(player, "cards")
 
         words_formed = cls._words_formed(words, breakdown)
 
@@ -446,7 +451,8 @@ class MoveService:
             next_player_id=next_player_id,
             game_over=game_over,
             winner_id=winner,
-            card_awarded=card_awarded,
+            card_awarded=cards_awarded[0] if cards_awarded else None,
+            cards_awarded=cards_awarded,
         )
 
         return res, game, player

@@ -171,6 +171,7 @@ export interface CommitMoveResponse {
   game_over?: boolean;
   winner_id?: string | null;
   card_awarded?: string | null;
+  cards_awarded?: string[];
 }
 
 export interface CreateRoomResponse {
@@ -287,6 +288,7 @@ export interface WebSocketEvent {
     card?: string;
     /** MOVE_COMMITTED: the private-card reveal animation follows this event. */
     cardAwarded?: string | null;
+    cardsAwarded?: string[];
     /** EFFECT_RESOLVED: HP damage applied per player */
     applied?: Record<string, number>;
     [key: string]: unknown;

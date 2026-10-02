@@ -147,11 +147,23 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
         loadGameState();
         const wordsFormed = event.payload?.wordsFormed ?? [];
         if (event.type === 'MOVE_COMMITTED' && wordsFormed.length > 0) {
-          if (event.payload.cardAwarded && event.payload.playerId) {
-            const reveal = { card: event.payload.cardAwarded, playerId: event.payload.playerId };
-            setCardReveal({ ...reveal, phase: 'lightning' });
-            window.setTimeout(() => setCardReveal({ ...reveal, phase: 'reveal' }), 1000);
-            window.setTimeout(() => setCardReveal(null), 2600);
+          const cardsAwarded: string[] = Array.isArray(event.payload.cardsAwarded)
+            ? (event.payload.cardsAwarded as string[])
+            : event.payload.cardAwarded
+              ? [event.payload.cardAwarded]
+              : [];
+
+          if (cardsAwarded.length > 0 && event.payload.playerId) {
+            const playerId = event.payload.playerId;
+            cardsAwarded.forEach((card, idx) => {
+              const startDelay = idx * 2400;
+              window.setTimeout(() => {
+                const reveal = { card, playerId };
+                setCardReveal({ ...reveal, phase: 'lightning' });
+                window.setTimeout(() => setCardReveal({ ...reveal, phase: 'reveal' }), 800);
+                window.setTimeout(() => setCardReveal(null), 2200);
+              }, startDelay);
+            });
           }
           const wordList = wordsFormed.map((word) => word.word.toUpperCase());
           const words = wordList.join(', ');

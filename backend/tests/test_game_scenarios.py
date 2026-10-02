@@ -317,6 +317,23 @@ async def test_mv10_playing_on_a_secret_power_square_awards_a_card(open_table):
     assert len(cards) == 1 and cards[0] in MoveService.CARD_TYPES
 
 
+async def test_mv10b_playing_on_multiple_secret_power_squares_awards_multiple_cards(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, _ = table.seats
+    # (7, 10) and (7, 16) are SECRET_POWER squares
+    # Setup board connecting (7, 10) through (7, 16)
+    await table.set_board({(8, 10): "S", (8, 16): "S"})
+    await table.set_tiles(racks={alice: "AEIOURS"})
+
+    # Place on (7, 10) covering 1 power square
+    res1 = await table.place(alice, 7, 10, "A")
+    assert res1.status_code == 200
+    res_json = res1.json()
+    assert len(res_json.get("cards_awarded", [])) == 1
+    cards = me(await table.state(alice), alice)["cards"]
+    assert len(cards) == 1
+
+
 async def test_mv11_server_ignores_a_forged_tile_value(open_table):
     table = await open_table("Alice", "Bob")
     alice, bob = table.seats
