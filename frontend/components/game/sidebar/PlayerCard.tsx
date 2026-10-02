@@ -80,11 +80,11 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
 
       {/* Top Row: Rank + Identity + Big Score */}
       <div className="flex items-center justify-between gap-2 relative z-10">
-        {/* Left: Rank Badge + Name */}
-        <div className="flex items-center gap-2 min-w-0 flex-1">
+        {/* Left: Rank Badge + Name / Status Info */}
+        <div className="flex items-start gap-2 min-w-0 flex-1">
           {/* Rank Badge */}
           <div
-            className={`w-5.5 h-5.5 rounded-lg flex items-center justify-center font-black text-[11px] shrink-0 font-mono shadow-sm transition-transform ${
+            className={`w-5.5 h-5.5 rounded-lg flex items-center justify-center font-black text-[11px] shrink-0 font-mono shadow-sm transition-transform mt-0.5 ${
               isLeader
                 ? 'bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-600 text-amber-950 font-extrabold border border-yellow-200/90 shadow-[0_0_12px_rgba(245,158,11,0.55),inset_0_1px_1px_rgba(255,255,255,0.8)]'
                 : isSecond
@@ -108,63 +108,72 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
             )}
           </div>
 
-          {/* Player Name */}
-          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            <span
-              className={`text-xs sm:text-sm font-extrabold truncate ${
-                isTargeted
-                  ? 'text-rose-200'
-                  : isMe
-                  ? 'text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]'
-                  : isActiveTurn
-                  ? 'text-white'
-                  : 'text-slate-200'
-              }`}
-              title={displayName}
-            >
-              {displayName}
-            </span>
-
-            {/* Shield Active Icon */}
-            {hasShield && (
-              <span className="flex items-center gap-0.5 px-1 py-0.2 rounded bg-sky-400/20 border border-sky-400/50 text-[9px] font-bold text-sky-300 shrink-0">
-                <Shield className="w-2.5 h-2.5 text-sky-300" />
-              </span>
-            )}
-
-            {/* Double Damage Target Mini Badge */}
-            {isTargeted && !isDead && !hasLeft && (
+          {/* Player Identity Column (Full-width Name + Sub-row for Badges) */}
+          <div className="flex flex-col min-w-0 flex-1">
+            {/* Player Name Line */}
+            <div className="flex items-center gap-1.5 min-w-0">
               <span
-                className="flex items-center gap-0.5 px-1 py-0.2 rounded bg-rose-500/25 border border-rose-400/50 text-[9px] font-black text-rose-200 shrink-0 transition-opacity hover:opacity-100"
-                title="Targeted for 2× Double Damage"
+                className={`text-xs sm:text-sm font-extrabold truncate ${
+                  isTargeted
+                    ? 'text-rose-200'
+                    : isMe
+                    ? 'text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]'
+                    : isActiveTurn
+                    ? 'text-white'
+                    : 'text-slate-200'
+                }`}
+                title={displayName}
               >
-                <Crosshair className="w-2.5 h-2.5 text-rose-300 animate-spin" style={{ animationDuration: '6s' }} />
-                <span>×2</span>
+                {displayName}
               </span>
-            )}
 
-            {/* Card effect in play */}
-            {cardEffect && (
-              <span
-                className="flex items-center gap-0.5 px-1 py-0.2 rounded bg-purple-500/20 border border-purple-400/40 text-[9px] font-bold text-purple-300 shrink-0"
-                title={`${cardEffect} active`}
-              >
-                <Sparkles className="w-2.5 h-2.5 text-purple-300" />
-                <span>{cardIcon(cardEffect, 'h-2.5 w-2.5', <span>×2</span>) ?? cardEffect}</span>
-              </span>
-            )}
+              {/* Offline / Eliminated Notice */}
+              {(isDead || hasLeft) && (
+                <span className="text-[10px] font-bold shrink-0">
+                  {isDead ? (
+                    <span className="text-rose-400">Eliminated</span>
+                  ) : (
+                    <span className="text-slate-400 flex items-center gap-0.5">
+                      <WifiOff className="w-2.5 h-2.5" /> Off
+                    </span>
+                  )}
+                </span>
+              )}
+            </div>
 
-            {/* Offline / Eliminated Notice */}
-            {(isDead || hasLeft) && (
-              <span className="text-[10px] font-bold shrink-0">
-                {isDead ? (
-                  <span className="text-rose-400">Eliminated</span>
-                ) : (
-                  <span className="text-slate-400 flex items-center gap-0.5">
-                    <WifiOff className="w-2.5 h-2.5" /> Off
+            {/* Status Badges Sub-row (Placed cleanly below name without squashing) */}
+            {(hasShield || (isTargeted && !isDead && !hasLeft) || cardEffect) && (
+              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                {/* Shield Active Badge */}
+                {hasShield && (
+                  <span className="flex items-center gap-1 px-1.5 py-0.2 rounded bg-sky-400/20 border border-sky-400/50 text-[9px] font-bold text-sky-300 shrink-0">
+                    <Shield className="w-2.5 h-2.5 text-sky-300" />
+                    <span>Shield</span>
                   </span>
                 )}
-              </span>
+
+                {/* Double Damage Targeted Badge */}
+                {isTargeted && !isDead && !hasLeft && (
+                  <span
+                    className="flex items-center gap-1 px-1.5 py-0.2 rounded bg-rose-500/25 border border-rose-400/60 text-[9px] font-black text-rose-200 shrink-0 animate-pulse"
+                    title="Targeted for 2× Double Damage"
+                  >
+                    <Crosshair className="w-2.5 h-2.5 text-rose-300 animate-spin" style={{ animationDuration: '6s' }} />
+                    <span>Targeted ×2</span>
+                  </span>
+                )}
+
+                {/* Card effect in play */}
+                {cardEffect && (
+                  <span
+                    className="flex items-center gap-1 px-1.5 py-0.2 rounded bg-purple-500/20 border border-purple-400/40 text-[9px] font-bold text-purple-300 shrink-0"
+                    title={`${cardEffect} active`}
+                  >
+                    <Sparkles className="w-2.5 h-2.5 text-purple-300" />
+                    <span>{cardIcon(cardEffect, 'h-2.5 w-2.5') ?? cardEffect}</span>
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </div>
