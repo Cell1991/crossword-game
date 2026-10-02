@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { Player, GameState, Tile, CARD_TYPES } from '@/lib/types';
 import { debugSetHp, debugSetRackTile, debugGrantCard, debugClearCards, StoredSession } from '@/lib/api';
 import { isBlankLetter } from '@/lib/tiles';
-import { Bug, X, Sparkles, Heart, Shield, Zap, Snowflake, Lightbulb, Trash2, ArrowLeftRight, ChevronDown, Check, Bomb, Swords } from 'lucide-react';
+import { Bug, X, Sparkles, Heart, Shield, Zap, Snowflake, Lightbulb, Trash2, ArrowLeftRight, ChevronDown, Check, Flame, Swords } from 'lucide-react';
 
 interface DebugPanelProps {
   gameId: string;
@@ -24,7 +24,7 @@ const CARD_CONFIG: Record<string, { label: string; icon: React.ReactNode; color:
   FREEZE_TILE: { label: 'Freeze Word', icon: <Snowflake className="w-3.5 h-3.5 text-cyan-300" />, color: 'text-cyan-300', desc: 'Lock board tile' },
   DOUBLE_DAMAGE: { label: 'Word ×2', icon: <Swords className="w-3.5 h-3.5 text-purple-300" />, color: 'text-purple-300', desc: 'Double damage' },
   SPY_SWAP: { label: 'Swap Word', icon: <ArrowLeftRight className="w-3.5 h-3.5 text-emerald-300" />, color: 'text-emerald-300', desc: 'Swap with rival' },
-  DESTROY_TILE: { label: 'Clear Word', icon: <Bomb className="w-3.5 h-3.5 text-orange-300" />, color: 'text-orange-300', desc: 'Destroy tile' },
+  DESTROY_TILE: { label: 'Clear Word', icon: <Flame className="w-3.5 h-3.5 text-orange-300" />, color: 'text-orange-300', desc: 'Destroy tile' },
 };
 
 const DebugTileInput: React.FC<{

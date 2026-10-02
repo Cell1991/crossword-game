@@ -11,7 +11,7 @@ import {
   Heart,
   Repeat2,
   Snowflake,
-  Bomb,
+  Flame,
   Layers,
   Clock,
   SkipForward,
@@ -400,7 +400,7 @@ export function GameGuideModal({
               {/* 7. DESTROY_TILE */}
               <div className="flex items-center sm:items-start gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.025] hover:bg-white/[0.05] hover:border-white/[0.12] p-3.5 sm:p-4 transition-all">
                 <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl border border-orange-400/25 bg-orange-400/10 text-orange-300">
-                  <Bomb className="h-6 w-6 stroke-[2]" />
+                  <Flame className="h-6 w-6 stroke-[2]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
