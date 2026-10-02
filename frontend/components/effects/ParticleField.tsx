@@ -101,6 +101,13 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       mouse.y = e.clientY - canvasTop;
     };
 
+    const onPointerUp = () => {
+      if (isTouchDevice) {
+        mouse.x = -1000;
+        mouse.y = -1000;
+      }
+    };
+
     // Use ResizeObserver so when CSS layout finishes or canvas expands, it resizes immediately
     const resizeObserver = typeof ResizeObserver !== 'undefined'
       ? new ResizeObserver(onResize)
@@ -111,6 +118,8 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
 
     window.addEventListener('resize', onResize);
     window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerup', onPointerUp, { passive: true });
+    window.addEventListener('pointercancel', onPointerUp, { passive: true });
 
     const draw = () => {
       const now = performance.now();
@@ -160,7 +169,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       }
       ctx.stroke();
 
-      // 3. Draw Nodes in Golden Glow
+      // 3. Draw Nodes in Radiant Gold (no pale white on hover/touch)
       ctx.font = isTouchDevice ? 'bold 9.5px monospace' : 'bold 11.5px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -185,7 +194,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
           ctx.stroke();
         }
 
-        ctx.fillStyle = dist < MOUSE_RADIUS ? 'rgb(254, 240, 138)' : `rgba(${accent}, 0.55)`;
+        ctx.fillStyle = dist < MOUSE_RADIUS ? 'rgb(251, 191, 36)' : `rgba(${accent}, 0.55)`;
         ctx.fillText(node.char, node.x, node.y);
       }
 
@@ -200,6 +209,8 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       if (resizeObserver) resizeObserver.disconnect();
       window.removeEventListener('resize', onResize);
       window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
     };
   }, [accent]);
 

@@ -167,19 +167,20 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
             break;
           }
         }
-        if (stillAnimating || (temporaryTilesValid === true && temporaryTiles.length > 0) || remotePlacements.length > 0) {
+        if (stillAnimating) {
           animFrameRef.current = requestAnimationFrame(step);
         } else {
           animFrameRef.current = null;
+          draw();
         }
       };
       animFrameRef.current = requestAnimationFrame(step);
     };
 
-    if (hasNew || (temporaryTilesValid === true && temporaryTiles.length > 0) || remotePlacements.length > 0) {
+    if (hasNew) {
       startAnimLoop();
     }
-  }, [temporaryTiles, remotePlacements, temporaryTilesValid, draw]);
+  }, [temporaryTiles, remotePlacements, draw]);
 
   useEffect(() => {
     return () => {
