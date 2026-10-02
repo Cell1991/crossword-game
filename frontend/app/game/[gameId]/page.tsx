@@ -721,7 +721,7 @@ export default function GamePage() {
         />
       )}
 
-      {sync.cardReveal && (
+      {sync.cardReveal && (!sync.cardReveal.playerId || sync.cardReveal.playerId === myPlayerId) && (
         <CardRevealOverlay
           reveal={sync.cardReveal}
           onDismiss={sync.dismissCardReveal}

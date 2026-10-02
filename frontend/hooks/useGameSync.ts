@@ -211,11 +211,14 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
 
           if (cardsAwarded.length > 0 && event.payload.playerId) {
             const playerId = event.payload.playerId;
-            const items = cardsAwarded.map((card) => ({ card, playerId }));
-            const wasIdle = !isRevealingRef.current;
-            cardRevealQueueRef.current.push(...items);
-            if (wasIdle) {
-              showNextCardReveal();
+            // Only show the 3D card discovery modal to the player who actually earned the card
+            if (playerId === myPlayerId) {
+              const items = cardsAwarded.map((card) => ({ card, playerId }));
+              const wasIdle = !isRevealingRef.current;
+              cardRevealQueueRef.current.push(...items);
+              if (wasIdle) {
+                showNextCardReveal();
+              }
             }
           }
           const wordList = wordsFormed.map((word) => word.word.toUpperCase());
