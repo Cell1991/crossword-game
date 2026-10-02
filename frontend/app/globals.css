@@ -409,7 +409,7 @@ body {
 
 .board-premium-letter { margin-left: 0.12em; }
 
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse) {
   .board-power-pulse,
   .board-lightning-halo,
   .board-lightning-logo,
@@ -440,6 +440,20 @@ body {
 .blank-picker-grid {
   contain: layout;
 }
+
+/* Allow live preview animations inside Game Guide modal on mobile & touch devices */
+.guide-modal .board-power-pulse { animation: board-power-pulse 2.4s ease-in-out infinite !important; }
+.guide-modal .board-lightning-halo { animation: board-lightning-flash 1.1s ease-in-out infinite !important; }
+.guide-modal .board-lightning-logo { animation: board-lightning-logo-flash 4.5s ease-in-out infinite !important; }
+.guide-modal .board-lightning-spark { animation: board-lightning-spark 1.1s steps(2, end) infinite !important; }
+.guide-modal .board-center-pulse { animation: board-center-pulse 2.8s ease-in-out infinite !important; }
+.guide-modal .board-triple-aura { animation: board-triple-aura 1.9s ease-in-out infinite !important; }
+.guide-modal .board-fire-core { animation: board-fire-core 1.15s ease-in-out infinite !important; }
+.guide-modal .board-double-aura { animation: board-double-aura 2.6s ease-in-out infinite !important; }
+.guide-modal .board-earth-glow { animation: board-earth-glow 3.6s ease-in-out infinite !important; }
+.guide-modal .board-earth-mountain { animation: board-earth-mountain 4.2s ease-in-out infinite !important; }
+.guide-modal .board-earth-speck { animation: board-earth-speck 2.8s ease-in-out infinite !important; }
+.guide-modal .board-premium-label { animation: board-label-breathe 3.5s ease-in-out infinite !important; }
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;

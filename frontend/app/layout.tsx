@@ -36,10 +36,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://wordx-game.com"),
-  title: "WordX - Real-time Multiplayer Crossword Game",
-  description: "Place words, score points, and battle opponents in this infinite dynamic real-time crossword arena!",
-  keywords: ["word game", "crossword", "multiplayer", "real-time", "scrabble", "board game"],
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://crosswordx-game.vercel.app"))
+  ),
+  title: "WordX",
+  description: "",
+  keywords: ["WordX", "crossword", "multiplayer", "word game"],
   authors: [{ name: "WordX Team" }],
   icons: {
     icon: "/wordx-icon-256.png?v=20260915",
@@ -47,16 +50,25 @@ export const metadata: Metadata = {
     apple: "/wordx-icon-256.png?v=20260915",
   },
   openGraph: {
-    title: "WordX - Real-time Multiplayer Crossword Game",
-    description: "Place words, score points, and battle opponents in this infinite dynamic real-time crossword arena!",
-    images: ["/wordx-icon-256.png?v=20260915"],
+    title: "WordX",
+    description: "",
+    url: "https://crosswordx-game.vercel.app",
+    siteName: "WordX",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 675,
+        alt: "WordX",
+      },
+    ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "WordX - Real-time Multiplayer Crossword Game",
-    description: "Place words, score points, and battle opponents in this infinite dynamic real-time crossword arena!",
-    images: ["/wordx-icon-256.png?v=20260915"],
+    title: "WordX",
+    description: "",
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
