@@ -207,16 +207,9 @@ export const TileRack = memo(function TileRack({
         {/* Specular Edge Highlight Trim */}
         <div aria-hidden="true" className="pedestal-top-glint absolute inset-x-8 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent pointer-events-none" />
 
-        {/* TOP / CENTER: 7-TILE RACK (with optional PowerCardBar above it) */}
-        <div className="game-rack-module game-rack-center relative order-1 lg:order-2 flex w-full max-w-full shrink-0 flex-col items-center gap-1 lg:w-auto">
-          {/* Upper Deck: Power Cards Bay (Only rendered if player owns cards) */}
-          {powerCardSlot && (
-            <div className="game-power-strip flex w-full max-w-full items-center justify-center">
-              {powerCardSlot}
-            </div>
-          )}
-
-          {/* 7-Tile Stand */}
+        {/* TOP / CENTER: 7-TILE RACK (with optional PowerCardBar below it) */}
+        <div className="game-rack-module game-rack-center relative flex w-full max-w-full shrink-0 flex-col items-center gap-1 lg:w-auto">
+          {/* 7-Tile Stand (Top-most for direct board interaction) */}
           <div className="w-full overflow-x-auto overflow-y-hidden px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible">
             <div
               ref={rackRef}
@@ -327,6 +320,13 @@ export const TileRack = memo(function TileRack({
               })}
             </div>
           </div>
+
+          {/* Lower Subdeck: Power Cards Bay (Rendered directly under tile rack) */}
+          {powerCardSlot && (
+            <div className="game-power-strip flex w-full max-w-full items-center justify-center">
+              {powerCardSlot}
+            </div>
+          )}
         </div>
 
         {/* LOWER DECK: 2 BALANCED FULL-WIDTH ACTION ROWS (No cut off, zero dead space) */}

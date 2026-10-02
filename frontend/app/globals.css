@@ -603,25 +603,11 @@ body {
     flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 12px !important;
+    gap: 14px !important;
     padding: 8px 18px 8px !important;
     border-radius: 22px !important;
   }
-  .wordx-game-shell .game-actions-bridge {
-    display: contents !important;
-  }
   .wordx-game-shell .game-rack-module {
-    order: 2 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  .wordx-game-shell .game-utility-module {
-    order: 1 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  .wordx-game-shell .game-turn-module {
-    order: 3 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
@@ -633,7 +619,7 @@ body {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    gap: 5px !important;
+    gap: 6px !important;
     padding: 6px 10px 5px !important;
     border-radius: 20px 20px 0 0 !important;
   }
@@ -643,23 +629,6 @@ body {
     flex-direction: column !important;
     align-items: center !important;
     padding: 0 !important;
-  }
-  .wordx-game-shell .game-actions-bridge {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    max-width: 440px !important;
-    gap: 4px !important;
-    padding-inline: 1px !important;
-  }
-  .wordx-game-shell .game-utility-module,
-  .wordx-game-shell .game-turn-module {
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
   }
 }
 
