@@ -1,19 +1,15 @@
 import React from 'react';
-import { Ban, Eye, Flame, Heart, HeartPulse, LucideIcon, PlusCircle, Repeat2, Shield, Shuffle, Snowflake, Swords } from 'lucide-react';
+import { Eye, Flame, Heart, LucideIcon, Repeat2, Shield, Snowflake, Swords } from 'lucide-react';
 
-/** Each power card's icon and colour. */
+/** The 7 Core Power Cards' icon and color styling. */
 const CARD_ICONS: Record<string, [LucideIcon, string]> = {
-  HINT: [Eye, 'text-yellow-300'],
-  SPY_SWAP: [Repeat2, 'text-cyan-300'],
-  DESTROY_TILE: [Flame, 'text-orange-400 fill-orange-400/20'],
-  HEAL: [Heart, 'fill-rose-400 text-rose-200'],
-  SHIELD: [Shield, 'text-sky-200'],
-  FREEZE_TILE: [Snowflake, 'text-sky-300'],
-  DOUBLE_DAMAGE: [Swords, 'text-purple-300'],
-  BAN_LETTER: [Ban, 'text-red-300'],
-  FREE_EXCHANGE: [Shuffle, 'text-teal-300'],
-  DRAW_TILE: [PlusCircle, 'text-lime-300'],
-  MOVE_HEAL: [HeartPulse, 'text-fuchsia-300'],
+  HINT: [Eye, 'text-amber-300 drop-shadow-[0_0_8px_#fbbf24]'],
+  SPY_SWAP: [Repeat2, 'text-emerald-300 drop-shadow-[0_0_8px_#34d399]'],
+  DESTROY_TILE: [Flame, 'text-orange-400 fill-orange-400/20 drop-shadow-[0_0_8px_#f97316]'],
+  HEAL: [Heart, 'fill-rose-400 text-rose-200 drop-shadow-[0_0_8px_#fb7185]'],
+  SHIELD: [Shield, 'text-sky-200 fill-sky-400/20 drop-shadow-[0_0_8px_#38bdf8]'],
+  FREEZE_TILE: [Snowflake, 'text-cyan-300 drop-shadow-[0_0_8px_#22d3ee]'],
+  DOUBLE_DAMAGE: [Swords, 'text-purple-300 drop-shadow-[0_0_8px_#c084fc]'],
 };
 
 /** The icon for `card` at `sizeClass`. Undefined for unknown cards. */
