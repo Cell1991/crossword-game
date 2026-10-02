@@ -1,11 +1,11 @@
 import React from 'react';
-import { Eye, Heart, LucideIcon, Repeat2, RotateCcw, Shield, Snowflake, Swords } from 'lucide-react';
+import { Bomb, Eye, Heart, LucideIcon, Repeat2, Shield, Snowflake, Swords } from 'lucide-react';
 
 /** Each power card's icon and colour. */
 const CARD_ICONS: Record<string, [LucideIcon, string]> = {
   HINT: [Eye, 'text-yellow-300'],
   SPY_SWAP: [Repeat2, 'text-cyan-300'],
-  DESTROY_TILE: [RotateCcw, 'text-rose-300'],
+  DESTROY_TILE: [Bomb, 'text-orange-300'],
   HEAL: [Heart, 'fill-rose-400 text-rose-200'],
   SHIELD: [Shield, 'text-sky-200'],
   FREEZE_TILE: [Snowflake, 'text-sky-300'],
