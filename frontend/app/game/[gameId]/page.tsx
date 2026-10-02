@@ -843,8 +843,6 @@ export default function GamePage() {
                   onUseSimple={cards.playSimpleCard}
                   onUseTargeted={cards.playTargetedCard}
                   onUseSpySwap={cards.playSpySwap}
-                  onUseBanLetter={cards.playBanLetter}
-                  onUseMoveHeal={cards.playMoveHeal}
                   onArmBoardCard={cards.armBoardCard}
                   onCancelArm={cards.cancelArm}
                   onConfirmArmedCell={cards.confirmArmedCardAt}

@@ -25,10 +25,9 @@ class MoveService:
     # missing from the frontend list is awarded but never rendered.
     CARD_TYPES = (
         "HINT", "SPY_SWAP", "DESTROY_TILE", "HEAL", "DOUBLE_DAMAGE", "SHIELD", "FREEZE_TILE",
-        "BAN_LETTER", "FREE_EXCHANGE", "DRAW_TILE", "MOVE_HEAL",
     )
     # Cards that only act on HP. Turn-count games deal no damage, so these would do nothing there.
-    HP_CARD_TYPES = frozenset({"HEAL", "DOUBLE_DAMAGE", "SHIELD", "MOVE_HEAL"})
+    HP_CARD_TYPES = frozenset({"HEAL", "DOUBLE_DAMAGE", "SHIELD"})
 
     @classmethod
     def card_pool(cls, game: Game) -> tuple[str, ...]:

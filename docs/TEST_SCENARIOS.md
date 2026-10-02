@@ -124,8 +124,7 @@ python -m pytest -rxX
 | ID | Scenario | เงื่อนไข / ขั้นตอน | ผลลัพธ์ที่คาดหวัง | สถานะ |
 |---|---|---|---|---|
 | CD-01 | ใช้การ์ดที่ไม่มี | ใช้ HEAL โดยไม่มีการ์ด | 400 | ✅ |
-| CD-02 | DRAW_TILE | มีการ์ด DRAW_TILE แล้วใช้ | แร็ก 8 ตัว, ถุง −1, การ์ดหายไป | ✅ |
-| CD-03 | BAN_LETTER | Alice แบนตัว A แล้ว pass, Bob วาง CAT | 400 "banned" | ✅ |
+| CD-02 | การ์ดที่ถูกถอดถอน | ใช้การ์ดนอกเหนือจาก 7 ใบหลัก เช่น BAN_LETTER, DRAW_TILE | 400 Unknown card | ✅ |
 | CD-04 | คน HP 0 ใช้การ์ดไม่ได้ | Bob HP 0 ใช้ HEAL | 403 HP ยังเป็น 0 การ์ดยังอยู่ | ✅ (แก้ BUG-15 แล้ว) |
 | CD-05 | ใช้การ์ดหลังจบเกมไม่ได้ | เกม `FINISHED` แล้วใช้ DESTROY_TILE | 400 กระดานไม่เปลี่ยน | ✅ (แก้ BUG-15 แล้ว) |
 | CD-14 | โหมด Turn Count ไม่แจกการ์ด HP | วางคำทับช่อง SECRET_POWER ในเกม Turn Count และเกม HP | Turn Count สุ่มจาก HINT, SPY_SWAP, DESTROY_TILE, FREEZE_TILE เท่านั้น (ไม่มี HEAL, DOUBLE_DAMAGE, SHIELD ซึ่งไม่มีผลในโหมดนี้) โหมด HP ยังได้ครบ 7 ใบ | ✅ |

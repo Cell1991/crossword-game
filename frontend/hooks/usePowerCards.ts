@@ -114,25 +114,9 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   }, [busy, flashError, flashInfo, gameId, myPlayerId, reload]);
 
   const playSimpleCard = useCallback(
-    (card: 'HINT' | 'HEAL' | 'SHIELD' | 'DRAW_TILE' | 'FREE_EXCHANGE') => runCard({ card }),
+    (card: 'HINT' | 'HEAL' | 'SHIELD') => runCard({ card }),
     [runCard],
   );
-
-  /**
-   * MOVE_HEAL heals by the value of the word being staged, so the server needs those tiles.
-   * Read through a ref: the card bar is memoised, and a dep on temporaryTiles would give this
-   * callback a new identity on every tile placed.
-   */
-  const temporaryTilesRef = useRef(temporaryTiles);
-  temporaryTilesRef.current = temporaryTiles;
-  const playMoveHeal = useCallback(() => {
-    const staged = temporaryTilesRef.current;
-    if (staged.length === 0) {
-      flashError('Place the word you want to heal from first.');
-      return;
-    }
-    return runCard({ card: 'MOVE_HEAL', placed_tiles: staged }, 'Failed to use Move Heal');
-  }, [flashError, runCard]);
 
   const playTargetedCard = useCallback((card: 'DOUBLE_DAMAGE', targetPlayerId: string) => (
     runCard({ card, target_player_id: targetPlayerId })
@@ -146,8 +130,6 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
       target_tile_indices: targetTileIndices,
     })
   ), [runCard]);
-
-  const playBanLetter = useCallback((letter: string) => runCard({ card: 'BAN_LETTER', letter }), [runCard]);
 
   /** Blocks an incoming DAMAGE/SWAP while its window is open. */
   const playShield = useCallback(() => runCard({ card: 'SHIELD' }, 'Failed to use Shield'), [runCard]);
@@ -209,8 +191,6 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     playSimpleCard,
     playTargetedCard,
     playSpySwap,
-    playBanLetter,
-    playMoveHeal,
     playShield,
     playArmedCardAt,
   };

@@ -710,71 +710,14 @@ async def test_cd01_cannot_use_a_card_you_do_not_hold(open_table):
     assert res.status_code == 400
 
 
-async def test_cd02_draw_tile_card_adds_a_tile_from_the_bag(open_table):
+async def test_legacy_cards_are_rejected(open_table):
     table = await open_table("Alice", "Bob")
     alice, _ = table.seats
-    await table.set_cards(alice, ["DRAW_TILE"])
+    for legacy_card in ["BAN_LETTER", "DRAW_TILE", "FREE_EXCHANGE", "MOVE_HEAL"]:
+        await table.set_cards(alice, [legacy_card])
+        res = await table.act(alice, "cards/use", {"card": legacy_card})
+        assert res.status_code == 400
 
-    res = await table.act(alice, "cards/use", {"card": "DRAW_TILE"})
-
-    assert res.json() == {"success": True, "drawn": 1}
-    state = await table.state(alice)
-    assert (len(me(state, alice)["rack"]), state["tile_bag_count"], me(state, alice)["cards"]) == (8, 85, [])
-
-
-async def test_cd03_banned_letter_blocks_the_next_player(open_table):
-    table = await open_table("Alice", "Bob")
-    alice, bob = table.seats
-    await table.set_cards(alice, ["BAN_LETTER"])
-    assert (await table.act(alice, "cards/use", {"card": "BAN_LETTER", "letter": "A"})).status_code == 200
-    await table.act(alice, "pass")
-    await table.set_tiles(racks={bob: "CATSEIO"})
-
-    res = await table.place(bob, ROW, COL - 1, "CAT")
-
-    assert res.status_code == 400
-    assert "banned" in res.json()["detail"]
-
-
-async def test_cd04_free_exchange_swaps_the_whole_rack_without_ending_the_turn(open_table):
-    table = await open_table("Alice", "Bob")
-    alice, _ = table.seats
-    await table.set_cards(alice, ["FREE_EXCHANGE"])
-    await table.set_tiles(racks={alice: "CATSEIO"}, bag="RSTLNEDGHIOAUMPFYWB")
-    old_ids = {t["id"] for t in (await table.player(alice))["rack"]}
-
-    res = await table.act(alice, "cards/use", {"card": "FREE_EXCHANGE"})
-
-    assert res.json()["success"] is True
-    state = await table.state(alice)
-    new_ids = {t["id"] for t in me(state, alice)["rack"]}
-    assert old_ids.isdisjoint(new_ids) and len(new_ids) == 7
-    assert (state["current_player_id"], state["turn_number"]) == (alice.id, 1)
-
-
-async def test_cd05_move_heal_heals_by_the_pending_moves_base_score(open_table):
-    table = await open_table("Alice", "Bob")
-    alice, _ = table.seats
-    await table.update_player(alice, hp=50)
-    await table.set_cards(alice, ["MOVE_HEAL"])
-    await table.set_tiles(racks={alice: "CATSEIO"})
-    rack = (await table.player(alice))["rack"]
-    cat = [next(t for t in rack if t["letter"] == letter) for letter in "CAT"]
-    placed = [
-        {"row": ROW, "col": COL - 1 + i, "tile_id": t["id"], "letter": t["letter"], "value": t["value"]}
-        for i, t in enumerate(cat)
-    ]
-
-    invalid = await table.act(alice, "cards/use", {"card": "MOVE_HEAL", "placed_tiles": [
-        {"row": 0, "col": 0, "tile_id": cat[0]["id"], "letter": "C", "value": 3}
-    ]})
-    assert invalid.status_code == 400
-    assert me(await table.state(alice), alice)["cards"] == ["MOVE_HEAL"]  # rejected use doesn't consume the card
-
-    res = await table.act(alice, "cards/use", {"card": "MOVE_HEAL", "placed_tiles": placed})
-
-    assert res.json() == {"success": True, "healed": 5, "hp": 55}
-    assert me(await table.state(alice), alice)["hp"] == 55
 
 
 async def test_cd06_double_damage_doubles_the_next_moves_damage_to_the_target(open_table):

@@ -131,23 +131,19 @@ Choose between high-stakes elimination battles, classic tournament scoring, or s
 
 ---
 
-## ⚡ Power Card Arsenal
+## ⚡ 7 Power Card Arsenal
 
-Players collect tactical Power Cards by placing letters onto **Secret Power** squares on the board (maximum **3 cards** held at any time). Cards can be deployed to defend, disrupt opponents, or alter the board:
+Players collect tactical Power Cards by placing letters onto **Lightning Power** cells on the board (maximum **3 cards** held at any time). Cards can be deployed to defend, disrupt opponents, or alter the board:
 
 | Card | Backend ID | Target Type | Effect & Tactical Mechanics |
 | :--- | :--- | :--- | :--- |
-| 🛡️ **Shield** | `SHIELD` | Self / Reactive Aura | Deploys an energy barrier. Can be activated proactively or reactively during the **1-second pending damage/swap window** to completely absorb incoming attacks or hostile tile swaps. |
-| 💖 **Heal** | `HEAL` | Instant Self | Restores HP equal to the sum of the letter point values of the tiles currently resting in your rack (capped at max HP). |
-| ➕ **Move Heal** | `MOVE_HEAL` | Active Turn | Restores player HP equal to the base point value of the staged word you are about to confirm. |
-| ❄️ **Freeze Word** | `FREEZE_TILE` | Board Cell | Locks a target board tile under frost for $N-1$ turns (where $N$ is active players), preventing all opponents from connecting or playing through that cell until the turn returns to you. |
-| 💥 **Clear Word** | `DESTROY_TILE` | Board Cell | Vaporizes and removes any non-center committed tile from the board, breaking opponent word locks or opening new paths. |
-| ⚡ **Word ×2** | `DOUBLE_DAMAGE` | Targeted Opponent | Targets a chosen opponent; your next committed word deals double ($2\times$) damage specifically to them. |
-| 🔄 **Spy Swap** | `SPY_SWAP` | Targeted Opponent | Exchanges 1 to 3 selected tiles from your rack with a targeted opponent's rack (or initiates a pending swap window). |
-| 👁️ **Hint** | `HINT` | AI Assistant | Analyzes current board state and rack tiles to generate up to 3 highest-scoring valid placement suggestions with ghost reticles. |
-| 🚫 **Ban Letter** | `BAN_LETTER` | Global Board | Prohibits a chosen English letter from being played by any opponent until your next turn. |
-| 🔀 **Free Exchange** | `FREE_EXCHANGE` | Instant Self | Swaps your entire rack with fresh tiles from the bag without expending your turn. |
-| 📥 **Draw Tile** | `DRAW_TILE` | Instant Self | Draws 1 extra tile from the tile bag directly into your rack. |
+| 🛡️ **Shield** | `SHIELD` | Passive / Reaction | Blocks the next incoming attack damage or hostile tile swap completely. |
+| 💖 **Heal** | `HEAL` | Instant Self | Restores HP equal to the sum of all tile point values currently in your rack. |
+| ❄️ **Freeze Tile** | `FREEZE_TILE` | Board Cell | Locks a board tile in ice so opponents cannot connect words to it until your next turn. |
+| 💥 **Destroy Tile** | `DESTROY_TILE` | Board Cell | Removes 1 tile from the board to break enemy words or reopen multiplier cells. |
+| ⚔️ **Double Damage** | `DOUBLE_DAMAGE` | Targeted Rival | Your next confirmed word deals double ($2\times$) attack damage to a targeted opponent. |
+| 🔄 **Spy Swap** | `SPY_SWAP` | Targeted Rival | Swap 1 to 3 rack tiles with random tiles stolen directly from an opponent. |
+| 👁️ **Hint** | `HINT` | Your Turn | Highlights the top 3 highest-scoring word placements and point values. |
 
 > [!NOTE]
 > In **Turn Count Mode (`TURNS`)**, HP-specific cards (`HEAL`, `DOUBLE_DAMAGE`, `SHIELD`) are automatically omitted from the random card reward pool.
@@ -472,7 +468,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 #### ⚡ Tactical Power Cards (`/api/games/{game_id}/cards`)
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `POST` | `/api/games/{game_id}/cards/use` | Deploy a held Power Card (`SHIELD`, `HEAL`, `FREEZE_TILE`, `DESTROY_TILE`, `DOUBLE_DAMAGE`, `SPY_SWAP`, `HINT`, `BAN_LETTER`, `FREE_EXCHANGE`, `DRAW_TILE`, `MOVE_HEAL`). |
+| `POST` | `/api/games/{game_id}/cards/use` | Deploy a held Power Card (`SHIELD`, `HEAL`, `FREEZE_TILE`, `DESTROY_TILE`, `DOUBLE_DAMAGE`, `SPY_SWAP`, `HINT`). |
 
 #### 📖 Dictionary & Definitions (`/api/dictionary`)
 | Method | Endpoint | Description |

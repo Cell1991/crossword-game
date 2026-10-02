@@ -136,14 +136,6 @@ async def use_card(
         payload={"playerId": player.id, "card": card},
     ).model_dump())
 
-    if card == "DRAW_TILE":
-        bag = await bag_tiles(db, game.id)
-        drawn, game.tile_bag = TileService.draw_tiles(bag, 1)
-        player.rack = await player_rack(db, player.id) + drawn
-        players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
-        await replace_game_tiles(db, game.id, game.tile_bag, players)
-        return {"success": True, "drawn": len(drawn)}
-
     if card == "HEAL":
         max_cap = getattr(player, "max_hp", 100) or 100
         player.hp = min(max_cap, player.hp + sum(int(tile["value"]) for tile in await player_rack(db, player.id)))
@@ -208,34 +200,6 @@ async def use_card(
         ).model_dump())
         return {"success": True, "pending": True}
 
-    if card == "FREE_EXCHANGE":
-        rack = await player_rack(db, player.id)
-        if not rack:
-            return {"success": True, "exchanged": 0}
-        bag = await bag_tiles(db, game.id)
-        try:
-            new_rack, new_bag = TileService.exchange_tiles(rack, bag, [t["id"] for t in rack])
-        except (ValueError, NotEnoughTilesInBag) as error:
-            raise HTTPException(status_code=400, detail=str(error))
-        player.rack = new_rack
-        game.tile_bag = new_bag
-        players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
-        await replace_game_tiles(db, game.id, game.tile_bag, players)
-        return {"success": True, "exchanged": len(new_rack)}
-
-    if card == "MOVE_HEAL":
-        if game.current_player_id != player.id:
-            raise HTTPException(status_code=400, detail="You can only use this on your turn")
-        if not request.placed_tiles:
-            raise HTTPException(status_code=400, detail="Provide the move you are about to confirm")
-        validation = await MoveService.validate_move(db, game_id, player.id, request.placed_tiles)
-        if not validation.valid:
-            raise HTTPException(status_code=400, detail=validation.reason or "That move is not valid")
-        base_points = sum(pt.value for pt in request.placed_tiles)
-        max_cap = getattr(player, "max_hp", 100) or 100
-        player.hp = min(max_cap, player.hp + base_points)
-        return {"success": True, "healed": base_points, "hp": player.hp}
-
     if card == "DOUBLE_DAMAGE":
         if game.current_player_id != player.id:
             raise HTTPException(status_code=400, detail="You can only use this on your turn")
@@ -283,14 +247,6 @@ async def use_card(
         game.board_state = board
         await replace_board_state(db, game.id, board)
         return {"success": True}
-
-    if card == "BAN_LETTER":
-        if not request.letter or not request.letter.isalpha():
-            raise HTTPException(status_code=400, detail="Choose a letter")
-        game.banned_letter = request.letter.upper()
-        game.banned_until_turn = game.turn_number + 1
-        game.banned_by_player_id = player.id
-        return {"success": True, "letter": game.banned_letter}
 
     raise HTTPException(status_code=400, detail="Unknown card")
 

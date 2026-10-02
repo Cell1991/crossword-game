@@ -162,8 +162,6 @@ interface PowerCardBarProps {
   onUseSimple: (card: SimpleCard) => void;
   onUseTargeted: (card: TargetedCard, targetPlayerId: string) => void;
   onUseSpySwap: (targetPlayerId: string, ownTileIds: string[], targetTileIndices: number[]) => void;
-  onUseBanLetter: (letter: string) => void;
-  onUseMoveHeal: () => void;
   onArmBoardCard: (card: BoardCard) => void;
   onCancelArm: () => void;
   onConfirmArmedCell: () => void;
