@@ -31,12 +31,9 @@ export const LetterBagCard: React.FC<LetterBagCardProps> = ({
           <div className="w-8 h-8 rounded-xl bg-gradient-to-b from-amber-400/25 to-amber-950/40 border border-amber-400/40 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.3)] group-hover:scale-105 transition-transform">
             <Layers className="w-4 h-4 text-amber-300 drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]" />
           </div>
-          <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-[10px] font-black tracking-widest text-amber-300/80 uppercase font-mono">
+          <div className="flex items-center min-w-0">
+            <span className="text-xs sm:text-sm font-black tracking-wider text-slate-100 uppercase font-mono group-hover:text-amber-300 transition-colors">
               TILE BAG
-            </span>
-            <span className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors">
-              Remaining Tiles
             </span>
           </div>
         </div>
