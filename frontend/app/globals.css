@@ -625,8 +625,9 @@ body {
     flex-direction: column !important;
     align-items: center !important;
     gap: 6px !important;
-    padding: 6px 10px 5px !important;
+    padding: 8px 10px 6px !important;
     border-radius: 20px 20px 0 0 !important;
+    overflow: visible !important;
   }
   .wordx-game-shell .game-rack-module {
     width: 100% !important;

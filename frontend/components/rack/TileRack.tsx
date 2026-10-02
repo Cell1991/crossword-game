@@ -208,9 +208,9 @@ export const TileRack = memo(function TileRack({
         <div aria-hidden="true" className="pedestal-top-glint absolute inset-x-8 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent pointer-events-none" />
 
         {/* LEFT / CENTER: 7-TILE RACK & POWER CARDS */}
-        <div className="game-rack-module game-rack-center relative order-1 flex w-full max-w-full shrink-0 flex-col items-center gap-1.5 lg:w-auto">
+        <div className="game-rack-module game-rack-center relative order-1 flex w-full max-w-full shrink-0 flex-col items-center gap-1.5 lg:w-auto overflow-visible">
           {/* 7-Tile Stand: Top on mobile (order-1), Lower on desktop (lg:order-2) */}
-          <div className="order-1 lg:order-2 w-full overflow-x-auto overflow-y-hidden px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible">
+          <div className="order-1 lg:order-2 w-full overflow-x-auto overflow-y-visible px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible pt-2 -mt-1 pb-1">
             <div
               ref={rackRef}
               className={`game-tile-tray relative flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl border px-2 py-1.5 sm:w-auto sm:gap-1.5 sm:px-2.5 sm:py-1.5 min-h-[52px] sm:min-h-[56px] ${
