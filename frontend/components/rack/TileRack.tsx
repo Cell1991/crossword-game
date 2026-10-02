@@ -206,7 +206,7 @@ export const TileRack = memo(function TileRack({
       <div className="game-control-layout flex w-full flex-row flex-wrap items-end justify-center gap-1.5 sm:gap-2 lg:flex-nowrap lg:gap-4">
         {/* CENTER POD: COSMIC BLUE TILE TRAY */}
         <div className="game-rack-module game-rack-center relative order-1 flex w-full max-w-full shrink-0 flex-col items-center lg:order-2 lg:w-auto">
-          {powerCardSlot && <div className="game-power-strip mb-2 flex w-full items-center justify-center">{powerCardSlot}</div>}
+          {powerCardSlot && <div className="game-power-strip mb-1 flex w-full items-center justify-center">{powerCardSlot}</div>}
 
           {/* Mobile Score Badge above Tray */}
           <AnimatePresence>
@@ -237,7 +237,7 @@ export const TileRack = memo(function TileRack({
           <div className="w-full overflow-x-auto overflow-y-hidden pt-3.5 -mt-3.5 pb-1.5 -mb-1.5 px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible lg:pt-0 lg:mt-0 lg:pb-0 lg:mb-0">
             <div
               ref={rackRef}
-              className={`game-tile-tray relative flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2 pt-3.5 sm:w-auto sm:gap-2.5 sm:px-2.5 sm:py-2.5 sm:pt-4 min-h-[64px] sm:min-h-[78px] ${
+              className={`game-tile-tray relative flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2 pt-3.5 sm:w-auto sm:gap-1.5 sm:px-2 sm:py-1.5 sm:pt-2.5 min-h-[60px] sm:min-h-[62px] ${
                 isExternalDragActive ? 'border-cyan-300/80 bg-cyan-950/35 ring-1 ring-cyan-300/35' : 'border-amber-200/25 bg-gradient-to-b from-amber-950/50 via-slate-900 to-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_5px_14px_rgba(0,0,0,0.35)]'
               } transition-all`}
             >
@@ -249,7 +249,7 @@ export const TileRack = memo(function TileRack({
                   key={`slot-${slotIndex}`}
                   data-rack-slot={slotIndex}
                   aria-hidden="true"
-                  className={`relative shrink-0 h-[46px] w-[40px] sm:h-[56px] sm:w-[50px] rounded-[10px] border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:rounded-xl ${
+                  className={`relative shrink-0 h-[46px] w-[40px] sm:h-[46px] sm:w-[42px] rounded-[10px] border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:rounded-xl ${
                     isDropTarget
                       ? 'ring-2 ring-sky-400/90'
                       : isExternalDragActive
@@ -271,7 +271,7 @@ export const TileRack = memo(function TileRack({
               <div
                 key={`slot-${slotIndex}`}
                 data-rack-slot={slotIndex}
-                className="relative shrink-0 h-[46px] w-[40px] sm:h-[56px] sm:w-[50px]"
+                className="relative shrink-0 h-[46px] w-[40px] sm:h-[46px] sm:w-[42px]"
               >
                 {/* Slot frame / seat behind tile - always visible when tile is lifted/selected/dragged */}
                 <div
@@ -322,18 +322,18 @@ export const TileRack = memo(function TileRack({
                   {/* High-Contrast Prominent Letter OR Cosmic Wildcard Star */}
                   {isBlankLetter(tile.letter) && !isDesignatedBlank ? (
                     <div className="relative z-20 flex items-center justify-center">
-                      <svg viewBox="0 0 24 24" className="tile-blank-star w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+                      <svg viewBox="0 0 24 24" className="tile-blank-star w-6 h-6 sm:w-6 sm:h-6" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
                         <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
                       </svg>
                     </div>
                   ) : (
-                    <span className="tile-letter tile-letter-orange relative z-20 text-[28px] sm:text-[36px] leading-none font-maple">
+                    <span className="tile-letter tile-letter-orange relative z-20 text-[28px] sm:text-[30px] leading-none font-maple">
                       {displayLetter}
                     </span>
                   )}
 
                   {/* Glowing Value Badge */}
-                  <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[10px] font-maple sm:bottom-1 sm:right-1.5 sm:text-[13px] lg:text-[18px] leading-none">
+                  <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[10px] font-maple sm:bottom-1 sm:right-1.5 sm:text-[12px] leading-none">
                     {tile.value}
                   </span>
                 </motion.button>
@@ -542,7 +542,7 @@ export const TileRack = memo(function TileRack({
                   whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.05 } : undefined}
                   whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.95 } : undefined}
                   transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-                  className={`game-primary-action flex items-center gap-1.5 rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 font-black text-xs sm:text-sm transition-colors select-none ${
+                  className={`game-primary-action flex items-center gap-1.5 rounded-lg px-3 py-2 sm:px-3 sm:py-2 font-black text-xs sm:text-xs transition-colors select-none ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
                       ? 'bg-emerald-300 text-slate-950 shadow-[0_4px_14px_rgba(16,185,129,0.2)] hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200/80 cursor-pointer'
                       : 'bg-slate-800/80 text-slate-400 border border-slate-700/70 cursor-not-allowed'
