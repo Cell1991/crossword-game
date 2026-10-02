@@ -40,7 +40,6 @@ import { DebugPanel } from '@/components/debug/DebugPanel';
 
 const EMPTY_TILES: Tile[] = [];
 const EMPTY_CELL_POSITIONS: CellPosition[] = [];
-const GAME_SHELL_COLUMNS = 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_17rem] xl:grid-cols-[minmax(0,1fr)_18rem] 2xl:grid-cols-[minmax(0,1fr)_19rem]';
 const activeBotTurns = new Set<string>();
 
 export default function GamePage() {
@@ -717,9 +716,9 @@ export default function GamePage() {
       {sync.cardReveal && <CardRevealOverlay reveal={sync.cardReveal} />}
 
       {/* Main: Board */}
-      <div className={`relative z-10 mx-auto grid w-full max-w-[1920px] flex-1 min-h-0 ${GAME_SHELL_COLUMNS}`}>
+      <main className="gameplay-stage relative z-10 mx-auto flex w-full max-w-[1920px] flex-1 min-h-0">
         {/* Board canvas takes full space */}
-        <div className="relative min-h-0 min-w-0">
+        <div className="gameplay-world relative min-h-0 min-w-0 flex-1">
           {/* Top Overlays Stack: Toasts & Hint Suggestions (stacked vertically, never overlapping) */}
           <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex w-full max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-col items-center gap-2.5 sm:top-4">
             {cards.hintSuggestions.length > 0 && (
@@ -785,8 +784,8 @@ export default function GamePage() {
           </div>
         </div>
 
-        {/* Right sidebar: Unified Glassmorphism Control & Scoreboard Panel (desktop) */}
-        <div className="game-sidebar-frame hidden min-h-0 lg:flex">
+        {/* Compact floating match HUD. Its size follows its contents, not the stage height. */}
+        <div className="gameplay-match-hud hidden lg:block">
           <RightSidebar
             players={gameState.players ?? []}
             showHealth={gameState.max_turns === null}
@@ -798,7 +797,7 @@ export default function GamePage() {
             cardUseEffects={sync.cardUseEffects}
           />
         </div>
-      </div>
+      </main>
 
       {/* Mobile Info, Scoreboard & History Sheet Modal */}
       <MobileInfoModal
@@ -815,9 +814,9 @@ export default function GamePage() {
         cardUseEffects={sync.cardUseEffects}
       />
 
-      {/* Bottom: Tile rack (spectators and eliminated players have no active rack) */}
-      <div className={`game-dock-frame relative z-10 mx-auto grid w-full max-w-[1920px] shrink-0 ${GAME_SHELL_COLUMNS} px-1.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1.5 sm:px-3 sm:pb-3`}>
-        <div className="min-w-0">
+      {/* Independent tool / rack / turn-control modules; no spanning bottom panel. */}
+      <footer className="gameplay-control-stage relative z-20 mx-auto flex w-full max-w-[1920px] shrink-0 justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-5 sm:pb-4">
+        <div className="gameplay-control-content w-full min-w-0">
           {isSpectator ? (
             <div className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-xl border border-sky-500/25 bg-sky-950/40 px-4 py-2.5 text-center text-xs text-sky-300 select-none sm:text-sm">
               <Eye className="h-4 w-4 shrink-0 text-sky-400" />
@@ -887,8 +886,7 @@ export default function GamePage() {
             />
           )}
         </div>
-        <div aria-hidden="true" className="hidden lg:block" />
-      </div>
+      </footer>
 
       {/* Floating Animated Score Burst Popup */}
       <AnimatePresence>

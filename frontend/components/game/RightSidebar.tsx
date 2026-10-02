@@ -123,8 +123,8 @@ export const RightSidebar = memo(function RightSidebar({
   }, []);
 
   return (
-    <aside className={`game-match-sidebar flex h-full min-h-0 min-w-0 shrink-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-full border-l border-slate-800/70 bg-slate-950/35'}`}>
-      <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+    <aside className={`game-match-hud-content flex min-w-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-full'}`}>
+      <div className="flex min-w-0 flex-col">
         {/* TOP SECTION: COMPACT TILES STATUS CARD */}
         <div className="game-bag-panel shrink-0 px-4 pb-3 pt-3">
           <button
@@ -324,7 +324,7 @@ export const RightSidebar = memo(function RightSidebar({
         </div>
 
         {/* BOTTOM SECTION: COLLAPSIBLE MOVE HISTORY & DEFINITION ACCORDION */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-t border-slate-700/50 bg-slate-950/20">
+        <div className="game-move-log flex flex-col border-t border-slate-700/50 bg-slate-950/20">
           <button
             onClick={() => setIsHistoryOpen(prev => !prev)}
             className="flex w-full shrink-0 items-center justify-between px-3 py-3 text-slate-300 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-300/60 cursor-pointer"
@@ -341,7 +341,7 @@ export const RightSidebar = memo(function RightSidebar({
           </button>
 
           {isHistoryOpen && (
-            <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 pr-2">
+            <div className="max-h-[24vh] overflow-y-auto px-3 pb-3 pr-2">
               {moveHistory.length === 0 ? (
                 <div className="py-3 text-center text-[11px] text-slate-500 italic">
                   No moves recorded yet
