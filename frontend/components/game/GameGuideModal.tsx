@@ -54,7 +54,7 @@ export function GameGuideModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="guide-modal-title"
-      className="guide-modal fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md animate-fadeIn select-none"
+      className="guide-modal fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 sm:backdrop-blur-sm animate-fadeIn select-none"
       onClick={onClose}
     >
       <div
