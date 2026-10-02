@@ -59,7 +59,7 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.16 }}
-          className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/75 p-0 sm:items-center sm:p-5"
+          className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/75 p-0 sm:items-center sm:p-5"
           onClick={onClose}
           role="dialog"
           aria-modal="true"
@@ -68,15 +68,15 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
           {/* Translucent Glassmorphism Modal Dialog Card */}
           <motion.div
             key="mobile-info-card"
-            initial={{ opacity: 0, scale: 0.93, y: 14 }}
+            initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ type: 'spring', damping: 26, stiffness: 380 }}
-            className="relative flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-slate-700/70 bg-slate-950 sm:rounded-3xl sm:border-cyan-500/25 sm:shadow-[0_16px_50px_rgba(0,0,0,0.45)]"
+            className="relative flex max-h-[84dvh] w-full max-w-md flex-col overflow-hidden rounded-b-3xl border-b border-x border-slate-700/70 bg-slate-950 shadow-[0_16px_50px_rgba(0,0,0,0.85)] sm:rounded-3xl sm:border-t sm:border-cyan-500/25 sm:shadow-[0_16px_50px_rgba(0,0,0,0.45)]"
             onClick={(e) => e.stopPropagation()}
           >
-        {/* Top Atmospheric Aura Highlight */}
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-cyan-400 to-purple-500 shadow-[0_0_12px_rgba(6,182,212,0.8)]" />
+        {/* Bottom Atmospheric Aura Highlight */}
+        <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-400 via-cyan-400 to-purple-500 shadow-[0_0_12px_rgba(6,182,212,0.8)]" />
 
         {/* Modal Header */}
         <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-800/80 bg-slate-900 select-none">
