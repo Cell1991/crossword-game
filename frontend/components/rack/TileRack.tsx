@@ -383,7 +383,7 @@ export const TileRack = memo(function TileRack({
               </div>
             ) : (
               <>
-                {/* Cancel Move */}
+                {/* Recall Move */}
                 <motion.button
                   onClick={onCancelMove}
                   disabled={!hasTemporaryTiles || isSubmitting}
@@ -398,7 +398,7 @@ export const TileRack = memo(function TileRack({
                   title="Recall placed tiles to rack"
                 >
                   <RotateCcw className={`w-4 h-4 ${hasTemporaryTiles ? 'text-rose-400' : 'text-slate-600'}`} />
-                  <span className="hidden xs:inline sm:inline">Cancel</span>
+                  <span className="hidden xs:inline sm:inline">Recall</span>
                 </motion.button>
 
                 {/* Shuffle */}
@@ -568,14 +568,20 @@ export const TileRack = memo(function TileRack({
                       ? { scale: { repeat: Infinity, duration: 1.6, ease: 'easeInOut' } }
                       : { duration: 0.2 }
                   }
-                  className={`flex items-center gap-1.5 px-3 sm:px-6 py-1.5 sm:py-2.5 rounded-xl font-bold text-xs sm:text-base transition-colors ${
+                  className={`flex items-center gap-1.5 px-3.5 sm:px-6 py-1.5 sm:py-2.5 rounded-xl font-black text-xs sm:text-base transition-all select-none ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.65)] border-2 border-emerald-300 ring-2 ring-emerald-400/40 cursor-pointer'
+                      ? 'bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-300 text-slate-950 shadow-[0_0_24px_rgba(52,211,153,0.75)] border-2 border-white/60 ring-2 ring-emerald-400/40 cursor-pointer'
                       : 'bg-slate-800/40 text-slate-600 border border-slate-700/30 cursor-not-allowed'
                   }`}
                 >
-                  <Check className={`w-4 h-4 sm:w-5 sm:h-5 ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]' : 'text-slate-600'}`} />
-                  <span className="hidden xs:inline sm:inline">{isSubmitting ? 'Confirming...' : 'Confirm'}</span>
+                  <Check className={`w-4 h-4 sm:w-5 sm:h-5 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-slate-950' : 'text-slate-600'}`} />
+                  <span className="inline tracking-wide font-black">
+                    {isSubmitting
+                      ? 'Submitting...'
+                      : placementValid === true && estimatedScore !== undefined && estimatedScore > 0
+                      ? `PLAY +${estimatedScore}`
+                      : 'PLAY MOVE'}
+                  </span>
                 </motion.button>
               </>
             )}

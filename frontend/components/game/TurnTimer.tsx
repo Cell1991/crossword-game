@@ -63,9 +63,24 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
   }, [currentPlayerId, now, onTimeUp, secondsRemaining, turnNumber, turnTimeLimit]);
 
   if (secondsRemaining === null) return null;
+  const isLowTime = secondsRemaining <= 10;
+  const mins = Math.floor(secondsRemaining / 60);
+  const secs = secondsRemaining % 60;
+  const formattedTime = mins > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : `${secs}s`;
+
   return (
-    <span className="whitespace-nowrap font-mono text-xs text-amber-300 font-semibold px-2 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60" title="Time left this turn">
-      ⏳ {secondsRemaining}s
-    </span>
+    <div
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap font-mono text-xs sm:text-sm font-black px-2.5 py-1 rounded-xl border transition-all duration-200 select-none ${
+        isLowTime
+          ? 'border-rose-500/90 bg-rose-950/90 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.45)] ring-1 ring-rose-400/50 animate-pulse'
+          : 'border-amber-400/40 bg-slate-900/90 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/20'
+      }`}
+      title="Time left this turn"
+    >
+      <span className={isLowTime ? 'text-rose-400 animate-bounce' : 'text-amber-400'}>
+        {isLowTime ? '⚠️' : '⏱️'}
+      </span>
+      <span className="tabular-nums tracking-wider">{formattedTime}</span>
+    </div>
   );
 };

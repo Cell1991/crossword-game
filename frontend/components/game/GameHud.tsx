@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { BookOpen, Eye, Maximize, Minimize, ScrollText } from 'lucide-react';
+import { BookOpen, Check, Eye, Maximize, Minimize, ScrollText } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { TurnBanner } from './TurnBanner';
 
@@ -60,6 +60,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   debugSlot,
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [copiedPin, setCopiedPin] = useState(false);
 
   useEffect(() => {
     const updateFullscreen = () => {
@@ -72,6 +73,13 @@ export const GameHud: React.FC<GameHudProps> = ({
       document.removeEventListener('webkitfullscreenchange', updateFullscreen);
     };
   }, []);
+
+  const handleCopyPin = () => {
+    if (!roomPin) return;
+    void navigator.clipboard?.writeText(roomPin).catch(() => undefined);
+    setCopiedPin(true);
+    setTimeout(() => setCopiedPin(false), 2000);
+  };
 
   const toggleFullscreen = async () => {
     try {
@@ -102,7 +110,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={onExit}
-            className="flex items-center gap-1 rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:bg-slate-800 hover:text-white shrink-0 transition-colors"
+            className="tactile-button flex items-center gap-1 rounded-xl border border-slate-700/80 bg-slate-800/60 px-2.5 py-1 text-xs text-slate-300 hover:bg-slate-800 hover:text-white shrink-0 cursor-pointer"
             title={isSpectator ? 'Stop watching' : 'Exit game'}
             aria-label={isSpectator ? 'Stop watching' : 'Exit game'}
           >
@@ -117,26 +125,39 @@ export const GameHud: React.FC<GameHudProps> = ({
           />
           <span className="hidden text-lg font-black text-white sm:inline shrink-0">Word<span className="text-amber-400">X</span></span>
           <div
-            className={`flex items-center gap-1 text-xs shrink-0 ${isConnected ? 'text-emerald-400' : 'text-red-400'}`}
+            className={`flex items-center gap-1.5 text-xs font-semibold shrink-0 ${isConnected ? 'text-emerald-400' : 'text-rose-400'}`}
             title={isConnected ? 'Live' : 'Reconnecting...'}
           >
-            <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 live-status-dot' : 'bg-rose-400'}`} />
             <span className="hidden sm:inline">{isConnected ? 'Live' : 'Reconnecting...'}</span>
           </div>
           {roomPin && (
             <button
               type="button"
-              onClick={() => { void navigator.clipboard?.writeText(roomPin).catch(() => undefined); }}
-              className="whitespace-nowrap rounded-lg border border-slate-700 px-2 py-1 font-mono text-xs text-slate-400 hover:bg-slate-800 hover:text-white shrink-0 transition-colors"
+              onClick={handleCopyPin}
+              className={`tactile-button whitespace-nowrap rounded-xl border px-2.5 py-1 font-mono text-xs shrink-0 cursor-pointer select-none transition-all ${
+                copiedPin
+                  ? 'border-emerald-500/70 bg-emerald-950/70 text-emerald-300 ring-1 ring-emerald-400/50 shadow-[0_0_12px_rgba(52,211,153,0.3)]'
+                  : 'border-slate-700/80 bg-slate-800/60 text-slate-300 hover:bg-slate-800 hover:text-white'
+              }`}
               title="Room PIN (click to copy)"
             >
-              PIN <span className="font-bold text-amber-300">{roomPin}</span>
+              {copiedPin ? (
+                <span className="inline-flex items-center gap-1 text-emerald-300 font-bold">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Copied</span>
+                </span>
+              ) : (
+                <>
+                  PIN <span className="font-black text-amber-300">#{roomPin}</span>
+                </>
+              )}
             </button>
           )}
           <button
             type="button"
             onClick={onOpenInfo}
-            className="lg:hidden flex items-center justify-center gap-1.5 rounded-lg border border-cyan-500/40 bg-gradient-to-r from-cyan-950/70 via-slate-900/80 to-slate-900/90 px-2.5 py-1 text-xs font-bold text-cyan-300 hover:from-cyan-900/80 hover:to-slate-800 hover:text-white shadow-[0_0_10px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/20 transition-all cursor-pointer active:scale-95 select-none shrink-0"
+            className="tactile-button lg:hidden flex items-center justify-center gap-1.5 rounded-xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/70 via-slate-900/80 to-slate-900/90 px-2.5 py-1 text-xs font-bold text-cyan-300 hover:from-cyan-900/80 hover:to-slate-800 hover:text-white shadow-[0_0_10px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/20 cursor-pointer select-none shrink-0"
             title="Match stats, word history, and tile bag"
             aria-label="Open match stats, word history, and tile bag"
           >
@@ -169,7 +190,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             <button
               type="button"
               onClick={onOpenGuide}
-              className="rounded-lg border border-slate-700 p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer active:scale-95 shrink-0"
+              className="tactile-button rounded-xl border border-slate-700/80 bg-slate-800/60 p-2 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer shrink-0"
               title="Game Guide & Cards"
               aria-label="Open Game Guide & Cards"
             >
@@ -179,11 +200,11 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="rounded-lg border border-slate-700 p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer active:scale-95 shrink-0"
+            className="tactile-button rounded-xl border border-slate-700/80 bg-slate-800/60 p-2 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer shrink-0"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
             aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           >
-            {isFullscreen ? <Minimize className="h-4 w-4 text-cyan-300" /> : <Maximize className="h-4 w-4" />}
+            {isFullscreen ? <Minimize className="h-4 w-4 text-cyan-300" /> : <Maximize className="h-4 w-4 text-slate-300" />}
           </button>
         </div>
       </div>

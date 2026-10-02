@@ -176,14 +176,14 @@ export const RightSidebar = memo(function RightSidebar({
               return (
                 <div
                   key={player.id}
-                  className={`relative flex flex-col p-2.5 rounded-xl transition-all ${
+                  className={`relative flex flex-col p-2.5 rounded-xl transition-all duration-200 ${
                     isDead || hasLeft
-                      ? 'bg-slate-950/60 border border-slate-800/50 opacity-50'
-                      : isMe
-                      ? 'bg-gradient-to-r from-pink-950/40 via-purple-950/30 to-slate-900/60 border border-pink-500/50 shadow-[0_0_14px_rgba(236,72,153,0.25)] ring-1 ring-pink-500/30'
+                      ? 'bg-slate-950/60 border border-slate-800/50 opacity-45'
                       : isCurrent
-                      ? 'bg-blue-950/40 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.15)]'
-                      : 'bg-slate-900/50 border border-slate-800/70 hover:border-slate-700/80'
+                      ? 'bg-gradient-to-r from-emerald-950/60 via-slate-900/80 to-slate-950/70 border-2 border-emerald-400/80 shadow-[0_0_18px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/40'
+                      : isMe
+                      ? 'bg-gradient-to-r from-amber-950/40 via-slate-900/70 to-slate-950/80 border border-amber-400/60 shadow-[0_0_16px_rgba(245,158,11,0.2)] ring-1 ring-amber-400/30'
+                      : 'bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -201,11 +201,18 @@ export const RightSidebar = memo(function RightSidebar({
                           isDead || hasLeft 
                             ? 'text-slate-500 line-through' 
                             : isMe 
-                            ? 'font-bold text-pink-200' 
-                            : 'font-medium text-slate-200'
+                            ? 'font-black text-amber-200 drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]' 
+                            : isCurrent
+                            ? 'font-bold text-emerald-200'
+                            : 'font-semibold text-slate-200'
                         }`}>
-                          {player.display_name} {isMe && '(You)'}
+                          {player.display_name}
                         </span>
+                        {isMe && (
+                          <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 shrink-0">
+                            YOU
+                          </span>
+                        )}
                         {player.is_host && (
                           <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0 drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]" />
                         )}
@@ -232,7 +239,10 @@ export const RightSidebar = memo(function RightSidebar({
                           </span>
                         )}
                         {isCurrent && !isDead && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#38bdf8] animate-pulse" />
+                          <span className="flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[9px] font-black text-emerald-300 tracking-wider shrink-0 uppercase animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                            TURN
+                          </span>
                         )}
                       </div>
                     </div>
@@ -241,12 +251,16 @@ export const RightSidebar = memo(function RightSidebar({
                     <div className="flex items-center gap-2 shrink-0">
                       <motion.span
                         key={player.score}
-                        initial={{ scale: 1.28, color: '#facc15' }}
-                        animate={{ scale: 1, color: '#34d399' }}
+                        initial={{ scale: 1.32, color: '#facc15' }}
+                        animate={{ scale: 1, color: isCurrent ? '#34d399' : '#f8fafc' }}
                         transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                        className="text-sm font-bold font-mono text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.4)] inline-block"
+                        className={`text-sm sm:text-base font-black font-mono tabular-nums inline-block ${
+                          isCurrent
+                            ? 'text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]'
+                            : 'text-white'
+                        }`}
                       >
-                        {player.score}
+                        {player.score} <span className="text-[10px] font-sans font-bold text-slate-400 uppercase">pts</span>
                       </motion.span>
                       {player.connection_status === 'ONLINE' ? (
                         <Wifi className="w-3.5 h-3.5 text-emerald-400/80" />
