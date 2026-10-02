@@ -11,8 +11,6 @@ import {
   History,
   ChevronDown,
   ChevronUp,
-  Layers,
-  BookOpen,
   Loader2,
   Copy,
   Check,
@@ -125,23 +123,17 @@ export const RightSidebar = memo(function RightSidebar({
   return (
     <aside className={`game-match-hud-content flex min-w-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-full'}`}>
       <div className="flex min-w-0 flex-col">
-        {/* TOP SECTION: COMPACT TILES STATUS CARD */}
+        {/* Remaining tiles take the same prominent position as the reference match rail. */}
         <div className="game-bag-panel shrink-0 px-4 pb-3 pt-3">
           <button
             ref={tileBagButtonRef}
             type="button"
             onClick={() => setIsTileBagOpen(true)}
-            className="group flex w-full items-center justify-between rounded-xl border border-amber-300/20 bg-amber-300/[0.045] px-3.5 py-3 text-left transition-colors hover:border-amber-300/40 hover:bg-amber-300/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 cursor-pointer"
+            className="group flex w-full flex-col items-center justify-center rounded-xl border border-amber-300/20 bg-amber-300/[0.045] px-3.5 py-3 text-center transition-colors hover:border-amber-300/40 hover:bg-amber-300/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 cursor-pointer"
             aria-label={`Show remaining letters, ${tileBagCount} tiles remaining`}
           >
-            <div className="flex items-center gap-2.5">
-              {/* Golden Tile Stack Icon */}
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-300/35 bg-amber-300/10">
-                <Layers className="h-4 w-4 text-amber-300" />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-300 group-hover:text-white transition-colors">Tiles left</span>
-            </div>
-            <span className="font-mono text-2xl font-black leading-none tabular-nums text-amber-300">
+            <span className="game-bag-label text-[10px] font-bold uppercase tracking-[0.16em] text-slate-300 group-hover:text-white transition-colors">Tiles left</span>
+            <span className="game-bag-count font-mono text-2xl font-black leading-none tabular-nums text-amber-300">
               {tileBagCount}
             </span>
           </button>
@@ -154,7 +146,7 @@ export const RightSidebar = memo(function RightSidebar({
             <div className="flex items-center gap-2">
               <Trophy className="h-4 w-4 text-amber-300" />
               <span className="text-[10px] font-extrabold tracking-[0.16em] text-slate-300 uppercase">
-                Players
+                Player status
               </span>
             </div>
             <span className="text-[10px] font-mono text-slate-400">
@@ -173,6 +165,8 @@ export const RightSidebar = memo(function RightSidebar({
               return (
                 <div
                   key={player.id}
+                  data-current={isCurrent && !isDead}
+                  data-inactive={isDead || hasLeft}
                   className={`relative flex flex-col rounded-xl border border-l-2 p-3 transition-colors duration-150 ${
                     isDead || hasLeft
                       ? 'border-slate-800 border-l-slate-700 bg-slate-900/20 opacity-55'
@@ -188,7 +182,7 @@ export const RightSidebar = memo(function RightSidebar({
                       {/* Letter crest keeps player identity visible without requiring profile photos. */}
                       <span
                         aria-hidden="true"
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-xs font-black uppercase shadow-inner ${
+                        className={`game-player-crest relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-black uppercase shadow-inner ${
                           isDead || hasLeft
                             ? 'border-slate-700 bg-slate-900 text-slate-500'
                             : isMe
@@ -199,12 +193,7 @@ export const RightSidebar = memo(function RightSidebar({
                         }`}
                       >
                         {player.display_name.trim().charAt(0) || '?'}
-                      </span>
-                      {/* Rank Number */}
-                      <span className={`w-4 shrink-0 text-center text-[10px] font-mono font-bold ${
-                        idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-amber-600' : 'text-slate-500'
-                      }`}>
-                        {idx + 1}.
+                        <span className="game-player-rank absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-amber-300/60 bg-slate-900 text-[8px] text-amber-200">{idx + 1}</span>
                       </span>
 
                       {/* Player Name */}
@@ -415,23 +404,24 @@ export const RightSidebar = memo(function RightSidebar({
                         }`}
                       >
                         <div className="flex min-w-0 items-center gap-2.5">
-                          <BookOpen className={`h-4 w-4 shrink-0 ${isExpanded ? 'text-cyan-300' : 'text-slate-500'}`} />
+                          <span aria-hidden="true" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-cyan-300/45 bg-cyan-300/10 text-xs font-black uppercase text-cyan-200">
+                            {actorName.trim().charAt(0) || '?'}
+                          </span>
                           <div className="flex min-w-0 flex-col gap-0.5">
-                            <span className="truncate text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500">
-                              {actorName}{entry.turn_number ? ` · Turn ${entry.turn_number}` : ''}
+                            <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.08em] text-amber-200">
+                              {actorName}
                             </span>
-                            <span className="truncate font-semibold tracking-wide text-slate-100">
+                            <span className="truncate text-[10px] font-medium tracking-wide text-slate-400">
                               {moveLabel}
                             </span>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          {entry.score !== undefined && entry.score > 0 && (
-                            <span className="font-mono text-xs font-bold tabular-nums text-emerald-300">
-                              +{entry.score}
-                            </span>
-                          )}
+                          <span className="flex flex-col items-end gap-0.5 font-mono text-[10px] font-bold tabular-nums text-slate-100">
+                            <span>{entry.score ?? 0} PTS</span>
+                            {entry.turn_number && <span className="text-[9px] font-normal text-slate-400">Turn {entry.turn_number}</span>}
+                          </span>
                           {hasWords && (
                             <span className="text-slate-500 transition-colors">
                               {isExpanded ? (

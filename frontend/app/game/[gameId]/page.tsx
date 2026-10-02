@@ -661,6 +661,7 @@ export default function GamePage() {
         isEliminated={isEliminated}
         isConnected={sync.isConnected}
         roomPin={gameState.game_pin ?? session.gamePin ?? null}
+        myPlayerName={myPlayer?.display_name}
         spectatorCount={gameState.spectator_count ?? 0}
         isMyTurn={isMyTurn}
         isBotPlacing={isBotTurn && (botStagedTiles.length > 0 || (sync.remoteBotTiles?.length ?? 0) > 0)}
@@ -715,8 +716,10 @@ export default function GamePage() {
 
       {sync.cardReveal && <CardRevealOverlay reveal={sync.cardReveal} />}
 
+      <div className="gameplay-body relative z-10 flex min-h-0 flex-1">
+      <div className="gameplay-play-area flex min-h-0 min-w-0 flex-1 flex-col">
       {/* Main: Board */}
-      <main className="gameplay-stage relative z-10 mx-auto flex w-full max-w-[1920px] flex-1 min-h-0">
+      <main className="gameplay-stage relative flex w-full flex-1 min-h-0">
         {/* Board canvas takes full space */}
         <div className="gameplay-world relative min-h-0 min-w-0 flex-1">
           {/* Top Overlays Stack: Toasts & Hint Suggestions (stacked vertically, never overlapping) */}
@@ -784,19 +787,6 @@ export default function GamePage() {
           </div>
         </div>
 
-        {/* Compact floating match HUD. Its size follows its contents, not the stage height. */}
-        <div className="gameplay-match-hud hidden lg:block">
-          <RightSidebar
-            players={gameState.players ?? []}
-            showHealth={gameState.max_turns === null}
-            myPlayerId={myPlayerId}
-            currentPlayerId={gameState.current_player_id ?? null}
-            tileBagCount={tileBagCount}
-            tileBagCounts={gameState.tile_bag_counts ?? {}}
-            moveHistory={sync.moveHistory}
-            cardUseEffects={sync.cardUseEffects}
-          />
-        </div>
       </main>
 
       {/* Mobile Info, Scoreboard & History Sheet Modal */}
@@ -814,8 +804,7 @@ export default function GamePage() {
         cardUseEffects={sync.cardUseEffects}
       />
 
-      {/* Independent tool / rack / turn-control modules; no spanning bottom panel. */}
-      <footer className="gameplay-control-stage relative z-20 mx-auto flex w-full max-w-[1920px] shrink-0 justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-5 sm:pb-4">
+      <footer className="gameplay-control-stage relative z-20 flex w-full shrink-0 justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-5 sm:pb-4">
         <div className="gameplay-control-content w-full min-w-0">
           {isSpectator ? (
             <div className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-xl border border-sky-500/25 bg-sky-950/40 px-4 py-2.5 text-center text-xs text-sky-300 select-none sm:text-sm">
@@ -887,6 +876,20 @@ export default function GamePage() {
           )}
         </div>
       </footer>
+      </div>
+      <div className="gameplay-match-hud hidden lg:block">
+        <RightSidebar
+          players={gameState.players ?? []}
+          showHealth={gameState.max_turns === null}
+          myPlayerId={myPlayerId}
+          currentPlayerId={gameState.current_player_id ?? null}
+          tileBagCount={tileBagCount}
+          tileBagCounts={gameState.tile_bag_counts ?? {}}
+          moveHistory={sync.moveHistory}
+          cardUseEffects={sync.cardUseEffects}
+        />
+      </div>
+      </div>
 
       {/* Floating Animated Score Burst Popup */}
       <AnimatePresence>

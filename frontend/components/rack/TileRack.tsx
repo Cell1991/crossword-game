@@ -523,7 +523,7 @@ export const TileRack = memo(function TileRack({
                     whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.05 } : undefined}
                     whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.94 } : undefined}
                     transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                    className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-colors ${
+                    className={`game-pass-action flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-medium text-xs sm:text-sm transition-colors ${
                       isMyTurn && !hasTemporaryTiles
                         ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/60 cursor-pointer shadow-sm'
                         : 'bg-slate-800/30 text-slate-600 border border-slate-800/60 cursor-not-allowed'

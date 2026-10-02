@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
-import { ArrowLeft, BookOpen, Check, Eye, Maximize, Minimize, ScrollText } from 'lucide-react';
+import { ArrowLeft, BookOpen, Check, ChevronDown, Eye, Maximize, Minimize, ScrollText } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { TurnBanner } from './TurnBanner';
 
@@ -21,6 +20,7 @@ interface GameHudProps {
   isEliminated?: boolean;
   isConnected: boolean;
   roomPin: string | null;
+  myPlayerName?: string;
   spectatorCount: number;
   isMyTurn: boolean;
   isBotPlacing?: boolean;
@@ -35,9 +35,9 @@ interface GameHudProps {
   debugSlot?: React.ReactNode;
 }
 
-/** Three independent HUD clusters; each keeps the original match actions and state. */
+/** Opaque match navigation above the playfield. */
 export const GameHud: React.FC<GameHudProps> = ({
-  isSpectator, isEliminated = false, isConnected, roomPin, spectatorCount,
+  isSpectator, isEliminated = false, isConnected, roomPin, myPlayerName, spectatorCount,
   isMyTurn, isBotPlacing = false, currentPlayer, nextPlayer, turnNumber, maxTurns,
   onExit, onOpenInfo, onOpenGuide, timer, debugSlot,
 }) => {
@@ -79,7 +79,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   };
 
   return (
-    <header className="gameplay-top-hud relative z-30 mx-auto grid w-full max-w-[1920px] shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 px-3 py-3 sm:px-5 sm:py-4">
+    <header className="gameplay-top-hud relative z-30 grid w-full shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3">
       <div className="gameplay-hud-cluster gameplay-hud-left flex min-w-0 items-center gap-2">
         <button type="button" onClick={onExit} className="tactile-button flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-900/80 text-slate-300 hover:border-slate-500 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70" title={isSpectator ? 'Stop watching' : 'Exit game'} aria-label={isSpectator ? 'Stop watching' : 'Exit game'}>
           <ArrowLeft className="h-4 w-4" />
@@ -95,21 +95,22 @@ export const GameHud: React.FC<GameHudProps> = ({
         </div>
       </div>
 
-      <div className="gameplay-hud-center flex min-w-0 flex-col items-center justify-center gap-1.5">
+      <div className="gameplay-hud-center flex min-w-0 flex-col items-center justify-center">
         <div className="gameplay-brand flex items-center gap-2">
-          <Image src="/wordx-icon-256.png?v=20260915" alt="WordX" width={25} height={25} className="h-6 w-6 rounded-md object-contain" />
-          <span className="text-base font-black tracking-tight text-white sm:text-lg">Word<span className="text-amber-400">X</span></span>
-          <span className="hidden text-[9px] font-bold uppercase tracking-[.24em] text-slate-500 sm:inline">Arena</span>
+          <span className="text-xl font-black tracking-tight text-slate-100 sm:text-2xl">Word<span className="text-amber-400">X</span></span>
         </div>
-        <div className="gameplay-turn-state flex min-w-0 items-center justify-center gap-2">
-          {timer}
+        <div className="gameplay-turn-state flex min-w-0 items-center justify-center gap-2 lg:hidden">
           <TurnBanner mobile isMyTurn={isMyTurn} isBotPlacing={isBotPlacing} isEliminated={isEliminated} isSpectator={isSpectator} isConnected={isConnected} currentPlayer={currentPlayer} nextPlayer={nextPlayer} turnNumber={turnNumber} maxTurns={maxTurns} />
         </div>
       </div>
 
       <div className="gameplay-hud-cluster gameplay-hud-right flex min-w-0 items-center justify-end gap-2">
-        <button type="button" onClick={onOpenInfo} className="tactile-button flex h-9 items-center gap-1.5 rounded-lg border border-cyan-400/25 bg-slate-900/65 px-2.5 text-xs font-bold text-cyan-100 hover:border-cyan-300/50 sm:hidden" title="Match stats, word history, and tile bag" aria-label="Open match stats, word history, and tile bag">
-          <ScrollText className="h-3.5 w-3.5 text-cyan-300" /><span>Stats</span>
+        <div className="gameplay-header-timer">{timer}</div>
+        <button type="button" onClick={onOpenInfo} className="gameplay-info-button tactile-button flex h-9 items-center gap-1.5 rounded-lg border border-slate-600/60 bg-slate-700/45 px-2.5 text-xs font-bold text-slate-100 hover:border-amber-300/50" title="Match stats, word history, and tile bag" aria-label="Open match stats, word history, and tile bag">
+          <ScrollText className="h-3.5 w-3.5 text-cyan-300 sm:hidden" />
+          <span className="hidden sm:inline">MATCH INFO</span><span className="sm:hidden">Stats</span>
+          {myPlayerName && <span aria-hidden="true" className="gameplay-player-mark hidden h-6 w-6 items-center justify-center rounded-full border border-amber-300/60 bg-amber-300/15 text-[10px] font-black text-amber-200 sm:flex">{myPlayerName.trim().charAt(0).toUpperCase()}</span>}
+          <ChevronDown className="hidden h-3 w-3 text-slate-400 sm:block" />
         </button>
         <div className="hidden sm:block"><SpectatorBadge count={spectatorCount} /></div>
         {debugSlot}
