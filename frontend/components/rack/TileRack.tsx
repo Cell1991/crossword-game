@@ -203,134 +203,135 @@ export const TileRack = memo(function TileRack({
       )}
 
       {/* Compact High-Tech Gaming Console Dock */}
-      <div className="game-control-layout relative flex w-full flex-col lg:flex-row items-center justify-center gap-1.5 sm:gap-2 lg:gap-3.5">
+      <div className="game-control-layout relative flex w-full flex-col lg:flex-row items-center justify-center gap-1.5 sm:gap-2 lg:gap-4">
         {/* Specular Edge Highlight Trim */}
         <div aria-hidden="true" className="pedestal-top-glint absolute inset-x-8 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent pointer-events-none" />
 
-        {/* LEFT COLUMN (Desktop) / TOP MODULE (Mobile): Power Cards on Top, 7-Tile Stand on Bottom */}
-        <div className="game-rack-module game-rack-center relative flex w-full max-w-full shrink-0 flex-col items-center gap-1.5 lg:w-[344px] lg:max-w-[344px] overflow-visible">
-          {/* Top Row: Power Cards Bay */}
-          {powerCardSlot && (
-            <div className="game-power-strip w-full flex items-center justify-center">
-              {powerCardSlot}
-            </div>
-          )}
-
-          {/* Bottom Row: 7-Tile Stand */}
-          <div className="w-full overflow-x-auto overflow-y-visible px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible pt-1 pb-1">
-              <div
-                ref={rackRef}
-                className={`game-tile-tray relative flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl border px-2 py-1.5 sm:w-auto sm:gap-1.5 sm:px-2.5 sm:py-1.5 min-h-[52px] sm:min-h-[56px] ${
-                  isExternalDragActive
-                    ? 'border-cyan-300/80 bg-cyan-950/40 ring-2 ring-cyan-300/40'
-                    : 'border-white/10 bg-[#070f1a]/90 shadow-[inset_0_2px_8px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)]'
-                } transition-all`}
-              >
-                {slots.map((tile, slotIndex) => {
-                  const isDropTarget = dragOverSlot === slotIndex;
-                  if (!tile) {
-                    return (
-                      <div
-                        key={`slot-${slotIndex}`}
-                        data-rack-slot={slotIndex}
-                        aria-hidden="true"
-                        className={`relative shrink-0 h-[44px] w-[38px] sm:h-[46px] sm:w-[42px] rounded-[10px] border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:rounded-xl ${
-                          isDropTarget
-                            ? 'ring-2 ring-sky-400/90'
-                            : isExternalDragActive
-                            ? 'ring-1 ring-sky-400/40'
-                            : ''
-                        }`}
-                      >
-                        <span className="absolute inset-[6px] rounded-md border border-dashed border-sky-400/20" />
-                      </div>
-                    );
-                  }
-
-                  const isSelected = selectedTileId === tile.id;
-                  const displayLetter = getDisplayLetter(tile);
-                  const isDesignatedBlank = isBlankLetter(tile.letter) && Boolean(designatedBlankLetters[tile.id]);
-                  const isMarkedForExchange = exchangeTileIds?.includes(tile.id) ?? false;
-                  const isDragging = draggedSlot === slotIndex;
+        {/* LEFT / CENTER: 7-TILE RACK & POWER CARDS */}
+        <div className="game-rack-module game-rack-center relative order-1 flex w-full max-w-full shrink-0 flex-col items-center gap-1.5 lg:w-[344px] lg:max-w-[344px] overflow-visible">
+          {/* 7-Tile Stand: Row 2 */}
+          <div className="order-2 w-full overflow-x-auto overflow-y-visible px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible pt-2 -mt-1 pb-1">
+            <div
+              ref={rackRef}
+              className={`game-tile-tray relative flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl border px-2 py-1.5 sm:w-auto sm:gap-1.5 sm:px-2.5 sm:py-1.5 min-h-[52px] sm:min-h-[56px] ${
+                isExternalDragActive
+                  ? 'border-cyan-300/80 bg-cyan-950/40 ring-2 ring-cyan-300/40'
+                  : 'border-white/10 bg-[#070f1a]/90 shadow-[inset_0_2px_8px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)]'
+              } transition-all`}
+            >
+              {slots.map((tile, slotIndex) => {
+                const isDropTarget = dragOverSlot === slotIndex;
+                if (!tile) {
                   return (
                     <div
                       key={`slot-${slotIndex}`}
                       data-rack-slot={slotIndex}
-                      className="relative shrink-0 h-[44px] w-[38px] sm:h-[46px] sm:w-[42px]"
+                      aria-hidden="true"
+                      className={`relative shrink-0 h-[44px] w-[38px] sm:h-[46px] sm:w-[42px] rounded-[10px] border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:rounded-xl ${
+                        isDropTarget
+                          ? 'ring-2 ring-sky-400/90'
+                          : isExternalDragActive
+                          ? 'ring-1 ring-sky-400/40'
+                          : ''
+                      }`}
                     >
-                      {/* Slot frame / seat behind tile */}
-                      <div
-                        aria-hidden="true"
-                        className={`absolute inset-0 rounded-[10px] border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:rounded-xl ${
-                          isDropTarget
-                            ? 'ring-2 ring-sky-400/90'
-                            : isExternalDragActive
-                            ? 'ring-1 ring-sky-400/40'
-                            : ''
-                        }`}
-                      >
-                        <span className="absolute inset-[6px] rounded-md border border-dashed border-sky-400/20" />
-                      </div>
-
-                      {/* Tile Button with spring physics */}
-                      <motion.button
-                        key={tile.id}
-                        layout={!isDragging}
-                        data-rack-slot={slotIndex}
-                        data-rack-tile-id={tile.id}
-                        onClick={() => handleTileClick(tile)}
-                        onPointerDown={(event) => handlePointerDown(event, slotIndex)}
-                        onPointerMove={(event) => handlePointerMove(event, tile)}
-                        onPointerUp={handlePointerUp}
-                        disabled={!canStageMove}
-                        aria-pressed={isExchanging ? isMarkedForExchange : undefined}
-                        whileHover={canStageMove && !isDragging ? { scale: 1.06, y: -4 } : undefined}
-                        whileTap={canStageMove ? { scale: 0.94 } : undefined}
-                        transition={{ type: 'spring', stiffness: 450, damping: 25 }}
-                        className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-100/80 font-sans transition-all select-none touch-none overflow-hidden sm:rounded-xl ${
-                          isDragging
-                            ? 'z-20 scale-105 -translate-y-2.5 opacity-40 shadow-2xl cursor-grabbing'
-                            : isDropTarget
-                            ? 'translate-x-1 ring-2 ring-sky-400/80'
-                            : isMarkedForExchange
-                            ? '-translate-y-2.5 border-2 border-amber-100 shadow-lg shadow-amber-500/40 ring-4 ring-amber-300/70 cursor-pointer'
-                            : isSelected
-                            ? '-translate-y-2.5 border-2 border-cyan-300 shadow-[0_0_18px_rgba(59,130,246,0.55)] ring-4 ring-cyan-400/60'
-                            : canStageMove
-                            ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_6px_12px_rgba(74,34,8,0.48),0_2px_4px_rgba(34,24,20,0.35)] hover:brightness-110 cursor-pointer'
-                            : 'opacity-65 cursor-not-allowed shadow-md'
-                        }`}
-                      >
-                        {/* 3D Specular Top Bevel Glass Highlight */}
-                        <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
-
-                        {/* Letter / Wildcard Star */}
-                        {isBlankLetter(tile.letter) && !isDesignatedBlank ? (
-                          <div className="relative z-20 flex items-center justify-center">
-                            <svg viewBox="0 0 24 24" className="tile-blank-star w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
-                              <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
-                            </svg>
-                          </div>
-                        ) : (
-                          <span className="tile-letter tile-letter-orange relative z-20 text-[26px] sm:text-[28px] leading-none font-maple">
-                            {displayLetter}
-                          </span>
-                        )}
-
-                        {/* Value Badge */}
-                        <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[9.5px] font-maple sm:bottom-1 sm:right-1.5 sm:text-[11px] leading-none">
-                          {tile.value}
-                        </span>
-                      </motion.button>
+                      <span className="absolute inset-[6px] rounded-md border border-dashed border-sky-400/20" />
                     </div>
                   );
-                })}
-              </div>
+                }
+
+                const isSelected = selectedTileId === tile.id;
+                const displayLetter = getDisplayLetter(tile);
+                const isDesignatedBlank = isBlankLetter(tile.letter) && Boolean(designatedBlankLetters[tile.id]);
+                const isMarkedForExchange = exchangeTileIds?.includes(tile.id) ?? false;
+                const isDragging = draggedSlot === slotIndex;
+                return (
+                  <div
+                    key={`slot-${slotIndex}`}
+                    data-rack-slot={slotIndex}
+                    className="relative shrink-0 h-[44px] w-[38px] sm:h-[46px] sm:w-[42px]"
+                  >
+                    {/* Slot frame / seat behind tile */}
+                    <div
+                      aria-hidden="true"
+                      className={`absolute inset-0 rounded-[10px] border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:rounded-xl ${
+                        isDropTarget
+                          ? 'ring-2 ring-sky-400/90'
+                          : isExternalDragActive
+                          ? 'ring-1 ring-sky-400/40'
+                          : ''
+                      }`}
+                    >
+                      <span className="absolute inset-[6px] rounded-md border border-dashed border-sky-400/20" />
+                    </div>
+
+                    {/* Tile Button with spring physics */}
+                    <motion.button
+                      key={tile.id}
+                      layout={!isDragging}
+                      data-rack-slot={slotIndex}
+                      data-rack-tile-id={tile.id}
+                      onClick={() => handleTileClick(tile)}
+                      onPointerDown={(event) => handlePointerDown(event, slotIndex)}
+                      onPointerMove={(event) => handlePointerMove(event, tile)}
+                      onPointerUp={handlePointerUp}
+                      disabled={!canStageMove}
+                      aria-pressed={isExchanging ? isMarkedForExchange : undefined}
+                      whileHover={canStageMove && !isDragging ? { scale: 1.06, y: -4 } : undefined}
+                      whileTap={canStageMove ? { scale: 0.94 } : undefined}
+                      transition={{ type: 'spring', stiffness: 450, damping: 25 }}
+                      className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-100/80 font-sans transition-all select-none touch-none overflow-hidden sm:rounded-xl ${
+                        isDragging
+                          ? 'z-20 scale-105 -translate-y-2.5 opacity-40 shadow-2xl cursor-grabbing'
+                          : isDropTarget
+                          ? 'translate-x-1 ring-2 ring-sky-400/80'
+                          : isMarkedForExchange
+                          ? '-translate-y-2.5 border-2 border-amber-100 shadow-lg shadow-amber-500/40 ring-4 ring-amber-300/70 cursor-pointer'
+                          : isSelected
+                          ? '-translate-y-2.5 border-2 border-cyan-300 shadow-[0_0_18px_rgba(59,130,246,0.55)] ring-4 ring-cyan-400/60'
+                          : canStageMove
+                          ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_6px_12px_rgba(74,34,8,0.48),0_2px_4px_rgba(34,24,20,0.35)] hover:brightness-110 cursor-pointer'
+                          : 'opacity-65 cursor-not-allowed shadow-md'
+                      }`}
+                    >
+                      {/* 3D Specular Top Bevel Glass Highlight */}
+                      <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
+
+                      {/* Letter / Wildcard Star */}
+                      {isBlankLetter(tile.letter) && !isDesignatedBlank ? (
+                        <div className="relative z-20 flex items-center justify-center">
+                          <svg viewBox="0 0 24 24" className="tile-blank-star w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+                            <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+                          </svg>
+                        </div>
+                      ) : (
+                        <span className="tile-letter tile-letter-orange relative z-20 text-[26px] sm:text-[28px] leading-none font-maple">
+                          {displayLetter}
+                        </span>
+                      )}
+
+                      {/* Value Badge */}
+                      <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[9.5px] font-maple sm:bottom-1 sm:right-1.5 sm:text-[11px] leading-none">
+                        {tile.value}
+                      </span>
+                    </motion.button>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* RIGHT: DESKTOP VIEW (>= 1024px): 2 BALANCED ROWS WITH FULL TEXT LABELS (Original PC UI) */}
-          <div className="game-actions-container hidden lg:flex order-2 w-[320px] shrink-0 flex-col gap-1.5">
+          {/* Power Cards Bay: Row 1 (Top) */}
+          {powerCardSlot && (
+            <div className="game-power-strip order-1 flex w-full max-w-full items-center justify-center">
+              {powerCardSlot}
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT / BOTTOM: ACTION CONTROLS */}
+        {/* DESKTOP VIEW (>= 1024px): 2 BALANCED ROWS WITH FULL TEXT LABELS (Original PC UI) */}
+        <div className="game-actions-container hidden lg:flex order-2 w-[320px] shrink-0 flex-col gap-1.5">
           {/* Desktop Row 1: Utility Controls (Recall, Shuffle, Swap) */}
           <div className="grid grid-cols-3 gap-1.5 w-full">
             {isExchanging ? (
