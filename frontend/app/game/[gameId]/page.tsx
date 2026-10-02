@@ -265,93 +265,96 @@ export default function GamePage() {
 
   const handleConfirmMove = useCallback(async () => {
     if (!myPlayerId || temporaryTiles.length === 0) return;
-    if (validationState !== true) {
-      setError(validationState === null
-        ? 'Still checking the word, try again in a moment'
-        : validationReason || 'Fix the invalid word before confirming');
+    if (validationState === false) {
+      setError(validationReason || 'Fix the invalid word before confirming');
       return;
     }
     const tilesToCommit = [...temporaryTiles];
-    const moveScore = staged.estimatedScore;
+    const wasBingo = tilesToCommit.length >= 7;
+    const moveScore = (staged.estimatedScore && staged.estimatedScore > 0)
+      ? staged.estimatedScore
+      : tilesToCommit.reduce((sum, t) => sum + (t.value || 1), 0);
+
     setIsSubmitting(true);
+
+    // 1. INSTANT (0ms) Feedback: Score burst, celebrations & optimistic state update
+    if (moveScore > 0) {
+      setScoreBurst({ score: moveScore, isBingo: wasBingo, key: Date.now() });
+      setTimeout(() => setScoreBurst(null), 2400);
+    }
+    if (wasBingo) {
+      toasts.flashInfo('🎉 BINGO! All 7 tiles placed (+50 Bonus Points)!');
+      confetti({
+        particleCount: 90,
+        spread: 80,
+        origin: { y: 0.65 },
+        colors: ['#38bdf8', '#fbbf24', '#34d399', '#f43f5e', '#a855f7'],
+      });
+      setTimeout(() => {
+        confetti({
+          particleCount: 50,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0.15, y: 0.65 },
+          colors: ['#38bdf8', '#fbbf24', '#34d399'],
+        });
+        confetti({
+          particleCount: 50,
+          angle: 120,
+          spread: 55,
+          origin: { x: 0.85, y: 0.65 },
+          colors: ['#38bdf8', '#fbbf24', '#34d399'],
+        });
+      }, 220);
+    } else if (moveScore >= 12) {
+      confetti({
+        particleCount: 35,
+        spread: 55,
+        origin: { y: 0.7 },
+        colors: ['#34d399', '#38bdf8', '#fbbf24'],
+      });
+    }
+
+    const committedTileIds = new Set(tilesToCommit.map(t => t.tile_id));
+    setGameState(prev => {
+      if (!prev) return prev;
+      const nextBoard = { ...prev.board_state };
+      for (const t of tilesToCommit) {
+        nextBoard[`${t.row}_${t.col}`] = {
+          row: t.row,
+          col: t.col,
+          letter: t.letter,
+          value: t.value,
+          player_id: myPlayerId,
+          turn_number: prev.turn_number,
+        };
+      }
+      return {
+        ...prev,
+        board_state: nextBoard,
+        players: prev.players.map(p => {
+          if (p.id === myPlayerId) {
+            return {
+              ...p,
+              score: (p.score || 0) + moveScore,
+              rack: (p.rack || []).filter(tile => !committedTileIds.has(tile.id)),
+            };
+          }
+          return p;
+        }),
+      };
+    });
+
+    clearStagedMove();
+    cards.clearHints();
+
+    // 2. Authoritative background server commit
     try {
       const freezeTileId = cards.deferredFreezeTileId ?? undefined;
-      const wasBingo = tilesToCommit.length >= 7;
       await commitMove(gameId, myPlayerId, tilesToCommit, freezeTileId);
-      if (wasBingo) {
-        toasts.flashInfo('🎉 BINGO! All 7 tiles placed (+50 Bonus Points)!');
-        confetti({
-          particleCount: 90,
-          spread: 80,
-          origin: { y: 0.65 },
-          colors: ['#38bdf8', '#fbbf24', '#34d399', '#f43f5e', '#a855f7'],
-        });
-        setTimeout(() => {
-          confetti({
-            particleCount: 50,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0.15, y: 0.65 },
-            colors: ['#38bdf8', '#fbbf24', '#34d399'],
-          });
-          confetti({
-            particleCount: 50,
-            angle: 120,
-            spread: 55,
-            origin: { x: 0.85, y: 0.65 },
-            colors: ['#38bdf8', '#fbbf24', '#34d399'],
-          });
-        }, 220);
-      } else if (moveScore && moveScore >= 12) {
-        confetti({
-          particleCount: 35,
-          spread: 55,
-          origin: { y: 0.7 },
-          colors: ['#34d399', '#38bdf8', '#fbbf24'],
-        });
-      }
-
-      if (moveScore && moveScore > 0) {
-        setScoreBurst({ score: moveScore, isBingo: wasBingo, key: Date.now() });
-        setTimeout(() => setScoreBurst(null), 2400);
-      }
-
-      // Optimistically bake placed tiles directly into board_state and remove them from rack
-      // BEFORE clearing staged move so tiles never vanish from the board for even a fraction of a second!
-      const committedTileIds = new Set(tilesToCommit.map(t => t.tile_id));
-      setGameState(prev => {
-        if (!prev) return prev;
-        const nextBoard = { ...prev.board_state };
-        for (const t of tilesToCommit) {
-          nextBoard[`${t.row}_${t.col}`] = {
-            row: t.row,
-            col: t.col,
-            letter: t.letter,
-            value: t.value,
-            player_id: myPlayerId,
-            turn_number: prev.turn_number,
-          };
-        }
-        return {
-          ...prev,
-          board_state: nextBoard,
-          players: prev.players.map(p => {
-            if (p.id === myPlayerId && p.rack) {
-              return {
-                ...p,
-                rack: p.rack.filter(tile => !committedTileIds.has(tile.id)),
-              };
-            }
-            return p;
-          }),
-        };
-      });
-
-      clearStagedMove();
-      cards.clearHints();
-      reload();
     } catch (error: unknown) {
       flashError(error instanceof Error ? error.message : 'Failed to commit move');
+      reload();
     } finally {
       setIsSubmitting(false);
     }
