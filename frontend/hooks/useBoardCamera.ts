@@ -35,11 +35,11 @@ function clampOffset(
   viewportHeight: number
 ): Offset {
   const cellSize = BASE_CELL_SIZE * scale;
-  // Dynamic buffer allowing panning across extended coordinates
-  const minBoardCol = -25;
-  const maxBoardCol = BOARD_COLS + 25;
-  const minBoardRow = -25;
-  const maxBoardRow = BOARD_ROWS + 25;
+  // Wide buffer allowing panning across extended infinite coordinates
+  const minBoardCol = -150;
+  const maxBoardCol = BOARD_COLS + 150;
+  const minBoardRow = -150;
+  const maxBoardRow = BOARD_ROWS + 150;
 
   const minX = viewportWidth * 0.1 - maxBoardCol * cellSize;
   const maxX = viewportWidth * 0.9 - minBoardCol * cellSize;
@@ -156,12 +156,11 @@ export function useBoardCamera() {
       zoomBy(Math.exp(-delta * WHEEL_ZOOM_SPEED), clientX, clientY);
     };
 
-    const screenToCell = (screenX: number, screenY: number): { row: number; col: number } | null => {
+    const screenToCell = (screenX: number, screenY: number): { row: number; col: number } => {
       const { scale, offset } = viewRef.current;
       const cellSize = BASE_CELL_SIZE * scale;
       const col = Math.floor((screenX - offset.x) / cellSize);
       const row = Math.floor((screenY - offset.y) / cellSize);
-      if (row < 0 || row >= BOARD_ROWS || col < 0 || col >= BOARD_COLS) return null;
       return { row, col };
     };
 
