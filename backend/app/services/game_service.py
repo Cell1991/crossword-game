@@ -580,6 +580,8 @@ class GameService:
             raise HTTPException(status_code=404, detail="Game or player not found")
         if player.connection_status != "OFFLINE":
             player.connection_status = status
+            if status == "OFFLINE":
+                player.hp = 0
 
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
         players = (await db.execute(stmt_players)).scalars().all()
@@ -589,7 +591,7 @@ class GameService:
         # Check if any human players are still in the game
         human_players_in_game = [
             p for p in players
-            if p.connection_status != "OFFLINE" and not BotService.is_bot_player(p)
+            if p.connection_status != "OFFLINE" and not BotService.is_bot_player(p) and p.hp > 0
         ]
 
         if not human_players_in_game:
@@ -601,6 +603,14 @@ class GameService:
                 room.finished_at = get_utc_now()
             await db.flush()
             return game, True, "ALL_PLAYERS_LEFT", winner
+
+        # Check if only 1 living player remains after an OFFLINE leave
+        in_game = GameService.players_in_game(players)
+        if len(players) > 1 and len(in_game) <= 1:
+            winner_id = in_game[0].id if in_game else GameEndService.determine_winner(GameService.players_summary(players))
+            winner_id = await GameService.finish_game(db, game, players, winner_id)
+            await db.flush()
+            return game, True, "PLAYER_LEFT", winner_id
 
         if game.status != "PLAYING" or game.current_player_id != player_id:
             await db.flush()
@@ -614,6 +624,60 @@ class GameService:
                 return game, False, None, None
 
         return await GameService.pass_turn(db, game_id, player_id)
+
+    @staticmethod
+    async def eliminate_disconnected_player(
+        db: AsyncSession, game_id: str, player_id: str
+    ) -> tuple[Optional[Game], bool, Optional[str], Optional[str]]:
+        """
+        Eliminates a player who has disconnected for >= 2 minutes (120s):
+        Sets HP to 0 and connection_status to OFFLINE (knocked out).
+        Advances turn if it is currently their turn, and checks for game over.
+        """
+        stmt_game = select(Game).where(Game.id == game_id).with_for_update()
+        game = (await db.execute(stmt_game)).scalar_one_or_none()
+        stmt_player = select(GamePlayer).where(
+            GamePlayer.id == player_id, GamePlayer.game_id == game_id
+        ).with_for_update()
+        player = (await db.execute(stmt_player)).scalar_one_or_none()
+
+        if not game or not player:
+            return None, False, None, None
+
+        if game.status != "PLAYING":
+            player.connection_status = "OFFLINE"
+            player.hp = 0
+            await db.flush()
+            return game, False, None, None
+
+        # Mark player as dead / offline
+        player.hp = 0
+        player.connection_status = "OFFLINE"
+
+        stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
+        players = (await db.execute(stmt_players)).scalars().all()
+
+        from app.services.bot_service import BotService
+
+        # Check if all human players left
+        human_players_in_game = [
+            p for p in players
+            if p.connection_status != "OFFLINE" and not BotService.is_bot_player(p) and p.hp > 0
+        ]
+        if not human_players_in_game:
+            winner = await GameService.finish_game(db, game, players, None)
+            room = (await db.execute(select(GameRoom).where(GameRoom.id == game.id))).scalar_one_or_none()
+            if room:
+                room.status = "ABANDONED"
+                room.finished_at = get_utc_now()
+            await db.flush()
+            return game, True, "ALL_PLAYERS_LEFT", winner
+
+        # Validate turn order and check for game over (e.g. only 1 surviving player)
+        validation = await GameService.ensure_turn_order_valid(db, game, players)
+        await db.flush()
+
+        return game, validation["game_over"], validation["reason"], validation["winner_id"]
 
     @staticmethod
     async def exchange_tiles(

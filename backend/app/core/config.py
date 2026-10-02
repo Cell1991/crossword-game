@@ -38,6 +38,9 @@ class Settings(BaseModel):
     # A dropped WebSocket (often just a page refresh) only counts as leaving if the player
     # has not reconnected within this many seconds.
     DISCONNECT_GRACE_SECONDS: float = 15
+    # If a player remains disconnected / tab unfocused for more than 2 minutes (120s),
+    # they are counted as dead (hp = 0, eliminated).
+    DISCONNECT_ELIMINATE_SECONDS: float = 120.0
     TURN_TIMER_SECONDS: int = 0      # 0 means timer disabled by default
     # How long an opponent has to play SHIELD before a pending DAMAGE/SWAP effect finalizes.
     SHIELD_WINDOW_SECONDS: float = 1

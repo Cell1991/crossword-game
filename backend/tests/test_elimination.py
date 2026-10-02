@@ -122,3 +122,156 @@ async def test_elimination_ends_game_when_one_player_remains():
         assert res.game_over, "Game should be over when opponent HP reaches 0"
         assert res.winner_id == "p1_2p", f"Winner should be p1_2p, got {res.winner_id}"
         assert game_ret.status == "FINISHED"
+
+
+@pytest.mark.asyncio
+async def test_eliminate_disconnected_player_3p_advances_turn_and_sets_hp_zero():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    async with AsyncSessionLocal() as db_session:
+        room = GameRoom(
+            id="game-dc-elim-3p",
+            game_pin="888777",
+            host_player_id="p1_dc",
+            game_mode="HP",
+            starting_hp=100,
+            max_players=3,
+            status="PLAYING",
+        )
+        game = Game(
+            id="game-dc-elim-3p",
+            status="PLAYING",
+            current_player_id="p2_dc",
+            turn_number=2,
+            starting_hp=100,
+            tile_bag=[],
+            board_state={},
+        )
+        p1 = GamePlayer(
+            id="p1_dc", game_id=game.id, display_name="Player 1",
+            hp=100, max_hp=100, turn_order=0, connection_status="ONLINE", session_token="tok_p1_dc",
+            rack=[],
+        )
+        p2 = GamePlayer(
+            id="p2_dc", game_id=game.id, display_name="Player 2 (DC)",
+            hp=80, max_hp=100, turn_order=1, connection_status="DISCONNECTED", session_token="tok_p2_dc",
+            rack=[],
+        )
+        p3 = GamePlayer(
+            id="p3_dc", game_id=game.id, display_name="Player 3",
+            hp=100, max_hp=100, turn_order=2, connection_status="ONLINE", session_token="tok_p3_dc",
+            rack=[],
+        )
+        db_session.add_all([room, game, p1, p2, p3])
+        await db_session.commit()
+
+        # Simulate 2-minute timeout elimination of p2_dc
+        game_ret, is_over, reason, winner = await GameService.eliminate_disconnected_player(
+            db_session, "game-dc-elim-3p", "p2_dc"
+        )
+        await db_session.commit()
+
+        assert p2.hp == 0, f"Player 2 should be dead (hp=0), got {p2.hp}"
+        assert p2.connection_status == "OFFLINE"
+        assert not is_over, "Game should not be over since P1 and P3 are still alive"
+        assert game.current_player_id == "p3_dc", f"Turn should advance to p3_dc, got {game.current_player_id}"
+
+
+@pytest.mark.asyncio
+async def test_eliminate_disconnected_player_2p_ends_game_with_winner():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    async with AsyncSessionLocal() as db_session:
+        room = GameRoom(
+            id="game-dc-elim-2p",
+            game_pin="888666",
+            host_player_id="p1_dc2",
+            game_mode="HP",
+            starting_hp=100,
+            max_players=2,
+            status="PLAYING",
+        )
+        game = Game(
+            id="game-dc-elim-2p",
+            status="PLAYING",
+            current_player_id="p2_dc2",
+            turn_number=1,
+            starting_hp=100,
+            tile_bag=[],
+            board_state={},
+        )
+        p1 = GamePlayer(
+            id="p1_dc2", game_id=game.id, display_name="Surviving Player",
+            hp=100, max_hp=100, turn_order=0, connection_status="ONLINE", session_token="tok_p1_dc2",
+            rack=[],
+        )
+        p2 = GamePlayer(
+            id="p2_dc2", game_id=game.id, display_name="Disconnected Player",
+            hp=100, max_hp=100, turn_order=1, connection_status="DISCONNECTED", session_token="tok_p2_dc2",
+            rack=[],
+        )
+        db_session.add_all([room, game, p1, p2])
+        await db_session.commit()
+
+        game_ret, is_over, reason, winner = await GameService.eliminate_disconnected_player(
+            db_session, "game-dc-elim-2p", "p2_dc2"
+        )
+        await db_session.commit()
+
+        assert p2.hp == 0
+        assert p2.connection_status == "OFFLINE"
+        assert is_over is True
+        assert winner == "p1_dc2"
+        assert game.status == "FINISHED"
+
+
+@pytest.mark.asyncio
+async def test_leave_game_sets_hp_zero_and_eliminates_player():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    async with AsyncSessionLocal() as db_session:
+        room = GameRoom(
+            id="game-leave-test",
+            game_pin="888555",
+            host_player_id="p1_lv",
+            game_mode="HP",
+            starting_hp=100,
+            max_players=2,
+            status="PLAYING",
+        )
+        game = Game(
+            id="game-leave-test",
+            status="PLAYING",
+            current_player_id="p2_lv",
+            turn_number=1,
+            starting_hp=100,
+            tile_bag=[],
+            board_state={},
+        )
+        p1 = GamePlayer(
+            id="p1_lv", game_id=game.id, display_name="Staying Player",
+            hp=100, max_hp=100, turn_order=0, connection_status="ONLINE", session_token="tok_p1_lv",
+            rack=[],
+        )
+        p2 = GamePlayer(
+            id="p2_lv", game_id=game.id, display_name="Leaving Player",
+            hp=100, max_hp=100, turn_order=1, connection_status="ONLINE", session_token="tok_p2_lv",
+            rack=[],
+        )
+        db_session.add_all([room, game, p1, p2])
+        await db_session.commit()
+
+        game_ret, is_over, reason, winner = await GameService.leave_game(
+            db_session, "game-leave-test", "p2_lv", status="OFFLINE"
+        )
+        await db_session.commit()
+
+        assert p2.hp == 0
+        assert p2.connection_status == "OFFLINE"
+        assert is_over is True
+        assert winner == "p1_lv"
+        assert game.status == "FINISHED"
+

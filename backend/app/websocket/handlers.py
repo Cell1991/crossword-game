@@ -35,7 +35,8 @@ async def websocket_endpoint(
 
         player_id = player.id
         player_name = player.display_name
-        player.connection_status = "ONLINE"
+        if player.hp > 0 and player.connection_status != "OFFLINE":
+            player.connection_status = "ONLINE"
         # The room, not the caller's own `debug` query param, decides whether this socket may skip
         # disconnect-grace handling — otherwise any player in a real game could tack `&debug=1` onto
         # their own connection to make themselves immune to ever being marked disconnected.
@@ -124,18 +125,23 @@ async def handle_disconnect(
 ) -> None:
     """
     A dropped socket is often just a page refresh. Give the player time to reconnect before
-    marking them DISCONNECTED and passing their turn. Unlike leaving (OFFLINE), they stay in the
-    game: a locked phone must not hand the other players a win. Reconnecting marks them ONLINE again.
+    marking them DISCONNECTED and passing their turn.
 
-    A debug-game socket (`?debug=1`) closes every time the tester's single tab switches "Acting
-    as" to another clone seat — that is not a real disconnect, so it must never start the grace
-    timer: otherwise the seat not currently being acted as gets marked DISCONNECTED after
-    DISCONNECT_GRACE_SECONDS and next_player_after() skips it forever, stalling Pass on the other
-    clone's turn.
+    If a player remains disconnected or backgrounds their app for more than 2 minutes (120s),
+    they are counted as dead (hp = 0, OFFLINE/eliminated).
     """
     manager.disconnect(game_id, player_id, websocket)
     if is_debug_socket:
         return
+
+    # Schedule the 2-minute elimination timer upon disconnect
+    if grace_seconds is None:
+        asyncio.create_task(
+            _schedule_player_disconnect_elimination(
+                game_id, player_id, player_name, delay=settings.DISCONNECT_ELIMINATE_SECONDS
+            )
+        )
+
     await asyncio.sleep(settings.DISCONNECT_GRACE_SECONDS if grace_seconds is None else grace_seconds)
     if manager.is_connected(game_id, player_id):
         return
@@ -163,40 +169,42 @@ async def handle_disconnect(
             type=EventType.GAME_ENDED,
             payload={"reason": reason or "PLAYER_DISCONNECTED", "winnerId": winner_id},
         ).model_dump())
-        return
-
-    # If in normal game play, schedule background timer to dissolve room if player is disconnected for 3 minutes (180s)
-    if grace_seconds is None:
-        asyncio.create_task(_schedule_room_disconnect_timeout(game_id, player_id, player_name, delay=180.0))
 
 
-async def _schedule_room_disconnect_timeout(
+async def _schedule_player_disconnect_elimination(
     game_id: str,
     player_id: str,
     player_name: str,
-    delay: float = 180.0,
+    delay: float = 120.0,
 ) -> None:
-    """If a player remains disconnected for 3 minutes, dissolve the room to avoid dead games."""
+    """If a player remains disconnected for 2 minutes (120s), eliminate them (HP = 0, OFFLINE)."""
     try:
         await asyncio.sleep(delay)
         if manager.is_connected(game_id, player_id):
             return
 
         async with AsyncSessionLocal() as db:
-            room = await db.get(GameRoom, game_id)
-            active_game = await db.get(Game, game_id)
-            if room and room.status in ("WAITING", "PLAYING"):
-                room.status = "ABANDONED"
-                if active_game:
-                    active_game.status = "FINISHED"
-                await db.commit()
+            game, game_over, reason, winner_id = await GameService.eliminate_disconnected_player(
+                db, game_id, player_id
+            )
+            await db.commit()
+
+        if game:
+            await manager.broadcast(game_id, WebSocketEvent(
+                type=EventType.GAME_STATE_SYNC,
+                payload={
+                    "playerId": player_id,
+                    "displayName": player_name,
+                    "eliminated": True,
+                    "reason": f"Player {player_name} was eliminated after 2 minutes of disconnection.",
+                    "nextPlayerId": game.current_player_id,
+                    "turnNumber": game.turn_number,
+                }
+            ).model_dump())
+            if game_over:
                 await manager.broadcast(game_id, WebSocketEvent(
-                    type=EventType.ROOM_EXPIRED,
-                    payload={
-                        "roomId": game_id,
-                        "gamePin": room.game_pin,
-                        "reason": f"Room dissolved: player {player_name} was disconnected for more than 3 minutes.",
-                    }
+                    type=EventType.GAME_ENDED,
+                    payload={"reason": reason or "PLAYER_ELIMINATED", "winnerId": winner_id},
                 ).model_dump())
     except asyncio.CancelledError:
         pass
