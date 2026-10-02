@@ -87,17 +87,22 @@ export const TileRack = memo(function TileRack({
   const canConfirmExchange = isMyTurn && !isSubmitting && exchangeCount > 0 && exchangeCount <= tileBagCount;
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, slotIndex: number, tile: Tile) => {
-    // While exchanging, a tap marks the tile instead of lifting it.
-    if (!canStageMove || isExchanging) return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    pointerStartRef.current = { x: event.clientX, y: event.clientY, slotIndex, tile };
-    didDragRef.current = false;
+    if (!canStageMove) return;
+    // While exchanging, don't drag — just capture click on release
+    if (!isExchanging) {
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      pointerStartRef.current = { x: event.clientX, y: event.clientY, slotIndex, tile };
+      didDragRef.current = false;
+    } else {
+      pointerStartRef.current = { x: event.clientX, y: event.clientY, slotIndex, tile };
+      didDragRef.current = false;
+    }
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
     const start = pointerStartRef.current;
-    if (!start) return;
+    if (!start || isExchanging) return;
     if (!didDragRef.current && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 5) {
       didDragRef.current = true;
       setDraggedSlot(start.slotIndex);
@@ -117,7 +122,7 @@ export const TileRack = memo(function TileRack({
     if (wasDragging) {
       onFinishTileDrag(event.clientX, event.clientY);
     } else {
-      if (canStageMove && !isExchanging) {
+      if (canStageMove) {
         onSelectTile(tile);
       }
     }

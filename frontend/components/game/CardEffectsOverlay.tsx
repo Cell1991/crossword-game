@@ -265,13 +265,15 @@ export const EpicCardRevealOverlay: React.FC<{
           </motion.div>
         ) : (
           /* PHASE 2: GLORIOUS HOLOGRAPHIC 3D REVEALED CARD */
-          <div className="flex flex-col items-center">
-            <motion.div
-              key="revealed-card"
-              initial={{ scale: 0.7, rotateY: -90, opacity: 0 }}
-              animate={{ scale: 1, rotateY: 0, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0, y: -40 }}
-              transition={{ type: 'spring', damping: 13, stiffness: 170 }}
+          <motion.div
+            key="revealed-phase-wrapper"
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: 'spring', damping: 14, stiffness: 170 }}
+            className="flex flex-col items-center pointer-events-auto"
+          >
+            <div
               className={`relative flex h-[360px] w-[245px] sm:h-[400px] sm:w-[275px] flex-col items-center justify-between rounded-3xl border-2 ${cardInfo.borderGlow} bg-gradient-to-br ${cardInfo.bgGradient} p-5 shadow-[0_20px_60px_rgba(0,0,0,0.9)]`}
               style={{ perspective: 1000 }}
             >
@@ -337,7 +339,7 @@ export const EpicCardRevealOverlay: React.FC<{
                   {cardInfo.description}
                 </p>
               </motion.div>
-            </motion.div>
+            </div>
 
             {/* Tap or click anywhere indicator */}
             <motion.div
@@ -358,7 +360,7 @@ export const EpicCardRevealOverlay: React.FC<{
                 <span>✕ แตะที่ใดก็ได้เพื่อปิด (Tap anywhere to close)</span>
               </button>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
