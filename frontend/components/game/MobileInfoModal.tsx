@@ -59,7 +59,7 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.16 }}
-          className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 p-0 backdrop-blur-[3px] sm:items-center sm:p-5"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/75 p-0 sm:items-center sm:p-5"
           onClick={onClose}
           role="dialog"
           aria-modal="true"
@@ -72,14 +72,14 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: 'spring', damping: 26, stiffness: 380 }}
-            className="relative flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-slate-700/70 bg-slate-950/95 shadow-[0_-12px_44px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:border-cyan-500/25 sm:bg-slate-950/90 sm:shadow-[0_16px_50px_rgba(0,0,0,0.55)]"
+            className="relative flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-slate-700/70 bg-slate-950 sm:rounded-3xl sm:border-cyan-500/25 sm:shadow-[0_16px_50px_rgba(0,0,0,0.45)]"
             onClick={(e) => e.stopPropagation()}
           >
         {/* Top Atmospheric Aura Highlight */}
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-cyan-400 to-purple-500 shadow-[0_0_12px_rgba(6,182,212,0.8)]" />
 
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md select-none">
+        <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-800/80 bg-slate-900 select-none">
           <div className="flex items-center gap-2.5">
             {/* Glowing Scroll Icon Badge */}
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500/30 via-blue-600/20 to-slate-900 border border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.35)] flex items-center justify-center shrink-0">
@@ -87,7 +87,7 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-black tracking-wide text-white flex items-center gap-1.5 uppercase">
-                <span>Match Log & Stats</span>
+                <span>Match status</span>
                 <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
               </h2>
               <p className="text-[10px] sm:text-[11px] font-mono font-semibold text-slate-400">

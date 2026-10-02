@@ -191,7 +191,7 @@ export const TileRack = memo(function TileRack({
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-[74rem] flex-col items-center gap-2 rounded-2xl border border-slate-700/70 bg-slate-950/85 px-2 py-2.5 shadow-[0_12px_36px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.04)] pointer-events-auto sm:gap-2.5 sm:px-3">
+    <div className="mx-auto flex w-full max-w-[74rem] flex-col items-center gap-2 border-t border-slate-700/65 bg-slate-950/95 px-1.5 py-2 pointer-events-auto sm:gap-2.5 sm:border-x sm:border-b sm:rounded-t-2xl sm:px-3 sm:py-2.5">
       {draggedTile && dragPosition && !isHandedToBoard && (
         <FloatingTile
           ref={ghostRef}
@@ -204,7 +204,7 @@ export const TileRack = memo(function TileRack({
 
       {/* Utility row belongs to the same dock, keeping cards clear of playable board cells. */}
       {powerCardSlot && (
-        <div className="flex w-full items-center justify-center border-b border-slate-700/50 pb-2">
+        <div className="flex w-full items-center justify-center border-b border-slate-800/80 pb-2">
           {powerCardSlot}
         </div>
       )}
@@ -328,7 +328,7 @@ export const TileRack = memo(function TileRack({
                   {/* High-Contrast Prominent Letter OR Cosmic Wildcard Star */}
                   {isBlankLetter(tile.letter) && !isDesignatedBlank ? (
                     <div className="relative z-20 flex items-center justify-center">
-                      <svg viewBox="0 0 24 24" className="tile-blank-star w-6 h-6 sm:w-8 sm:h-8 animate-pulse" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+                      <svg viewBox="0 0 24 24" className="tile-blank-star w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
                         <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
                       </svg>
                     </div>

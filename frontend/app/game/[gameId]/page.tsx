@@ -40,6 +40,7 @@ import { DebugPanel } from '@/components/debug/DebugPanel';
 
 const EMPTY_TILES: Tile[] = [];
 const EMPTY_CELL_POSITIONS: CellPosition[] = [];
+const GAME_SHELL_COLUMNS = 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_17rem] xl:grid-cols-[minmax(0,1fr)_19rem]';
 
 export default function GamePage() {
   const router = useRouter();
@@ -650,12 +651,13 @@ export default function GamePage() {
 
   return (
     <div
-      className="relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden"
+      className="relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden bg-slate-950"
       style={{
         ...TILE_THEME_STYLE,
-        background: 'radial-gradient(circle at 50% 18%, rgba(99, 102, 241, 0.16), transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 58%, #171942 100%)',
+        background: 'radial-gradient(ellipse at 48% 50%, rgba(8, 145, 178, 0.09), transparent 46%), radial-gradient(ellipse at 88% 8%, rgba(99, 102, 241, 0.11), transparent 34%), linear-gradient(135deg, #020617 0%, #0b1224 58%, #12152f 100%)',
       }}
     >
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 shadow-[inset_0_0_130px_rgba(0,0,0,0.42)]" />
       <GameHud
         isSpectator={isSpectator}
         isEliminated={isEliminated}
@@ -716,9 +718,9 @@ export default function GamePage() {
       {sync.cardReveal && <CardRevealOverlay reveal={sync.cardReveal} />}
 
       {/* Main: Board */}
-      <div className="relative z-10 flex flex-1 min-h-0">
+      <div className={`relative z-10 mx-auto grid w-full max-w-[1920px] flex-1 min-h-0 ${GAME_SHELL_COLUMNS}`}>
         {/* Board canvas takes full space */}
-        <div className="relative min-w-0 flex-1">
+        <div className="relative min-h-0 min-w-0">
           {/* Top Overlays Stack: Toasts & Hint Suggestions (stacked vertically, never overlapping) */}
           <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex w-full max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-col items-center gap-2.5 sm:top-4">
             {cards.hintSuggestions.length > 0 && (
@@ -785,7 +787,7 @@ export default function GamePage() {
         </div>
 
         {/* Right sidebar: Unified Glassmorphism Control & Scoreboard Panel (desktop) */}
-        <div className="hidden lg:flex flex-col shrink-0">
+        <div className="hidden min-h-0 lg:flex">
           <RightSidebar
             players={gameState.players ?? []}
             showHealth={gameState.max_turns === null}
@@ -815,7 +817,8 @@ export default function GamePage() {
       />
 
       {/* Bottom: Tile rack (spectators and eliminated players have no active rack) */}
-      <div className="relative z-10 shrink-0 px-1.5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1.5 sm:p-3">
+      <div className={`relative z-10 mx-auto grid w-full max-w-[1920px] shrink-0 ${GAME_SHELL_COLUMNS} px-1.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1.5 sm:px-3 sm:pb-3`}>
+        <div className="min-w-0">
         {isSpectator ? (
           <div className="flex items-center justify-center gap-2 py-2.5 px-4 text-center text-xs sm:text-sm text-sky-300 bg-sky-950/40 border border-sky-500/25 rounded-xl shadow-[0_0_12px_rgba(56,189,248,0.1)] ring-1 ring-sky-400/15 max-w-md mx-auto select-none">
             <Eye className="h-4 w-4 text-sky-400 drop-shadow-[0_0_4px_#38bdf8] shrink-0" />
@@ -884,6 +887,8 @@ export default function GamePage() {
               isBingoBonus={temporaryTiles.length >= 7}
             />
         )}
+        </div>
+        <div aria-hidden="true" className="hidden lg:block" />
       </div>
 
       {/* Floating Animated Score Burst Popup */}

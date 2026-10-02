@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { BookOpen, Check, Eye, Maximize, Minimize, ScrollText } from 'lucide-react';
+import { ArrowLeft, BookOpen, Check, Eye, Maximize, Minimize, ScrollText } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { TurnBanner } from './TurnBanner';
 
@@ -110,40 +110,40 @@ export const GameHud: React.FC<GameHudProps> = ({
   };
 
   return (
-    <div className="relative z-10 flex shrink-0 flex-col border-b border-slate-700/60 bg-slate-950/70 shadow-[0_4px_18px_rgba(0,0,0,0.16)]">
+    <div className="relative z-10 flex shrink-0 flex-col border-b border-slate-700/55 bg-slate-950/90">
       {/* ROW 1: System Bar (Exit, Logo, Connection, PIN, Log & Stats, Fullscreen) */}
-      <div className="flex items-center justify-between gap-1.5 sm:gap-3 px-2 sm:px-4 py-1.5 sm:py-2 overflow-x-hidden">
+      <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-2 px-2.5 py-2 sm:gap-4 sm:px-5 sm:py-2.5">
         {/* Left: Exit, logo, connection, room PIN, and Log & Stats */}
         <div className="flex flex-1 min-w-0 items-center gap-1.5 sm:gap-2.5">
           <button
             type="button"
             onClick={onExit}
-            className="tactile-button flex items-center gap-1 rounded-xl border border-slate-700/80 bg-slate-800/60 px-2.5 py-1 text-xs text-slate-300 hover:bg-slate-800 hover:text-white shrink-0 cursor-pointer"
+            className="tactile-button flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-900 text-slate-300 transition-colors hover:border-slate-500 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
             title={isSpectator ? 'Stop watching' : 'Exit game'}
             aria-label={isSpectator ? 'Stop watching' : 'Exit game'}
           >
-            <span>Exit</span>
+            <ArrowLeft className="h-4 w-4" />
           </button>
           <Image
             src="/wordx-icon-256.png?v=20260915"
             alt="WordX logo"
             width={28}
             height={28}
-            className="h-6 w-6 sm:h-7 sm:w-7 rounded-md object-contain shrink-0"
+            className="h-7 w-7 rounded-md object-contain shrink-0"
           />
-          <span className="hidden text-lg font-black text-white sm:inline shrink-0">Word<span className="text-amber-400">X</span></span>
+          <span className="text-base font-black tracking-tight text-white sm:text-lg shrink-0">Word<span className="text-amber-400">X</span></span>
           <div
             className={`flex items-center gap-1.5 text-xs font-semibold shrink-0 ${isConnected ? 'text-emerald-400' : 'text-rose-400'}`}
             title={isConnected ? 'Live' : 'Reconnecting...'}
           >
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 live-status-dot' : 'bg-rose-400'}`} />
-            <span className="hidden sm:inline">{isConnected ? 'Live' : 'Reconnecting...'}</span>
+            <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+            <span className="hidden sm:inline text-[10px] uppercase tracking-[0.14em]">{isConnected ? 'Live' : 'Offline'}</span>
           </div>
           {roomPin && (
             <button
               type="button"
               onClick={handleCopyPin}
-              className={`tactile-button whitespace-nowrap rounded-xl border px-2.5 py-1 font-mono text-xs shrink-0 cursor-pointer select-none transition-all ${
+              className={`tactile-button whitespace-nowrap rounded-lg border px-2.5 py-1.5 font-mono text-[11px] shrink-0 cursor-pointer select-none transition-colors ${
                 copiedPin
                   ? 'border-emerald-500/70 bg-emerald-950/70 text-emerald-300 ring-1 ring-emerald-400/50 shadow-[0_0_12px_rgba(52,211,153,0.3)]'
                   : 'border-slate-700/80 bg-slate-800/60 text-slate-300 hover:bg-slate-800 hover:text-white'
@@ -165,7 +165,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={onOpenInfo}
-            className="tactile-button lg:hidden flex items-center justify-center gap-1.5 rounded-xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/70 via-slate-900/80 to-slate-900/90 px-2.5 py-1 text-xs font-bold text-cyan-300 hover:from-cyan-900/80 hover:to-slate-800 hover:text-white shadow-[0_0_10px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/20 cursor-pointer select-none shrink-0"
+            className="tactile-button lg:hidden flex h-9 items-center justify-center gap-1.5 rounded-xl border border-cyan-400/30 bg-slate-900 px-2.5 text-xs font-bold text-cyan-200 hover:border-cyan-300/60 hover:text-white cursor-pointer select-none shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
             title="Match stats, word history, and tile bag"
             aria-label="Open match stats, word history, and tile bag"
           >
@@ -188,6 +188,8 @@ export const GameHud: React.FC<GameHudProps> = ({
               isMyTurn={isMyTurn}
               isBotPlacing={isBotPlacing}
               isEliminated={isEliminated}
+              isSpectator={isSpectator}
+              isConnected={isConnected}
               currentPlayer={currentPlayer}
               nextPlayer={nextPlayer}
               turnNumber={turnNumber}
@@ -198,7 +200,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             <button
               type="button"
               onClick={onOpenGuide}
-              className="tactile-button rounded-xl border border-slate-700/80 bg-slate-800/60 p-2 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer shrink-0"
+              className="tactile-button flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-900 text-slate-300 hover:border-slate-500 hover:text-white transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
               title="Game Guide & Cards"
               aria-label="Open Game Guide & Cards"
             >
@@ -208,7 +210,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="tactile-button rounded-xl border border-slate-700/80 bg-slate-800/60 p-2 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer shrink-0"
+            className="tactile-button flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-900 text-slate-300 hover:border-slate-500 hover:text-white transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
             aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           >
@@ -218,13 +220,15 @@ export const GameHud: React.FC<GameHudProps> = ({
       </div>
 
       {/* ROW 2 (Mobile Only): Dedicated Turn Indicator, Spectator Count & Countdown Bar */}
-      <div className="lg:hidden flex items-center justify-between gap-2 px-2.5 py-1 bg-slate-950/70 border-t border-slate-800/60 select-none">
+      <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-2 border-t border-slate-800/60 bg-slate-950 px-3 py-1.5 lg:hidden select-none">
         <div className="min-w-0 flex-1">
           <TurnBanner
             mobile
             isMyTurn={isMyTurn}
             isBotPlacing={isBotPlacing}
             isEliminated={isEliminated}
+            isSpectator={isSpectator}
+            isConnected={isConnected}
             currentPlayer={currentPlayer}
             nextPlayer={nextPlayer}
             turnNumber={turnNumber}

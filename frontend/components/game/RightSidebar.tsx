@@ -123,40 +123,38 @@ export const RightSidebar = memo(function RightSidebar({
   }, []);
 
   return (
-    <aside className={`flex h-full shrink-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-[17rem] xl:w-[19rem] px-2 py-3'}`}>
-      <div className={`flex h-full min-h-0 flex-col overflow-hidden ${mobile ? 'bg-transparent' : 'border-l border-slate-700/50 bg-slate-950/35'}`}>
+    <aside className={`flex h-full min-h-0 min-w-0 shrink-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-full border-l border-slate-800/70 bg-slate-950/35'}`}>
+      <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
         {/* TOP SECTION: COMPACT TILES STATUS CARD */}
-        <div className="shrink-0 px-3 pb-3 pt-2">
+        <div className="shrink-0 px-4 pb-3 pt-3">
           <button
             ref={tileBagButtonRef}
             type="button"
             onClick={() => setIsTileBagOpen(true)}
-            className="group w-full flex items-center justify-between rounded-lg border border-amber-400/20 bg-amber-300/[0.045] px-3 py-2.5 text-left transition-colors hover:border-amber-300/40 hover:bg-amber-300/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 cursor-pointer"
+            className="group flex w-full items-center justify-between rounded-xl border border-amber-300/20 bg-amber-300/[0.045] px-3.5 py-3 text-left transition-colors hover:border-amber-300/40 hover:bg-amber-300/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 cursor-pointer"
             aria-label={`Show remaining letters, ${tileBagCount} tiles remaining`}
           >
             <div className="flex items-center gap-2.5">
               {/* Golden Tile Stack Icon */}
-              <div className="relative w-6 h-6 flex items-center justify-center shrink-0">
-                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500/30 via-yellow-600/40 to-slate-900 border border-amber-400/60 shadow-[0_0_10px_rgba(251,191,36,0.45)] flex items-center justify-center">
-                  <Layers className="w-3.5 h-3.5 text-amber-300 drop-shadow-[0_0_4px_rgba(251,191,36,0.8)]" />
-                </div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-300/35 bg-amber-300/10">
+                <Layers className="h-4 w-4 text-amber-300" />
               </div>
-              <span className="text-xs font-bold text-amber-200/90 group-hover:text-amber-100 transition-colors">Tiles Remaining</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-300 group-hover:text-white transition-colors">Tiles left</span>
             </div>
-            <span className="text-sm font-black font-mono text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]">
+            <span className="font-mono text-2xl font-black leading-none tabular-nums text-amber-300">
               {tileBagCount}
             </span>
           </button>
         </div>
 
         {/* MAIN SECTION: SCOREBOARD */}
-        <div className="shrink-0 flex flex-col p-3 pb-4">
+        <div className="shrink-0 flex flex-col px-4 pb-4 pt-2">
           {/* Section Header */}
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800/80">
+          <div className="mb-2 flex items-center justify-between border-b border-slate-800/80 pb-2">
             <div className="flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
-              <span className="text-xs font-bold tracking-wider text-slate-200 uppercase">
-                Scoreboard
+              <Trophy className="h-4 w-4 text-amber-300" />
+              <span className="text-[10px] font-extrabold tracking-[0.16em] text-slate-300 uppercase">
+                Players
               </span>
             </div>
             <span className="text-[10px] font-mono text-slate-400">
@@ -165,7 +163,7 @@ export const RightSidebar = memo(function RightSidebar({
           </div>
 
           {/* Players List */}
-          <div className="max-h-[42vh] space-y-1.5 overflow-y-auto">
+          <div className="max-h-[42vh] space-y-1 overflow-y-auto px-0.5">
             {sortedPlayers.map((player, idx) => {
               const isCurrent = player.id === currentPlayerId;
               const isMe = player.id === myPlayerId;
@@ -175,14 +173,14 @@ export const RightSidebar = memo(function RightSidebar({
               return (
                 <div
                   key={player.id}
-                  className={`relative flex flex-col rounded-lg border-l-2 p-2.5 transition-colors duration-150 ${
+                  className={`relative flex flex-col rounded-xl border border-l-2 p-2.5 transition-colors duration-150 ${
                     isDead || hasLeft
-                      ? 'border-l-slate-700 bg-slate-900/20 opacity-55'
+                      ? 'border-slate-800 border-l-slate-700 bg-slate-900/20 opacity-55'
                       : isCurrent
-                      ? 'border-l-emerald-300 bg-emerald-300/[0.07]'
+                      ? 'border-emerald-400/25 border-l-emerald-300 bg-emerald-300/[0.055]'
                       : isMe
-                      ? 'border-l-amber-400 bg-amber-300/[0.045]'
-                      : 'border-l-transparent bg-white/[0.025] hover:bg-white/[0.045]'
+                      ? 'border-amber-400/15 border-l-amber-400 bg-amber-300/[0.035]'
+                      : 'border-slate-800/70 border-l-transparent bg-white/[0.02] hover:bg-white/[0.04]'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -200,7 +198,7 @@ export const RightSidebar = memo(function RightSidebar({
                           isDead || hasLeft 
                             ? 'text-slate-500 line-through' 
                             : isMe 
-                            ? 'font-black text-amber-200 drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]' 
+                            ? 'font-black text-amber-200'
                             : isCurrent
                             ? 'font-bold text-emerald-200'
                             : 'font-semibold text-slate-200'
@@ -208,7 +206,7 @@ export const RightSidebar = memo(function RightSidebar({
                           {player.display_name}
                         </span>
                         {isMe && (
-                          <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 shrink-0">
+                          <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/25 shrink-0">
                             YOU
                           </span>
                         )}
@@ -222,7 +220,7 @@ export const RightSidebar = memo(function RightSidebar({
                         )}
                         {player.has_shield && !isDead && (
                           <span
-                            className="flex items-center gap-1 rounded-full border border-cyan-400/80 bg-cyan-950/80 px-1.5 py-0.5 text-[10px] font-bold text-cyan-200 shadow-[0_0_10px_rgba(6,182,212,0.6)] animate-pulse"
+                            className="flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-950/55 px-1.5 py-0.5 text-[10px] font-bold text-cyan-200"
                             title="Shield Active: Blocks 1 incoming attack"
                           >
                             <Shield className="w-3 h-3 text-cyan-300 fill-cyan-400/40 drop-shadow-[0_0_4px_#38bdf8]" />
@@ -231,15 +229,15 @@ export const RightSidebar = memo(function RightSidebar({
                         )}
                         {cardUseEffects[player.id] && (
                           <span
-                            className="animate-pulse rounded-full border border-cyan-300/80 bg-cyan-400/20 px-1.5 py-0.5 text-sm leading-none shadow-[0_0_14px_rgba(34,211,238,0.85)]"
+                            className="rounded-full border border-cyan-300/40 bg-cyan-400/10 px-1.5 py-0.5 text-sm leading-none"
                             title={`${cardUseEffects[player.id]} used`}
                           >
                             {cardIcon(cardUseEffects[player.id], 'h-3.5 w-3.5', <span className="text-xs font-black text-amber-300">×2</span>) ?? '✨'}
                           </span>
                         )}
                         {isCurrent && !isDead && (
-                          <span className="flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[9px] font-black text-emerald-300 tracking-wider shrink-0 uppercase animate-pulse">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-400/25 text-[9px] font-black text-emerald-300 tracking-wider shrink-0 uppercase">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                             TURN
                           </span>
                         )}
@@ -250,12 +248,12 @@ export const RightSidebar = memo(function RightSidebar({
                     <div className="flex items-center gap-2 shrink-0">
                       <motion.span
                         key={player.score}
-                        initial={{ scale: 1.32, color: '#facc15' }}
+                        initial={false}
                         animate={{ scale: 1, color: isCurrent ? '#34d399' : '#f8fafc' }}
-                        transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                        transition={{ duration: 0.18 }}
                         className={`text-sm sm:text-base font-black font-mono tabular-nums inline-block ${
                           isCurrent
-                            ? 'text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]'
+                            ? 'text-emerald-300'
                             : 'text-white'
                         }`}
                       >
@@ -276,7 +274,7 @@ export const RightSidebar = memo(function RightSidebar({
                       <div className="relative mt-2">
                         {/* Shield Aura Glow effect surrounding the HP bar */}
                         {hasShield && (
-                          <div className="absolute -inset-1 rounded-md bg-gradient-to-r from-cyan-500/40 via-sky-400/50 to-blue-500/40 blur-[5px] animate-pulse pointer-events-none" />
+                          <div className="absolute inset-0 rounded-sm border border-cyan-300/25 pointer-events-none" />
                         )}
                         <div className={`h-3.5 rounded-sm relative overflow-hidden transition-all ${
                           hasShield
@@ -331,9 +329,9 @@ export const RightSidebar = memo(function RightSidebar({
             onClick={() => setIsHistoryOpen(prev => !prev)}
             className="flex w-full shrink-0 items-center justify-between px-3 py-3 text-slate-300 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-300/60 cursor-pointer"
           >
-            <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
               <History className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Move History</span>
+              <span>Recent moves</span>
             </div>
             {isHistoryOpen ? (
               <ChevronDown className="w-4 h-4 text-slate-400" />
