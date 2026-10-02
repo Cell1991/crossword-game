@@ -20,11 +20,11 @@ interface DebugPanelProps {
 const CARD_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string; desc: string }> = {
   HINT: { label: 'Hint', icon: <Lightbulb className="w-3.5 h-3.5 text-amber-300" />, color: 'text-amber-300', desc: 'Reveal top 3 moves' },
   SHIELD: { label: 'Shield', icon: <Shield className="w-3.5 h-3.5 text-blue-300" />, color: 'text-blue-300', desc: 'Block attack/swap' },
-  HEAL: { label: 'Heal', icon: <Heart className="w-3.5 h-3.5 text-rose-300" />, color: 'text-rose-300', desc: 'Restore +1 HP' },
-  FREEZE_TILE: { label: 'Freeze Word', icon: <Snowflake className="w-3.5 h-3.5 text-cyan-300" />, color: 'text-cyan-300', desc: 'Lock board tile' },
-  DOUBLE_DAMAGE: { label: 'Word ×2', icon: <Swords className="w-3.5 h-3.5 text-purple-300" />, color: 'text-purple-300', desc: 'Double damage' },
-  SPY_SWAP: { label: 'Swap Word', icon: <ArrowLeftRight className="w-3.5 h-3.5 text-emerald-300" />, color: 'text-emerald-300', desc: 'Swap with rival' },
-  DESTROY_TILE: { label: 'Clear Word', icon: <Flame className="w-3.5 h-3.5 text-orange-300" />, color: 'text-orange-300', desc: 'Destroy tile' },
+  HEAL: { label: 'Heal', icon: <Heart className="w-3.5 h-3.5 text-rose-300" />, color: 'text-rose-300', desc: 'Rack tiles to HP' },
+  FREEZE_TILE: { label: 'Freeze Tile', icon: <Snowflake className="w-3.5 h-3.5 text-cyan-300" />, color: 'text-cyan-300', desc: 'Lock 1 board tile' },
+  DOUBLE_DAMAGE: { label: 'Double Damage', icon: <Swords className="w-3.5 h-3.5 text-purple-300" />, color: 'text-purple-300', desc: '2× Word damage' },
+  SPY_SWAP: { label: 'Spy Swap', icon: <ArrowLeftRight className="w-3.5 h-3.5 text-emerald-300" />, color: 'text-emerald-300', desc: 'Steal 1-3 tiles' },
+  DESTROY_TILE: { label: 'Destroy Tile', icon: <Flame className="w-3.5 h-3.5 text-orange-300" />, color: 'text-orange-300', desc: 'Destroy 1 tile' },
 };
 
 const DebugTileInput: React.FC<{

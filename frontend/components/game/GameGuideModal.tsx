@@ -302,7 +302,7 @@ export function GameGuideModal({
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Highlights the <span className="text-amber-200/95 font-medium">top 3 highest-scoring word placements</span> with tile previews and calculated scores.
+                    Highlights the <span className="text-amber-200/95 font-medium">top 3 highest-scoring word placements</span> and point values.
                   </p>
                 </div>
               </div>
@@ -316,11 +316,11 @@ export function GameGuideModal({
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-sm sm:text-base font-semibold text-white">Shield</h3>
                     <span className="rounded-full border border-blue-400/25 bg-blue-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-blue-300">
-                      Reactive / Anytime
+                      Passive
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Erects a protective barrier that <span className="text-amber-200/95 font-medium">blocks incoming attack damage or hostile tile swaps</span>.
+                    Blocks the next <span className="text-amber-200/95 font-medium">incoming attack damage or hostile tile swap</span> completely.
                   </p>
                 </div>
               </div>
@@ -338,7 +338,7 @@ export function GameGuideModal({
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    <span className="text-amber-200/95 font-medium">Restores HP</span> equal to the sum of all tile point values currently on your rack.
+                    <span className="text-amber-200/95 font-medium">Restores HP</span> equal to the total point value of all tiles currently in your rack.
                   </p>
                 </div>
               </div>
@@ -350,13 +350,13 @@ export function GameGuideModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-semibold text-white">Word ×2 (Double Damage)</h3>
+                    <h3 className="text-sm sm:text-base font-semibold text-white">Double Damage</h3>
                     <span className="rounded-full border border-purple-400/25 bg-purple-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-purple-300">
                       HP Mode
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Your next confirmed word deals <span className="text-amber-200/95 font-medium">double (2×) attack damage</span> directly to a targeted opponent.
+                    Your next confirmed word deals <span className="text-amber-200/95 font-medium">double (2×) attack damage</span> to a targeted rival.
                   </p>
                 </div>
               </div>
@@ -368,13 +368,13 @@ export function GameGuideModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-semibold text-white">Swap Word (Spy Swap)</h3>
+                    <h3 className="text-sm sm:text-base font-semibold text-white">Spy Swap</h3>
                     <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-300">
                       Anytime
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Trade 1 to 3 rack tiles for <span className="text-amber-200/95 font-medium">random tiles stolen from a chosen opponent</span>.
+                    Swap 1 to 3 rack tiles with <span className="text-amber-200/95 font-medium">random tiles stolen directly from an opponent</span>.
                   </p>
                 </div>
               </div>
@@ -386,13 +386,13 @@ export function GameGuideModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-semibold text-white">Freeze Word (Freeze Tile)</h3>
+                    <h3 className="text-sm sm:text-base font-semibold text-white">Freeze Tile</h3>
                     <span className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-cyan-300">
                       Your Turn
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Freezes a board tile in ice. <span className="text-amber-200/95 font-medium">Opponents cannot attach words to it</span> until your next turn.
+                    Locks a board tile in ice. <span className="text-amber-200/95 font-medium">Opponents cannot connect words to it</span> until your next turn.
                   </p>
                 </div>
               </div>
@@ -404,13 +404,13 @@ export function GameGuideModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-semibold text-white">Clear Word (Destroy Tile)</h3>
+                    <h3 className="text-sm sm:text-base font-semibold text-white">Destroy Tile</h3>
                     <span className="rounded-full border border-orange-400/25 bg-orange-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-orange-300">
                       Anytime
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Permanently <span className="text-amber-200/95 font-medium">removes 1 tile from the board</span> to disrupt words or reopen multiplier cells.
+                    Permanently <span className="text-amber-200/95 font-medium">removes 1 tile from the board</span> to break enemy words or reopen multiplier cells.
                   </p>
                 </div>
               </div>
