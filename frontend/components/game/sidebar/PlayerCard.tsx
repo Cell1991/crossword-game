@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Crown, Shield, WifiOff, Sparkles } from 'lucide-react';
+import { Crown, Medal, Award, Shield, WifiOff, Sparkles } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { cardIcon } from '../cardIcons';
 
@@ -32,6 +32,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
 
   const isActiveTurn = isCurrent && !isDead && !hasLeft;
   const isLeader = rankIndex === 0 && !isDead;
+  const isSecond = rankIndex === 1 && !isDead;
+  const isThird = rankIndex === 2 && !isDead;
   const healthPercent = Math.max(0, Math.min(100, (player.hp / playerMaxHp) * 100));
 
   // Vibrant, high-contrast health bar colors
@@ -74,18 +76,26 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Rank Badge */}
           <div
-            className={`w-5 h-5 rounded-lg flex items-center justify-center font-black text-[10px] shrink-0 font-mono shadow-sm ${
+            className={`w-5.5 h-5.5 rounded-lg flex items-center justify-center font-black text-[10px] shrink-0 font-mono shadow-sm transition-transform ${
               isLeader
-                ? 'bg-gradient-to-br from-amber-300 to-amber-600 text-slate-950 font-extrabold shadow-[0_0_10px_rgba(245,158,11,0.5)]'
-                : rankIndex === 1
-                ? 'bg-slate-400 text-slate-950 font-bold'
-                : rankIndex === 2
-                ? 'bg-amber-700/80 text-amber-100 font-bold'
-                : 'bg-slate-800 text-slate-400 font-bold border border-white/5'
+                ? 'bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-600 text-amber-950 font-extrabold border border-yellow-200/90 shadow-[0_0_12px_rgba(245,158,11,0.55),inset_0_1px_1px_rgba(255,255,255,0.8)]'
+                : isSecond
+                ? 'bg-gradient-to-br from-white via-slate-200 to-slate-400 text-slate-950 font-extrabold border border-white/90 shadow-[0_0_12px_rgba(226,232,240,0.5),inset_0_1px_1px_rgba(255,255,255,0.9)]'
+                : isThird
+                ? 'bg-gradient-to-br from-amber-300 via-amber-600 to-orange-700 text-amber-950 font-extrabold border border-amber-300/80 shadow-[0_0_12px_rgba(217,119,6,0.45),inset_0_1px_1px_rgba(254,215,170,0.7)]'
+                : 'bg-slate-800/90 text-slate-400 font-bold border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
             }`}
             title={`Rank #${rankIndex + 1}`}
           >
-            {isLeader ? <Crown className="w-3 h-3 text-slate-950" /> : rankIndex + 1}
+            {isLeader ? (
+              <Crown className="w-3.5 h-3.5 text-amber-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]" />
+            ) : isSecond ? (
+              <Medal className="w-3.5 h-3.5 text-slate-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]" />
+            ) : isThird ? (
+              <Award className="w-3.5 h-3.5 text-amber-950 drop-shadow-[0_1px_1px_rgba(254,215,170,0.5)]" />
+            ) : (
+              rankIndex + 1
+            )}
           </div>
 
           {/* Player Name */}
@@ -144,7 +154,11 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
                 ? 'bg-gradient-to-b from-amber-100 via-amber-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(245,158,11,0.5)]'
                 : isActiveTurn
                 ? 'text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,197,0.4)]'
-                : 'text-white'
+                : isSecond
+                ? 'bg-gradient-to-b from-white via-slate-200 to-slate-400 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(226,232,240,0.35)]'
+                : isThird
+                ? 'bg-gradient-to-b from-amber-200 via-amber-400 to-orange-400 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(217,119,6,0.35)]'
+                : 'text-slate-300'
             }`}
           >
             {player.score}
