@@ -59,6 +59,13 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
   }, []);
 
   const dismissCardReveal = useCallback(() => {
+    // If still in charging phase, jump to reveal instead of dismissing
+    if (cardPhaseTimerRef.current !== null) {
+      window.clearTimeout(cardPhaseTimerRef.current);
+      cardPhaseTimerRef.current = null;
+      setCardReveal(prev => prev ? { ...prev, phase: 'reveal' } : null);
+      return;
+    }
     showNextCardReveal();
   }, [showNextCardReveal]);
 

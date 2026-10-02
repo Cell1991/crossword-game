@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import {
@@ -128,6 +128,19 @@ export const EpicCardRevealOverlay: React.FC<{
     confettiColors: ['#fbbf24', '#38bdf8', '#c084fc', '#ffffff'],
   };
 
+  const [canDismiss, setCanDismiss] = useState(false);
+
+  useEffect(() => {
+    if (reveal.phase === 'reveal') {
+      const timer = window.setTimeout(() => {
+        setCanDismiss(true);
+      }, 400);
+      return () => window.clearTimeout(timer);
+    } else {
+      setCanDismiss(false);
+    }
+  }, [reveal.phase]);
+
   useEffect(() => {
     if (reveal.phase === 'lightning') {
       soundFx.playCardCharge();
@@ -144,23 +157,28 @@ export const EpicCardRevealOverlay: React.FC<{
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+      if (canDismiss && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault();
         onDismiss?.();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onDismiss]);
+  }, [canDismiss, onDismiss]);
 
-  const handleContainerClick = () => {
-    onDismiss?.();
+  const handleContainerClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (canDismiss) {
+      onDismiss?.();
+    }
   };
 
   return (
     <div
       onClick={handleContainerClick}
-      className="pointer-events-auto fixed inset-0 z-[100] flex flex-col items-center justify-center select-none overflow-hidden backdrop-blur-md bg-slate-950/80 cursor-pointer p-4"
+      onPointerDown={(e) => e.stopPropagation()}
+      className="pointer-events-auto fixed inset-0 z-[100] flex flex-col items-center justify-center select-none overflow-hidden backdrop-blur-md bg-slate-950/85 cursor-pointer p-4"
     >
       {/* Background Rotating Sunburst Rays */}
       <motion.div
@@ -178,13 +196,15 @@ export const EpicCardRevealOverlay: React.FC<{
         <button
           type="button"
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
-            onDismiss?.();
+            if (canDismiss) onDismiss?.();
           }}
           aria-label="Close"
-          className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 sm:p-2.5 rounded-full border border-white/20 bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white transition-all shadow-xl cursor-pointer z-20 active:scale-95"
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/25 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white transition-all shadow-2xl cursor-pointer z-30 active:scale-95"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
+          <span className="text-xs font-bold">ปิด (Close)</span>
         </button>
       )}
 
@@ -324,12 +344,19 @@ export const EpicCardRevealOverlay: React.FC<{
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}
-              className="mt-5 flex items-center justify-center"
+              className="mt-6 flex flex-col items-center justify-center gap-2 pointer-events-auto"
             >
-              <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-amber-400/40 bg-slate-900/90 text-amber-200 text-xs font-semibold shadow-[0_0_16px_rgba(245,158,11,0.3)] backdrop-blur-md animate-pulse">
-                <span>แตะที่ใดก็ได้เพื่อดำเนินการต่อ</span>
-                <span className="text-[10px] text-amber-300/80 font-mono">(Tap anywhere to close)</span>
-              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (canDismiss) onDismiss?.();
+                }}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-amber-400/60 bg-gradient-to-r from-amber-500/30 via-yellow-500/20 to-amber-500/30 hover:from-amber-500/45 hover:to-amber-500/45 text-amber-100 text-xs sm:text-sm font-bold shadow-[0_0_24px_rgba(245,158,11,0.4)] backdrop-blur-md transition-all active:scale-95 cursor-pointer animate-pulse"
+              >
+                <span>✕ แตะที่ใดก็ได้เพื่อปิด (Tap anywhere to close)</span>
+              </button>
             </motion.div>
           </div>
         )}
