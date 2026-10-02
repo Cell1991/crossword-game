@@ -202,43 +202,34 @@ export const TileRack = memo(function TileRack({
         />
       )}
 
-      {/* ROW 2: Premium Player Control Hub: 3-column balanced layout (Left Pod, Center Tray, Right Pod) */}
-      <div className="game-control-layout flex w-full flex-row flex-wrap items-end justify-center gap-1.5 sm:gap-2 lg:flex-nowrap lg:gap-4">
-        {/* CENTER POD: COSMIC BLUE TILE TRAY */}
-        <div className="game-rack-module game-rack-center relative order-1 flex w-full max-w-full shrink-0 flex-col items-center lg:order-2 lg:w-auto">
-          {powerCardSlot && <div className="game-power-strip mb-1 flex w-full items-center justify-center">{powerCardSlot}</div>}
+      {/* Symmetrical High-Tech Gaming Pedestal Console Dock */}
+      <div className="game-control-layout relative flex w-full flex-row flex-wrap items-center justify-center gap-2 sm:gap-3 lg:flex-nowrap lg:gap-5">
+        {/* Decorative High-Tech Corner Brackets & Specular Trim */}
+        <div aria-hidden="true" className="pedestal-bracket pedestal-bracket-tl absolute -top-[1px] left-3 hidden h-3.5 w-7 rounded-tl-lg border-l-2 border-t-2 border-cyan-400/80 pointer-events-none lg:block shadow-[0_0_8px_rgba(56,189,248,0.5)]">
+          <span className="absolute left-1 top-1 h-1 w-1 rounded-full bg-cyan-300 shadow-[0_0_4px_#38bdf8]" />
+        </div>
+        <div aria-hidden="true" className="pedestal-bracket pedestal-bracket-tr absolute -top-[1px] right-3 hidden h-3.5 w-7 rounded-tr-lg border-r-2 border-t-2 border-cyan-400/80 pointer-events-none lg:block shadow-[0_0_8px_rgba(56,189,248,0.5)]">
+          <span className="absolute right-1 top-1 h-1 w-1 rounded-full bg-cyan-300 shadow-[0_0_4px_#38bdf8]" />
+        </div>
+        <div aria-hidden="true" className="pedestal-top-glint absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-300/60 to-transparent pointer-events-none" />
 
-          {/* Mobile Score Badge above Tray */}
-          <AnimatePresence>
-            {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
-              <motion.div
-                key="mobile-score-badge"
-                initial={{ scale: 0.7, opacity: 0, y: 4 }}
-                animate={{
-                  scale: 1,
-                  opacity: 1,
-                  y: 0,
-                  x: placementValid === false ? [-4, 4, -3, 3, -1, 1, 0] : 0,
-                }}
-                exit={{ scale: 0.7, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 450, damping: 22 }}
-                className="lg:hidden w-full flex justify-center mb-1.5 pointer-events-none"
-              >
-                <span className={`font-extrabold tracking-widest text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${
-                  placementValid === false ? 'text-rose-400' : 'text-emerald-400'
-                }`}>
-                  {placementValid === false ? 'INVALID' : `+${estimatedScore} PTS`}
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* CENTER POD: 3-CARD EFFECT DECK (UPPER) + 7-TILE RACK (LOWER) */}
+        <div className="game-rack-module game-rack-center relative order-1 flex w-full max-w-full shrink-0 flex-col items-center gap-1.5 lg:order-2 lg:w-auto">
+          {/* Upper Deck: 3 Card Slots Bay */}
+          {powerCardSlot && (
+            <div className="game-power-strip flex w-full max-w-full items-center justify-center px-1.5 py-1">
+              {powerCardSlot}
+            </div>
+          )}
 
-          {/* Tray Stand (Blue Theme) */}
-          <div className="w-full overflow-x-auto overflow-y-hidden pt-3.5 -mt-3.5 pb-1.5 -mb-1.5 px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible lg:pt-0 lg:mt-0 lg:pb-0 lg:mb-0">
+          {/* Lower Deck: 7-Tile Stand */}
+          <div className="w-full overflow-x-auto overflow-y-hidden pt-1 -mt-1 pb-1 -mb-1 px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible">
             <div
               ref={rackRef}
-              className={`game-tile-tray relative flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2 pt-3.5 sm:w-auto sm:gap-1.5 sm:px-2 sm:py-1.5 sm:pt-2.5 min-h-[60px] sm:min-h-[62px] ${
-                isExternalDragActive ? 'border-cyan-300/80 bg-cyan-950/35 ring-1 ring-cyan-300/35' : 'border-amber-200/25 bg-gradient-to-b from-amber-950/50 via-slate-900 to-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_5px_14px_rgba(0,0,0,0.35)]'
+              className={`game-tile-tray relative flex items-center justify-center gap-1.5 rounded-xl border px-2 py-1.5 sm:w-auto sm:gap-1.5 sm:px-2.5 sm:py-1.5 min-h-[58px] sm:min-h-[60px] ${
+                isExternalDragActive
+                  ? 'border-cyan-300/80 bg-cyan-950/40 ring-2 ring-cyan-300/40'
+                  : 'border-white/10 bg-[#070f1a]/90 shadow-[inset_0_2px_8px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)]'
               } transition-all`}
             >
           {slots.map((tile, slotIndex) => {
@@ -345,12 +336,12 @@ export const TileRack = memo(function TileRack({
         </div>
 
 
-        {/* MOBILE CONTROLS WRAPPER (Unified symmetrical pill on mobile, split pods on desktop) */}
-        <div className="game-actions-bridge order-2 relative flex w-auto max-w-full flex-row items-center justify-center gap-1 lg:contents">
+        {/* MOBILE CONTROLS WRAPPER (Unified symmetrical bar on mobile, split pods on desktop) */}
+        <div className="game-actions-bridge order-2 relative flex w-auto max-w-full flex-row items-center justify-center gap-1.5 lg:contents">
 
-        {/* LEFT POD: GAME MANAGEMENT */}
-        <div className="game-utility-module game-rack-tools flex shrink flex-col items-center lg:order-1 lg:flex-1 lg:basis-0 lg:items-end min-w-0">
-          <div className="flex min-h-[40px] w-auto items-center justify-center gap-1 sm:min-h-[46px]">
+        {/* LEFT WING: UTILITY CONTROLS (Balanced width) */}
+        <div className="game-utility-module game-rack-tools flex shrink flex-col items-center justify-center lg:order-1 lg:flex-1 lg:basis-0 lg:items-end min-w-0">
+          <div className="flex h-[40px] sm:h-[44px] w-auto items-center justify-center gap-1.5">
             {isExchanging ? (
               <div className="flex items-center gap-2 px-1">
                 <motion.button
@@ -359,7 +350,7 @@ export const TileRack = memo(function TileRack({
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.94 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-colors bg-rose-950/80 text-rose-300 hover:bg-rose-900 border border-rose-700/60 cursor-pointer shadow-md shadow-rose-950/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex h-[40px] sm:h-[44px] items-center gap-1.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm transition-colors bg-rose-950/80 text-rose-300 hover:bg-rose-900 border border-rose-700/60 cursor-pointer shadow-md shadow-rose-950/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X className="w-4 h-4 text-rose-400" />
                   <span className="hidden xs:inline sm:inline">Cancel</span>
@@ -379,10 +370,10 @@ export const TileRack = memo(function TileRack({
                   whileHover={hasTemporaryTiles ? { scale: 1.05 } : undefined}
                   whileTap={hasTemporaryTiles ? { scale: 0.94 } : undefined}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all select-none ${
+                  className={`flex h-[40px] sm:h-[44px] min-w-[70px] sm:min-w-[76px] items-center justify-center gap-1.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all select-none ${
                     hasTemporaryTiles
                       ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 text-white shadow-[0_0_16px_rgba(244,63,94,0.5)] border border-rose-400/80 cursor-pointer hover:brightness-110'
-                      : 'bg-[#162234]/60 text-slate-500 border border-white/[0.06] cursor-not-allowed'
+                      : 'bg-[#152338]/70 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
                   }`}
                   title="Recall placed tiles to rack"
                 >
@@ -397,7 +388,7 @@ export const TileRack = memo(function TileRack({
                   whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.05 } : undefined}
                   whileTap={tileCount >= 2 && !isSubmitting ? { scale: 0.94 } : undefined}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm text-[#F1F5F9] hover:text-white bg-gradient-to-b from-[#243a56] to-[#162539] hover:from-[#314f76] hover:to-[#20344f] disabled:text-slate-500 disabled:bg-[#162234]/60 disabled:border-white/[0.06] disabled:cursor-not-allowed border border-[rgba(140,180,220,0.25)] hover:border-amber-400/60 shadow-md hover:shadow-[0_0_14px_rgba(245,158,11,0.3)] transition-all cursor-pointer select-none"
+                  className="flex h-[40px] sm:h-[44px] min-w-[70px] sm:min-w-[76px] items-center justify-center gap-1.5 px-3 rounded-xl font-bold text-xs sm:text-sm text-[#F1F5F9] hover:text-white bg-gradient-to-b from-[#223956] to-[#142336] hover:from-[#2e4d75] hover:to-[#1c314b] disabled:text-slate-500 disabled:bg-[#152338]/70 disabled:border-white/[0.08] disabled:cursor-not-allowed border border-[rgba(140,180,220,0.3)] hover:border-amber-400/60 shadow-md hover:shadow-[0_0_14px_rgba(245,158,11,0.3)] transition-all cursor-pointer select-none"
                   title="Shuffle rack tiles"
                 >
                   <Shuffle className="w-4 h-4 text-amber-400" />
@@ -411,7 +402,7 @@ export const TileRack = memo(function TileRack({
                   whileHover={canStartExchange ? { scale: 1.05 } : undefined}
                   whileTap={canStartExchange ? { scale: 0.94 } : undefined}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm text-[#F1F5F9] hover:text-white bg-gradient-to-b from-[#243a56] to-[#162539] hover:from-[#314f76] hover:to-[#20344f] disabled:text-slate-500 disabled:bg-[#162234]/60 disabled:border-white/[0.06] disabled:cursor-not-allowed border border-[rgba(140,180,220,0.25)] hover:border-sky-400/60 shadow-md hover:shadow-[0_0_14px_rgba(56,189,248,0.3)] transition-all cursor-pointer select-none"
+                  className="flex h-[40px] sm:h-[44px] min-w-[70px] sm:min-w-[76px] items-center justify-center gap-1.5 px-3 rounded-xl font-bold text-xs sm:text-sm text-[#F1F5F9] hover:text-white bg-gradient-to-b from-[#223956] to-[#142336] hover:from-[#2e4d75] hover:to-[#1c314b] disabled:text-slate-500 disabled:bg-[#152338]/70 disabled:border-white/[0.08] disabled:cursor-not-allowed border border-[rgba(140,180,220,0.3)] hover:border-sky-400/60 shadow-md hover:shadow-[0_0_14px_rgba(56,189,248,0.3)] transition-all cursor-pointer select-none"
                   title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
                 >
                   <ArrowLeftRight className="w-4 h-4 text-sky-400" />
@@ -423,52 +414,11 @@ export const TileRack = memo(function TileRack({
         </div>
 
         {/* Divider on mobile */}
-        <div className="h-5 w-px bg-slate-700/60 mx-0.5 lg:hidden" />
+        <div className="h-6 w-px bg-slate-700/60 mx-0.5 lg:hidden" />
 
-        {/* RIGHT POD: TURN ACTIONS */}
-        <div className="game-turn-module game-turn-actions flex shrink flex-col items-center lg:order-3 lg:flex-1 lg:basis-0 lg:items-start min-w-0">
-          <div className="mb-1.5 hidden lg:flex w-full items-center justify-between gap-2 px-2">
-            {/* Points / Validity preview badge & Bingo indicator with smooth pop and shake animations */}
-            <AnimatePresence mode="wait">
-              {!isExchanging && hasTemporaryTiles && estimatedScore !== undefined && (
-                <motion.div
-                  key={placementValid === false ? 'invalid' : isBingoBonus ? 'bingo' : 'valid'}
-                  initial={{ scale: 0.7, opacity: 0, y: 3 }}
-                  animate={{
-                    scale: 1,
-                    opacity: 1,
-                    y: 0,
-                    x: placementValid === false ? [-4, 4, -3, 3, -1, 1, 0] : 0,
-                  }}
-                  exit={{ scale: 0.7, opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 450, damping: 24 }}
-                  className="flex items-center"
-                >
-                  {placementValid === false ? (
-                    <span className="text-[11px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-lg border bg-gradient-to-r from-rose-950/90 to-rose-900/80 border-rose-500/70 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                      INVALID
-                    </span>
-                  ) : isBingoBonus ? (
-                    <div className="flex items-center rounded-lg border border-amber-500/70 bg-slate-950/90 shadow-[0_0_16px_rgba(245,158,11,0.35)] overflow-hidden text-[11px] font-black tracking-wider uppercase">
-                      <span className="flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-amber-500/30 to-yellow-500/20 text-amber-300 border-r border-amber-500/50">
-                        <span>🎉</span>
-                        <span>BINGO</span>
-                      </span>
-                      <span className="px-2.5 py-0.5 bg-emerald-950/70 text-emerald-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                        +{estimatedScore} PTS
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-[11px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-lg border bg-gradient-to-r from-emerald-950/90 to-emerald-900/80 border-emerald-500/70 text-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.45)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                      +{estimatedScore} PTS
-                    </span>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div className="relative flex min-h-[40px] w-auto flex-wrap items-center justify-center gap-1.5 sm:min-h-[46px]">
+        {/* RIGHT WING: TURN ACTIONS (Symmetrical matching width) */}
+        <div className="game-turn-module game-turn-actions flex shrink flex-col items-center justify-center lg:order-3 lg:flex-1 lg:basis-0 lg:items-start min-w-0">
+          <div className="relative flex h-[40px] sm:h-[44px] w-auto items-center justify-center gap-1.5">
             {isExchanging ? (
               <motion.button
                 onClick={onConfirmExchange}
@@ -476,10 +426,10 @@ export const TileRack = memo(function TileRack({
                 whileHover={canConfirmExchange ? { scale: 1.05 } : undefined}
                 whileTap={canConfirmExchange ? { scale: 0.94 } : undefined}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+                className={`flex h-[40px] sm:h-[44px] items-center gap-2 px-4 sm:px-5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
                   canConfirmExchange
                     ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:brightness-110 shadow-[0_0_20px_rgba(14,165,233,0.6)] cursor-pointer border border-sky-300 ring-2 ring-sky-400/40'
-                    : 'bg-[#162234]/60 text-slate-500 border border-white/[0.06] cursor-not-allowed'
+                    : 'bg-[#152338]/70 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
                 }`}
               >
                 <ArrowLeftRight className="w-4 h-4" />
@@ -489,7 +439,7 @@ export const TileRack = memo(function TileRack({
               <>
                 {/* Pass Button — with inline confirm step */}
                 {passConfirming ? (
-                  <div className="flex items-center gap-1">
+                  <div className="flex h-[40px] sm:h-[44px] items-center gap-1">
                     <span className="text-[10px] sm:text-[11px] text-slate-300 font-bold whitespace-nowrap tracking-wide">
                       Pass?
                     </span>
@@ -499,7 +449,7 @@ export const TileRack = memo(function TileRack({
                       whileHover={{ scale: 1.06 }}
                       whileTap={{ scale: 0.93 }}
                       transition={{ type: 'spring', stiffness: 450, damping: 20 }}
-                      className="flex items-center gap-1 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 cursor-pointer shadow-md"
+                      className="flex h-[36px] items-center gap-1 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 cursor-pointer shadow-md"
                       title="Confirm pass"
                     >
                       <Check className="w-4 h-4 text-white" />
@@ -510,7 +460,7 @@ export const TileRack = memo(function TileRack({
                       whileHover={{ scale: 1.06 }}
                       whileTap={{ scale: 0.93 }}
                       transition={{ type: 'spring', stiffness: 450, damping: 20 }}
-                      className="flex items-center gap-1 px-2.5 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all bg-[#243a56] hover:bg-[#314f76] text-slate-300 hover:text-white border border-white/10 cursor-pointer"
+                      className="flex h-[36px] items-center gap-1 px-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all bg-[#223956] hover:bg-[#2e4d75] text-slate-300 hover:text-white border border-white/10 cursor-pointer"
                       title="Cancel"
                     >
                       <X className="w-4 h-4" />
@@ -523,10 +473,10 @@ export const TileRack = memo(function TileRack({
                     whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.05 } : undefined}
                     whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.94 } : undefined}
                     transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                    className={`game-pass-action flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all select-none ${
+                    className={`game-pass-action flex h-[40px] sm:h-[44px] min-w-[70px] sm:min-w-[76px] items-center justify-center gap-1.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all select-none ${
                       isMyTurn && !hasTemporaryTiles
-                        ? 'bg-gradient-to-b from-[#243a56] to-[#162539] hover:from-[#314f76] hover:to-[#20344f] text-[#E2E8F0] hover:text-white border border-[rgba(140,180,220,0.25)] hover:border-sky-400/50 shadow-md cursor-pointer'
-                        : 'bg-[#162234]/60 text-slate-500 border border-white/[0.06] cursor-not-allowed'
+                        ? 'bg-gradient-to-b from-[#223956] to-[#142336] hover:from-[#2e4d75] hover:to-[#1c314b] text-[#E2E8F0] hover:text-white border border-[rgba(140,180,220,0.3)] hover:border-sky-400/50 shadow-md cursor-pointer'
+                        : 'bg-[#152338]/70 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
                     }`}
                     title="Pass your turn"
                   >
@@ -535,23 +485,33 @@ export const TileRack = memo(function TileRack({
                   </motion.button>
                 )}
 
-                {/* Primary action, enabled only by the authoritative placement verdict. */}
+                {/* Primary Action Button (PLAY MOVE / SCORE) */}
                 <motion.button
                   onClick={onConfirmMove}
                   disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
                   whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.05 } : undefined}
                   whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.95 } : undefined}
                   transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-                  className={`game-primary-action flex items-center gap-1.5 rounded-xl px-4 py-2 font-black text-xs sm:text-sm transition-all select-none ${
+                  className={`game-primary-action relative flex h-[40px] sm:h-[44px] min-w-[124px] sm:min-w-[145px] items-center justify-center gap-1.5 rounded-xl px-4 font-black text-xs sm:text-sm transition-all select-none overflow-hidden ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
                       ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 text-slate-950 shadow-[0_0_24px_rgba(52,211,153,0.7),inset_0_1px_0_rgba(255,255,255,0.4)] border border-emerald-300 ring-2 ring-emerald-400/50 hover:brightness-110 cursor-pointer'
-                      : 'bg-[#162234]/60 text-slate-500 border border-white/[0.06] cursor-not-allowed'
+                      : isMyTurn && hasTemporaryTiles && placementValid === false
+                      ? 'bg-gradient-to-r from-rose-950 via-rose-900 to-slate-950 text-rose-300 border border-rose-500/70 shadow-[0_0_16px_rgba(244,63,94,0.4)] cursor-not-allowed'
+                      : 'bg-[#152338]/70 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
                   }`}
                 >
-                  <Check className={`w-4 h-4 sm:w-5 sm:h-5 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-slate-950' : 'text-slate-500'}`} />
+                  <Check className={`w-4 h-4 sm:w-5 sm:h-5 stroke-[3] ${
+                    isMyTurn && hasTemporaryTiles && placementValid === true
+                      ? 'text-slate-950'
+                      : isMyTurn && hasTemporaryTiles && placementValid === false
+                      ? 'text-rose-400'
+                      : 'text-slate-500'
+                  }`} />
                   <span className="inline tracking-wide font-black">
                     {isSubmitting
                       ? 'Submitting...'
+                      : placementValid === false && hasTemporaryTiles
+                      ? 'INVALID'
                       : placementValid === true && estimatedScore !== undefined && estimatedScore > 0
                       ? `PLAY · +${estimatedScore} PTS`
                       : 'PLAY MOVE'}

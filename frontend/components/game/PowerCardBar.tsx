@@ -147,7 +147,6 @@ export const PowerCardBar = memo(function PowerCardBar({
   for (const card of cards) {
     if (CARD_META[card]) counts.set(card, (counts.get(card) ?? 0) + 1);
   }
-  if (counts.size === 0 && armedCard === null && !deferredFreezeTileId) return null;
 
   if (deferredFreezeTileId) {
     return (
@@ -555,60 +554,69 @@ export const PowerCardBar = memo(function PowerCardBar({
     );
   }
 
+  const maxSlots = 3;
+  const slotCards = cards.slice(0, maxSlots);
+
   return (
-    <div className="flex w-full flex-wrap items-center justify-center gap-1.5">
-        {[...counts.entries()].map(([card, count]) => {
-          const meta = CARD_META[card];
-          if (!meta) return null;
-          const disabled = busy || (meta.ownTurnOnly && !isMyTurn) || (card === 'MOVE_HEAL' && !hasStagedMove);
-
+    <div className="flex w-full items-center justify-center gap-1.5 sm:gap-2">
+      {[0, 1, 2].map(slotIndex => {
+        const card = slotCards[slotIndex];
+        if (!card || !CARD_META[card]) {
           return (
-            <button
-              key={card}
-              type="button"
-              disabled={disabled}
-              title={meta.ownTurnOnly && !isMyTurn ? 'Available only during your turn' : `Click to use ${meta.label}`}
-              onClick={() => {
-                if (card === 'FREEZE_TILE' || card === 'DESTROY_TILE') {
-                  onArmBoardCard(card as BoardCard);
-                } else if (card === 'DOUBLE_DAMAGE') {
-                  setPickingTargetFor(card);
-                } else if (card === 'SPY_SWAP') {
-                  setSpySwapStep('own');
-                  setSpyOwnTileIds([]);
-                } else if (card === 'BAN_LETTER') {
-                  setPickingLetter(true);
-                } else if (card === 'HEAL' || card === 'HINT' || card === 'SHIELD') {
-                  setConfirmingSimpleCard(card as SimpleCard);
-                } else {
-                  onUseSimple(card as SimpleCard);
-                }
-              }}
-              className={`group relative flex min-h-9 items-center gap-1.5 rounded-lg border px-2.5 py-1 sm:min-h-10 sm:px-3 transition-colors duration-150 cursor-pointer select-none active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
-                disabled
-                  ? 'border-slate-700/60 bg-slate-900/60 text-slate-400 cursor-not-allowed'
-                  : `${meta.bgGradient} ${meta.borderColor} ${meta.textColor} ${meta.glowClass} hover:brightness-110 hover:-translate-y-px`
-              }`}
+            <div
+              key={`empty-card-slot-${slotIndex}`}
+              title={`Card Slot ${slotIndex + 1} (Empty)`}
+              className="group relative flex h-8 sm:h-9 min-w-[92px] sm:min-w-[102px] items-center justify-center gap-1.5 rounded-lg border border-dashed border-sky-500/25 bg-[#060e1d]/75 px-2.5 py-1 text-[11px] font-semibold text-slate-500 select-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] transition-all hover:border-sky-400/40"
             >
-              {/* Glowing Icon */}
-              <div className="relative z-10 flex shrink-0 items-center">
-                {meta.icon}
-              </div>
-
-              {/* Card Label */}
-              <span className="relative z-10 text-xs sm:text-sm font-bold tracking-wide">
-                {meta.label}
-              </span>
-
-              {/* Quantity Count Pill */}
-              {count > 1 && (
-                <span className={`relative z-10 px-1.5 py-0.2 rounded-full text-[10px] font-black font-mono shadow-sm ${meta.badgeBg}`}>
-                  ×{count}
-                </span>
-              )}
-            </button>
+              <div className="h-1.5 w-1.5 rounded-full border border-sky-400/40 bg-sky-500/20" />
+              <span className="font-mono text-[10px] tracking-wider text-slate-400/80">Slot {slotIndex + 1}</span>
+            </div>
           );
-        })}
+        }
+
+        const meta = CARD_META[card];
+        const disabled = busy || (meta.ownTurnOnly && !isMyTurn) || (card === 'MOVE_HEAL' && !hasStagedMove);
+
+        return (
+          <button
+            key={`card-slot-${slotIndex}-${card}`}
+            type="button"
+            disabled={disabled}
+            title={meta.ownTurnOnly && !isMyTurn ? 'Available only during your turn' : `Click to use ${meta.label}`}
+            onClick={() => {
+              if (card === 'FREEZE_TILE' || card === 'DESTROY_TILE') {
+                onArmBoardCard(card as BoardCard);
+              } else if (card === 'DOUBLE_DAMAGE') {
+                setPickingTargetFor(card);
+              } else if (card === 'SPY_SWAP') {
+                setSpySwapStep('own');
+                setSpyOwnTileIds([]);
+              } else if (card === 'BAN_LETTER') {
+                setPickingLetter(true);
+              } else if (card === 'HEAL' || card === 'HINT' || card === 'SHIELD') {
+                setConfirmingSimpleCard(card as SimpleCard);
+              } else {
+                onUseSimple(card as SimpleCard);
+              }
+            }}
+            className={`group relative flex h-8 sm:h-9 min-w-[92px] sm:min-w-[102px] items-center justify-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-bold transition-all duration-150 cursor-pointer select-none active:scale-[0.97] focus-visible:outline-none ${
+              disabled
+                ? 'border-slate-700/60 bg-slate-900/60 text-slate-500 cursor-not-allowed opacity-60'
+                : `bg-gradient-to-r ${meta.bgGradient} ${meta.borderColor} ${meta.textColor} ${meta.glowClass} shadow-md hover:brightness-110 hover:-translate-y-0.5`
+            }`}
+          >
+            {/* Glowing Icon */}
+            <div className="relative z-10 flex shrink-0 items-center">
+              {meta.icon}
+            </div>
+
+            {/* Card Label */}
+            <span className="relative z-10 text-[11px] sm:text-xs font-bold tracking-wide leading-none">
+              {meta.label}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 });
