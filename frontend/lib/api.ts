@@ -139,7 +139,20 @@ export async function createRoom(
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Failed to create room');
   }
-  return res.json();
+  const data: CreateRoomResponse = await res.json();
+  if (data && maxPlayers && maxPlayers !== 4) {
+    if (data.max_players === undefined || data.max_players === null || data.max_players !== maxPlayers) {
+      data.max_players = maxPlayers;
+      if (typeof window !== 'undefined') {
+        fetch('/api/rooms', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ game_pin: data.game_pin, max_players: maxPlayers }),
+        }).catch(() => {});
+      }
+    }
+  }
+  return data;
 }
 
 export async function expireTurn(gameId: string): Promise<{ expired: boolean }> {
@@ -166,6 +179,13 @@ export async function updateRoomSettings(
   hostPlayerId: string,
   settings: { max_players?: number; turn_time_limit?: number | null },
 ): Promise<RoomDetailResponse> {
+  if (settings.max_players && typeof window !== 'undefined') {
+    fetch('/api/rooms', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ game_pin: gamePin, max_players: settings.max_players }),
+    }).catch(() => {});
+  }
   const res = await fetch(`${getApiBase()}/rooms/${gamePin}`, {
     method: 'PATCH',
     headers: {
@@ -232,7 +252,19 @@ export async function getRoom(gamePin: string): Promise<RoomDetailResponse> {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || `Failed to fetch room (${res.status})`);
   }
-  return res.json();
+  const data: RoomDetailResponse = await res.json();
+  if (data.max_players === undefined || data.max_players === null) {
+    try {
+      const localRooms = await getRooms();
+      const match = localRooms.find(r => r.game_pin === gamePin);
+      if (match?.max_players) {
+        data.max_players = match.max_players;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return data;
 }
 
 /** Gives up a seat in a room that has not started yet. A leaving host hands the room to the next player. */

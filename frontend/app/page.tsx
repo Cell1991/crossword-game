@@ -223,6 +223,10 @@ export default function HomePage() {
     setError('');
     try {
       const res = await joinRoom(pinToJoin.trim(), playerName.trim());
+      const matchedRoom = rooms.find(r => r.game_pin === pinToJoin.trim());
+      const effectiveMaxPlayers = (res.max_players !== undefined && res.max_players !== null)
+        ? res.max_players
+        : (matchedRoom?.max_players || 4);
       sessionStore.save({
         gameId: res.game_id,
         playerId: res.player_id,
@@ -235,7 +239,7 @@ export default function HomePage() {
         gameMode: res.game_mode,
         maxTurns: res.max_turns,
         startingHp: res.starting_hp,
-        maxPlayers: (res.max_players !== undefined && res.max_players !== null) ? res.max_players : 4,
+        maxPlayers: effectiveMaxPlayers,
         createdAt: res.created_at,
       });
       router.push(`/lobby/${pinToJoin.trim()}`);

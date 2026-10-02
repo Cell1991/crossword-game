@@ -220,3 +220,33 @@ export async function GET() {
     );
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const body = await req.json().catch(() => ({}));
+    const gamePin = body.game_pin;
+    const maxPlayers = Number(body.max_players);
+    if (!gamePin || !maxPlayers || isNaN(maxPlayers)) {
+      return NextResponse.json({ error: 'Missing or invalid game_pin / max_players' }, { status: 400 });
+    }
+    const cleanPin = String(gamePin).replace(/'/g, "''").slice(0, 6);
+    const safeMax = Math.min(100, Math.max(2, Math.floor(maxPlayers)));
+    const updateSql = `UPDATE game_rooms SET max_players = ${safeMax} WHERE game_pin = '${cleanPin}';`;
+    const res = await fetch(NEON_SQL_URL, {
+      method: 'POST',
+      headers: {
+        'neon-connection-string': NEON_CONN_STRING,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: updateSql }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      return NextResponse.json({ error: err }, { status: 500 });
+    }
+    return NextResponse.json({ success: true, max_players: safeMax });
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : 'Internal server error';
+    return NextResponse.json({ error: errorMsg }, { status: 500 });
+  }
+}

@@ -2,7 +2,7 @@ services:
   - type: web
     name: crossword-backend
     env: docker
-    dockerContext: backend
+    dockerContext: .
     dockerfilePath: Dockerfile
     plan: free
     healthCheckPath: /health
