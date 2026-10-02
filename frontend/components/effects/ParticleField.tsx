@@ -33,9 +33,10 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     let beams: Beam[] = [];
     const device = navigator as Navigator & { deviceMemory?: number };
     const isTouchDevice = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
-    const isLowPowerDevice = isTouchDevice || (device.hardwareConcurrency ?? 8) <= 4 || (device.deviceMemory ?? 8) <= 4;
-    const nodeCount = isTouchDevice ? 14 : isLowPowerDevice ? 24 : NODE_COUNT;
-    const beamCount = isTouchDevice ? 4 : isLowPowerDevice ? 6 : BEAM_COUNT;
+    const isLowPowerDevice = (device.hardwareConcurrency ?? 8) <= 4 || (device.deviceMemory ?? 8) <= 4;
+    const nodeCount = isTouchDevice ? 30 : isLowPowerDevice ? 36 : NODE_COUNT;
+    const beamCount = isTouchDevice ? 6 : isLowPowerDevice ? 8 : BEAM_COUNT;
+    const linkDistance = isTouchDevice ? 80 : LINK_DISTANCE;
     const frameInterval = isTouchDevice ? 1000 / 25 : 1000 / 30;
     let lastDrawAt = 0;
     const mouse = { x: -1000, y: -1000 };
@@ -146,7 +147,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       ctx.strokeStyle = `rgba(${accent}, 0.12)`;
       ctx.lineWidth = 0.5;
       ctx.beginPath();
-      const linkDistSq = LINK_DISTANCE * LINK_DISTANCE;
+      const linkDistSq = linkDistance * linkDistance;
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const dx = nodes[i].x - nodes[j].x;
@@ -160,7 +161,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       ctx.stroke();
 
       // 3. Draw Nodes in Golden Glow
-      ctx.font = 'bold 12px monospace';
+      ctx.font = isTouchDevice ? 'bold 9.5px monospace' : 'bold 11.5px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
