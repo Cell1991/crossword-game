@@ -588,12 +588,12 @@ body {
 /* Console Pedestal (แท่นวางคีย์และปุ่มทรงเกมมิ่ง) */
 .wordx-game-shell .game-control-layout {
   position: relative;
-  border-radius: 22px;
-  background: radial-gradient(130% 120% at 50% 0%, rgba(26, 48, 78, 0.98) 0%, rgba(13, 24, 40, 0.99) 45%, rgba(6, 12, 22, 1) 100%);
-  border: 2px solid rgba(56, 189, 248, 0.75);
-  box-shadow: 0 0 24px rgba(0, 210, 255, 0.35), 0 -12px 36px rgba(0, 0, 0, 0.85), inset 0 0 16px rgba(0, 210, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(24px);
-  padding: 8px 14px 7px;
+  border-radius: 20px;
+  background: radial-gradient(130% 120% at 50% 0%, rgba(22, 38, 62, 0.98) 0%, rgba(11, 20, 34, 0.99) 45%, rgba(6, 12, 22, 1) 100%);
+  border: 1.5px solid rgba(56, 189, 248, 0.65);
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.25), 0 -8px 28px rgba(0, 0, 0, 0.8), inset 0 0 12px rgba(0, 210, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(20px);
+  padding: 6px 12px 6px;
 }
 
 /* Desktop layout (>= 1024px) */
@@ -603,9 +603,9 @@ body {
     flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 16px !important;
-    padding: 10px 22px 9px !important;
-    border-radius: 26px !important;
+    gap: 12px !important;
+    padding: 8px 18px 8px !important;
+    border-radius: 22px !important;
   }
   .wordx-game-shell .game-actions-bridge {
     display: contents !important;
@@ -633,9 +633,9 @@ body {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    gap: 8px !important;
-    padding: 8px 12px 6px !important;
-    border-radius: 22px 22px 0 0 !important;
+    gap: 5px !important;
+    padding: 6px 10px 5px !important;
+    border-radius: 20px 20px 0 0 !important;
   }
   .wordx-game-shell .game-rack-module {
     width: 100% !important;
@@ -651,8 +651,8 @@ body {
     justify-content: space-between !important;
     width: 100% !important;
     max-width: 440px !important;
-    gap: 6px !important;
-    padding-inline: 2px !important;
+    gap: 4px !important;
+    padding-inline: 1px !important;
   }
   .wordx-game-shell .game-utility-module,
   .wordx-game-shell .game-turn-module {
