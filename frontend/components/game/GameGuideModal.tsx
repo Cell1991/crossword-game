@@ -15,6 +15,7 @@ import {
   Layers,
   Clock,
   SkipForward,
+  Swords,
 } from 'lucide-react';
 
 interface GameGuideModalProps {
@@ -345,7 +346,7 @@ export function GameGuideModal({
               {/* 4. DOUBLE_DAMAGE */}
               <div className="flex items-center sm:items-start gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.025] hover:bg-white/[0.05] hover:border-white/[0.12] p-3.5 sm:p-4 transition-all">
                 <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl border border-purple-400/25 bg-purple-400/10 text-purple-300">
-                  <span className="text-lg font-black tracking-tight">×2</span>
+                  <Swords className="h-6 w-6 stroke-[2]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
