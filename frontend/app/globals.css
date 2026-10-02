@@ -620,13 +620,16 @@ body {
 
 /* Mobile & Tablet layout (< 1024px) */
 @media (max-width: 1023px) {
+  .wordx-game-shell .gameplay-control-stage {
+    padding-bottom: max(16px, calc(env(safe-area-inset-bottom) + 12px)) !important;
+  }
   .wordx-game-shell .game-control-layout {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     gap: 6px !important;
-    padding: 8px 10px 6px !important;
-    border-radius: 20px 20px 0 0 !important;
+    padding: 8px 10px 8px !important;
+    border-radius: 20px !important;
     overflow: visible !important;
   }
   .wordx-game-shell .game-rack-module {
