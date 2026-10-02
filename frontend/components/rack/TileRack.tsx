@@ -329,25 +329,25 @@ export const TileRack = memo(function TileRack({
           </div>
         </div>
 
-        {/* BOTTOM / SIDES: SINGLE COMPACT ROW FOR ACTION BUTTONS */}
-        <div className="game-actions-bridge order-2 lg:order-1 flex w-full max-w-[440px] lg:max-w-none lg:w-auto flex-row items-center justify-between lg:justify-center gap-1 sm:gap-2 lg:contents">
+        {/* LOWER DECK: 2 BALANCED FULL-WIDTH ACTION ROWS (No cut off, zero dead space) */}
+        <div className="game-actions-container flex w-full max-w-[340px] sm:max-w-[360px] flex-col gap-1.5">
           
-          {/* LEFT: UTILITY BUTTONS (Recall, Shuffle, Swap) */}
-          <div className="game-utility-module flex shrink-0 items-center gap-1 sm:gap-1.5 lg:order-1">
+          {/* Row 1: Utility Controls (Recall, Shuffle, Swap) */}
+          <div className="grid grid-cols-3 gap-1.5 w-full">
             {isExchanging ? (
-              <div className="flex items-center gap-1.5">
+              <div className="col-span-3 flex items-center justify-between gap-2 px-2 py-1 bg-rose-950/40 border border-rose-700/50 rounded-xl">
                 <motion.button
                   onClick={onCancelExchange}
                   disabled={isSubmitting}
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.96 }}
-                  className="flex h-[36px] sm:h-[38px] items-center gap-1 px-2.5 rounded-xl font-bold text-xs bg-rose-950/80 text-rose-300 hover:bg-rose-900 border border-rose-700/60 cursor-pointer shadow-md"
+                  className="flex h-[32px] items-center gap-1 px-2.5 rounded-lg font-bold text-xs bg-rose-900/80 text-rose-200 hover:bg-rose-800 border border-rose-600 cursor-pointer shadow-sm"
                 >
-                  <X className="w-3.5 h-3.5 text-rose-400" />
+                  <X className="w-3.5 h-3.5 text-rose-300" />
                   <span>Cancel</span>
                 </motion.button>
-                <span className="text-[10px] text-slate-400 leading-tight">
-                  {exchangeCount > tileBagCount ? `Only ${tileBagCount} left` : 'Tap to return'}
+                <span className="text-[10.5px] text-slate-300 truncate font-medium">
+                  {exchangeCount > tileBagCount ? `Only ${tileBagCount} in bag` : 'Select tiles to swap'}
                 </span>
               </div>
             ) : (
@@ -356,9 +356,9 @@ export const TileRack = memo(function TileRack({
                 <motion.button
                   onClick={onCancelMove}
                   disabled={!hasTemporaryTiles || isSubmitting}
-                  whileHover={hasTemporaryTiles ? { scale: 1.03 } : undefined}
+                  whileHover={hasTemporaryTiles ? { scale: 1.02 } : undefined}
                   whileTap={hasTemporaryTiles ? { scale: 0.96 } : undefined}
-                  className={`flex h-[36px] sm:h-[38px] items-center gap-1 px-2.5 sm:px-3 rounded-xl font-bold text-xs transition-all select-none ${
+                  className={`flex h-[34px] sm:h-[36px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs transition-all select-none ${
                     hasTemporaryTiles
                       ? 'bg-rose-950/90 text-rose-200 hover:bg-rose-900 border border-rose-600/80 cursor-pointer shadow-md shadow-rose-950/40'
                       : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
@@ -373,9 +373,9 @@ export const TileRack = memo(function TileRack({
                 <motion.button
                   onClick={onShuffleRack}
                   disabled={tileCount < 2 || isSubmitting}
-                  whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.03 } : undefined}
+                  whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.02 } : undefined}
                   whileTap={tileCount >= 2 && !isSubmitting ? { scale: 0.96 } : undefined}
-                  className="flex h-[36px] sm:h-[38px] items-center gap-1 px-2.5 sm:px-3 rounded-xl font-bold text-xs text-amber-200 hover:text-white bg-[#221808]/80 hover:bg-[#33240c] border border-amber-500/40 hover:border-amber-400 disabled:text-slate-500 disabled:bg-[#152234]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
+                  className="flex h-[34px] sm:h-[36px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs text-amber-200 hover:text-white bg-[#221808]/80 hover:bg-[#33240c] border border-amber-500/40 hover:border-amber-400 disabled:text-slate-500 disabled:bg-[#152234]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
                   title="Shuffle rack tiles"
                 >
                   <Shuffle className="w-3.5 h-3.5 text-amber-400" />
@@ -386,9 +386,9 @@ export const TileRack = memo(function TileRack({
                 <motion.button
                   onClick={onStartExchange}
                   disabled={!canStartExchange}
-                  whileHover={canStartExchange ? { scale: 1.03 } : undefined}
+                  whileHover={canStartExchange ? { scale: 1.02 } : undefined}
                   whileTap={canStartExchange ? { scale: 0.96 } : undefined}
-                  className="flex h-[36px] sm:h-[38px] items-center gap-1 px-2.5 sm:px-3 rounded-xl font-bold text-xs text-sky-200 hover:text-white bg-[#0a1e32]/80 hover:bg-[#112d4a] border border-sky-500/40 hover:border-sky-400 disabled:text-slate-500 disabled:bg-[#152234]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
+                  className="flex h-[34px] sm:h-[36px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs text-sky-200 hover:text-white bg-[#0a1e32]/80 hover:bg-[#112d4a] border border-sky-500/40 hover:border-sky-400 disabled:text-slate-500 disabled:bg-[#152234]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
                   title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
                 >
                   <ArrowLeftRight className="w-3.5 h-3.5 text-sky-400" />
@@ -398,44 +398,43 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
 
-          {/* RIGHT: TURN CONTROLS (Pass, CONFIRM / PLAY MOVE) */}
-          <div className="game-turn-module flex shrink-0 items-center gap-1 sm:gap-1.5 lg:order-3">
+          {/* Row 2: Turn Actions (Pass & CONFIRM / PLAY MOVE) */}
+          <div className="grid grid-cols-[1fr_2fr] gap-1.5 w-full">
             {isExchanging ? (
               <motion.button
                 onClick={onConfirmExchange}
                 disabled={!canConfirmExchange}
-                whileHover={canConfirmExchange ? { scale: 1.03 } : undefined}
+                whileHover={canConfirmExchange ? { scale: 1.02 } : undefined}
                 whileTap={canConfirmExchange ? { scale: 0.96 } : undefined}
-                className={`flex h-[36px] sm:h-[38px] items-center gap-1.5 px-3.5 rounded-xl font-black text-xs transition-all ${
+                className={`col-span-2 flex h-[38px] items-center justify-center gap-2 rounded-xl font-black text-xs transition-all ${
                   canConfirmExchange
                     ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-[0_0_16px_rgba(14,165,233,0.5)] border border-sky-300 cursor-pointer'
                     : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
                 }`}
               >
-                <ArrowLeftRight className="w-3.5 h-3.5" />
-                <span>{isSubmitting ? 'Swapping...' : `Swap (${exchangeCount})`}</span>
+                <ArrowLeftRight className="w-4 h-4" />
+                <span>{isSubmitting ? 'Swapping...' : `Confirm Swap (${exchangeCount} Tiles)`}</span>
               </motion.button>
             ) : (
               <>
                 {/* Pass Button */}
                 {passConfirming ? (
-                  <div className="flex h-[36px] sm:h-[38px] items-center gap-1">
-                    <span className="text-[10px] sm:text-[11px] text-slate-300 font-bold whitespace-nowrap">Pass?</span>
+                  <div className="flex h-[38px] items-center gap-1">
                     <motion.button
                       onClick={() => { setPassConfirming(false); onPassTurn(); }}
                       disabled={isSubmitting}
-                      whileHover={{ scale: 1.05 }}
+                      whileHover={{ scale: 1.04 }}
                       whileTap={{ scale: 0.94 }}
-                      className="h-full flex items-center gap-0.5 px-2 rounded-xl font-black text-xs bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 cursor-pointer shadow-sm"
+                      className="h-full flex-1 flex items-center justify-center gap-1 rounded-xl font-black text-xs bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 cursor-pointer shadow-sm"
                     >
-                      <Check className="w-3 h-3 text-white" />
-                      <span>Yes</span>
+                      <Check className="w-3.5 h-3.5 text-white" />
+                      <span>Pass!</span>
                     </motion.button>
                     <motion.button
                       onClick={() => setPassConfirming(false)}
-                      whileHover={{ scale: 1.05 }}
+                      whileHover={{ scale: 1.04 }}
                       whileTap={{ scale: 0.94 }}
-                      className="h-full flex items-center justify-center px-1.5 rounded-xl text-xs bg-[#152234] hover:bg-[#20344f] text-slate-300 hover:text-white border border-white/10 cursor-pointer"
+                      className="h-full w-8 flex items-center justify-center rounded-xl text-xs bg-[#152234] hover:bg-[#20344f] text-slate-300 hover:text-white border border-white/10 cursor-pointer"
                     >
                       <X className="w-3.5 h-3.5" />
                     </motion.button>
@@ -444,9 +443,9 @@ export const TileRack = memo(function TileRack({
                   <motion.button
                     onClick={() => setPassConfirming(true)}
                     disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
-                    whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.03 } : undefined}
+                    whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.02 } : undefined}
                     whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.96 } : undefined}
-                    className={`flex h-[36px] sm:h-[38px] items-center gap-1 px-2.5 sm:px-3 rounded-xl font-bold text-xs transition-all select-none ${
+                    className={`flex h-[38px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs transition-all select-none ${
                       isMyTurn && !hasTemporaryTiles
                         ? 'bg-[#152234] hover:bg-[#20344f] text-slate-200 hover:text-white border border-slate-600/60 hover:border-sky-400/60 cursor-pointer shadow-sm'
                         : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
@@ -458,27 +457,27 @@ export const TileRack = memo(function TileRack({
                   </motion.button>
                 )}
 
-                {/* Confirm / Play Move Button */}
+                {/* Primary Confirm / Play Move Button */}
                 <motion.button
                   onClick={onConfirmMove}
                   disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
-                  whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.03 } : undefined}
+                  whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.02 } : undefined}
                   whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.96 } : undefined}
-                  className={`game-primary-action flex h-[36px] sm:h-[38px] items-center gap-1.5 rounded-xl px-3 sm:px-4 font-black text-xs transition-all select-none ${
+                  className={`game-primary-action flex h-[38px] items-center justify-center gap-1.5 rounded-xl px-3 font-black text-xs sm:text-sm transition-all select-none ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 text-slate-950 shadow-[0_0_16px_rgba(52,211,153,0.6)] border border-emerald-200 hover:brightness-110 cursor-pointer font-black'
+                      ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.7)] border border-emerald-200 hover:brightness-110 cursor-pointer font-black'
                       : isMyTurn && hasTemporaryTiles && placementValid === false
-                      ? 'bg-rose-950/80 text-rose-300 border border-rose-600/70 cursor-not-allowed'
+                      ? 'bg-rose-950/90 text-rose-300 border border-rose-600/80 cursor-not-allowed'
                       : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
                   }`}
                 >
                   <Check className={`w-4 h-4 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-slate-950' : 'text-slate-500'}`} />
-                  <span className="tracking-wide">
+                  <span className="tracking-wide truncate font-black">
                     {isSubmitting
                       ? 'Submitting...'
                       : placementValid === true && estimatedScore !== undefined && estimatedScore > 0
                       ? `CONFIRM (+${estimatedScore})`
-                      : 'CONFIRM'}
+                      : 'CONFIRM MOVE'}
                   </span>
                 </motion.button>
               </>

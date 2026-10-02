@@ -554,17 +554,29 @@ export const PowerCardBar = memo(function PowerCardBar({
     );
   }
 
-  if (cards.length === 0) {
-    return null;
-  }
-
   const maxSlots = 3;
   const slotCards = cards.slice(0, maxSlots);
 
   return (
-    <div className="flex w-full items-center justify-center gap-1.5 sm:gap-2 mb-0.5 animate-in fade-in duration-150">
-      {slotCards.map((card, slotIndex) => {
-        if (!card || !CARD_META[card]) return null;
+    <div className="flex w-full items-center justify-between gap-1.5 sm:gap-2 mb-0.5 select-none">
+      {[0, 1, 2].map(slotIndex => {
+        const card = slotCards[slotIndex];
+        if (!card || !CARD_META[card]) {
+          return (
+            <div
+              key={`empty-card-slot-${slotIndex}`}
+              title={`Card Slot ${slotIndex + 1} (Empty)`}
+              className="group relative flex h-7 sm:h-7.5 flex-1 items-center justify-center gap-1.5 rounded-lg border border-sky-400/30 bg-gradient-to-b from-sky-950/40 via-slate-900/60 to-slate-950/80 px-2 py-0.5 select-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.7)] transition-all"
+            >
+              <div className="flex items-center justify-center w-3.5 h-3.5 rounded bg-sky-400/15 border border-sky-300/40 text-sky-300">
+                <span className="text-[9px] font-black">{slotIndex + 1}</span>
+              </div>
+              <span className="text-[10px] sm:text-[11px] font-extrabold tracking-wider text-sky-300/80">
+                CARD {slotIndex + 1}
+              </span>
+            </div>
+          );
+        }
 
         const meta = CARD_META[card];
         const disabled = busy || (meta.ownTurnOnly && !isMyTurn) || (card === 'MOVE_HEAL' && !hasStagedMove);
@@ -591,7 +603,7 @@ export const PowerCardBar = memo(function PowerCardBar({
                 onUseSimple(card as SimpleCard);
               }
             }}
-            className={`group relative flex h-7 sm:h-8 min-w-[80px] sm:min-w-[92px] items-center justify-center gap-1.5 rounded-lg border px-2 py-0.5 text-xs font-bold transition-all duration-150 cursor-pointer select-none active:scale-[0.97] focus-visible:outline-none ${
+            className={`group relative flex h-7 sm:h-7.5 flex-1 items-center justify-center gap-1.5 rounded-lg border px-2 py-0.5 text-xs font-bold transition-all duration-150 cursor-pointer select-none active:scale-[0.97] focus-visible:outline-none ${
               disabled
                 ? 'border-slate-700/60 bg-slate-900/60 text-slate-500 cursor-not-allowed opacity-60'
                 : `bg-gradient-to-r ${meta.bgGradient} ${meta.borderColor} ${meta.textColor} ${meta.glowClass} shadow-md hover:brightness-110`
@@ -603,7 +615,7 @@ export const PowerCardBar = memo(function PowerCardBar({
             </div>
 
             {/* Card Label */}
-            <span className="relative z-10 text-[10.5px] sm:text-[11px] font-bold tracking-wide leading-none">
+            <span className="relative z-10 text-[10.5px] sm:text-[11px] font-bold tracking-wide leading-none truncate">
               {meta.label}
             </span>
           </button>
