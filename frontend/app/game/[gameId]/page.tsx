@@ -789,21 +789,6 @@ export default function GamePage() {
 
       </main>
 
-      {/* Mobile Info, Scoreboard & History Sheet Modal */}
-      <MobileInfoModal
-        isOpen={isMobileInfoOpen}
-        onClose={() => setIsMobileInfoOpen(false)}
-        turnNumber={gameState.turn_number}
-        players={gameState.players ?? []}
-        showHealth={gameState.max_turns === null}
-        myPlayerId={myPlayerId}
-        currentPlayerId={gameState.current_player_id ?? null}
-        tileBagCount={tileBagCount}
-        tileBagCounts={gameState.tile_bag_counts ?? {}}
-        moveHistory={sync.moveHistory}
-        cardUseEffects={sync.cardUseEffects}
-      />
-
       <footer className="gameplay-control-stage relative z-20 flex w-full shrink-0 justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-5 sm:pb-4">
         <div className="gameplay-control-content w-full min-w-0">
           {isSpectator ? (
@@ -890,6 +875,21 @@ export default function GamePage() {
         />
       </div>
       </div>
+
+      {/* Match details must sit outside the clipped board and sidebar frame. */}
+      <MobileInfoModal
+        isOpen={isMobileInfoOpen}
+        onClose={() => setIsMobileInfoOpen(false)}
+        turnNumber={gameState.turn_number}
+        players={gameState.players ?? []}
+        showHealth={gameState.max_turns === null}
+        myPlayerId={myPlayerId}
+        currentPlayerId={gameState.current_player_id ?? null}
+        tileBagCount={tileBagCount}
+        tileBagCounts={gameState.tile_bag_counts ?? {}}
+        moveHistory={sync.moveHistory}
+        cardUseEffects={sync.cardUseEffects}
+      />
 
       {/* Floating Animated Score Burst Popup */}
       <AnimatePresence>
