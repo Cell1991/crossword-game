@@ -185,7 +185,10 @@ async def start_game(
         first_p = (await db.execute(stmt_p)).scalar_one_or_none()
         if BotService.is_bot_player(first_p):
             asyncio.create_task(
-                BotService.schedule_auto_bot_turn(game.id, first_p.id, game.turn_number, delay_seconds=15.0)
+                # The browser animates the bot's move, but the server remains the fallback
+                # driver if that client is closed or its request fails. Keep this fallback
+                # short enough that a match never appears stuck waiting on the browser.
+                BotService.schedule_auto_bot_turn(game.id, first_p.id, game.turn_number, delay_seconds=6.0)
             )
 
     return {"status": "started", "game_id": game.id}

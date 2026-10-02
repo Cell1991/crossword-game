@@ -504,7 +504,7 @@ class BotService:
             next_p = (await db.execute(stmt_next)).scalar_one_or_none()
             if cls.is_bot_player(next_p):
                 asyncio.create_task(
-                    cls.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=15.0)
+                    cls.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=6.0)
                 )
 
         return {
@@ -521,10 +521,9 @@ class BotService:
         game_id: str,
         bot_player_id: str,
         expected_turn_number: int,
-        delay_seconds: float = 15.0,
+        delay_seconds: float = 6.0,
     ) -> None:
-        """Background fallback: If the client doesn't commit the bot's turn within delay_seconds,
-        the server executes the bot's turn automatically. Guarantees the game never halts."""
+        """Execute a bot turn if the browser has not committed it within the fallback window."""
         await asyncio.sleep(delay_seconds)
         from app.database.session import AsyncSessionLocal
         async with AsyncSessionLocal() as db:

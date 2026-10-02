@@ -35,7 +35,8 @@ async def get_game(
         if player:
             requesting_player_id = player.id
 
-    # Auto-recovery: If current turn belongs to a Bot in an active game and it has been idle >= 2.5s, execute it!
+    # Auto-recovery: a scheduled task may be lost on process restart. If a bot turn has
+    # been idle for the same short fallback window, execute it while assembling the state.
     from sqlalchemy import select
     from app.database.models import Game, GamePlayer, get_utc_now
     stmt_g = select(Game).where(Game.id == game_id)
@@ -50,7 +51,7 @@ async def get_game(
             if started:
                 if started.tzinfo is None:
                     started = started.replace(tzinfo=timezone.utc)
-                if (now - started).total_seconds() >= 15.0:
+                if (now - started).total_seconds() >= 6.0:
                     await BotService.execute_bot_move_now(db, game_id, curr_p.id)
 
     # Whether racks are revealed comes from the room's own is_debug flag (see get_game_state),
@@ -95,7 +96,7 @@ async def pass_turn(
         next_p = (await db.execute(stmt_next)).scalar_one_or_none()
         if BotService.is_bot_player(next_p):
             asyncio.create_task(
-                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=15.0)
+                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=6.0)
             )
 
     return {
@@ -358,7 +359,7 @@ async def execute_bot_move(
             next_p = (await db.execute(stmt_next)).scalar_one_or_none()
             if BotService.is_bot_player(next_p):
                 asyncio.create_task(
-                    BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=15.0)
+                    BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=6.0)
                 )
 
         return {
