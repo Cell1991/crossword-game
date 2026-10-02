@@ -415,6 +415,32 @@ export const TileRack = memo(function TileRack({
                 <ArrowLeftRight className="w-4 h-4" />
                 <span>{isSubmitting ? 'Swapping...' : `Confirm Swap (${exchangeCount} Tiles)`}</span>
               </motion.button>
+            ) : passConfirming ? (
+              <div className="col-span-2 flex h-[38px] items-center justify-between gap-1.5 w-full">
+                {/* Cancel Pass */}
+                <motion.button
+                  onClick={() => setPassConfirming(false)}
+                  disabled={isSubmitting}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="flex h-full flex-1 items-center justify-center gap-1.5 rounded-xl text-xs font-bold bg-[#152234] hover:bg-[#20344f] text-slate-300 hover:text-white border border-white/10 cursor-pointer transition-all shadow-sm"
+                >
+                  <X className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Cancel</span>
+                </motion.button>
+
+                {/* Confirm Pass Button */}
+                <motion.button
+                  onClick={() => { setPassConfirming(false); onPassTurn(); }}
+                  disabled={isSubmitting}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="flex h-full flex-[2] items-center justify-center gap-2 rounded-xl font-black text-xs sm:text-sm bg-gradient-to-r from-rose-600 via-red-500 to-rose-600 hover:brightness-110 text-white border border-rose-300 shadow-[0_0_18px_rgba(244,63,94,0.6)] cursor-pointer transition-all"
+                >
+                  <SkipForward className="w-4 h-4 text-white" />
+                  <span>{isSubmitting ? 'Passing...' : 'Confirm Pass'}</span>
+                </motion.button>
+              </div>
             ) : (
               <>
                 {/* Primary Confirm / Play Move Button */}
@@ -442,44 +468,21 @@ export const TileRack = memo(function TileRack({
                 </motion.button>
 
                 {/* Pass Button */}
-                {passConfirming ? (
-                  <div className="flex h-[38px] items-center gap-1">
-                    <motion.button
-                      onClick={() => { setPassConfirming(false); onPassTurn(); }}
-                      disabled={isSubmitting}
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.94 }}
-                      className="h-full flex-1 flex items-center justify-center gap-1 rounded-xl font-black text-xs bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 cursor-pointer shadow-sm"
-                    >
-                      <Check className="w-3.5 h-3.5 text-white" />
-                      <span>Pass!</span>
-                    </motion.button>
-                    <motion.button
-                      onClick={() => setPassConfirming(false)}
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.94 }}
-                      className="h-full w-8 flex items-center justify-center rounded-xl text-xs bg-[#152234] hover:bg-[#20344f] text-slate-300 hover:text-white border border-white/10 cursor-pointer"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </motion.button>
-                  </div>
-                ) : (
-                  <motion.button
-                    onClick={() => setPassConfirming(true)}
-                    disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
-                    whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.02 } : undefined}
-                    whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.96 } : undefined}
-                    className={`flex h-[38px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs transition-all select-none ${
-                      isMyTurn && !hasTemporaryTiles
-                        ? 'bg-[#152234] hover:bg-[#20344f] text-slate-200 hover:text-white border border-slate-600/60 hover:border-sky-400/60 cursor-pointer shadow-sm'
-                        : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
-                    }`}
-                    title="Pass your turn"
-                  >
-                    <SkipForward className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Pass</span>
-                  </motion.button>
-                )}
+                <motion.button
+                  onClick={() => setPassConfirming(true)}
+                  disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
+                  whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.02 } : undefined}
+                  whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.96 } : undefined}
+                  className={`flex h-[38px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs transition-all select-none ${
+                    isMyTurn && !hasTemporaryTiles
+                      ? 'bg-[#152234] hover:bg-[#20344f] text-slate-200 hover:text-white border border-slate-600/60 hover:border-sky-400/60 cursor-pointer shadow-sm'
+                      : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                  }`}
+                  title="Pass your turn"
+                >
+                  <SkipForward className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Pass</span>
+                </motion.button>
               </>
             )}
           </div>
