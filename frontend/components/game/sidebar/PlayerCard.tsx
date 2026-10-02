@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Crown, Shield, WifiOff } from 'lucide-react';
+import { Shield, WifiOff } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { cardIcon } from '../cardIcons';
 
@@ -139,23 +139,13 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-1.5 min-w-0">
             <span
-              className="text-sm sm:text-base font-bold text-[#F2F6FC] truncate"
+              className={`text-sm sm:text-base font-bold truncate ${
+                isMe ? 'text-[#F6C453]' : 'text-[#F2F6FC]'
+              }`}
               title={displayName}
             >
               {displayName}
             </span>
-
-            {/* Host Crown */}
-            {player.is_host && (
-              <Crown className="w-3.5 h-3.5 text-[#F6C453] shrink-0 drop-shadow-[0_0_4px_rgba(246,196,83,0.5)]" />
-            )}
-
-            {/* YOU Badge */}
-            {isMe && (
-              <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-[#F6C453]/15 text-[#F6C453] border border-[#F6C453]/30 uppercase tracking-wider shrink-0">
-                YOU
-              </span>
-            )}
 
             {/* Shield Active Icon */}
             {hasShield && (
