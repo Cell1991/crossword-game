@@ -507,24 +507,24 @@ export const PowerCardBar = memo(function PowerCardBar({
     const isHint = confirmingSimpleCard === 'HINT';
     const isShield = confirmingSimpleCard === 'SHIELD';
     const description = isHint
-      ? 'Use Hint card to reveal top 3 best word placements?'
+      ? 'Use Hint card to reveal the top 3 best word placements?'
       : isHeal
-      ? 'Use Heal card to restore +1 HP instantly?'
+      ? 'Use Heal card to restore +1 HP to your health meter?'
       : isShield
       ? 'Use Shield card to protect yourself from attacks & tile swaps?'
       : `Activate ${meta?.label || confirmingSimpleCard}?`;
 
     return (
-      <div className={`flex flex-col w-full max-w-[344px] gap-1.5 rounded-xl border p-2 text-xs backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none shadow-lg ${
+      <div className={`flex w-full items-center justify-between gap-3 sm:gap-4 rounded-xl sm:rounded-2xl border px-3 sm:px-4 py-1.5 sm:py-2 text-xs backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none shadow-xl ${
         isHint
-          ? 'border-amber-500/80 bg-gradient-to-b from-amber-950/95 via-yellow-950/90 to-slate-950/95 text-amber-100 ring-1 ring-amber-500/40 shadow-[0_8px_24px_rgba(245,158,11,0.3)]'
+          ? 'border-amber-500/80 bg-gradient-to-r from-amber-950/95 via-yellow-950/90 to-slate-950/95 text-amber-100 ring-1 ring-amber-500/40 shadow-[0_8px_30px_rgba(245,158,11,0.35)]'
           : isHeal
-          ? 'border-rose-500/80 bg-gradient-to-b from-rose-950/95 via-pink-950/90 to-slate-950/95 text-rose-100 ring-1 ring-rose-500/40 shadow-[0_8px_24px_rgba(244,63,94,0.3)]'
-          : 'border-blue-500/80 bg-gradient-to-b from-blue-950/95 via-indigo-950/90 to-slate-950/95 text-blue-100 ring-1 ring-blue-500/40 shadow-[0_8px_24px_rgba(59,130,246,0.3)]'
+          ? 'border-rose-500/80 bg-gradient-to-r from-rose-950/95 via-pink-950/90 to-slate-950/95 text-rose-100 ring-1 ring-rose-500/40 shadow-[0_8px_30px_rgba(244,63,94,0.35)]'
+          : 'border-blue-500/80 bg-gradient-to-r from-blue-950/95 via-indigo-950/90 to-slate-950/95 text-blue-100 ring-1 ring-blue-500/40 shadow-[0_8px_30px_rgba(59,130,246,0.35)]'
       }`}>
-        {/* Row 1: Icon + Explanation */}
-        <div className="flex items-start gap-2 min-w-0">
-          <div className={`flex items-center justify-center w-6 h-6 rounded-lg border shrink-0 mt-0.5 ${
+        {/* Left: Icon + Action Title + Full Description */}
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className={`flex items-center justify-center w-7 h-7 rounded-xl border shrink-0 ${
             isHint
               ? 'bg-amber-500/20 border-amber-400/60 shadow-[0_0_8px_rgba(245,158,11,0.5)]'
               : isHeal
@@ -539,18 +539,18 @@ export const PowerCardBar = memo(function PowerCardBar({
             }`}>
               Confirm Action
             </span>
-            <p className="font-bold text-slate-100 text-[11px] leading-snug">
+            <p className="font-bold text-slate-100 text-xs sm:text-[13px] truncate">
               {description}
             </p>
           </div>
         </div>
 
-        {/* Row 2: Action Buttons */}
-        <div className="flex items-center gap-1.5 w-full pt-1 border-t border-white/10">
+        {/* Right: Buttons */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() => setConfirmingSimpleCard(null)}
-            className="flex-1 rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 py-1 text-[11px] text-slate-400 hover:text-white transition-colors cursor-pointer text-center font-bold"
+            className="rounded-xl border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-3 py-1.5 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer font-bold active:scale-95 shadow-sm"
           >
             Cancel
           </button>
@@ -561,17 +561,17 @@ export const PowerCardBar = memo(function PowerCardBar({
               onUseSimple(confirmingSimpleCard);
               setConfirmingSimpleCard(null);
             }}
-            className={`group relative flex-[1.6] flex items-center justify-center gap-1.5 rounded-lg py-1 font-black hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all cursor-pointer ${
+            className={`group relative flex items-center justify-center gap-1.5 rounded-xl px-4 py-1.5 font-black hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all cursor-pointer ${
               isHint
-                ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-neutral-950 shadow-[0_0_12px_rgba(245,158,11,0.6),inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-neutral-950 shadow-[0_0_16px_rgba(245,158,11,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)]'
                 : isHeal
-                ? 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white shadow-[0_0_12px_rgba(244,63,94,0.6),inset_0_1px_1px_rgba(255,255,255,0.4)]'
-                : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white shadow-[0_0_12px_rgba(59,130,246,0.6),inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                ? 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white shadow-[0_0_16px_rgba(244,63,94,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white shadow-[0_0_16px_rgba(59,130,246,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)]'
             }`}
           >
-            <div className="pointer-events-none absolute inset-x-1.5 top-0.5 h-1/2 rounded-t bg-gradient-to-b from-white/25 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-1.5 top-0.5 h-1/2 rounded-t-lg bg-gradient-to-b from-white/25 to-transparent" />
             <Check className={`w-3.5 h-3.5 stroke-[3] ${isHint ? 'text-neutral-950' : 'text-white'}`} />
-            <span className="tracking-wide uppercase text-[10.5px]">Confirm {meta?.label || 'Card'}</span>
+            <span className="tracking-wide uppercase text-xs">Confirm {meta?.label || 'Card'}</span>
           </button>
         </div>
       </div>
@@ -582,7 +582,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   const slotCards = cards.slice(0, maxSlots);
 
   return (
-    <div className="flex w-full items-center justify-between gap-1.5 sm:gap-2 mb-0.5 select-none">
+    <div className="flex w-full lg:max-w-[344px] items-center justify-between gap-1.5 sm:gap-2 mb-0.5 select-none">
       {[0, 1, 2].map(slotIndex => {
         const card = slotCards[slotIndex];
         if (!card || !CARD_META[card]) {
