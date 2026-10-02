@@ -651,10 +651,10 @@ export default function GamePage() {
 
   return (
     <div
-      className="relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden bg-slate-950"
+      className="game-shell relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden bg-slate-950"
       style={{
         ...TILE_THEME_STYLE,
-        background: 'radial-gradient(ellipse at 48% 50%, rgba(8, 145, 178, 0.09), transparent 46%), radial-gradient(ellipse at 88% 8%, rgba(99, 102, 241, 0.11), transparent 34%), linear-gradient(135deg, #020617 0%, #0b1224 58%, #12152f 100%)',
+        background: 'radial-gradient(ellipse at 52% 46%, rgba(16, 185, 129, 0.09), transparent 44%), radial-gradient(ellipse at 88% 0%, rgba(245, 158, 11, 0.10), transparent 34%), linear-gradient(135deg, #070b18 0%, #0b1222 58%, #111626 100%)',
       }}
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 shadow-[inset_0_0_130px_rgba(0,0,0,0.42)]" />
@@ -718,9 +718,9 @@ export default function GamePage() {
       {sync.cardReveal && <CardRevealOverlay reveal={sync.cardReveal} />}
 
       {/* Main: Board */}
-      <div className={`relative z-10 mx-auto grid w-full max-w-[1920px] flex-1 min-h-0 ${GAME_SHELL_COLUMNS}`}>
+      <div className={`game-main-shell relative z-10 mx-auto grid w-full max-w-[1920px] flex-1 min-h-0 ${GAME_SHELL_COLUMNS}`}>
         {/* Board canvas takes full space */}
-        <div className="relative min-h-0 min-w-0">
+        <div className="game-board-stage relative min-h-0 min-w-0">
           {/* Top Overlays Stack: Toasts & Hint Suggestions (stacked vertically, never overlapping) */}
           <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex w-full max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-col items-center gap-2.5 sm:top-4">
             {cards.hintSuggestions.length > 0 && (
@@ -787,7 +787,7 @@ export default function GamePage() {
         </div>
 
         {/* Right sidebar: Unified Glassmorphism Control & Scoreboard Panel (desktop) */}
-        <div className="hidden min-h-0 lg:flex">
+        <div className="game-sidebar-host hidden min-h-0 lg:flex">
           <RightSidebar
             players={gameState.players ?? []}
             showHealth={gameState.max_turns === null}
@@ -817,8 +817,8 @@ export default function GamePage() {
       />
 
       {/* Bottom: Tile rack (spectators and eliminated players have no active rack) */}
-      <div className={`relative z-10 mx-auto grid w-full max-w-[1920px] shrink-0 ${GAME_SHELL_COLUMNS} px-1.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1.5 sm:px-3 sm:pb-3`}>
-        <div className="min-w-0">
+      <div className={`game-dock-grid relative z-10 mx-auto grid w-full max-w-[1920px] shrink-0 ${GAME_SHELL_COLUMNS} px-1.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1.5 sm:px-3 sm:pb-3`}>
+        <div className="game-dock-host min-w-0">
           {isSpectator ? (
             <div className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-xl border border-sky-500/25 bg-sky-950/40 px-4 py-2.5 text-center text-xs text-sky-300 select-none sm:text-sm">
               <Eye className="h-4 w-4 shrink-0 text-sky-400" />

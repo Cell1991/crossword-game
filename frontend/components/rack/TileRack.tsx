@@ -191,7 +191,7 @@ export const TileRack = memo(function TileRack({
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-none flex-col items-center gap-2 border-y border-slate-800/80 bg-slate-950/95 px-2 py-2.5 pointer-events-auto sm:gap-3 sm:border-x sm:rounded-t-2xl sm:px-4 sm:py-3">
+    <div className="game-dock mx-auto flex w-full max-w-none flex-col items-center gap-2 border-y border-slate-800/80 bg-slate-950/95 px-2 py-2.5 pointer-events-auto sm:gap-3 sm:border-x sm:rounded-t-2xl sm:px-4 sm:py-3">
       {draggedTile && dragPosition && !isHandedToBoard && (
         <FloatingTile
           ref={ghostRef}
@@ -204,7 +204,7 @@ export const TileRack = memo(function TileRack({
 
       {/* Utility row belongs to the same dock, keeping cards clear of playable board cells. */}
       {powerCardSlot && (
-        <div className="flex w-full items-center justify-center border-b border-slate-800/80 pb-2">
+        <div className="game-card-row flex w-full items-center justify-center border-b border-slate-800/80 pb-2">
           {powerCardSlot}
         </div>
       )}
@@ -243,7 +243,7 @@ export const TileRack = memo(function TileRack({
           <div className="w-full overflow-x-auto overflow-y-hidden pt-3.5 -mt-3.5 pb-1.5 -mb-1.5 px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible lg:pt-0 lg:mt-0 lg:pb-0 lg:mb-0">
             <div
               ref={rackRef}
-              className={`relative flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2 pt-3.5 sm:w-auto sm:gap-2.5 sm:px-2.5 sm:py-2.5 sm:pt-4 min-h-[64px] sm:min-h-[78px] ${
+              className={`game-rack-stand relative flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2 pt-3.5 sm:w-auto sm:gap-2.5 sm:px-2.5 sm:py-2.5 sm:pt-4 min-h-[64px] sm:min-h-[78px] ${
                 isExternalDragActive ? 'border-cyan-300/80 bg-cyan-950/35 ring-1 ring-cyan-300/35' : 'border-amber-200/25 bg-gradient-to-b from-amber-950/50 via-slate-900 to-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_5px_14px_rgba(0,0,0,0.35)]'
               } transition-all`}
             >
@@ -355,7 +355,7 @@ export const TileRack = memo(function TileRack({
         <div className="order-2 relative flex w-auto max-w-full flex-row items-center justify-center gap-1 lg:contents">
 
         {/* LEFT POD: GAME MANAGEMENT */}
-        <div className="flex shrink flex-col items-center lg:order-1 lg:flex-1 lg:basis-0 lg:items-end min-w-0">
+        <div className="game-control-group flex shrink flex-col items-center lg:order-1 lg:flex-1 lg:basis-0 lg:items-end min-w-0">
           <div className="flex min-h-[40px] w-auto items-center justify-center gap-1 sm:min-h-[46px]">
             {isExchanging ? (
               <div className="flex items-center gap-2 px-1">
@@ -432,7 +432,7 @@ export const TileRack = memo(function TileRack({
         <div className="h-5 w-px bg-slate-700/60 mx-0.5 lg:hidden" />
 
         {/* RIGHT POD: TURN ACTIONS */}
-        <div className="flex shrink flex-col items-center lg:order-3 lg:flex-1 lg:basis-0 lg:items-start min-w-0">
+        <div className="game-control-group game-turn-actions flex shrink flex-col items-center lg:order-3 lg:flex-1 lg:basis-0 lg:items-start min-w-0">
           <div className="mb-1.5 hidden lg:flex w-full items-center justify-between gap-2 px-2">
             {/* Points / Validity preview badge & Bingo indicator with smooth pop and shake animations */}
             <AnimatePresence mode="wait">
@@ -543,6 +543,7 @@ export const TileRack = memo(function TileRack({
 
                 {/* Primary action, enabled only by the authoritative placement verdict. */}
                 <motion.button
+                  data-game-action="play"
                   onClick={onConfirmMove}
                   disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
                   whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.05 } : undefined}
