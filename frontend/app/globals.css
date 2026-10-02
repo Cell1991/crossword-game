@@ -625,9 +625,9 @@ body {
 .wordx-game-shell .gameplay-top-hud {
   min-height: 61px;
   padding: 6px 16px;
-  border-bottom: 1px solid #394352;
-  background: #202735;
-  box-shadow: inset 0 1px rgba(255,255,255,.12), 0 3px 13px rgba(0,0,0,.48);
+  border-bottom: 1px solid #4c5968;
+  background: linear-gradient(180deg, #303947 0%, #252d3a 100%);
+  box-shadow: inset 0 1px rgba(242,247,255,.22), inset 0 -1px rgba(0,0,0,.45), 0 5px 15px rgba(0,0,0,.66), 0 12px 25px rgba(0,0,0,.28);
 }
 .wordx-game-shell .gameplay-hud-cluster {
   min-height: 0;
@@ -673,10 +673,10 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   border: 0;
-  border-left: 1px solid rgba(183,195,211,.27);
+  border-left: 2px solid #596575;
   border-radius: 0;
-  background: #202735;
-  box-shadow: inset 2px 0 rgba(255,255,255,.055), -7px 0 22px rgba(0,0,0,.32);
+  background: linear-gradient(90deg, #242e3b 0%, #202936 15%, #1d2633 100%);
+  box-shadow: inset 1px 0 rgba(240,246,255,.2), -4px 0 0 rgba(3,7,13,.55), -13px 0 24px rgba(0,0,0,.62), -24px 0 42px rgba(0,0,0,.25);
   backdrop-filter: none;
 }
 .wordx-game-shell .game-match-hud-content { min-height: 100%; }
@@ -684,10 +684,10 @@ body {
 .wordx-game-shell .game-bag-panel button {
   min-height: 128px;
   gap: 8px;
-  border: 1px solid rgba(216,222,230,.34) !important;
+  border: 1px solid #77818d !important;
   border-radius: 13px !important;
-  background: linear-gradient(145deg, #343b47, #292f3b) !important;
-  box-shadow: inset 0 1px rgba(255,255,255,.13), 0 5px 12px rgba(0,0,0,.32);
+  background: linear-gradient(145deg, #3c4551, #313946) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.21), inset 0 -2px rgba(0,0,0,.25), 0 5px 12px rgba(0,0,0,.48), 0 0 0 1px rgba(0,0,0,.3);
 }
 .wordx-game-shell .game-bag-label { color: #e1e5ea; }
 .wordx-game-shell .game-bag-count {
@@ -714,15 +714,17 @@ body {
 .wordx-game-shell .game-players-list > div {
   min-height: 69px;
   padding: 10px !important;
-  border: 1px solid rgba(194,203,216,.23);
+  border: 1px solid #596575;
   border-left: 2px solid #d0b276;
   border-radius: 11px !important;
-  background: linear-gradient(140deg, rgba(65,73,86,.86), rgba(41,48,61,.9));
-  box-shadow: inset 0 1px rgba(255,255,255,.08), 0 3px 8px rgba(0,0,0,.18);
+  background: linear-gradient(145deg, #414a57, #333c49);
+  box-shadow: inset 0 1px rgba(255,255,255,.16), 0 3px 9px rgba(0,0,0,.36);
 }
 .wordx-game-shell .game-players-list > div[data-current="true"] {
+  border-color: #baa578;
   border-left-color: #47dec2;
-  background: linear-gradient(140deg, rgba(28,67,67,.82), rgba(35,48,56,.91));
+  background: linear-gradient(145deg, #40535a, #33444c);
+  box-shadow: inset 0 1px rgba(255,255,255,.2), 0 3px 10px rgba(0,0,0,.42), 0 0 0 1px rgba(217,189,125,.24);
 }
 .wordx-game-shell .game-players-list > div[data-inactive="true"] { opacity: .55; }
 .wordx-game-shell .game-player-crest { height: 36px; width: 36px; border-width: 2px; }
@@ -730,11 +732,11 @@ body {
   max-height: none;
   flex: 1 1 auto !important;
   border-color: rgba(187,198,212,.22);
-  background: rgba(8,13,22,.22);
+  background: #1b2431;
 }
 .wordx-game-shell .game-move-log > button { padding: 12px 13px !important; }
 .wordx-game-shell .game-move-log > div { max-height: 34vh; }
-.wordx-game-shell .game-move-log .overflow-hidden.border-b { margin-bottom: 5px; border: 1px solid rgba(179,190,204,.18); border-radius: 7px; background: rgba(88,96,110,.37); }
+.wordx-game-shell .game-move-log .overflow-hidden.border-b { margin-bottom: 5px; border: 1px solid #44505e; border-radius: 7px; background: #303947; box-shadow: inset 0 1px rgba(255,255,255,.08), 0 2px 5px rgba(0,0,0,.25); }
 .wordx-game-shell .gameplay-control-stage {
   min-height: 108px;
   padding: 8px 14px max(9px, env(safe-area-inset-bottom));
