@@ -33,6 +33,8 @@ export interface PremiumEchoCell {
 export class BoardModel {
   private occupiedMap = new Map<string, CellPosition>();
   private occupiedList: CellPosition[] = [];
+  /** Max local aura and nearest Chebyshev distance contributed by nearby occupied tiles. */
+  private occupiedInfluence = new Map<string, { alpha: number; distance: number }>();
   private bounds: BoardBounds = {
     minRow: 0,
     maxRow: BOARD_ROWS - 1,
@@ -50,6 +52,7 @@ export class BoardModel {
   ): void {
     this.occupiedMap.clear();
     this.occupiedList = [];
+    this.occupiedInfluence.clear();
 
     let minR = 0;
     let maxR = BOARD_ROWS - 1;
@@ -96,6 +99,32 @@ export class BoardModel {
     }
 
     this.bounds = { minRow: minR, maxRow: maxR, minCol: minC, maxCol: maxC };
+
+    // An occupied tile only affects cell opacity within a small local radius. Build that
+    // influence once per board snapshot instead of rescanning every occupied tile for every
+    // visible grid cell (and every candidate premium cell) during rendering.
+    for (let i = 0; i < this.occupiedList.length; i++) {
+      const tile = this.occupiedList[i];
+      for (let dr = -8; dr <= 8; dr++) {
+        for (let dc = -9; dc <= 9; dc++) {
+          const tileDist = Math.hypot(dr, dc * 0.85);
+          const key = cellKey(tile.row + dr, tile.col + dc);
+          const distance = Math.max(Math.abs(dr), Math.abs(dc));
+          const alpha = tileDist > 8.2
+            ? 0
+            : tileDist <= 1.2
+              ? 1
+              : Math.pow(1 - (tileDist - 1.2) / 7, 1.4);
+          const previous = this.occupiedInfluence.get(key);
+          if (!previous) {
+            this.occupiedInfluence.set(key, { alpha, distance });
+          } else {
+            if (alpha > previous.alpha) previous.alpha = alpha;
+            if (distance < previous.distance) previous.distance = distance;
+          }
+        }
+      }
+    }
   }
 
   public isOccupied(row: number, col: number): boolean {
@@ -128,18 +157,8 @@ export class BoardModel {
       alpha = Math.pow(1 - t, 1.5);
     }
 
-    const occupied = this.occupiedList;
-    for (let i = 0; i < occupied.length; i++) {
-      const t = occupied[i];
-      const tileDist = Math.hypot(row - t.row, (col - t.col) * 0.85);
-      if (tileDist <= 1.2) {
-        alpha = Math.max(alpha, 1.0);
-      } else if (tileDist <= 8.2) {
-        const u = (tileDist - 1.2) / 7.0;
-        const tileAlpha = Math.pow(1 - u, 1.4);
-        if (tileAlpha > alpha) alpha = tileAlpha;
-      }
-    }
+    const influence = this.occupiedInfluence.get(cellKey(row, col));
+    if (influence) alpha = Math.max(alpha, influence.alpha);
 
     return Math.max(0, Math.min(1, alpha));
   }
@@ -148,12 +167,14 @@ export class BoardModel {
    * Computes min distance from (row, col) to any placed word.
    */
   public getDistanceToOccupied(row: number, col: number): number {
+    const cached = this.occupiedInfluence.get(cellKey(row, col));
+    if (cached) return cached.distance;
     if (this.occupiedList.length === 0) return Infinity;
     let minD = Infinity;
     for (let i = 0; i < this.occupiedList.length; i++) {
-      const t = this.occupiedList[i];
-      const d = Math.max(Math.abs(t.row - row), Math.abs(t.col - col));
-      if (d < minD) minD = d;
+      const tile = this.occupiedList[i];
+      const distance = Math.max(Math.abs(tile.row - row), Math.abs(tile.col - col));
+      if (distance < minD) minD = distance;
     }
     return minD;
   }

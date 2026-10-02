@@ -430,6 +430,17 @@ body {
   .tactile-button { transform: none !important; transition: none !important; }
 }
 
+/* Keep the wildcard picker in its own paint region so its entrance cannot invalidate the board. */
+.blank-picker-dialog {
+  contain: layout paint;
+  isolation: isolate;
+  will-change: transform, opacity;
+}
+
+.blank-picker-grid {
+  contain: layout;
+}
+
 /* Allow live preview animations inside Game Guide modal on mobile & touch devices */
 .guide-modal .board-power-pulse { animation: board-power-pulse 2.4s ease-in-out infinite !important; }
 .guide-modal .board-lightning-halo { animation: board-lightning-flash 1.1s ease-in-out infinite !important; }
