@@ -677,13 +677,17 @@ export default function GamePage() {
             <BoardCanvas
               containerRef={boardRef}
               boardState={boardState}
-              temporaryTiles={isBotTurn ? [] : temporaryTiles}
+              temporaryTiles={
+                isBotTurn
+                  ? (botStagedTiles.length > 0 ? botStagedTiles : (sync.remoteBotTiles?.length ? sync.remoteBotTiles : temporaryTiles))
+                  : temporaryTiles
+              }
               remotePlacements={
                 isBotTurn
-                  ? (botStagedTiles.length > 0
-                      ? botStagedTiles.map(t => ({ row: t.row, col: t.col }))
-                      : (sync.remotePlacements ?? []))
-                  : sync.remotePlacements
+                  ? (botStagedTiles.length === 0 && (!sync.remoteBotTiles || sync.remoteBotTiles.length === 0)
+                      ? (sync.remotePlacements ?? [])
+                      : [])
+                  : (sync.remotePlacements ?? [])
               }
               temporaryTilesValid={isBotTurn ? true : validationState}
               selectedCell={staged.selectedCell}

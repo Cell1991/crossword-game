@@ -85,7 +85,7 @@ export function useStagedMove({
       setEstimatedScore(result.valid ? result.estimated_score : 0);
       setValidationState(result.valid);
       setValidationReason(result.reason ?? '');
-      setError(result.valid ? '' : (result.reason ?? 'Invalid move'));
+      if (result.valid) setError('');
       sendPreview(result.valid);
     }, VALIDATE_DEBOUNCE_MS);
     return () => { if (validateTimeout.current) clearTimeout(validateTimeout.current); };
