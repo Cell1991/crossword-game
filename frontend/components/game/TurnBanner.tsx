@@ -73,14 +73,16 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
       aria-live="polite"
-      className={`flex min-w-0 items-center gap-2.5 rounded-xl border px-3 py-1.5 ${tone}`}
+      className={`flex min-w-0 w-full items-center justify-between gap-2 rounded-xl border px-3 py-1.5 ${tone}`}
     >
-      {icon}
-      <div className="flex min-w-0 flex-col">
-        <span className="truncate text-[11px] font-black uppercase tracking-[0.1em] leading-tight text-white sm:text-xs drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">{title}</span>
-        <span className="mt-0.5 hidden truncate text-[10px] font-semibold text-slate-300 leading-none sm:inline">{detail}</span>
+      <div className="flex min-w-0 items-center gap-2">
+        {icon}
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-[11px] font-black uppercase tracking-[0.1em] leading-tight text-white sm:text-xs drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">{title}</span>
+          <span className="mt-0.5 hidden truncate text-[10px] font-semibold text-slate-300 leading-none sm:inline">{detail}</span>
+        </div>
       </div>
-      <span className="ml-1 shrink-0 rounded-md border border-white/10 bg-black/50 px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums text-slate-200">{turnLabel}</span>
+      <span className="shrink-0 rounded-md border border-white/10 bg-black/50 px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums text-slate-200">{turnLabel}</span>
     </motion.div>
   );
 };

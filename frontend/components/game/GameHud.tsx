@@ -172,7 +172,7 @@ export const GameHud: React.FC<GameHudProps> = ({
 
         {/* Right HUD cluster */}
         <div className="gameplay-hud-cluster gameplay-hud-right flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
-          <div className="gameplay-header-timer">{timer}</div>
+          <div className="gameplay-header-timer hidden lg:block">{timer}</div>
 
           {/* Mobile-only Stats button */}
           <button
@@ -215,21 +215,28 @@ export const GameHud: React.FC<GameHudProps> = ({
         </div>
       </header>
 
-      {/* ROW 2 (Mobile only): Dedicated Clean Turn Banner */}
+      {/* ROW 2 (Mobile only): Dedicated Clean Turn Banner & Timer */}
       <div className="gameplay-mobile-turn-bar flex lg:hidden w-full items-center justify-center px-2.5 pb-2 pt-0.5 select-none">
-        <div className="w-full max-w-lg">
-          <TurnBanner
-            mobile
-            isMyTurn={isMyTurn}
-            isBotPlacing={isBotPlacing}
-            isEliminated={isEliminated}
-            isSpectator={isSpectator}
-            isConnected={isConnected}
-            currentPlayer={currentPlayer}
-            nextPlayer={nextPlayer}
-            turnNumber={turnNumber}
-            maxTurns={maxTurns}
-          />
+        <div className="w-full max-w-lg flex items-center gap-1.5 sm:gap-2">
+          <div className="flex-1 min-w-0">
+            <TurnBanner
+              mobile
+              isMyTurn={isMyTurn}
+              isBotPlacing={isBotPlacing}
+              isEliminated={isEliminated}
+              isSpectator={isSpectator}
+              isConnected={isConnected}
+              currentPlayer={currentPlayer}
+              nextPlayer={nextPlayer}
+              turnNumber={turnNumber}
+              maxTurns={maxTurns}
+            />
+          </div>
+          {timer && (
+            <div className="shrink-0 flex items-center">
+              {timer}
+            </div>
+          )}
         </div>
       </div>
     </div>
