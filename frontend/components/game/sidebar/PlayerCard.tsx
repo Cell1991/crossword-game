@@ -29,7 +29,6 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   const hasShield = Boolean(player.has_shield && !isDead);
   const playerMaxHp = player.max_hp || maxHp;
   const displayName = player.display_name.trim() || 'Player';
-  const initial = displayName.charAt(0).toUpperCase();
 
   const isActiveTurn = isCurrent && !isDead && !hasLeft;
   const isLeader = rankIndex === 0 && !isDead;
@@ -69,10 +68,10 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 rounded-full blur-2xl pointer-events-none" />
       )}
 
-      {/* Top Row: Rank & Avatar + Identity + Big Score */}
+      {/* Top Row: Rank + Identity + Big Score */}
       <div className="flex items-center justify-between gap-2 relative z-10">
-        {/* Left: Rank Badge + Avatar + Names */}
-        <div className="flex items-center gap-2 min-w-0">
+        {/* Left: Rank Badge + Name */}
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Rank Badge */}
           <div
             className={`w-5 h-5 rounded-lg flex items-center justify-center font-black text-[10px] shrink-0 font-mono shadow-sm ${
@@ -89,81 +88,50 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
             {isLeader ? <Crown className="w-3 h-3 text-slate-950" /> : rankIndex + 1}
           </div>
 
-          {/* Avatar Disc */}
-          <div
-            className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-inner border transition-all ${
-              isActiveTurn
-                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400 shadow-[0_0_10px_rgba(34,211,197,0.4)]'
-                : isMe
-                ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
-                : 'bg-slate-800/80 text-slate-200 border-white/10'
-            }`}
-            aria-hidden="true"
-          >
-            {initial}
-          </div>
+          {/* Player Name */}
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            <span
+              className={`text-xs sm:text-sm font-extrabold truncate ${
+                isMe
+                  ? 'text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]'
+                  : isActiveTurn
+                  ? 'text-white'
+                  : 'text-slate-200'
+              }`}
+              title={displayName}
+            >
+              {displayName}
+            </span>
 
-          {/* Identity & Badges */}
-          <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span
-                className={`text-xs sm:text-sm font-extrabold truncate ${
-                  isMe
-                    ? 'text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]'
-                    : isActiveTurn
-                    ? 'text-white'
-                    : 'text-slate-200'
-                }`}
-                title={displayName}
-              >
-                {displayName}
+            {/* Shield Active Icon */}
+            {hasShield && (
+              <span className="flex items-center gap-0.5 px-1 py-0.2 rounded bg-sky-400/20 border border-sky-400/50 text-[9px] font-bold text-sky-300 shrink-0">
+                <Shield className="w-2.5 h-2.5 text-sky-300" />
               </span>
+            )}
 
-              {/* YOU pill */}
-              {isMe && (
-                <span className="px-1.5 py-0.2 rounded-md bg-amber-400/20 border border-amber-400/40 text-[9px] font-black text-amber-300 tracking-wider uppercase shrink-0">
-                  YOU
-                </span>
-              )}
-
-              {/* Turn Pill */}
-              {isActiveTurn && (
-                <span className="flex items-center gap-1 px-1.5 py-0.2 rounded-md bg-cyan-400/20 border border-cyan-400/60 text-[9px] font-black text-cyan-300 tracking-wider uppercase shrink-0 shadow-[0_0_8px_rgba(34,211,197,0.3)]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-                  TURN
-                </span>
-              )}
-
-              {/* Shield Active Icon */}
-              {hasShield && (
-                <span className="flex items-center gap-0.5 px-1 py-0.2 rounded bg-sky-400/20 border border-sky-400/50 text-[9px] font-bold text-sky-300 shrink-0">
-                  <Shield className="w-2.5 h-2.5 text-sky-300" />
-                </span>
-              )}
-
-              {/* Card effect in play */}
-              {cardEffect && (
-                <span
-                  className="flex items-center gap-0.5 px-1 py-0.2 rounded bg-purple-500/20 border border-purple-400/40 text-[9px] font-bold text-purple-300 shrink-0"
-                  title={`${cardEffect} active`}
-                >
-                  <Sparkles className="w-2.5 h-2.5 text-purple-300" />
-                  <span>{cardIcon(cardEffect, 'h-2.5 w-2.5', <span>×2</span>) ?? cardEffect}</span>
-                </span>
-              )}
-            </div>
+            {/* Card effect in play */}
+            {cardEffect && (
+              <span
+                className="flex items-center gap-0.5 px-1 py-0.2 rounded bg-purple-500/20 border border-purple-400/40 text-[9px] font-bold text-purple-300 shrink-0"
+                title={`${cardEffect} active`}
+              >
+                <Sparkles className="w-2.5 h-2.5 text-purple-300" />
+                <span>{cardIcon(cardEffect, 'h-2.5 w-2.5', <span>×2</span>) ?? cardEffect}</span>
+              </span>
+            )}
 
             {/* Offline / Eliminated Notice */}
             {(isDead || hasLeft) && (
-              <div className="flex items-center gap-1 text-[10px] font-bold">
+              <span className="text-[10px] font-bold shrink-0">
                 {isDead ? (
                   <span className="text-rose-400">Eliminated</span>
                 ) : (
-                  <span className="text-slate-400 flex items-center gap-1">
-                    <WifiOff className="w-2.5 h-2.5" /> Disconnected
+                  <span className="text-slate-400 flex items-center gap-0.5">
+                    <WifiOff className="w-2.5 h-2.5" /> Off
                   </span>
                 )}
-              </div>
+              </span>
             )}
           </div>
         </div>
@@ -187,7 +155,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
       </div>
 
-      {/* Bottom Row: Low-Cognition Linear Health Meter (If HP enabled & not eliminated) */}
+      {/* Bottom Row: Linear Health Meter (If HP enabled & not eliminated) */}
       {showHealth && !isDead && (
         <div className="mt-2 pt-1.5 border-t border-white/[0.06] flex items-center gap-2 relative z-10">
           {/* Health Bar Track */}
