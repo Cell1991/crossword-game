@@ -143,7 +143,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       }
 
       // 2. Batch Links
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
+      ctx.strokeStyle = `rgba(${accent}, 0.12)`;
       ctx.lineWidth = 0.5;
       ctx.beginPath();
       const linkDistSq = LINK_DISTANCE * LINK_DISTANCE;
@@ -159,8 +159,8 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       }
       ctx.stroke();
 
-      // 3. Draw Nodes
-      ctx.font = '11px monospace';
+      // 3. Draw Nodes in Golden Glow
+      ctx.font = 'bold 12px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
@@ -177,14 +177,14 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
         }
 
         if (dist < MOUSE_RADIUS) {
-          ctx.strokeStyle = `rgba(${accent}, ${0.4 * (1 - dist / MOUSE_RADIUS)})`;
+          ctx.strokeStyle = `rgba(${accent}, ${0.5 * (1 - dist / MOUSE_RADIUS)})`;
           ctx.beginPath();
           ctx.moveTo(node.x, node.y);
           ctx.lineTo(mouse.x, mouse.y);
           ctx.stroke();
         }
 
-        ctx.fillStyle = dist < MOUSE_RADIUS ? `rgb(${accent})` : 'rgba(148, 163, 184, 0.35)';
+        ctx.fillStyle = dist < MOUSE_RADIUS ? 'rgb(254, 240, 138)' : `rgba(${accent}, 0.55)`;
         ctx.fillText(node.char, node.x, node.y);
       }
 
