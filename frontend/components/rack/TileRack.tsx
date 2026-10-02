@@ -339,187 +339,187 @@ export const TileRack = memo(function TileRack({
         {/* MOBILE CONTROLS WRAPPER (Unified symmetrical bar on mobile, split pods on desktop) */}
         <div className="game-actions-bridge order-2 relative flex w-auto max-w-full flex-row items-center justify-center gap-1.5 lg:contents">
 
-        {/* LEFT WING: UTILITY CONTROLS (Balanced width) */}
-        <div className="game-utility-module game-rack-tools flex shrink flex-col items-center justify-center lg:order-1 lg:flex-1 lg:basis-0 lg:items-end min-w-0">
-          <div className="flex h-[40px] sm:h-[44px] w-auto items-center justify-center gap-1.5">
-            {isExchanging ? (
-              <div className="flex items-center gap-2 px-1">
-                <motion.button
-                  onClick={onCancelExchange}
-                  disabled={isSubmitting}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.94 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className="flex h-[40px] sm:h-[44px] items-center gap-1.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm transition-colors bg-rose-950/80 text-rose-300 hover:bg-rose-900 border border-rose-700/60 cursor-pointer shadow-md shadow-rose-950/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <X className="w-4 h-4 text-rose-400" />
-                  <span className="hidden xs:inline sm:inline">Cancel</span>
-                </motion.button>
-                <span className="text-xs text-slate-400 max-w-[150px] leading-tight">
-                  {exchangeCount > tileBagCount
-                    ? `Only ${tileBagCount} left`
-                    : 'Tap tiles to return'}
+        {/* LEFT WING: UTILITY CONTROLS (2-tier matched height with center) */}
+        <div className="game-utility-module game-rack-tools flex shrink-0 flex-col items-center justify-between gap-1.5 lg:order-1 lg:w-[130px] sm:lg:w-[140px]">
+          {isExchanging ? (
+            <div className="flex flex-col items-center justify-between w-full h-full gap-1.5">
+              <motion.button
+                onClick={onCancelExchange}
+                disabled={isSubmitting}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="flex h-8 sm:h-9 w-full items-center justify-center gap-1.5 px-3 rounded-lg font-bold text-xs transition-colors bg-rose-950/80 text-rose-300 hover:bg-rose-900 border border-rose-700/60 cursor-pointer shadow-md disabled:opacity-50"
+              >
+                <X className="w-3.5 h-3.5 text-rose-400" />
+                <span>Cancel</span>
+              </motion.button>
+              <div className="flex h-[56px] sm:h-[60px] w-full items-center justify-center rounded-xl border border-white/5 bg-[#060e1d]/70 p-1 text-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
+                <span className="text-[10px] text-slate-400 leading-tight">
+                  {exchangeCount > tileBagCount ? `Only ${tileBagCount} left` : 'Tap tiles to return'}
                 </span>
               </div>
-            ) : (
-              <>
-                {/* Recall Move */}
-                <motion.button
-                  onClick={onCancelMove}
-                  disabled={!hasTemporaryTiles || isSubmitting}
-                  whileHover={hasTemporaryTiles ? { scale: 1.05 } : undefined}
-                  whileTap={hasTemporaryTiles ? { scale: 0.94 } : undefined}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className={`flex h-[40px] sm:h-[44px] min-w-[70px] sm:min-w-[76px] items-center justify-center gap-1.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all select-none ${
-                    hasTemporaryTiles
-                      ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 text-white shadow-[0_0_16px_rgba(244,63,94,0.5)] border border-rose-400/80 cursor-pointer hover:brightness-110'
-                      : 'bg-[#152338]/70 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
-                  }`}
-                  title="Recall placed tiles to rack"
-                >
-                  <RotateCcw className={`w-4 h-4 ${hasTemporaryTiles ? 'text-white' : 'text-slate-500'}`} />
-                  <span className="hidden xs:inline sm:inline">Recall{hasTemporaryTiles ? ` ${stagedTileCount}` : ''}</span>
-                </motion.button>
+            </div>
+          ) : (
+            <>
+              {/* Top Row: Recall Button (matches 3-card bay height) */}
+              <motion.button
+                onClick={onCancelMove}
+                disabled={!hasTemporaryTiles || isSubmitting}
+                whileHover={hasTemporaryTiles ? { scale: 1.03 } : undefined}
+                whileTap={hasTemporaryTiles ? { scale: 0.96 } : undefined}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className={`flex h-8 sm:h-9 w-full items-center justify-center gap-1.5 px-2.5 rounded-lg font-bold text-xs transition-all select-none ${
+                  hasTemporaryTiles
+                    ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 text-white shadow-[0_0_14px_rgba(244,63,94,0.5)] border border-rose-400/80 cursor-pointer hover:brightness-110'
+                    : 'bg-[#081220]/80 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
+                }`}
+                title="Recall placed tiles to rack"
+              >
+                <RotateCcw className={`w-3.5 h-3.5 ${hasTemporaryTiles ? 'text-white' : 'text-slate-500'}`} />
+                <span>Recall{hasTemporaryTiles ? ` (${stagedTileCount})` : ''}</span>
+              </motion.button>
 
-                {/* Shuffle */}
+              {/* Bottom Row: Shuffle & Swap Buttons side-by-side (matches tile rack height) */}
+              <div className="flex h-[56px] sm:h-[60px] w-full items-center justify-center gap-1.5">
                 <motion.button
                   onClick={onShuffleRack}
                   disabled={tileCount < 2 || isSubmitting}
-                  whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.05 } : undefined}
-                  whileTap={tileCount >= 2 && !isSubmitting ? { scale: 0.94 } : undefined}
+                  whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.04 } : undefined}
+                  whileTap={tileCount >= 2 && !isSubmitting ? { scale: 0.95 } : undefined}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className="flex h-[40px] sm:h-[44px] min-w-[70px] sm:min-w-[76px] items-center justify-center gap-1.5 px-3 rounded-xl font-bold text-xs sm:text-sm text-[#F1F5F9] hover:text-white bg-gradient-to-b from-[#223956] to-[#142336] hover:from-[#2e4d75] hover:to-[#1c314b] disabled:text-slate-500 disabled:bg-[#152338]/70 disabled:border-white/[0.08] disabled:cursor-not-allowed border border-[rgba(140,180,220,0.3)] hover:border-amber-400/60 shadow-md hover:shadow-[0_0_14px_rgba(245,158,11,0.3)] transition-all cursor-pointer select-none"
+                  className="flex flex-col h-full flex-1 items-center justify-center gap-0.5 rounded-xl font-bold text-[11px] text-[#F1F5F9] hover:text-white bg-gradient-to-b from-[#1e3450] to-[#101c2c] hover:from-[#2a486e] hover:to-[#17273d] disabled:text-slate-500 disabled:bg-[#081220]/80 disabled:border-white/[0.06] disabled:cursor-not-allowed border border-[rgba(140,180,220,0.25)] hover:border-amber-400/60 shadow-md hover:shadow-[0_0_12px_rgba(245,158,11,0.25)] transition-all cursor-pointer select-none"
                   title="Shuffle rack tiles"
                 >
                   <Shuffle className="w-4 h-4 text-amber-400" />
-                  <span className="hidden xs:inline sm:inline">Shuffle</span>
+                  <span className="leading-none">Shuffle</span>
                 </motion.button>
 
-                {/* Exchange */}
                 <motion.button
                   onClick={onStartExchange}
                   disabled={!canStartExchange}
-                  whileHover={canStartExchange ? { scale: 1.05 } : undefined}
-                  whileTap={canStartExchange ? { scale: 0.94 } : undefined}
+                  whileHover={canStartExchange ? { scale: 1.04 } : undefined}
+                  whileTap={canStartExchange ? { scale: 0.95 } : undefined}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className="flex h-[40px] sm:h-[44px] min-w-[70px] sm:min-w-[76px] items-center justify-center gap-1.5 px-3 rounded-xl font-bold text-xs sm:text-sm text-[#F1F5F9] hover:text-white bg-gradient-to-b from-[#223956] to-[#142336] hover:from-[#2e4d75] hover:to-[#1c314b] disabled:text-slate-500 disabled:bg-[#152338]/70 disabled:border-white/[0.08] disabled:cursor-not-allowed border border-[rgba(140,180,220,0.3)] hover:border-sky-400/60 shadow-md hover:shadow-[0_0_14px_rgba(56,189,248,0.3)] transition-all cursor-pointer select-none"
+                  className="flex flex-col h-full flex-1 items-center justify-center gap-0.5 rounded-xl font-bold text-[11px] text-[#F1F5F9] hover:text-white bg-gradient-to-b from-[#1e3450] to-[#101c2c] hover:from-[#2a486e] hover:to-[#17273d] disabled:text-slate-500 disabled:bg-[#081220]/80 disabled:border-white/[0.06] disabled:cursor-not-allowed border border-[rgba(140,180,220,0.25)] hover:border-sky-400/60 shadow-md hover:shadow-[0_0_12px_rgba(56,189,248,0.25)] transition-all cursor-pointer select-none"
                   title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
                 >
                   <ArrowLeftRight className="w-4 h-4 text-sky-400" />
-                  <span className="hidden xs:inline sm:inline">Swap</span>
+                  <span className="leading-none">Swap</span>
                 </motion.button>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Divider on mobile */}
         <div className="h-6 w-px bg-slate-700/60 mx-0.5 lg:hidden" />
 
-        {/* RIGHT WING: TURN ACTIONS (Symmetrical matching width) */}
-        <div className="game-turn-module game-turn-actions flex shrink flex-col items-center justify-center lg:order-3 lg:flex-1 lg:basis-0 lg:items-start min-w-0">
-          <div className="relative flex h-[40px] sm:h-[44px] w-auto items-center justify-center gap-1.5">
-            {isExchanging ? (
+        {/* RIGHT WING: TURN ACTIONS (2-tier matched height with center) */}
+        <div className="game-turn-module game-turn-actions flex shrink-0 flex-col items-center justify-between gap-1.5 lg:order-3 lg:w-[130px] sm:lg:w-[140px]">
+          {isExchanging ? (
+            <div className="flex flex-col items-center justify-between w-full h-full gap-1.5">
+              <div className="h-8 sm:h-9 w-full flex items-center justify-center">
+                <span className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">Exchange Mode</span>
+              </div>
               <motion.button
                 onClick={onConfirmExchange}
                 disabled={!canConfirmExchange}
-                whileHover={canConfirmExchange ? { scale: 1.05 } : undefined}
-                whileTap={canConfirmExchange ? { scale: 0.94 } : undefined}
+                whileHover={canConfirmExchange ? { scale: 1.03 } : undefined}
+                whileTap={canConfirmExchange ? { scale: 0.96 } : undefined}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                className={`flex h-[40px] sm:h-[44px] items-center gap-2 px-4 sm:px-5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+                className={`flex h-[56px] sm:h-[60px] w-full flex-col items-center justify-center gap-1 rounded-xl font-black text-xs transition-all ${
                   canConfirmExchange
-                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:brightness-110 shadow-[0_0_20px_rgba(14,165,233,0.6)] cursor-pointer border border-sky-300 ring-2 ring-sky-400/40'
-                    : 'bg-[#152338]/70 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
+                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:brightness-110 shadow-[0_0_16px_rgba(14,165,233,0.5)] cursor-pointer border border-sky-300'
+                    : 'bg-[#081220]/80 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
                 }`}
               >
                 <ArrowLeftRight className="w-4 h-4" />
-                <span>{isSubmitting ? 'Exchanging...' : `Exchange ${exchangeCount} Tile${exchangeCount === 1 ? '' : 's'}`}</span>
+                <span>{isSubmitting ? 'Exchanging...' : `Swap (${exchangeCount})`}</span>
               </motion.button>
-            ) : (
-              <>
-                {/* Pass Button — with inline confirm step */}
-                {passConfirming ? (
-                  <div className="flex h-[40px] sm:h-[44px] items-center gap-1">
-                    <span className="text-[10px] sm:text-[11px] text-slate-300 font-bold whitespace-nowrap tracking-wide">
-                      Pass?
-                    </span>
-                    <motion.button
-                      onClick={() => { setPassConfirming(false); onPassTurn(); }}
-                      disabled={isSubmitting}
-                      whileHover={{ scale: 1.06 }}
-                      whileTap={{ scale: 0.93 }}
-                      transition={{ type: 'spring', stiffness: 450, damping: 20 }}
-                      className="flex h-[36px] items-center gap-1 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 cursor-pointer shadow-md"
-                      title="Confirm pass"
-                    >
-                      <Check className="w-4 h-4 text-white" />
-                      <span>Yes</span>
-                    </motion.button>
-                    <motion.button
-                      onClick={() => setPassConfirming(false)}
-                      whileHover={{ scale: 1.06 }}
-                      whileTap={{ scale: 0.93 }}
-                      transition={{ type: 'spring', stiffness: 450, damping: 20 }}
-                      className="flex h-[36px] items-center gap-1 px-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all bg-[#223956] hover:bg-[#2e4d75] text-slate-300 hover:text-white border border-white/10 cursor-pointer"
-                      title="Cancel"
-                    >
-                      <X className="w-4 h-4" />
-                    </motion.button>
-                  </div>
-                ) : (
+            </div>
+          ) : (
+            <>
+              {/* Top Row: Pass Button — with inline confirm step (matches 3-card bay height) */}
+              {passConfirming ? (
+                <div className="flex h-8 sm:h-9 w-full items-center justify-center gap-1">
                   <motion.button
-                    onClick={() => setPassConfirming(true)}
-                    disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
-                    whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.05 } : undefined}
-                    whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.94 } : undefined}
-                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                    className={`game-pass-action flex h-[40px] sm:h-[44px] min-w-[70px] sm:min-w-[76px] items-center justify-center gap-1.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all select-none ${
-                      isMyTurn && !hasTemporaryTiles
-                        ? 'bg-gradient-to-b from-[#223956] to-[#142336] hover:from-[#2e4d75] hover:to-[#1c314b] text-[#E2E8F0] hover:text-white border border-[rgba(140,180,220,0.3)] hover:border-sky-400/50 shadow-md cursor-pointer'
-                        : 'bg-[#152338]/70 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
-                    }`}
-                    title="Pass your turn"
+                    onClick={() => { setPassConfirming(false); onPassTurn(); }}
+                    disabled={isSubmitting}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.94 }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                    className="flex h-full flex-1 items-center justify-center gap-1 rounded-lg font-bold text-xs transition-all bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 cursor-pointer shadow-md"
+                    title="Confirm pass"
                   >
-                    <SkipForward className="w-4 h-4" />
-                    <span className="hidden xs:inline sm:inline">Pass</span>
+                    <Check className="w-3.5 h-3.5 text-white" />
+                    <span>Pass!</span>
                   </motion.button>
-                )}
-
-                {/* Primary Action Button (PLAY MOVE / SCORE) */}
+                  <motion.button
+                    onClick={() => setPassConfirming(false)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.94 }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                    className="flex h-full w-8 items-center justify-center rounded-lg font-medium text-xs transition-all bg-[#1e3450] hover:bg-[#2a486e] text-slate-300 hover:text-white border border-white/10 cursor-pointer"
+                    title="Cancel"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </motion.button>
+                </div>
+              ) : (
                 <motion.button
-                  onClick={onConfirmMove}
-                  disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
-                  whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.05 } : undefined}
-                  whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.95 } : undefined}
-                  transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-                  className={`game-primary-action relative flex h-[40px] sm:h-[44px] min-w-[124px] sm:min-w-[145px] items-center justify-center gap-1.5 rounded-xl px-4 font-black text-xs sm:text-sm transition-all select-none overflow-hidden ${
-                    isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 text-slate-950 shadow-[0_0_24px_rgba(52,211,153,0.7),inset_0_1px_0_rgba(255,255,255,0.4)] border border-emerald-300 ring-2 ring-emerald-400/50 hover:brightness-110 cursor-pointer'
-                      : isMyTurn && hasTemporaryTiles && placementValid === false
-                      ? 'bg-gradient-to-r from-rose-950 via-rose-900 to-slate-950 text-rose-300 border border-rose-500/70 shadow-[0_0_16px_rgba(244,63,94,0.4)] cursor-not-allowed'
-                      : 'bg-[#152338]/70 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
+                  onClick={() => setPassConfirming(true)}
+                  disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
+                  whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.03 } : undefined}
+                  whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.96 } : undefined}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className={`game-pass-action flex h-8 sm:h-9 w-full items-center justify-center gap-1.5 px-2.5 rounded-lg font-bold text-xs transition-all select-none ${
+                    isMyTurn && !hasTemporaryTiles
+                      ? 'bg-gradient-to-b from-[#1e3450] to-[#101c2c] hover:from-[#2a486e] hover:to-[#17273d] text-[#E2E8F0] hover:text-white border border-[rgba(140,180,220,0.25)] hover:border-sky-400/50 shadow-md cursor-pointer'
+                      : 'bg-[#081220]/80 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
                   }`}
+                  title="Pass your turn"
                 >
-                  <Check className={`w-4 h-4 sm:w-5 sm:h-5 stroke-[3] ${
+                  <SkipForward className="w-3.5 h-3.5" />
+                  <span>Pass</span>
+                </motion.button>
+              )}
+
+              {/* Bottom Row: Primary PLAY MOVE / SCORE Action Button (matches tile rack height) */}
+              <motion.button
+                onClick={onConfirmMove}
+                disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
+                whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.03 } : undefined}
+                whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.96 } : undefined}
+                transition={{ type: 'spring', stiffness: 420, damping: 24 }}
+                className={`game-primary-action relative flex h-[56px] sm:h-[60px] w-full flex-col items-center justify-center gap-0.5 rounded-xl px-2 font-black text-xs transition-all select-none overflow-hidden ${
+                  isMyTurn && hasTemporaryTiles && placementValid === true
+                    ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.6),inset_0_1px_0_rgba(255,255,255,0.4)] border border-emerald-300 ring-2 ring-emerald-400/50 hover:brightness-110 cursor-pointer'
+                    : isMyTurn && hasTemporaryTiles && placementValid === false
+                    ? 'bg-gradient-to-r from-rose-950 via-rose-900 to-slate-950 text-rose-300 border border-rose-500/70 shadow-[0_0_14px_rgba(244,63,94,0.4)] cursor-not-allowed'
+                    : 'bg-[#081220]/80 text-slate-500 border border-white/[0.08] cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
+                }`}
+              >
+                <div className="flex items-center gap-1">
+                  <Check className={`w-4 h-4 stroke-[3] ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
                       ? 'text-slate-950'
                       : isMyTurn && hasTemporaryTiles && placementValid === false
                       ? 'text-rose-400'
                       : 'text-slate-500'
                   }`} />
-                  <span className="inline tracking-wide font-black">
-                    {isSubmitting
-                      ? 'Submitting...'
-                      : placementValid === false && hasTemporaryTiles
-                      ? 'INVALID'
-                      : placementValid === true && estimatedScore !== undefined && estimatedScore > 0
-                      ? `PLAY · +${estimatedScore} PTS`
-                      : 'PLAY MOVE'}
+                  <span className="tracking-wide font-black text-xs sm:text-[13px]">
+                    {isSubmitting ? 'SUBMIT' : placementValid === false && hasTemporaryTiles ? 'INVALID' : 'PLAY'}
                   </span>
-                </motion.button>
-              </>
-            )}
-          </div>
+                </div>
+                {placementValid === true && estimatedScore !== undefined && estimatedScore > 0 && (
+                  <span className="text-[11px] font-black text-slate-950/90 leading-none">
+                    +{estimatedScore} PTS
+                  </span>
+                )}
+              </motion.button>
+            </>
+          )}
         </div>
         </div>
       </div>
