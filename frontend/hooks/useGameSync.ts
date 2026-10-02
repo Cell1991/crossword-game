@@ -182,18 +182,30 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       case 'TURN_STARTED': {
         setRemoteBotTiles([]);
         setRemotePlacements([]);
-        if (event.type === 'MOVE_COMMITTED' && event.payload?.boardState) {
-          const newBoard = event.payload.boardState as Record<string, BoardCell>;
+        if (event.type === 'MOVE_COMMITTED') {
+          const rawBoard = (event.payload?.boardState || event.payload?.board_state || {}) as Record<string, BoardCell>;
+          const placed = (event.payload?.placedTiles || []) as PlacedTile[];
+          const newBoard: Record<string, BoardCell> = { ...rawBoard };
+          for (const pt of placed) {
+            newBoard[`${pt.row}_${pt.col}`] = {
+              row: pt.row,
+              col: pt.col,
+              letter: pt.letter,
+              value: pt.value,
+              player_id: (event.payload?.playerId as string) || '',
+              turn_number: (event.payload?.turnNumber as number) || 0,
+            };
+          }
           replaceGameState(prev => {
             if (!prev) return prev;
             return {
               ...prev,
               board_state: { ...prev.board_state, ...newBoard },
-              current_player_id: (event.payload.nextPlayerId as string | null | undefined) ?? prev.current_player_id,
-              turn_number: (event.payload.turnNumber as number | undefined) ?? prev.turn_number,
-              pending_effect: event.payload.pendingEffect !== undefined ? (event.payload.pendingEffect as GameState['pending_effect']) : prev.pending_effect,
+              current_player_id: (event.payload?.nextPlayerId as string | null | undefined) ?? prev.current_player_id,
+              turn_number: (event.payload?.turnNumber as number | undefined) ?? prev.turn_number,
+              pending_effect: event.payload?.pendingEffect !== undefined ? (event.payload.pendingEffect as GameState['pending_effect']) : prev.pending_effect,
               players: prev.players.map(p => {
-                if (p.id === event.payload.playerId && typeof event.payload.playerTotalScore === 'number') {
+                if (p.id === event.payload?.playerId && typeof event.payload?.playerTotalScore === 'number') {
                   return { ...p, score: event.payload.playerTotalScore };
                 }
                 return p;

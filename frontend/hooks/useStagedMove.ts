@@ -75,9 +75,10 @@ export function useStagedMove({
       if (!isCommittingRef.current) {
         sendPreview(null);
       }
-      isCommittingRef.current = false;
       return;
     }
+    // Any new staged tile placement resets the commit flag
+    isCommittingRef.current = false;
     // Until the new placement is checked, Confirm must not rely on the previous verdict.
     startTransition(() => setValidationState(null));
     sendPreview(null);
@@ -97,6 +98,7 @@ export function useStagedMove({
 
   /** Puts a rack tile on a cell, asking for a letter first when it is a blank without one. */
   const stageTile = useCallback((tile: Tile, cell: CellPosition) => {
+    isCommittingRef.current = false;
     let letter = tile.letter;
     let value = tile.value;
     if (isBlankLetter(tile.letter)) {
@@ -199,9 +201,7 @@ export function useStagedMove({
 
   /** Recalls every staged tile (Cancel) or forgets them once the move is committed. */
   const clearStagedMove = useCallback((isCommitting = false) => {
-    if (isCommitting) {
-      isCommittingRef.current = true;
-    }
+    isCommittingRef.current = isCommitting;
     setTemporaryTiles([]);
     setSelectedTileId(null);
     setSelectedCell(null);
@@ -214,6 +214,7 @@ export function useStagedMove({
    * whose cell another player just filled, or that are no longer in your rack (a card took them), go back.
    */
   const handleTurnChange = useCallback((state: GameState) => {
+    isCommittingRef.current = false;
     setSelectedTileId(null);
     setSelectedCell(null);
     setValidationState(null);
@@ -229,6 +230,7 @@ export function useStagedMove({
 
   /** Automatically stages a hint suggestion's tiles from rack onto the board. */
   const stageHintTiles = useCallback((hintTiles: HintTile[], rack: Tile[]) => {
+    isCommittingRef.current = false;
     const availableRack = [...rack];
     const newPlaced: PlacedTile[] = [];
     const newBlankLetters: Record<string, string> = {};
