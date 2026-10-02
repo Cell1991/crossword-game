@@ -124,13 +124,6 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
                 {displayName}
               </span>
 
-              {/* You Pill */}
-              {isMe && (
-                <span className="px-1 py-0.2 rounded text-[8.5px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/40 shrink-0">
-                  YOU
-                </span>
-              )}
-
               {/* Offline / Eliminated Notice */}
               {(isDead || hasLeft) && (
                 <span className="text-[10px] font-bold shrink-0">
