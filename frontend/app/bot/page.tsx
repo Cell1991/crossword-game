@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowLeft, Bot, Minus, Plus, User } from 'lucide-react';
-import { createRoom, joinRoom, sessionStore } from '@/lib/api';
+import { createRoom, joinRoom, sessionStore, startGame } from '@/lib/api';
 import { GameMode, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
 import FullscreenButton from '@/components/ui/FullscreenButton';
@@ -96,7 +96,13 @@ export default function BotRoomCreationPage() {
         console.warn('Bot auto-join notice:', botErr);
       }
 
-      router.push(`/lobby/${res.game_pin}?bot=${botDifficulty}`);
+      try {
+        await startGame(res.game_pin, res.host_player_id);
+      } catch (startErr) {
+        console.warn('Auto start bot match error:', startErr);
+      }
+
+      router.push(`/game/${res.game_id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create bot room');
     } finally {
