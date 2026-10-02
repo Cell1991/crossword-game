@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Player } from '@/lib/types';
-import { Sparkles, Hourglass, Bot } from 'lucide-react';
+import { Hourglass, Bot } from 'lucide-react';
 
 interface TurnBannerProps {
   isMyTurn: boolean;
@@ -67,14 +67,14 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
           initial={{ scale: 0.92, opacity: 0.7 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-          className="flex items-center gap-2.5 rounded-xl border border-emerald-400/80 bg-gradient-to-r from-emerald-950/90 via-slate-900/90 to-teal-950/90 px-3 py-1.5 text-xs font-bold text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,0.4)] ring-1 ring-emerald-400/40 shrink-0"
+          className="flex shrink-0 items-center gap-2.5 rounded-xl border border-emerald-300/60 bg-emerald-300/[0.08] px-3 py-1.5 text-xs font-bold text-emerald-100 shadow-[0_3px_12px_rgba(16,185,129,0.12)]"
         >
           <div className="relative flex items-center justify-center shrink-0">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399] animate-ping absolute" />
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+            <span className="absolute h-2 w-2 rounded-full bg-emerald-300/30 motion-safe:animate-pulse" />
+            <span className="h-2 w-2 rounded-full bg-emerald-300" />
           </div>
           <div className="flex flex-col">
-            <span className="font-black tracking-wider text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.7)] uppercase text-[12px] sm:text-[13px] leading-tight">
+            <span className="font-black tracking-wider text-emerald-200 uppercase text-[12px] sm:text-[13px] leading-tight">
               YOUR TURN
             </span>
             <span className="text-[9.5px] font-semibold text-emerald-400/80 hidden sm:inline leading-none mt-0.5">
@@ -92,12 +92,12 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
   if (isBot) {
     return (
       <div className="flex items-center gap-2 select-none min-w-0">
-        <div className={`flex items-center gap-2.5 rounded-xl border px-3 py-1.5 text-xs font-medium min-w-0 transition-all duration-300 ${
+        <div className={`flex min-w-0 items-center gap-2.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors duration-200 ${
           isBotPlacing
-            ? 'border-amber-400/80 bg-gradient-to-r from-amber-950/90 via-slate-900/90 to-amber-950/90 text-amber-200 shadow-[0_0_18px_rgba(245,158,11,0.4)] ring-1 ring-amber-400/50'
-            : 'border-cyan-500/60 bg-gradient-to-r from-cyan-950/90 via-slate-900/90 to-cyan-950/90 text-cyan-200 shadow-[0_0_16px_rgba(6,182,212,0.3)] ring-1 ring-cyan-500/40'
+            ? 'border-amber-300/50 bg-amber-300/[0.07] text-amber-100'
+            : 'border-cyan-300/40 bg-cyan-300/[0.06] text-cyan-100'
         }`}>
-          <Bot className={`w-4 h-4 shrink-0 ${isBotPlacing ? 'text-amber-300 animate-bounce' : 'text-cyan-400 animate-pulse'}`} />
+          <Bot className={`h-4 w-4 shrink-0 motion-safe:animate-pulse ${isBotPlacing ? 'text-amber-300' : 'text-cyan-300'}`} />
           <div className="flex flex-col min-w-0">
             <span className="truncate text-[11px] sm:text-xs font-bold leading-tight">
               <strong className={isBotPlacing ? 'text-amber-300 font-black' : 'text-cyan-300 font-black'}>{currentPlayer?.display_name}</strong>
@@ -118,8 +118,8 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
 
   return (
     <div className="flex items-center gap-2 select-none min-w-0">
-      <div className="flex items-center gap-2.5 rounded-xl border border-indigo-500/50 bg-gradient-to-r from-indigo-950/90 via-slate-900/90 to-slate-950/90 px-3 py-1.5 text-xs font-medium text-slate-200 shadow-[0_0_14px_rgba(99,102,241,0.25)] ring-1 ring-indigo-500/30 min-w-0">
-        <Hourglass className="w-4 h-4 text-indigo-400 animate-spin shrink-0" style={{ animationDuration: '4s' }} />
+      <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-indigo-300/30 bg-indigo-300/[0.05] px-3 py-1.5 text-xs font-medium text-slate-200">
+        <Hourglass className="h-4 w-4 shrink-0 text-indigo-300 motion-safe:animate-spin" style={{ animationDuration: '4s' }} />
         <div className="flex flex-col min-w-0">
           <span className="truncate text-[11px] sm:text-xs font-bold leading-tight">
             <strong className="text-amber-300 font-black">{currentPlayer?.display_name || 'Opponent'}</strong>&apos;s Turn

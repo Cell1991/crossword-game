@@ -876,6 +876,7 @@ export default function GamePage() {
               isMyTurn={isMyTurn}
               canStageMove={canStageMove}
               hasTemporaryTiles={temporaryTiles.length > 0}
+              stagedTileCount={temporaryTiles.length}
               placementValid={validationState}
               isSubmitting={isSubmitting}
               estimatedScore={staged.estimatedScore}

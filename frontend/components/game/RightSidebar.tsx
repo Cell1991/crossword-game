@@ -123,16 +123,15 @@ export const RightSidebar = memo(function RightSidebar({
   }, []);
 
   return (
-    <aside className={`flex h-full shrink-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-72 p-3'}`}>
-      {/* Sleek Vertical Glassmorphism Panel */}
-      <div className={`flex flex-col h-full ${mobile ? 'bg-transparent border-0 rounded-none shadow-none ring-0' : 'bg-slate-950/90 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20'} overflow-hidden`}>
+    <aside className={`flex h-full shrink-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-[17rem] xl:w-[19rem] px-2 py-3'}`}>
+      <div className={`flex h-full min-h-0 flex-col overflow-hidden ${mobile ? 'bg-transparent' : 'border-l border-slate-700/50 bg-slate-950/35'}`}>
         {/* TOP SECTION: COMPACT TILES STATUS CARD */}
-        <div className="p-3 border-b border-slate-800/80 bg-gradient-to-r from-amber-950/30 via-slate-900/30 to-slate-950/30">
+        <div className="shrink-0 px-3 pb-3 pt-2">
           <button
             ref={tileBagButtonRef}
             type="button"
             onClick={() => setIsTileBagOpen(true)}
-            className="group w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-900/70 border border-amber-500/30 hover:border-amber-400/70 hover:bg-slate-800/80 active:scale-[0.99] shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_0_16px_rgba(251,191,36,0.25)] transition-all cursor-pointer text-left"
+            className="group w-full flex items-center justify-between rounded-lg border border-amber-400/20 bg-amber-300/[0.045] px-3 py-2.5 text-left transition-colors hover:border-amber-300/40 hover:bg-amber-300/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 cursor-pointer"
             aria-label={`Show remaining letters, ${tileBagCount} tiles remaining`}
           >
             <div className="flex items-center gap-2.5">
@@ -151,7 +150,7 @@ export const RightSidebar = memo(function RightSidebar({
         </div>
 
         {/* MAIN SECTION: SCOREBOARD */}
-        <div className="flex-1 flex flex-col min-h-0 p-3 overflow-hidden">
+        <div className="shrink-0 flex flex-col p-3 pb-4">
           {/* Section Header */}
           <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800/80">
             <div className="flex items-center gap-2">
@@ -166,7 +165,7 @@ export const RightSidebar = memo(function RightSidebar({
           </div>
 
           {/* Players List */}
-          <div className="flex-1 overflow-y-auto pr-1 space-y-2">
+          <div className="max-h-[42vh] space-y-1.5 overflow-y-auto">
             {sortedPlayers.map((player, idx) => {
               const isCurrent = player.id === currentPlayerId;
               const isMe = player.id === myPlayerId;
@@ -176,14 +175,14 @@ export const RightSidebar = memo(function RightSidebar({
               return (
                 <div
                   key={player.id}
-                  className={`relative flex flex-col p-2.5 rounded-xl transition-all duration-200 ${
+                  className={`relative flex flex-col rounded-lg border-l-2 p-2.5 transition-colors duration-150 ${
                     isDead || hasLeft
-                      ? 'bg-slate-950/60 border border-slate-800/50 opacity-45'
+                      ? 'border-l-slate-700 bg-slate-900/20 opacity-55'
                       : isCurrent
-                      ? 'bg-gradient-to-r from-emerald-950/60 via-slate-900/80 to-slate-950/70 border-2 border-emerald-400/80 shadow-[0_0_18px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/40'
+                      ? 'border-l-emerald-300 bg-emerald-300/[0.07]'
                       : isMe
-                      ? 'bg-gradient-to-r from-amber-950/40 via-slate-900/70 to-slate-950/80 border border-amber-400/60 shadow-[0_0_16px_rgba(245,158,11,0.2)] ring-1 ring-amber-400/30'
-                      : 'bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80'
+                      ? 'border-l-amber-400 bg-amber-300/[0.045]'
+                      : 'border-l-transparent bg-white/[0.025] hover:bg-white/[0.045]'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -327,10 +326,10 @@ export const RightSidebar = memo(function RightSidebar({
         </div>
 
         {/* BOTTOM SECTION: COLLAPSIBLE MOVE HISTORY & DEFINITION ACCORDION */}
-        <div className="border-t border-slate-800/80 bg-slate-900/40">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-t border-slate-700/50 bg-slate-950/20">
           <button
             onClick={() => setIsHistoryOpen(prev => !prev)}
-            className="w-full flex items-center justify-between p-2.5 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="flex w-full shrink-0 items-center justify-between px-3 py-3 text-slate-300 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-300/60 cursor-pointer"
           >
             <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
               <History className="w-3.5 h-3.5 text-cyan-400" />
@@ -344,7 +343,7 @@ export const RightSidebar = memo(function RightSidebar({
           </button>
 
           {isHistoryOpen && (
-            <div className="p-2.5 pt-0 max-h-64 overflow-y-auto pr-1 space-y-2">
+            <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 pr-2">
               {moveHistory.length === 0 ? (
                 <div className="py-3 text-center text-[11px] text-slate-500 italic">
                   No moves recorded yet
@@ -367,57 +366,74 @@ export const RightSidebar = memo(function RightSidebar({
                   const activeWord = selectedWordByMove[entry.id] || (words && words[0]) || '';
                   const definition = activeWord ? definitionsCache[activeWord] : null;
                   const isLoading = activeWord ? loadingWords[activeWord] : false;
+                  const actorName = entry.display_name || (
+                    entry.player_id === myPlayerId
+                      ? 'You'
+                      : entry.text.includes(':')
+                        ? entry.text.split(':')[0]
+                        : 'Game'
+                  );
+                  const moveLabel = hasWords
+                    ? words?.join(', ')
+                    : entry.text.includes(':')
+                      ? entry.text.slice(entry.text.indexOf(':') + 1).trim()
+                      : entry.text;
 
                   return (
-                    <div
+                    <motion.div
                       key={entry.id}
-                      className={`rounded-xl border transition-all duration-200 overflow-hidden ${
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      className={`overflow-hidden border-b border-slate-800/80 last:border-b-0 ${
                         isExpanded
-                          ? 'bg-slate-900/90 border-cyan-500/50 shadow-[0_0_16px_rgba(6,182,212,0.18)] ring-1 ring-cyan-500/20'
-                          : 'bg-slate-900/60 border-slate-800/70 hover:border-slate-700/90 hover:bg-slate-900/80'
+                          ? 'bg-cyan-950/20'
+                          : ''
                       }`}
                     >
                       {/* Move Row Header (Clickable to expand/collapse) */}
-                      <div
+                      <button
+                        type="button"
                         onClick={() => hasWords && toggleMoveAccordion(entry)}
-                        className={`flex items-center justify-between p-2.5 text-xs transition-colors ${
-                          hasWords ? 'cursor-pointer hover:bg-slate-800/40 select-none' : ''
+                        aria-expanded={hasWords ? isExpanded : undefined}
+                        disabled={!hasWords}
+                        className={`flex w-full items-center justify-between gap-3 px-1.5 py-2.5 text-left text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-300/60 ${
+                          hasWords ? 'cursor-pointer hover:bg-white/[0.025]' : 'cursor-default'
                         }`}
                       >
-                        <div className="flex items-center gap-2 min-w-0 pr-1">
-                          {hasWords && (
-                            <div className={`p-1 rounded-md transition-colors ${
-                              isExpanded ? 'bg-cyan-500/20 text-cyan-300' : 'bg-slate-800 text-slate-400'
-                            }`}>
-                              <BookOpen className="w-3.5 h-3.5 shrink-0" />
-                            </div>
-                          )}
-                          <span className="text-slate-200 truncate font-semibold tracking-wide">
-                            {entry.text}
-                          </span>
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <BookOpen className={`h-4 w-4 shrink-0 ${isExpanded ? 'text-cyan-300' : 'text-slate-500'}`} />
+                          <div className="flex min-w-0 flex-col gap-0.5">
+                            <span className="truncate text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                              {actorName}{entry.turn_number ? ` · Turn ${entry.turn_number}` : ''}
+                            </span>
+                            <span className="truncate font-semibold tracking-wide text-slate-100">
+                              {moveLabel}
+                            </span>
+                          </div>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
                           {entry.score !== undefined && entry.score > 0 && (
-                            <span className="font-mono font-bold text-emerald-400 text-xs drop-shadow-[0_0_6px_rgba(52,211,153,0.3)]">
+                            <span className="font-mono text-xs font-bold tabular-nums text-emerald-300">
                               +{entry.score}
                             </span>
                           )}
                           {hasWords && (
-                            <div className="text-slate-400 hover:text-white transition-colors">
+                            <span className="text-slate-500 transition-colors">
                               {isExpanded ? (
                                 <ChevronUp className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.6)]" />
                               ) : (
                                 <ChevronDown className="w-4 h-4 text-slate-500" />
                               )}
-                            </div>
+                            </span>
                           )}
                         </div>
-                      </div>
+                      </button>
 
                       {/* Accordion Definition Content (Selectable with mouse) */}
                       {isExpanded && hasWords && words && (
-                        <div className="p-3 pt-2 border-t border-slate-800/90 bg-gradient-to-b from-slate-950/90 to-slate-900/90 space-y-2.5 select-text cursor-text animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div className="space-y-2.5 border-t border-slate-800/70 bg-slate-950/30 p-3 pt-2 select-text cursor-text">
                           {/* Multi-word Tabs (if multiple words formed in 1 turn) */}
                           {words.length > 1 && (
                             <div className="flex flex-wrap gap-1.5 pb-1.5 border-b border-slate-800/80 select-none">
@@ -511,7 +527,7 @@ export const RightSidebar = memo(function RightSidebar({
                           )}
                         </div>
                       )}
-                    </div>
+                    </motion.div>
                   );
                 })
               )}

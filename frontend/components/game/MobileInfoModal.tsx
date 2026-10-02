@@ -59,7 +59,7 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.16 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/40 backdrop-blur-[4px]"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 p-0 backdrop-blur-[3px] sm:items-center sm:p-5"
           onClick={onClose}
           role="dialog"
           aria-modal="true"
@@ -72,7 +72,7 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: 'spring', damping: 26, stiffness: 380 }}
-            className="relative w-full max-w-md max-h-[88vh] flex flex-col rounded-3xl bg-slate-950/85 backdrop-blur-xl border border-cyan-500/30 shadow-[0_16px_50px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.15),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-cyan-500/20 overflow-hidden"
+            className="relative flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-slate-700/70 bg-slate-950/95 shadow-[0_-12px_44px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:border-cyan-500/25 sm:bg-slate-950/90 sm:shadow-[0_16px_50px_rgba(0,0,0,0.55)]"
             onClick={(e) => e.stopPropagation()}
           >
         {/* Top Atmospheric Aura Highlight */}

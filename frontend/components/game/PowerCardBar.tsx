@@ -4,7 +4,7 @@ import React, { memo, useState } from 'react';
 import { BoardCard, CellPosition, Player, Tile } from '@/lib/types';
 import { isBlankLetter } from '@/lib/tiles';
 import { cardIcon } from './cardIcons';
-import { Sparkles, X, Check, ArrowRight, Shield, Zap, AlertTriangle } from 'lucide-react';
+import { X, Check, ArrowRight } from 'lucide-react';
 
 type SimpleCard = 'HINT' | 'HEAL' | 'SHIELD';
 type TargetedCard = 'DOUBLE_DAMAGE';
@@ -132,7 +132,6 @@ export const PowerCardBar = memo(function PowerCardBar({
   onArmBoardCard,
   onCancelArm,
   onConfirmArmedCell,
-  onCancelArmedCell,
   onCancelDeferredFreeze,
 }: PowerCardBarProps) {
   const [pickingTargetFor, setPickingTargetFor] = useState<TargetedCard | null>(null);
@@ -557,15 +556,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-1.5">
-      {/* Sleek Header Badge */}
-      <div className="flex items-center gap-1.5 text-[10px] font-extrabold tracking-widest text-slate-400 uppercase select-none">
-        <Sparkles className="w-3 h-3 text-cyan-400 drop-shadow-[0_0_4px_#22d3ee]" />
-        <span>Power Cards Available</span>
-      </div>
-
-      {/* Card Items Dock */}
-      <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 px-2.5 rounded-2xl bg-slate-950/85 backdrop-blur-xl border border-slate-700/70 shadow-[0_4px_24px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.1)] ring-1 ring-cyan-500/20">
+    <div className="flex w-full flex-wrap items-center justify-center gap-1.5">
         {[...counts.entries()].map(([card, count]) => {
           const meta = CARD_META[card];
           if (!meta) return null;
@@ -593,17 +584,14 @@ export const PowerCardBar = memo(function PowerCardBar({
                   onUseSimple(card as SimpleCard);
                 }
               }}
-              className={`group relative flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border bg-gradient-to-r transition-all duration-200 cursor-pointer select-none active:scale-95 ${
+              className={`group relative flex min-h-9 items-center gap-1.5 rounded-lg border px-2.5 py-1 sm:min-h-10 sm:px-3 transition-colors duration-150 cursor-pointer select-none active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
                 disabled
-                  ? 'opacity-40 border-slate-800 bg-slate-900/60 text-slate-500 cursor-not-allowed'
-                  : `${meta.bgGradient} ${meta.borderColor} ${meta.textColor} ${meta.glowClass} shadow-md hover:-translate-y-0.5`
+                  ? 'border-slate-700/60 bg-slate-900/60 text-slate-400 cursor-not-allowed'
+                  : `${meta.bgGradient} ${meta.borderColor} ${meta.textColor} ${meta.glowClass} hover:brightness-110 hover:-translate-y-px`
               }`}
             >
-              {/* Card Specular Top Highlight */}
-              <div className="pointer-events-none absolute inset-x-2 top-0.5 h-1/3 rounded-t-lg bg-gradient-to-b from-white/15 to-transparent" />
-
               {/* Glowing Icon */}
-              <div className="relative z-10 flex items-center shrink-0 drop-shadow-[0_0_6px_currentColor]">
+              <div className="relative z-10 flex shrink-0 items-center">
                 {meta.icon}
               </div>
 
@@ -621,7 +609,6 @@ export const PowerCardBar = memo(function PowerCardBar({
             </button>
           );
         })}
-      </div>
     </div>
   );
 });

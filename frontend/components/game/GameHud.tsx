@@ -64,7 +64,8 @@ export const GameHud: React.FC<GameHudProps> = ({
 
   useEffect(() => {
     const updateFullscreen = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement || (document as any).webkitFullscreenElement));
+      const safariDocument = document as Document & { webkitFullscreenElement?: Element | null };
+      setIsFullscreen(Boolean(document.fullscreenElement || safariDocument.webkitFullscreenElement));
     };
     document.addEventListener('fullscreenchange', updateFullscreen);
     document.addEventListener('webkitfullscreenchange', updateFullscreen);
@@ -83,17 +84,24 @@ export const GameHud: React.FC<GameHudProps> = ({
 
   const toggleFullscreen = async () => {
     try {
-      if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+      const safariDocument = document as Document & {
+        webkitFullscreenElement?: Element | null;
+        webkitExitFullscreen?: () => Promise<void> | void;
+      };
+      const safariElement = document.documentElement as HTMLElement & {
+        webkitRequestFullscreen?: () => Promise<void> | void;
+      };
+      if (!document.fullscreenElement && !safariDocument.webkitFullscreenElement) {
         if (document.documentElement.requestFullscreen) {
           await document.documentElement.requestFullscreen();
-        } else if ((document.documentElement as any).webkitRequestFullscreen) {
-          await (document.documentElement as any).webkitRequestFullscreen();
+        } else if (safariElement.webkitRequestFullscreen) {
+          await safariElement.webkitRequestFullscreen();
         }
       } else {
         if (document.exitFullscreen) {
           await document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen();
+        } else if (safariDocument.webkitExitFullscreen) {
+          await safariDocument.webkitExitFullscreen();
         }
       }
     } catch (err) {
@@ -102,7 +110,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   };
 
   return (
-    <div className="relative z-10 flex flex-col bg-slate-900/90 border-b border-slate-800/80 lg:backdrop-blur-sm shrink-0">
+    <div className="relative z-10 flex shrink-0 flex-col border-b border-slate-700/60 bg-slate-950/70 shadow-[0_4px_18px_rgba(0,0,0,0.16)]">
       {/* ROW 1: System Bar (Exit, Logo, Connection, PIN, Log & Stats, Fullscreen) */}
       <div className="flex items-center justify-between gap-1.5 sm:gap-3 px-2 sm:px-4 py-1.5 sm:py-2 overflow-x-hidden">
         {/* Left: Exit, logo, connection, room PIN, and Log & Stats */}
