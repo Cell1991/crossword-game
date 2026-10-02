@@ -35,6 +35,40 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
   const [moveHistory, setMoveHistory] = useState<MoveHistoryEntry[]>([]);
   const [cardUseEffects, setCardUseEffects] = useState<Record<string, string>>({});
   const [cardReveal, setCardReveal] = useState<CardReveal | null>(null);
+  const cardRevealQueueRef = useRef<Array<{ card: string; playerId: string }>>([]);
+  const cardPhaseTimerRef = useRef<number | null>(null);
+  const isRevealingRef = useRef(false);
+
+  const showNextCardReveal = useCallback(() => {
+    if (cardPhaseTimerRef.current !== null) {
+      window.clearTimeout(cardPhaseTimerRef.current);
+      cardPhaseTimerRef.current = null;
+    }
+    const next = cardRevealQueueRef.current.shift();
+    if (!next) {
+      isRevealingRef.current = false;
+      setCardReveal(null);
+      return;
+    }
+    isRevealingRef.current = true;
+    setCardReveal({ card: next.card, playerId: next.playerId, phase: 'lightning' });
+    cardPhaseTimerRef.current = window.setTimeout(() => {
+      setCardReveal({ card: next.card, playerId: next.playerId, phase: 'reveal' });
+      cardPhaseTimerRef.current = null;
+    }, 700);
+  }, []);
+
+  const dismissCardReveal = useCallback(() => {
+    showNextCardReveal();
+  }, [showNextCardReveal]);
+
+  useEffect(() => {
+    return () => {
+      if (cardPhaseTimerRef.current !== null) {
+        window.clearTimeout(cardPhaseTimerRef.current);
+      }
+    };
+  }, []);
   const [activeCardCast, setActiveCardCast] = useState<{
     playerName: string;
     card: string;
@@ -160,15 +194,12 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
 
           if (cardsAwarded.length > 0 && event.payload.playerId) {
             const playerId = event.payload.playerId;
-            cardsAwarded.forEach((card, idx) => {
-              const startDelay = idx * 2400;
-              window.setTimeout(() => {
-                const reveal = { card, playerId };
-                setCardReveal({ ...reveal, phase: 'lightning' });
-                window.setTimeout(() => setCardReveal({ ...reveal, phase: 'reveal' }), 800);
-                window.setTimeout(() => setCardReveal(null), 2200);
-              }, startDelay);
-            });
+            const items = cardsAwarded.map((card) => ({ card, playerId }));
+            const wasIdle = !isRevealingRef.current;
+            cardRevealQueueRef.current.push(...items);
+            if (wasIdle) {
+              showNextCardReveal();
+            }
           }
           const wordList = wordsFormed.map((word) => word.word.toUpperCase());
           const words = wordList.join(', ');
@@ -311,6 +342,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
     moveHistory,
     cardUseEffects,
     cardReveal,
+    dismissCardReveal,
     activeCardCast,
     remotePlacements,
     remoteBotTiles,

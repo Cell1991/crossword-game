@@ -14,6 +14,7 @@ import {
   Repeat2,
   Swords,
   Crosshair,
+  X,
 } from 'lucide-react';
 import { CardReveal } from '@/lib/types';
 import { soundFx } from '@/lib/soundFx';
@@ -111,7 +112,10 @@ export const CARD_DETAILS: Record<string, CardStyleData> = {
 };
 
 /** Epic 3D Holographic Card Reward Discovery Modal */
-export const EpicCardRevealOverlay: React.FC<{ reveal: CardReveal }> = ({ reveal }) => {
+export const EpicCardRevealOverlay: React.FC<{
+  reveal: CardReveal;
+  onDismiss?: () => void;
+}> = ({ reveal, onDismiss }) => {
   const cardInfo = CARD_DETAILS[reveal.card] || {
     title: reveal.card.replace(/_/g, ' '),
     subtitle: 'POWER CARD',
@@ -138,8 +142,26 @@ export const EpicCardRevealOverlay: React.FC<{ reveal: CardReveal }> = ({ reveal
     }
   }, [reveal.phase, cardInfo.confettiColors]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onDismiss?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onDismiss]);
+
+  const handleContainerClick = () => {
+    onDismiss?.();
+  };
+
   return (
-    <div className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center select-none overflow-hidden backdrop-blur-md bg-slate-950/75">
+    <div
+      onClick={handleContainerClick}
+      className="pointer-events-auto fixed inset-0 z-[100] flex flex-col items-center justify-center select-none overflow-hidden backdrop-blur-md bg-slate-950/80 cursor-pointer p-4"
+    >
       {/* Background Rotating Sunburst Rays */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -151,6 +173,21 @@ export const EpicCardRevealOverlay: React.FC<{ reveal: CardReveal }> = ({ reveal
         }}
       />
 
+      {/* Top right quick close button */}
+      {reveal.phase === 'reveal' && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDismiss?.();
+          }}
+          aria-label="Close"
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 sm:p-2.5 rounded-full border border-white/20 bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white transition-all shadow-xl cursor-pointer z-20 active:scale-95"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      )}
+
       <AnimatePresence mode="wait">
         {reveal.phase === 'lightning' ? (
           /* PHASE 1: CHARGING MYSTERY CARD BACK */
@@ -160,7 +197,7 @@ export const EpicCardRevealOverlay: React.FC<{ reveal: CardReveal }> = ({ reveal
             animate={{ scale: 1, y: 0, opacity: 1, rotateY: 0 }}
             exit={{ scale: 1.15, opacity: 0, rotateY: 90 }}
             transition={{ type: 'spring', damping: 14, stiffness: 180 }}
-            className="relative flex h-[340px] w-[230px] sm:h-[380px] sm:w-[260px] flex-col items-center justify-between rounded-3xl border-2 border-amber-400/90 bg-gradient-to-br from-[#1e1338] via-[#0f0926] to-[#04020a] p-5 shadow-[0_0_60px_rgba(245,158,11,0.6),inset_0_0_30px_rgba(245,158,11,0.3)]"
+            className="relative flex h-[340px] w-[230px] sm:h-[380px] sm:w-[260px] flex-col items-center justify-between rounded-3xl border-2 border-amber-400/90 bg-gradient-to-br from-[#1e1338] via-[#0f0926] to-[#04020a] p-5 shadow-[0_0_60px_rgba(245,158,11,0.6),inset_0_0_30px_rgba(245,158,11,0.3)] pointer-events-auto"
           >
             {/* Pulsing Concentric Energy Rings */}
             <motion.div
@@ -208,78 +245,93 @@ export const EpicCardRevealOverlay: React.FC<{ reveal: CardReveal }> = ({ reveal
           </motion.div>
         ) : (
           /* PHASE 2: GLORIOUS HOLOGRAPHIC 3D REVEALED CARD */
-          <motion.div
-            key="revealed-card"
-            initial={{ scale: 0.7, rotateY: -90, opacity: 0 }}
-            animate={{ scale: 1, rotateY: 0, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0, y: -40 }}
-            transition={{ type: 'spring', damping: 13, stiffness: 170 }}
-            className={`relative flex h-[360px] w-[245px] sm:h-[400px] sm:w-[275px] flex-col items-center justify-between rounded-3xl border-2 ${cardInfo.borderGlow} bg-gradient-to-br ${cardInfo.bgGradient} p-5 shadow-[0_20px_60px_rgba(0,0,0,0.9)]`}
-            style={{ perspective: 1000 }}
-          >
-            {/* Holographic light sheen overlay */}
+          <div className="flex flex-col items-center">
             <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: '200%' }}
-              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
-              className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/15 to-transparent skew-x-12 pointer-events-none"
-            />
-
-            {/* Top Bar: Rarity + Element */}
-            <div className="flex w-full items-center justify-between relative z-10">
-              <span className="flex items-center gap-1 font-mono text-[10px] font-black tracking-wider text-amber-300">
-                <Sparkles className="h-3 w-3" />
-                POWER CARD
-              </span>
-              <span className={`rounded-full px-2 py-0.5 text-[9.5px] font-black tracking-wider uppercase border ${cardInfo.badgeColor}`}>
-                {cardInfo.element}
-              </span>
-            </div>
-
-            {/* Central Card Art Emblem */}
-            <div className="relative flex flex-col items-center justify-center my-auto z-10">
-              <motion.div
-                initial={{ scale: 0.5, rotate: -20 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', damping: 12, stiffness: 220, delay: 0.1 }}
-                className="relative flex items-center justify-center mb-3"
-              >
-                <div className="flex h-24 w-24 items-center justify-center rounded-3xl border border-white/20 bg-white/10 shadow-[inset_0_2px_4px_rgba(255,255,255,0.2)] backdrop-blur-md">
-                  {cardInfo.icon}
-                </div>
-              </motion.div>
-
-              {/* Title & Subtitle */}
-              <motion.h3
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.15 }}
-                className="text-xl sm:text-2xl font-black tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] text-center"
-              >
-                {cardInfo.title}
-              </motion.h3>
-              <motion.span
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-300 mt-0.5"
-              >
-                {cardInfo.subtitle}
-              </motion.span>
-            </div>
-
-            {/* Bottom Card Description Box */}
-            <motion.div
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.25 }}
-              className="w-full rounded-xl border border-white/10 bg-black/40 p-2.5 text-center relative z-10 backdrop-blur-sm"
+              key="revealed-card"
+              initial={{ scale: 0.7, rotateY: -90, opacity: 0 }}
+              animate={{ scale: 1, rotateY: 0, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0, y: -40 }}
+              transition={{ type: 'spring', damping: 13, stiffness: 170 }}
+              className={`relative flex h-[360px] w-[245px] sm:h-[400px] sm:w-[275px] flex-col items-center justify-between rounded-3xl border-2 ${cardInfo.borderGlow} bg-gradient-to-br ${cardInfo.bgGradient} p-5 shadow-[0_20px_60px_rgba(0,0,0,0.9)]`}
+              style={{ perspective: 1000 }}
             >
-              <p className="text-[10.5px] sm:text-[11px] font-medium leading-tight text-slate-200">
-                {cardInfo.description}
-              </p>
+              {/* Holographic light sheen overlay */}
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: '200%' }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
+                className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/15 to-transparent skew-x-12 pointer-events-none"
+              />
+
+              {/* Top Bar: Rarity + Element */}
+              <div className="flex w-full items-center justify-between relative z-10">
+                <span className="flex items-center gap-1 font-mono text-[10px] font-black tracking-wider text-amber-300">
+                  <Sparkles className="h-3 w-3" />
+                  POWER CARD
+                </span>
+                <span className={`rounded-full px-2 py-0.5 text-[9.5px] font-black tracking-wider uppercase border ${cardInfo.badgeColor}`}>
+                  {cardInfo.element}
+                </span>
+              </div>
+
+              {/* Central Card Art Emblem */}
+              <div className="relative flex flex-col items-center justify-center my-auto z-10">
+                <motion.div
+                  initial={{ scale: 0.5, rotate: -20 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', damping: 12, stiffness: 220, delay: 0.1 }}
+                  className="relative flex items-center justify-center mb-3"
+                >
+                  <div className="flex h-24 w-24 items-center justify-center rounded-3xl border border-white/20 bg-white/10 shadow-[inset_0_2px_4px_rgba(255,255,255,0.2)] backdrop-blur-md">
+                    {cardInfo.icon}
+                  </div>
+                </motion.div>
+
+                {/* Title & Subtitle */}
+                <motion.h3
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.15 }}
+                  className="text-xl sm:text-2xl font-black tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] text-center"
+                >
+                  {cardInfo.title}
+                </motion.h3>
+                <motion.span
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-300 mt-0.5"
+                >
+                  {cardInfo.subtitle}
+                </motion.span>
+              </div>
+
+              {/* Bottom Card Description Box */}
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.25 }}
+                className="w-full rounded-xl border border-white/10 bg-black/40 p-2.5 text-center relative z-10 backdrop-blur-sm"
+              >
+                <p className="text-[10.5px] sm:text-[11px] font-medium leading-tight text-slate-200">
+                  {cardInfo.description}
+                </p>
+              </motion.div>
             </motion.div>
-          </motion.div>
+
+            {/* Tap or click anywhere indicator */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
+              className="mt-5 flex items-center justify-center"
+            >
+              <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-amber-400/40 bg-slate-900/90 text-amber-200 text-xs font-semibold shadow-[0_0_16px_rgba(245,158,11,0.3)] backdrop-blur-md animate-pulse">
+                <span>แตะที่ใดก็ได้เพื่อดำเนินการต่อ</span>
+                <span className="text-[10px] text-amber-300/80 font-mono">(Tap anywhere to close)</span>
+              </span>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

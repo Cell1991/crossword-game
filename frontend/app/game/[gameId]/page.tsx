@@ -711,7 +711,12 @@ export default function GamePage() {
         />
       )}
 
-      {sync.cardReveal && <CardRevealOverlay reveal={sync.cardReveal} />}
+      {sync.cardReveal && (
+        <CardRevealOverlay
+          reveal={sync.cardReveal}
+          onDismiss={sync.dismissCardReveal}
+        />
+      )}
 
       <AnimatePresence>
         {sync.activeCardCast && <CardActivationOverlay event={sync.activeCardCast} />}
