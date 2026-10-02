@@ -500,25 +500,16 @@ export const TileRack = memo(function TileRack({
               >
                 {/* 3D Specular Top Bevel Glass Shine */}
                 <div className="pointer-events-none absolute inset-x-1.5 top-0.5 h-[35%] rounded-t-lg bg-gradient-to-b from-white/30 to-transparent" />
-                <div className="flex items-center gap-1 relative z-10">
-                  {isMyTurn && hasTemporaryTiles && placementValid === false ? (
-                    <X className="w-4 h-4 stroke-[3] text-rose-400" />
-                  ) : (
-                    <Check className={`w-4 h-4 stroke-[3] ${
-                      isMyTurn && hasTemporaryTiles && placementValid === true
-                        ? 'text-slate-950'
-                        : 'text-slate-500'
-                    }`} />
-                  )}
-                  <span className="tracking-wide font-black text-xs sm:text-[13px]">
+                <div className="flex flex-col items-center justify-center relative z-10 leading-tight">
+                  <span className="tracking-wider font-black text-xs sm:text-[13px]">
                     {isSubmitting ? 'CONFIRMING...' : placementValid === false && hasTemporaryTiles ? 'INVALID' : 'CONFIRM'}
                   </span>
+                  {placementValid === true && estimatedScore !== undefined && estimatedScore > 0 && (
+                    <span className="text-[11px] font-black text-slate-950/90 leading-none mt-0.5">
+                      +{estimatedScore} PTS
+                    </span>
+                  )}
                 </div>
-                {placementValid === true && estimatedScore !== undefined && estimatedScore > 0 && (
-                  <span className="text-[11px] font-black text-slate-950/90 leading-none relative z-10">
-                    +{estimatedScore} PTS
-                  </span>
-                )}
               </motion.button>
             </>
           )}
