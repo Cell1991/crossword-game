@@ -501,13 +501,15 @@ export const TileRack = memo(function TileRack({
                 {/* 3D Specular Top Bevel Glass Shine */}
                 <div className="pointer-events-none absolute inset-x-1.5 top-0.5 h-[35%] rounded-t-lg bg-gradient-to-b from-white/30 to-transparent" />
                 <div className="flex items-center gap-1 relative z-10">
-                  <Check className={`w-4 h-4 stroke-[3] ${
-                    isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? 'text-slate-950'
-                      : isMyTurn && hasTemporaryTiles && placementValid === false
-                      ? 'text-rose-400'
-                      : 'text-slate-500'
-                  }`} />
+                  {isMyTurn && hasTemporaryTiles && placementValid === false ? (
+                    <X className="w-4 h-4 stroke-[3] text-rose-400" />
+                  ) : (
+                    <Check className={`w-4 h-4 stroke-[3] ${
+                      isMyTurn && hasTemporaryTiles && placementValid === true
+                        ? 'text-slate-950'
+                        : 'text-slate-500'
+                    }`} />
+                  )}
                   <span className="tracking-wide font-black text-xs sm:text-[13px]">
                     {isSubmitting ? 'CONFIRMING...' : placementValid === false && hasTemporaryTiles ? 'INVALID' : 'CONFIRM'}
                   </span>
