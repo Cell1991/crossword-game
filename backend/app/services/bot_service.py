@@ -322,12 +322,11 @@ class BotService:
             occupied_items = list(occupied.items())
             random.shuffle(occupied_items)
 
-            # Check up to 8 random board anchors using pre-indexed words containing the anchor letter
-            for (r, c), char in occupied_items[:8]:
+            # Search every anchor: a small random sample can miss a legal attachment and
+            # incorrectly make the bot pass even though playable words remain.
+            for (r, c), char in occupied_items:
                 char_words = cls._get_words_for_char(char)
-                # Sample a mix of short and medium words containing char
-                candidate_words = char_words[:60]
-                for w in candidate_words:
+                for w in char_words:
                     w_len = len(w)
                     # 1. Horizontal placements
                     for offset in range(w_len):
@@ -335,8 +334,6 @@ class BotService:
                             continue
                         start_c = c - offset
                         end_c = start_c + w_len
-                        if not (0 <= start_c and end_c <= Board.COLS):
-                            continue
                         if (r, start_c - 1) in occupied or (r, end_c) in occupied:
                             continue
                         matches = True
@@ -371,8 +368,6 @@ class BotService:
                             continue
                         start_r = r - offset
                         end_r = start_r + w_len
-                        if not (0 <= start_r and end_r <= Board.ROWS):
-                            continue
                         if (start_r - 1, c) in occupied or (end_r, c) in occupied:
                             continue
                         matches = True

@@ -66,7 +66,8 @@ def find_hint_suggestions(
         rack_counts=dict(rack_counts),
         board_counts=dict(board_counts),
         blanks=blanks,
-        max_len=min(Board.ROWS, len(rack_letters) + len(occupied)),
+        # A word may grow beyond the starter board dimensions as play expands.
+        max_len=len(rack_letters) + len(occupied),
     )
 
     def get_tile_val(letter: str) -> int:
@@ -106,44 +107,42 @@ def find_hint_suggestions(
                 # Try placing across covering center
                 for offset in range(w_len):
                     start_c = center_c - offset
-                    if 0 <= start_c and start_c + w_len <= Board.COLS:
-                        placed = [
-                            {"row": center_r, "col": start_c + i, "letter": word[i], "value": get_tile_val(word[i])}
-                            for i in range(w_len)
-                        ]
-                        valid, _, _, score, _ = RuleEngine.validate_move(board_cells, placed, is_first_move=True)
-                        if valid:
-                            sig = f"A:{center_r}:{start_c}:{word}"
-                            if sig not in seen_signatures:
-                                seen_signatures.add(sig)
-                                candidates.append({
-                                    "word": word,
-                                    "score": score,
-                                    "direction": "across",
-                                    "tiles": placed,
-                                    "bingo_bonus": 50 if len(placed) >= 7 else 0,
-                                })
+                    placed = [
+                        {"row": center_r, "col": start_c + i, "letter": word[i], "value": get_tile_val(word[i])}
+                        for i in range(w_len)
+                    ]
+                    valid, _, _, score, _ = RuleEngine.validate_move(board_cells, placed, is_first_move=True)
+                    if valid:
+                        sig = f"A:{center_r}:{start_c}:{word}"
+                        if sig not in seen_signatures:
+                            seen_signatures.add(sig)
+                            candidates.append({
+                                "word": word,
+                                "score": score,
+                                "direction": "across",
+                                "tiles": placed,
+                                "bingo_bonus": 50 if len(placed) >= 7 else 0,
+                            })
 
                 # Try placing down covering center
                 for offset in range(w_len):
                     start_r = center_r - offset
-                    if 0 <= start_r and start_r + w_len <= Board.ROWS:
-                        placed = [
-                            {"row": start_r + i, "col": center_c, "letter": word[i], "value": get_tile_val(word[i])}
-                            for i in range(w_len)
-                        ]
-                        valid, _, _, score, _ = RuleEngine.validate_move(board_cells, placed, is_first_move=True)
-                        if valid:
-                            sig = f"D:{start_r}:{center_c}:{word}"
-                            if sig not in seen_signatures:
-                                seen_signatures.add(sig)
-                                candidates.append({
-                                    "word": word,
-                                    "score": score,
-                                    "direction": "down",
-                                    "tiles": placed,
-                                    "bingo_bonus": 50 if len(placed) >= 7 else 0,
-                                })
+                    placed = [
+                        {"row": start_r + i, "col": center_c, "letter": word[i], "value": get_tile_val(word[i])}
+                        for i in range(w_len)
+                    ]
+                    valid, _, _, score, _ = RuleEngine.validate_move(board_cells, placed, is_first_move=True)
+                    if valid:
+                        sig = f"D:{start_r}:{center_c}:{word}"
+                        if sig not in seen_signatures:
+                            seen_signatures.add(sig)
+                            candidates.append({
+                                "word": word,
+                                "score": score,
+                                "direction": "down",
+                                "tiles": placed,
+                                "bingo_bonus": 50 if len(placed) >= 7 else 0,
+                            })
 
     # ==========================================
     # Case 2: Subsequent Moves (Active Board)
@@ -153,8 +152,8 @@ def find_hint_suggestions(
 
         for (r, c), board_char in occupied.items():
             # Test horizontal spans passing through (r, c)
-            left_limit = max(0, c - len(rack_letters))
-            right_limit = min(Board.COLS, c + len(rack_letters) + 1)
+            left_limit = c - len(rack_letters)
+            right_limit = c + len(rack_letters) + 1
 
             for start_c in range(left_limit, c + 1):
                 for end_c in range(c + 1, right_limit + 1):
@@ -212,8 +211,8 @@ def find_hint_suggestions(
                         break
 
             # Test vertical spans passing through (r, c)
-            top_limit = max(0, r - len(rack_letters))
-            bottom_limit = min(Board.ROWS, r + len(rack_letters) + 1)
+            top_limit = r - len(rack_letters)
+            bottom_limit = r + len(rack_letters) + 1
 
             for start_r in range(top_limit, r + 1):
                 for end_r in range(r + 1, bottom_limit + 1):
