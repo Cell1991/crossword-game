@@ -33,10 +33,23 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   const isActiveTurn = isCurrent && !isDead && !hasLeft;
   const healthPercent = Math.max(0, Math.min(100, (player.hp / playerMaxHp) * 100));
 
-  // Circular health ring geometry (38px box, radius 16)
-  const radius = 16;
-  const circumference = 2 * Math.PI * radius; // ~100.53
+  // Circular health gauge geometry (44px SVG viewBox 0 0 44 44, radius 17)
+  const radius = 17;
+  const circumference = 2 * Math.PI * radius; // ~106.81
   const strokeDashoffset = circumference - (healthPercent / 100) * circumference;
+
+  // Vibrant tactical health colors:
+  // High health (>50%) -> Vibrant Emerald Green (#10B981)
+  // Low health (<=50%)  -> Tactical Amber (#F59E0B)
+  // Critical (<=25%)    -> Crimson Red (#EF4444)
+  // Shield active       -> Sky Blue (#38BDF8)
+  const healthStrokeColor = hasShield
+    ? '#38BDF8'
+    : player.hp <= playerMaxHp * 0.25
+    ? '#EF4444'
+    : player.hp <= playerMaxHp * 0.5
+    ? '#F59E0B'
+    : '#10B981';
 
   return (
     <div
@@ -48,49 +61,70 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           : 'bg-[rgba(16,28,46,0.65)] hover:bg-[rgba(20,35,55,0.75)] border border-[rgba(120,160,200,0.14)] shadow-[0_2px_8px_rgba(0,0,0,0.2)]'
       }`}
     >
-      {/* Left: Avatar with Integrated Radial Health Ring + Identity */}
+      {/* Left: Avatar with 8-Segment Tactical Health Ring + Identity */}
       <div className="flex items-center gap-3 min-w-0">
-        {/* Radial Health Ring Avatar */}
-        <div className="relative w-10 h-10 flex items-center justify-center shrink-0">
+        {/* 8-Segment Radial Health Ring Avatar */}
+        <div className="relative w-11 h-11 flex items-center justify-center shrink-0">
           {showHealth && (
             <svg
-              className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
-              viewBox="0 0 38 38"
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              viewBox="0 0 44 44"
             >
-              {/* Background Track Ring */}
+              {/* Background Track Ring (Dark Navy) */}
               <circle
-                cx="19"
-                cy="19"
+                cx="22"
+                cy="22"
                 r={radius}
-                className="stroke-[rgba(120,160,200,0.15)]"
-                strokeWidth="2.5"
+                className="stroke-[rgba(120,160,200,0.18)]"
+                strokeWidth="3.5"
                 fill="none"
               />
-              {/* Foreground Health Meter Ring */}
+
+              {/* Foreground Health Meter Ring (Thick Green / Amber / Red) */}
               <circle
-                cx="19"
-                cy="19"
+                cx="22"
+                cy="22"
                 r={radius}
-                stroke={
-                  hasShield
-                    ? '#38BDF8'
-                    : player.hp <= playerMaxHp / 2
-                    ? '#F6C453'
-                    : '#22D3C5'
-                }
-                strokeWidth="2.5"
+                stroke={healthStrokeColor}
+                strokeWidth="3.5"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
                 fill="none"
+                transform="rotate(-90 22 22)"
                 className="transition-all duration-300"
+                style={{
+                  filter: `drop-shadow(0 0 4px ${
+                    hasShield
+                      ? 'rgba(56, 189, 248, 0.5)'
+                      : player.hp <= playerMaxHp * 0.25
+                      ? 'rgba(239, 68, 68, 0.5)'
+                      : player.hp <= playerMaxHp * 0.5
+                      ? 'rgba(245, 158, 11, 0.5)'
+                      : 'rgba(16, 185, 129, 0.5)'
+                  })`,
+                }}
               />
+
+              {/* 8 Symmetric Radial Notches / Dividers */}
+              {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+                <line
+                  key={angle}
+                  x1="22"
+                  y1="2.5"
+                  x2="22"
+                  y2="8"
+                  stroke="#0E1726"
+                  strokeWidth="1.8"
+                  transform={`rotate(${angle} 22 22)`}
+                />
+              ))}
             </svg>
           )}
 
           {/* Avatar Core */}
           <div
-            className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-colors ${
+            className={`w-7 h-7 rounded-full flex items-center justify-center font-black text-xs sm:text-sm transition-colors ${
               isActiveTurn
                 ? 'bg-[#163844] text-[#22D3C5] shadow-[0_0_8px_rgba(34,211,197,0.3)]'
                 : 'bg-[#18263a] text-[#F2F6FC]'
