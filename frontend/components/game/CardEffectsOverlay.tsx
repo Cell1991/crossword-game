@@ -268,14 +268,14 @@ export const EpicCardRevealOverlay: React.FC<{
             className="flex flex-col items-center pointer-events-auto"
           >
             <div
-              className={`relative flex h-[370px] w-[250px] sm:h-[410px] sm:w-[280px] flex-col items-center justify-between rounded-3xl border-2 ${cardInfo.borderGlow} bg-gradient-to-br ${cardInfo.bgGradient} p-5 shadow-[0_20px_60px_rgba(0,0,0,0.9)]`}
+              className={`relative flex h-[370px] w-[250px] sm:h-[410px] sm:w-[280px] flex-col items-center justify-between rounded-3xl border-2 ${cardInfo.borderGlow} bg-gradient-to-br ${cardInfo.bgGradient} p-5 shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden`}
             >
-              {/* Holographic light sheen overlay - sweeps once on reveal */}
+              {/* Holographic light sheen overlay - sweeps once on reveal then completely vanishes */}
               <motion.div
-                initial={{ x: '-100%' }}
-                animate={{ x: '200%' }}
-                transition={{ duration: 1.2, ease: 'easeInOut', delay: 0.4 }}
-                className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/15 to-transparent skew-x-12 pointer-events-none"
+                initial={{ x: '-150%', opacity: 0 }}
+                animate={{ x: '250%', opacity: [0, 0.6, 0.6, 0] }}
+                transition={{ duration: 0.9, ease: 'easeInOut', delay: 0.45 }}
+                className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none z-20"
               />
 
               {/* Top Bar: Rarity + Timing Element */}
