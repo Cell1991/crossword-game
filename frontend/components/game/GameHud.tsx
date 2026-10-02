@@ -110,11 +110,11 @@ export const GameHud: React.FC<GameHudProps> = ({
   };
 
   return (
-    <div className="game-topbar relative z-10 flex shrink-0 flex-col border-b border-slate-700/55 bg-slate-950/90">
+    <div className="relative z-10 flex shrink-0 flex-col border-b border-slate-700/55 bg-slate-950/90">
       {/* ROW 1: System Bar (Exit, Logo, Connection, PIN, Log & Stats, Fullscreen) */}
-      <div className="game-topbar-row mx-auto grid w-full max-w-[1920px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-2.5 py-2 sm:gap-x-4 sm:px-5 sm:py-2.5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+      <div className="mx-auto grid w-full max-w-[1920px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-2.5 py-2 sm:gap-x-4 sm:px-5 sm:py-2.5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         {/* Left: Exit, logo, connection, room PIN, and Log & Stats */}
-        <div className="game-brand-group flex min-w-0 items-center gap-1.5 sm:gap-2.5">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2.5">
           <button
             type="button"
             onClick={onExit}
@@ -175,7 +175,7 @@ export const GameHud: React.FC<GameHudProps> = ({
         </div>
 
         {/* Center: the active match state stays visually anchored to the board. */}
-        <div className="game-turn-group hidden items-center justify-center gap-2 lg:flex">
+        <div className="hidden items-center justify-center gap-2 lg:flex">
           {timer}
           <TurnBanner
             isMyTurn={isMyTurn}
@@ -191,7 +191,7 @@ export const GameHud: React.FC<GameHudProps> = ({
         </div>
 
         {/* Right: match utilities */}
-        <div className="game-tools-group col-start-2 row-start-1 flex items-center justify-end gap-1.5 sm:gap-2.5 lg:col-start-3 lg:row-start-1">
+        <div className="col-start-2 row-start-1 flex items-center justify-end gap-1.5 sm:gap-2.5 lg:col-start-3 lg:row-start-1">
           {spectatorCount > 0 && (
             <div className="hidden lg:inline-flex shrink-0">
               <SpectatorBadge count={spectatorCount} />
@@ -222,7 +222,7 @@ export const GameHud: React.FC<GameHudProps> = ({
       </div>
 
       {/* ROW 2 (Mobile Only): Dedicated Turn Indicator, Spectator Count & Countdown Bar */}
-      <div className="game-mobile-turn mx-auto flex w-full max-w-[1920px] items-center justify-between gap-2 border-t border-slate-800/60 bg-slate-950 px-3 py-1.5 lg:hidden select-none">
+      <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-2 border-t border-slate-800/60 bg-slate-950 px-3 py-1.5 lg:hidden select-none">
         <div className="min-w-0 flex-1">
           <TurnBanner
             mobile

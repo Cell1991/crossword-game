@@ -123,10 +123,10 @@ export const RightSidebar = memo(function RightSidebar({
   }, []);
 
   return (
-    <aside className={`game-sidebar flex h-full min-h-0 min-w-0 shrink-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-full border-l border-slate-800/70 bg-slate-950/35'}`}>
+    <aside className={`flex h-full min-h-0 min-w-0 shrink-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-full border-l border-slate-800/70 bg-slate-950/35'}`}>
       <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
         {/* TOP SECTION: COMPACT TILES STATUS CARD */}
-        <div className="game-bag-section shrink-0 px-4 pb-3 pt-3">
+        <div className="shrink-0 px-4 pb-3 pt-3">
           <button
             ref={tileBagButtonRef}
             type="button"
@@ -148,7 +148,7 @@ export const RightSidebar = memo(function RightSidebar({
         </div>
 
         {/* MAIN SECTION: SCOREBOARD */}
-        <div className="game-players-section shrink-0 flex flex-col px-4 pb-4 pt-2">
+        <div className="shrink-0 flex flex-col px-4 pb-4 pt-2">
           {/* Section Header */}
           <div className="mb-2 flex items-center justify-between border-b border-slate-800/80 pb-2">
             <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ export const RightSidebar = memo(function RightSidebar({
               return (
                 <div
                   key={player.id}
-                  className={`game-player-card relative flex flex-col rounded-xl border border-l-2 p-3 transition-colors duration-150 ${
+                  className={`relative flex flex-col rounded-xl border border-l-2 p-3 transition-colors duration-150 ${
                     isDead || hasLeft
                       ? 'border-slate-800 border-l-slate-700 bg-slate-900/20 opacity-55'
                       : isCurrent
@@ -324,7 +324,7 @@ export const RightSidebar = memo(function RightSidebar({
         </div>
 
         {/* BOTTOM SECTION: COLLAPSIBLE MOVE HISTORY & DEFINITION ACCORDION */}
-        <div className="game-history-section flex min-h-0 flex-1 flex-col overflow-hidden border-t border-slate-700/50 bg-slate-950/20">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-t border-slate-700/50 bg-slate-950/20">
           <button
             onClick={() => setIsHistoryOpen(prev => !prev)}
             className="flex w-full shrink-0 items-center justify-between px-3 py-3 text-slate-300 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-300/60 cursor-pointer"
