@@ -37,6 +37,7 @@ import { MobileInfoModal } from '@/components/game/MobileInfoModal';
 import BackgroundMusic from '@/components/audio/BackgroundMusic';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
 import { DebugPanel } from '@/components/debug/DebugPanel';
+import ParticleField from '@/components/effects/ParticleField';
 
 const EMPTY_TILES: Tile[] = [];
 const EMPTY_CELL_POSITIONS: CellPosition[] = [];
@@ -656,6 +657,7 @@ export default function GamePage() {
       }}
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 shadow-[inset_0_0_130px_rgba(0,0,0,0.42)]" />
+      <ParticleField className="pointer-events-none absolute inset-0 z-0 opacity-40" accent="34, 211, 238" />
       <GameHud
         isSpectator={isSpectator}
         isEliminated={isEliminated}

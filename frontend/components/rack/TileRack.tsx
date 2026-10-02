@@ -207,14 +207,14 @@ export const TileRack = memo(function TileRack({
         {/* Specular Edge Highlight Trim */}
         <div aria-hidden="true" className="pedestal-top-glint absolute inset-x-8 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent pointer-events-none" />
 
-        {/* TOP ROW: Power Cards Bay (Normal 3-slots on left, or Full-Width Confirmation Banner) */}
+        {/* TOP ROW: Power Cards Bay (Full Width of Dock - spans across left rack and right action controls) */}
         {powerCardSlot && (
           <div className="game-power-strip w-full flex items-center justify-start">
             {powerCardSlot}
           </div>
         )}
 
-        {/* DOCK CONTENT: 7-Tile Rack on Left + Action Controls on Right */}
+        {/* ROW 2 (Desktop): 7-Tile Rack on Left + Action Controls on Right */}
         <div className="flex w-full flex-col lg:flex-row items-center justify-between gap-1.5 sm:gap-2 lg:gap-4">
           {/* LEFT: 7-Tile Stand */}
           <div className="game-rack-module game-rack-center relative flex w-full max-w-full shrink-0 flex-col items-center lg:w-[344px] lg:max-w-[344px] overflow-visible">
@@ -330,8 +330,7 @@ export const TileRack = memo(function TileRack({
             </div>
           </div>
 
-          {/* RIGHT / BOTTOM: ACTION CONTROLS */}
-          {/* DESKTOP VIEW (>= 1024px): 2 BALANCED ROWS WITH FULL TEXT LABELS (Original PC UI) */}
+          {/* RIGHT: DESKTOP VIEW (>= 1024px): 2 BALANCED ROWS WITH FULL TEXT LABELS (Original PC UI) */}
           <div className="game-actions-container hidden lg:flex order-2 w-[320px] shrink-0 flex-col gap-1.5">
           {/* Desktop Row 1: Utility Controls (Recall, Shuffle, Swap) */}
           <div className="grid grid-cols-3 gap-1.5 w-full">
@@ -486,6 +485,7 @@ export const TileRack = memo(function TileRack({
             )}
           </div>
         </div>
+      </div>
 
         {/* MOBILE VIEW (< 1024px): 1 ULTRA-SLEEK COMPACT ROW (Icons only) */}
         <div className="game-actions-container flex lg:hidden order-2 w-full max-w-[340px] sm:max-w-[360px] shrink-0 flex-col">
@@ -644,6 +644,5 @@ export const TileRack = memo(function TileRack({
         </div>
       </div>
     </div>
-  </div>
   );
 });
