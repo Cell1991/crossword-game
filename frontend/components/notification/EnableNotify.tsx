@@ -21,8 +21,8 @@ export const EnableNotify = () => {
 
   const test = () => {
     if (perm === 'granted') {
-      new Notification('Crossword‑Game', {
-        body: 'ทดสอบการแจ้งเตือนจากเกม',
+      new Notification('Crossword-Game', {
+        body: 'Game notification test',
         icon: '/favicon.ico',
       });
     }
@@ -34,13 +34,13 @@ export const EnableNotify = () => {
         <>
           <div className="flex items-center gap-2 text-emerald-400">
             <CheckCircle2 className="w-5 h-5" />
-            <span>เปิดใช้การแจ้งเตือนแล้ว</span>
+            <span>Notifications Enabled</span>
           </div>
           <button
             onClick={test}
             className="px-3 py-1 text-sm bg-emerald-600 hover:bg-emerald-500 rounded"
           >
-            ทดลองแจ้งเตือน
+            Test Notification
           </button>
         </>
       ) : (
@@ -48,7 +48,7 @@ export const EnableNotify = () => {
           onClick={request}
           className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 rounded"
         >
-          เปิดใช้การแจ้งเตือน
+          Enable Notifications
         </button>
       )}
       {error && (

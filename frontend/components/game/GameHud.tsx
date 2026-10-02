@@ -35,7 +35,7 @@ interface GameHudProps {
   debugSlot?: React.ReactNode;
 }
 
-/** Rich Gold & Black (ทองดำอร่าม) match navigation header with modern cyan & white tactile controls. */
+/** Rich Gold & Black match navigation header with modern cyan & white tactile controls. */
 export const GameHud: React.FC<GameHudProps> = ({
   isSpectator, isEliminated = false, isConnected, roomPin, myPlayerName, spectatorCount,
   isMyTurn, isBotPlacing = false, currentPlayer, nextPlayer, turnNumber, maxTurns,

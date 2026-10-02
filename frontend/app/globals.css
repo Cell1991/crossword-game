@@ -589,7 +589,7 @@ body {
   width: auto;
 }
 
-/* Console Pedestal (แท่นวางคีย์และปุ่มทรงเกมมิ่ง) */
+/* Console Pedestal (Game Control Layout Deck) */
 .wordx-game-shell .game-control-layout {
   position: relative;
   border-radius: 20px;

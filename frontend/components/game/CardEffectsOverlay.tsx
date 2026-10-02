@@ -204,7 +204,7 @@ export const EpicCardRevealOverlay: React.FC<{
           className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/25 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white transition-all shadow-2xl cursor-pointer z-30 active:scale-95"
         >
           <X className="w-4 h-4" />
-          <span className="text-xs font-bold">ปิด (Close)</span>
+          <span className="text-xs font-bold">Close</span>
         </button>
       )}
 
@@ -277,11 +277,11 @@ export const EpicCardRevealOverlay: React.FC<{
               className={`relative flex h-[360px] w-[245px] sm:h-[400px] sm:w-[275px] flex-col items-center justify-between rounded-3xl border-2 ${cardInfo.borderGlow} bg-gradient-to-br ${cardInfo.bgGradient} p-5 shadow-[0_20px_60px_rgba(0,0,0,0.9)]`}
               style={{ perspective: 1000 }}
             >
-              {/* Holographic light sheen overlay */}
+              {/* Holographic light sheen overlay - sweeps once on reveal */}
               <motion.div
                 initial={{ x: '-100%' }}
                 animate={{ x: '200%' }}
-                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
+                transition={{ duration: 1.2, ease: 'easeInOut' }}
                 className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/15 to-transparent skew-x-12 pointer-events-none"
               />
 
@@ -357,7 +357,7 @@ export const EpicCardRevealOverlay: React.FC<{
                 }}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-amber-400/60 bg-gradient-to-r from-amber-500/30 via-yellow-500/20 to-amber-500/30 hover:from-amber-500/45 hover:to-amber-500/45 text-amber-100 text-xs sm:text-sm font-bold shadow-[0_0_24px_rgba(245,158,11,0.4)] backdrop-blur-md transition-all active:scale-95 cursor-pointer animate-pulse"
               >
-                <span>✕ แตะที่ใดก็ได้เพื่อปิด (Tap anywhere to close)</span>
+                <span>✕ Tap anywhere to close</span>
               </button>
             </motion.div>
           </motion.div>
