@@ -47,12 +47,22 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       const rect = canvas.getBoundingClientRect();
       canvasLeft = rect.left;
       canvasTop = rect.top;
-      width = rect.width;
-      height = rect.height;
+      const prevWidth = width;
+      const prevHeight = height;
+
+      // Use actual client size or fallback to window viewport
+      width = Math.max(rect.width || canvas.clientWidth || window.innerWidth, 320);
+      height = Math.max(rect.height || canvas.clientHeight || window.innerHeight, 240);
+
       const dpr = isTouchDevice ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // If dimensions expanded from an initial small/default size (e.g. 300x150), redistribute or reseed nodes
+      if (prevWidth > 0 && prevHeight > 0 && (prevWidth < width * 0.7 || prevHeight < height * 0.7)) {
+        seed();
+      }
     };
 
     const seed = () => {
@@ -71,23 +81,33 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       }));
     };
 
-    // A window drag fires many resize events per frame; re-measure and reseed once per frame.
+    // Initial measurement & seeding
+    resize();
+    seed();
+
+    // A window drag or layout shift fires resize events; re-measure and reseed once per frame.
     let resizeFrame: number | null = null;
     const onResize = () => {
       if (resizeFrame !== null) return;
       resizeFrame = requestAnimationFrame(() => {
         resizeFrame = null;
         resize();
-        seed();
       });
     };
+
     const onPointerMove = (e: PointerEvent) => {
       mouse.x = e.clientX - canvasLeft;
       mouse.y = e.clientY - canvasTop;
     };
 
-    resize();
-    seed();
+    // Use ResizeObserver so when CSS layout finishes or canvas expands, it resizes immediately
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(onResize)
+      : null;
+    if (resizeObserver) {
+      resizeObserver.observe(canvas);
+    }
+
     window.addEventListener('resize', onResize);
     window.addEventListener('pointermove', onPointerMove, { passive: true });
 
@@ -176,6 +196,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     return () => {
       cancelAnimationFrame(frame);
       if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
+      if (resizeObserver) resizeObserver.disconnect();
       window.removeEventListener('resize', onResize);
       window.removeEventListener('pointermove', onPointerMove);
     };

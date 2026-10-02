@@ -656,8 +656,8 @@ export default function GamePage() {
         background: 'radial-gradient(ellipse at 48% 50%, rgba(8, 145, 178, 0.09), transparent 46%), radial-gradient(ellipse at 88% 8%, rgba(99, 102, 241, 0.11), transparent 34%), linear-gradient(135deg, #020617 0%, #0b1224 58%, #12152f 100%)',
       }}
     >
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 shadow-[inset_0_0_130px_rgba(0,0,0,0.42)]" />
-      <ParticleField className="pointer-events-none absolute inset-0 z-0 opacity-40" accent="34, 211, 238" />
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 shadow-[inset_0_0_130px_rgba(0,0,0,0.42)]" />
+      <ParticleField className="pointer-events-none fixed inset-0 w-screen h-screen z-0 opacity-40" accent="34, 211, 238" />
       <GameHud
         isSpectator={isSpectator}
         isEliminated={isEliminated}
