@@ -588,13 +588,12 @@ body {
 /* Console Pedestal (แท่นวางคีย์และปุ่มทรงเกมมิ่ง) */
 .wordx-game-shell .game-control-layout {
   position: relative;
-  border-radius: 26px 26px 0 0;
-  background: radial-gradient(120% 120% at 50% 0%, rgba(30, 53, 87, 0.96) 0%, rgba(17, 32, 53, 0.98) 45%, rgba(8, 17, 29, 0.99) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  border-bottom: none;
-  box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.8), 0 0 24px rgba(56, 189, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -2px 6px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(20px);
-  padding: 8px 14px 6px;
+  border-radius: 22px;
+  background: radial-gradient(130% 120% at 50% 0%, rgba(26, 48, 78, 0.98) 0%, rgba(13, 24, 40, 0.99) 45%, rgba(6, 12, 22, 1) 100%);
+  border: 2px solid rgba(56, 189, 248, 0.75);
+  box-shadow: 0 0 24px rgba(0, 210, 255, 0.35), 0 -12px 36px rgba(0, 0, 0, 0.85), inset 0 0 16px rgba(0, 210, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(24px);
+  padding: 8px 14px 7px;
 }
 
 /* Desktop layout (>= 1024px) */
@@ -605,8 +604,8 @@ body {
     align-items: center !important;
     justify-content: center !important;
     gap: 16px !important;
-    padding: 10px 22px 8px !important;
-    border-radius: 28px 28px 0 0 !important;
+    padding: 10px 22px 9px !important;
+    border-radius: 26px !important;
   }
   .wordx-game-shell .game-actions-bridge {
     display: contents !important;
