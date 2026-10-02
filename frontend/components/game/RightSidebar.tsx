@@ -1,6 +1,7 @@
 'use client';
 
 import React, { memo, useCallback, useRef, useState } from 'react';
+import { AnimatePresence } from 'motion/react';
 import { MoveHistoryEntry, Player } from '@/lib/types';
 import { LetterBagCard } from './sidebar/LetterBagCard';
 import { PlayersPanel } from './sidebar/PlayersPanel';
@@ -79,13 +80,15 @@ export const RightSidebar = memo(function RightSidebar({
       />
 
       {/* 4. Tile Bag Breakdown Dialog Modal */}
-      {isTileBagOpen && (
-        <TileBagDialog
-          tileBagCount={tileBagCount}
-          tileBagCounts={tileBagCounts}
-          onClose={closeTileBag}
-        />
-      )}
+      <AnimatePresence>
+        {isTileBagOpen && (
+          <TileBagDialog
+            tileBagCount={tileBagCount}
+            tileBagCounts={tileBagCounts}
+            onClose={closeTileBag}
+          />
+        )}
+      </AnimatePresence>
     </aside>
   );
 });
