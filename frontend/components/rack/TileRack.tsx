@@ -26,7 +26,7 @@ interface TileRackProps {
   onConfirmExchange: () => void;
   onSwapSlots: (fromSlot: number, toSlot: number) => void;
   onStartTileDrag: (tile: Tile, clientX: number, clientY: number) => void;
-  onFinishTileDrag: () => void;
+  onFinishTileDrag: (clientX?: number, clientY?: number) => void;
   onCancelTileDrag: () => void;
   /** The tray element; the page's board drag hit-tests drops against it. */
   rackRef: React.RefObject<HTMLDivElement | null>;
@@ -164,7 +164,7 @@ export const TileRack = memo(function TileRack({
     if (draggedSlot !== null && dragOverSlot !== null) {
       onSwapSlots(draggedSlot, dragOverSlot);
     } else if (externalDragRef.current) {
-      onFinishTileDrag();
+      onFinishTileDrag(event.clientX, event.clientY);
     }
     pointerStartRef.current = null;
     setDraggedSlot(null);
