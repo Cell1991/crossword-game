@@ -253,6 +253,16 @@ async def use_card(
             raise HTTPException(status_code=400, detail="You can only use this on your turn")
         target = await _target_player(db, game_id, request.target_player_id, player.id)
         game.pending_double_target_id = target.id
+        await db.commit()
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.CARD_USED,
+            payload={
+                "playerId": player.id,
+                "card": card,
+                "targetPlayerId": target.id,
+                "pendingDoubleTargetId": target.id,
+            },
+        ).model_dump())
         return {"success": True, "target_player_id": target.id}
 
     if card == "FREEZE_TILE":

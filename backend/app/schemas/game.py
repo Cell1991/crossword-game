@@ -38,6 +38,7 @@ class GameStateResponse(BaseModel):
     max_turns: Optional[int] = None
     starting_hp: Optional[int] = None
     pending_effect: Optional[dict[str, Any]] = None
+    pending_double_target_id: Optional[str] = None
     frozen_tile: Optional[dict[str, Any]] = None
     # True when this game's room was created in debug mode: every player in it gets revealed racks
     # and debug tools, not just whoever navigated in with a ?debug=1 query string.

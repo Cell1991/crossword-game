@@ -51,6 +51,7 @@ export interface GameState {
   max_turns: number | null;
   starting_hp?: number | null;
   pending_effect: PendingEffect | null;
+  pending_double_target_id?: string | null;
   frozen_tile: { row: number; col: number; set_by: string; expires_turn: number } | null;
   /** True when this game's room was created with debug mode on: every player in it gets it. */
   is_debug: boolean;

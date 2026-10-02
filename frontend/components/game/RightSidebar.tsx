@@ -17,6 +17,7 @@ export interface RightSidebarProps {
   tileBagCounts: Record<string, number>;
   moveHistory?: MoveHistoryEntry[];
   cardUseEffects?: Record<string, string>;
+  pendingDoubleTargetId?: string | null;
   mobile?: boolean;
 }
 
@@ -36,6 +37,7 @@ export const RightSidebar = memo(function RightSidebar({
   tileBagCounts,
   moveHistory = [],
   cardUseEffects = {},
+  pendingDoubleTargetId,
   mobile = false,
 }: RightSidebarProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
@@ -69,6 +71,7 @@ export const RightSidebar = memo(function RightSidebar({
         currentPlayerId={currentPlayerId}
         myPlayerId={myPlayerId}
         cardUseEffects={cardUseEffects}
+        pendingDoubleTargetId={pendingDoubleTargetId}
       />
 
       {/* 3. Recent Moves History Panel */}

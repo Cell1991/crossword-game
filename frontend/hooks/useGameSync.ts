@@ -190,6 +190,14 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
         const card = event.payload?.card;
         if (!playerId || !card) break;
         setCardUseEffects(previous => ({ ...previous, [playerId]: card }));
+        if (event.payload?.pendingDoubleTargetId || event.payload?.targetPlayerId) {
+          const targetId = (event.payload.pendingDoubleTargetId || event.payload.targetPlayerId) as string;
+          replaceGameState(prev => prev ? { ...prev, pending_double_target_id: targetId } : prev);
+          const sourceName = nameOf(playerId, 'Player');
+          const targetName = nameOf(targetId, 'Opponent');
+          flashInfo(`${sourceName} targeted ${targetName} with Word ×2!`);
+        }
+        loadGameState();
         window.setTimeout(() => {
           setCardUseEffects(previous => {
             if (previous[playerId] !== card) return previous;

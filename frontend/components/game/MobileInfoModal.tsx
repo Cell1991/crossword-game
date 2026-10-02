@@ -23,6 +23,7 @@ interface MobileInfoModalProps {
   tileBagCounts: Record<string, number>;
   moveHistory?: MoveHistoryEntry[];
   cardUseEffects?: Record<string, string>;
+  pendingDoubleTargetId?: string | null;
 }
 
 export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
@@ -37,6 +38,7 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
   tileBagCounts,
   moveHistory = [],
   cardUseEffects = {},
+  pendingDoubleTargetId,
 }) => {
   const mounted = useSyncExternalStore(subscribeToNothing, getClientMounted, getServerMounted);
 
@@ -129,6 +131,7 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
             tileBagCounts={tileBagCounts}
             moveHistory={moveHistory}
             cardUseEffects={cardUseEffects}
+            pendingDoubleTargetId={pendingDoubleTargetId}
           />
         </div>
       </motion.div>

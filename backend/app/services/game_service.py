@@ -457,6 +457,7 @@ class GameService:
             max_turns=game.max_turns,
             starting_hp=game.starting_hp,
             pending_effect=GameService._visible_pending_effect(game.pending_effect, requesting_player_id),
+            pending_double_target_id=game.pending_double_target_id,
             frozen_tile=GameService._visible_frozen_tile(game.frozen_tile, game.turn_number),
             is_debug=bool(room and room.is_debug),
             winner_id=game.winner_id,

@@ -876,6 +876,7 @@ export default function GamePage() {
           tileBagCounts={gameState.tile_bag_counts ?? {}}
           moveHistory={sync.moveHistory}
           cardUseEffects={sync.cardUseEffects}
+          pendingDoubleTargetId={gameState.pending_double_target_id}
         />
       </div>
       </div>
@@ -893,6 +894,7 @@ export default function GamePage() {
         tileBagCounts={gameState.tile_bag_counts ?? {}}
         moveHistory={sync.moveHistory}
         cardUseEffects={sync.cardUseEffects}
+        pendingDoubleTargetId={gameState.pending_double_target_id}
       />
 
       {/* Floating Animated Score Burst Popup */}

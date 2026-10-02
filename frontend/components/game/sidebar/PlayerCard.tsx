@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Crown, Medal, Award, Shield, WifiOff, Sparkles } from 'lucide-react';
+import { Crown, Medal, Award, Shield, WifiOff, Sparkles, Crosshair, Swords } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { cardIcon } from '../cardIcons';
 
@@ -13,6 +13,7 @@ interface PlayerCardProps {
   showHealth: boolean;
   maxHp: number;
   cardEffect?: string;
+  isTargeted?: boolean;
 }
 
 export const PlayerCard: React.FC<PlayerCardProps> = ({
@@ -23,6 +24,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   showHealth,
   maxHp,
   cardEffect,
+  isTargeted = false,
 }) => {
   const isDead = player.hp <= 0;
   const hasLeft = player.connection_status === 'OFFLINE';
@@ -58,6 +60,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
       className={`relative flex flex-col p-2.5 rounded-2xl transition-all duration-200 select-none overflow-hidden ${
         isDead || hasLeft
           ? 'bg-slate-950/40 border border-white/[0.04] opacity-40 grayscale-[40%]'
+          : isTargeted
+          ? 'bg-gradient-to-r from-[#2e0e1f]/95 via-[#1a0815]/95 to-[#0e040c]/95 border-2 border-rose-500 shadow-[0_0_24px_rgba(244,63,94,0.45),inset_0_1px_0_rgba(255,255,255,0.2)] ring-1 ring-rose-400/60'
           : isActiveTurn
           ? 'bg-gradient-to-r from-[#0d2a3d]/95 via-[#081e2d]/95 to-[#05131d]/95 border-2 border-cyan-400 shadow-[0_0_24px_rgba(34,211,197,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] ring-1 ring-cyan-400/40'
           : isMe
@@ -65,8 +69,12 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           : 'bg-gradient-to-r from-[#132033]/80 via-[#0c1524]/85 to-[#080e1a]/90 hover:from-[#17273d]/90 hover:to-[#0d1828] border border-white/10 hover:border-white/20 shadow-[0_4px_14px_rgba(0,0,0,0.35)]'
       }`}
     >
+      {/* Targeted red/rose glow accent */}
+      {isTargeted && !isDead && !hasLeft && (
+        <div className="absolute top-0 right-0 w-36 h-36 bg-rose-500/15 rounded-full blur-2xl pointer-events-none" />
+      )}
       {/* Active turn cyan glow accent */}
-      {isActiveTurn && (
+      {isActiveTurn && !isTargeted && (
         <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 rounded-full blur-2xl pointer-events-none" />
       )}
 
@@ -119,6 +127,17 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
             {hasShield && (
               <span className="flex items-center gap-0.5 px-1 py-0.2 rounded bg-sky-400/20 border border-sky-400/50 text-[9px] font-bold text-sky-300 shrink-0">
                 <Shield className="w-2.5 h-2.5 text-sky-300" />
+              </span>
+            )}
+
+            {/* Double Damage Target Reticle Badge */}
+            {isTargeted && !isDead && !hasLeft && (
+              <span
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gradient-to-r from-rose-600 via-purple-600 to-rose-600 border border-rose-400/90 text-[9px] font-black tracking-wide text-white shadow-[0_0_12px_rgba(244,63,94,0.7)] animate-pulse shrink-0"
+                title="Targeted for 2× Double Damage!"
+              >
+                <Crosshair className="w-2.5 h-2.5 text-rose-200 animate-spin" style={{ animationDuration: '4s' }} />
+                <span>TARGET ×2</span>
               </span>
             )}
 

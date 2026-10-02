@@ -11,6 +11,7 @@ interface PlayersPanelProps {
   currentPlayerId: string | null;
   myPlayerId: string | null;
   cardUseEffects?: Record<string, string>;
+  pendingDoubleTargetId?: string | null;
 }
 
 export const PlayersPanel: React.FC<PlayersPanelProps> = ({
@@ -19,6 +20,7 @@ export const PlayersPanel: React.FC<PlayersPanelProps> = ({
   currentPlayerId,
   myPlayerId,
   cardUseEffects = {},
+  pendingDoubleTargetId,
 }) => {
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
   const maxHp = 100 + Math.max(0, players.length - 2) * 20;
@@ -48,6 +50,7 @@ export const PlayersPanel: React.FC<PlayersPanelProps> = ({
             showHealth={showHealth}
             maxHp={maxHp}
             cardEffect={cardUseEffects[player.id]}
+            isTargeted={Boolean(pendingDoubleTargetId && player.id === pendingDoubleTargetId)}
           />
         ))}
       </div>
