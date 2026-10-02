@@ -191,7 +191,7 @@ export const TileRack = memo(function TileRack({
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-none flex-col items-center gap-2 border-y border-slate-800/80 bg-slate-950/95 px-2 py-2.5 pointer-events-auto sm:gap-3 sm:border-x sm:rounded-t-2xl sm:px-4 sm:py-3">
+    <div className="game-action-dock mx-auto flex w-full max-w-none flex-col items-center gap-2 border-y border-slate-800/80 bg-slate-950/95 px-2 py-2.5 pointer-events-auto sm:gap-3 sm:border-x sm:rounded-t-2xl sm:px-4 sm:py-3">
       {draggedTile && dragPosition && !isHandedToBoard && (
         <FloatingTile
           ref={ghostRef}
@@ -243,7 +243,7 @@ export const TileRack = memo(function TileRack({
           <div className="w-full overflow-x-auto overflow-y-hidden pt-3.5 -mt-3.5 pb-1.5 -mb-1.5 px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible lg:pt-0 lg:mt-0 lg:pb-0 lg:mb-0">
             <div
               ref={rackRef}
-              className={`relative flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2 pt-3.5 sm:w-auto sm:gap-2.5 sm:px-2.5 sm:py-2.5 sm:pt-4 min-h-[64px] sm:min-h-[78px] ${
+              className={`game-tile-tray relative flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2 pt-3.5 sm:w-auto sm:gap-2.5 sm:px-2.5 sm:py-2.5 sm:pt-4 min-h-[64px] sm:min-h-[78px] ${
                 isExternalDragActive ? 'border-cyan-300/80 bg-cyan-950/35 ring-1 ring-cyan-300/35' : 'border-amber-200/25 bg-gradient-to-b from-amber-950/50 via-slate-900 to-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_5px_14px_rgba(0,0,0,0.35)]'
               } transition-all`}
             >
@@ -548,7 +548,7 @@ export const TileRack = memo(function TileRack({
                   whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.05 } : undefined}
                   whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.95 } : undefined}
                   transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 font-black text-xs sm:text-sm transition-colors select-none ${
+                  className={`game-primary-action flex items-center gap-1.5 rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 font-black text-xs sm:text-sm transition-colors select-none ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
                       ? 'bg-emerald-300 text-slate-950 shadow-[0_4px_14px_rgba(16,185,129,0.2)] hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200/80 cursor-pointer'
                       : 'bg-slate-800/80 text-slate-400 border border-slate-700/70 cursor-not-allowed'

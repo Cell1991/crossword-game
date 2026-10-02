@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, ArrowRight, BookOpen, Bot, Clock, Eye, LogIn, Minus, Plus, RefreshCw, Users, User, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Bot, Clock, Eye, LogIn, Minus, Plus, RefreshCw, User, X } from 'lucide-react';
 import { createRoom, getRoom, getRooms, joinRoom, startGame, sessionStore } from '@/lib/api';
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
@@ -13,6 +13,12 @@ import { GameGuideModal } from '@/components/game/GameGuideModal';
 
 type Mode = 'home' | 'create' | 'join' | 'bot';
 type BotDifficulty = 'easy' | 'medium' | 'hard';
+const subscribeToLocation = (callback: () => void) => {
+  window.addEventListener('popstate', callback);
+  return () => window.removeEventListener('popstate', callback);
+};
+const getLocationSearch = () => window.location.search;
+const getServerLocationSearch = () => '';
 
 export const BOT_PROFILES: Record<BotDifficulty, { name: string; title: string; desc: string; badge: string }> = {
   easy: {
@@ -37,7 +43,12 @@ export const BOT_PROFILES: Record<BotDifficulty, { name: string; title: string; 
 
 export default function HomePage() {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>('home');
+  const search = useSyncExternalStore(subscribeToLocation, getLocationSearch, getServerLocationSearch);
+  const query = new URLSearchParams(search);
+  const requestedMode: Mode | null = query.get('mode') === 'bot' ? 'bot' : null;
+  const [modeOverride, setModeOverride] = useState<Mode | null>(null);
+  const mode = modeOverride ?? requestedMode ?? 'home';
+  const setMode = useCallback((next: Mode) => setModeOverride(next), []);
   const [name, setName] = useState('');
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
@@ -57,6 +68,19 @@ export default function HomePage() {
   const [roomsError, setRoomsError] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
+  const clearError = useCallback(() => {
+    setError('');
+    if (typeof window === 'undefined' || !new URLSearchParams(window.location.search).has('kicked')) return;
+    const params = new URLSearchParams(window.location.search);
+    params.delete('kicked');
+    const nextSearch = params.size > 0 ? `?${params.toString()}` : '';
+    window.history.replaceState({}, '', `${window.location.pathname}${nextSearch}${window.location.hash}`);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }, [setError]);
+  const visibleError = error || (query.get('kicked') === 'expired'
+    ? 'This room has been dissolved due to 10 minutes of inactivity.'
+    : '');
+
   const fetchRooms = useCallback(async (showLoading = true) => {
     if (showLoading) setLoadingRooms(true);
     try {
@@ -73,30 +97,22 @@ export default function HomePage() {
     } finally {
       if (showLoading) setLoadingRooms(false);
     }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('mode') === 'bot') {
-        setMode('bot');
-      }
-      if (params.get('kicked') === 'expired') {
-        setError('This room has been dissolved due to 10 minutes of inactivity.');
-        window.history.replaceState({}, '', '/');
-      }
-    }
-  }, []);
+  }, [setLoadingRooms, setRooms, setRoomsError]);
 
   useEffect(() => {
     if (mode === 'join') {
-      fetchRooms(true);
       const timer = setInterval(() => {
         fetchRooms(false);
       }, 6000);
       return () => clearInterval(timer);
     }
   }, [mode, fetchRooms]);
+
+  const handleOpenJoin = useCallback(() => {
+    clearError();
+    setMode('join');
+    void fetchRooms(true);
+  }, [clearError, fetchRooms, setMode]);
 
   const handleCreate = async () => {
     if (!name.trim()) { setError('Please enter your name'); return; }
@@ -118,7 +134,7 @@ export default function HomePage() {
     const maxPlayers = playerLimitOption === 'custom' ? parsedCustomPlayers : (Number(playerLimitOption) || 4);
 
     setLoading(true);
-    setError('');
+    clearError();
     try {
       const res = await createRoom(
         name.trim(),
@@ -164,7 +180,7 @@ export default function HomePage() {
     }
 
     setLoading(true);
-    setError('');
+    clearError();
     try {
       const selectedBot = BOT_PROFILES[botDifficulty];
       const botDisplayName = `${selectedBot.name} [Bot]`;
@@ -221,7 +237,7 @@ export default function HomePage() {
       return;
     }
     setLoading(true);
-    setError('');
+    clearError();
     try {
       const res = await joinRoom(pinToJoin.trim(), playerName.trim());
       const matchedRoom = rooms.find(r => r.game_pin === pinToJoin.trim());
@@ -259,7 +275,7 @@ export default function HomePage() {
   const executeWatch = async (pinToWatch: string) => {
     if (!pinToWatch.trim()) { setError('Please enter the game PIN'); return; }
     setLoading(true);
-    setError('');
+    clearError();
     try {
       const room = await getRoom(pinToWatch.trim());
       const spectatorLimit = 2;
@@ -297,7 +313,7 @@ export default function HomePage() {
 
   const handleSelectRoom = (room: RoomSummary) => {
     setPin(room.game_pin);
-    setError('');
+    clearError();
     if (room.status === 'WAITING' && !name.trim()) {
       nameInputRef.current?.focus();
     }
@@ -355,8 +371,8 @@ export default function HomePage() {
 
           {mode === 'home' && (
             <div className="flex flex-col gap-3 menu-tab-enter">
-              {error && (
-                error.toLowerCase().includes('dissolved') ? (
+              {visibleError && (
+                visibleError.toLowerCase().includes('dissolved') ? (
                   <div className="relative overflow-hidden rounded-2xl border border-amber-400/40 bg-gradient-to-r from-amber-500/15 via-slate-800/90 to-amber-500/10 p-3.5 sm:p-4 shadow-[0_6px_25px_rgba(245,158,11,0.15)] backdrop-blur-md">
                     {/* Glowing gold ambient accent line */}
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500" />
@@ -393,7 +409,7 @@ export default function HomePage() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-between rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2.5 text-xs text-rose-300 font-medium">
-                    <span>{error}</span>
+                    <span>{visibleError}</span>
                     <button
                       type="button"
                       onClick={() => setError('')}
@@ -415,7 +431,7 @@ export default function HomePage() {
                 </div>
               </div>
               <button
-                onClick={() => { setMode('create'); setError(''); }}
+                onClick={() => { setMode('create'); clearError(); }}
                 className="tactile-button group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-amber-200/50 bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3.5 sm:px-5 sm:py-4 text-left text-slate-950 shadow-[0_14px_34px_rgba(245,158,11,0.2)] hover:from-amber-200 hover:to-amber-300 hover:shadow-[0_18px_42px_rgba(245,158,11,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer"
               >
                 <span className="flex items-center gap-3">
@@ -431,7 +447,7 @@ export default function HomePage() {
               </button>
               <div className="flex items-stretch gap-2 sm:gap-2.5 w-full">
                 <button
-                  onClick={() => { setMode('join'); setError(''); }}
+                  onClick={handleOpenJoin}
                   className="tactile-button group flex flex-1 items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-3.5 py-3 sm:px-5 sm:py-4 text-left text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] hover:border-indigo-200/30 hover:from-indigo-300/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 min-w-0 cursor-pointer"
                 >
                   <span className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -448,7 +464,7 @@ export default function HomePage() {
 
                 <button
                   type="button"
-                  onClick={() => { setMode('bot'); setError(''); }}
+                  onClick={() => { setMode('bot'); clearError(); }}
                   title="Play vs Bot"
                   aria-label="Play with Bot"
                   className="tactile-button group relative flex flex-col items-center justify-center shrink-0 w-20 sm:w-24 rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-2 py-2.5 sm:py-3 text-center text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] hover:border-amber-400/35 hover:from-white/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer"
@@ -495,7 +511,7 @@ export default function HomePage() {
               <div className="flex items-center gap-3 pb-2 border-b border-white/[0.06]">
                 <button
                   type="button"
-                  onClick={() => { setMode('home'); setError(''); }}
+                  onClick={() => { setMode('home'); clearError(); }}
                   className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
                   aria-label="Back"
                 >
@@ -735,7 +751,7 @@ export default function HomePage() {
                 />
               </div>
 
-              {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
+              {visibleError && <p className="text-red-400 text-xs sm:text-sm">{visibleError}</p>}
 
               {/* Action Button */}
               <button
@@ -763,7 +779,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => { setMode('home'); setError(''); }}
+                    onClick={() => { setMode('home'); clearError(); }}
                     className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
                     aria-label="Back"
                   >
@@ -944,9 +960,9 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {error && (
+              {visibleError && (
                 <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300 font-medium">
-                  {error}
+                  {visibleError}
                 </div>
               )}
 
@@ -979,7 +995,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => { setMode('home'); setError(''); }}
+                    onClick={() => { setMode('home'); clearError(); }}
                     className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
                     aria-label="Back"
                   >
@@ -1196,7 +1212,7 @@ export default function HomePage() {
                 </span>
               </div>
 
-              {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
+              {visibleError && <p className="text-red-400 text-xs sm:text-sm">{visibleError}</p>}
 
               {/* Action Button */}
               <button
@@ -1224,10 +1240,10 @@ export default function HomePage() {
         </div>
       </div>
 
-      <GameGuideModal
-        isOpen={isGuideOpen}
+      {isGuideOpen && <GameGuideModal
+        isOpen
         onClose={() => setIsGuideOpen(false)}
-      />
+      />}
     </div>
   );
 }

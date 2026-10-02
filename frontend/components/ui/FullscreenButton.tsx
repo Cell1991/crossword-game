@@ -1,24 +1,25 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import { Maximize, Minimize } from 'lucide-react';
 
 interface FullscreenButtonProps {
   className?: string;
 }
 
+const subscribeToFullscreenSupport = () => () => {};
+const getFullscreenSupport = () => Boolean(
+  document.fullscreenEnabled ||
+  (document as unknown as { webkitFullscreenEnabled?: boolean }).webkitFullscreenEnabled
+);
+const getServerFullscreenSupport = () => true;
+
 export default function FullscreenButton({ className = '' }: FullscreenButtonProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [supported, setSupported] = useState(true);
+  const supported = useSyncExternalStore(subscribeToFullscreenSupport, getFullscreenSupport, getServerFullscreenSupport);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    const isSupported = Boolean(
-      document.fullscreenEnabled ||
-      (document as unknown as { webkitFullscreenEnabled?: boolean }).webkitFullscreenEnabled
-    );
-    setSupported(isSupported);
-
     const updateFullscreen = () => {
       setIsFullscreen(Boolean(
         document.fullscreenElement ||

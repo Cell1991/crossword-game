@@ -123,7 +123,7 @@ export const RightSidebar = memo(function RightSidebar({
   }, []);
 
   return (
-    <aside className={`flex h-full min-h-0 min-w-0 shrink-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-full border-l border-slate-800/70 bg-slate-950/35'}`}>
+    <aside className={`game-match-sidebar flex h-full min-h-0 min-w-0 shrink-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-full border-l border-slate-800/70 bg-slate-950/35'}`}>
       <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
         {/* TOP SECTION: COMPACT TILES STATUS CARD */}
         <div className="shrink-0 px-4 pb-3 pt-3">

@@ -4,6 +4,7 @@ import {
   RoomDetailResponse,
   RoomSummary,
   GameState,
+  BoardCell,
   PlacedTile,
   ValidateMoveResponse,
   CommitMoveResponse,
@@ -550,7 +551,19 @@ export async function getBotPlan(gameId: string, difficulty?: string): Promise<B
   return res.json();
 }
 
-export async function executeBotMove(gameId: string, plan: Partial<BotPlanResponse>): Promise<any> {
+export interface BotMoveExecutionResponse {
+  status?: string;
+  action?: BotPlanResponse['action'];
+  score_earned?: number;
+  next_player_id?: string | null;
+  board_state?: Record<string, BoardCell>;
+  turn_number?: number;
+  player_total_score?: number;
+  placed_tiles?: PlacedTile[];
+  words_formed?: Array<{ word: string }>;
+}
+
+export async function executeBotMove(gameId: string, plan: Partial<BotPlanResponse>): Promise<BotMoveExecutionResponse> {
   const base = getApiBase();
   const res = await fetch(`${base}/games/${gameId}/bot/execute`, {
     method: 'POST',

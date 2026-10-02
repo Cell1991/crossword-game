@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Bug, Eye } from 'lucide-react';
 import { commitMove, exchangeTiles, executeBotMove, expireTurn, getBotPlan, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
@@ -41,6 +41,7 @@ import { DebugPanel } from '@/components/debug/DebugPanel';
 const EMPTY_TILES: Tile[] = [];
 const EMPTY_CELL_POSITIONS: CellPosition[] = [];
 const GAME_SHELL_COLUMNS = 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_21rem] 2xl:grid-cols-[minmax(0,1fr)_23rem]';
+const activeBotTurns = new Set<string>();
 
 export default function GamePage() {
   const router = useRouter();
@@ -179,12 +180,12 @@ export default function GamePage() {
       clearRemotePlacements();
       setExchangeTileIds(null);
       cards.clearHints();
-      if (activeBotTurnKeyRef.current !== nextTurnKey) {
-        setBotStagedTiles([]);
+      if (!activeBotTurns.has(`${gameId}:${nextTurnKey}`)) {
+        startTransition(() => setBotStagedTiles([]));
       }
     }
     turnKeyRef.current = nextTurnKey;
-  }, [cards, clearRemotePlacements, gameState, handleTurnChange]);
+  }, [cards, clearRemotePlacements, gameId, gameState, handleTurnChange]);
 
   const handleTimeUp = useCallback(() => expireTurn(gameId).then(() => reload()), [gameId, reload]);
 
@@ -392,7 +393,6 @@ export default function GamePage() {
   );
   const isHostDriver = !isSpectator && (Boolean(session?.isHost) || firstHumanPlayer?.id === myPlayerId || !firstHumanPlayer);
 
-  const activeBotTurnKeyRef = useRef<string | null>(null);
   const lastCompletedBotTurnRef = useRef<string | null>(null);
   const sendMessageRef = useRef(sync.sendMessage);
   useEffect(() => {
@@ -408,9 +408,10 @@ export default function GamePage() {
     if (!isBotTurn || !currentTurnPlayer || !isHostDriver || !gameState.current_player_id) return;
 
     const turnKey = `${gameState.turn_number}:${gameState.current_player_id}`;
-    if (lastCompletedBotTurnRef.current === turnKey || activeBotTurnKeyRef.current === turnKey) return;
+    const activeTurnId = `${gameId}:${turnKey}`;
+    if (lastCompletedBotTurnRef.current === turnKey || activeBotTurns.has(activeTurnId)) return;
 
-    activeBotTurnKeyRef.current = turnKey;
+    activeBotTurns.add(activeTurnId);
 
     const runBotTurn = async () => {
       try {
@@ -463,7 +464,7 @@ export default function GamePage() {
               if (!prev) return prev;
               return {
                 ...prev,
-                board_state: execRes.board_state,
+                board_state: execRes.board_state!,
                 current_player_id: execRes.next_player_id ?? prev.current_player_id,
                 turn_number: execRes.turn_number ?? prev.turn_number,
                 players: prev.players.map(p => {
@@ -509,7 +510,7 @@ export default function GamePage() {
           if (execRes?.board_state) {
             setGameState(prev => prev ? {
               ...prev,
-              board_state: execRes.board_state,
+              board_state: execRes.board_state!,
               current_player_id: execRes.next_player_id ?? prev.current_player_id,
               turn_number: execRes.turn_number ?? prev.turn_number,
             } : prev);
@@ -527,7 +528,7 @@ export default function GamePage() {
             if (retryRes?.board_state) {
               setGameState(prev => prev ? {
                 ...prev,
-                board_state: retryRes.board_state,
+                board_state: retryRes.board_state!,
                 current_player_id: retryRes.next_player_id ?? prev.current_player_id,
                 turn_number: retryRes.turn_number ?? prev.turn_number,
               } : prev);
@@ -539,9 +540,7 @@ export default function GamePage() {
           lastCompletedBotTurnRef.current = turnKey;
         }
       } finally {
-        if (activeBotTurnKeyRef.current === turnKey) {
-          activeBotTurnKeyRef.current = null;
-        }
+        activeBotTurns.delete(activeTurnId);
         setBotStagedTiles([]);
       }
     };
@@ -549,13 +548,13 @@ export default function GamePage() {
     void runBotTurn();
   }, [
     botDifficulty,
-    currentTurnPlayer?.id,
+    currentTurnPlayer,
     gameId,
-    gameState?.current_player_id,
-    gameState?.status,
-    gameState?.turn_number,
+    gameState,
     isBotTurn,
     isHostDriver,
+    setGameState,
+    toasts,
   ]);
 
   // The game UI needs the browser session and a game snapshot first. This loading view reads no
@@ -651,7 +650,7 @@ export default function GamePage() {
 
   return (
     <div
-      className="relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden bg-slate-950"
+      className="wordx-game-shell relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden bg-slate-950"
       style={{
         ...TILE_THEME_STYLE,
         background: 'radial-gradient(ellipse at 48% 50%, rgba(8, 145, 178, 0.09), transparent 46%), radial-gradient(ellipse at 88% 8%, rgba(99, 102, 241, 0.11), transparent 34%), linear-gradient(135deg, #020617 0%, #0b1224 58%, #12152f 100%)',
@@ -787,7 +786,7 @@ export default function GamePage() {
         </div>
 
         {/* Right sidebar: Unified Glassmorphism Control & Scoreboard Panel (desktop) */}
-        <div className="hidden min-h-0 lg:flex">
+        <div className="game-sidebar-frame hidden min-h-0 lg:flex">
           <RightSidebar
             players={gameState.players ?? []}
             showHealth={gameState.max_turns === null}
@@ -817,7 +816,7 @@ export default function GamePage() {
       />
 
       {/* Bottom: Tile rack (spectators and eliminated players have no active rack) */}
-      <div className={`relative z-10 mx-auto grid w-full max-w-[1920px] shrink-0 ${GAME_SHELL_COLUMNS} px-1.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1.5 sm:px-3 sm:pb-3`}>
+      <div className={`game-dock-frame relative z-10 mx-auto grid w-full max-w-[1920px] shrink-0 ${GAME_SHELL_COLUMNS} px-1.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1.5 sm:px-3 sm:pb-3`}>
         <div className="min-w-0">
           {isSpectator ? (
             <div className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-xl border border-sky-500/25 bg-sky-950/40 px-4 py-2.5 text-center text-xs text-sky-300 select-none sm:text-sm">
@@ -932,10 +931,10 @@ export default function GamePage() {
       />
 
       {/* Game Guide Modal */}
-      <GameGuideModal
-        isOpen={isGuideOpen}
+      {isGuideOpen && <GameGuideModal
+        isOpen
         onClose={() => setIsGuideOpen(false)}
-      />
+      />}
 
       {isDebug && (
         <DebugPanel

@@ -134,7 +134,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
               board_state: newBoard,
               current_player_id: (event.payload.nextPlayerId as string | null | undefined) ?? prev.current_player_id,
               turn_number: (event.payload.turnNumber as number | undefined) ?? prev.turn_number,
-              pending_effect: event.payload.pendingEffect !== undefined ? (event.payload.pendingEffect as any) : prev.pending_effect,
+              pending_effect: event.payload.pendingEffect !== undefined ? (event.payload.pendingEffect as GameState['pending_effect']) : prev.pending_effect,
               players: prev.players.map(p => {
                 if (p.id === event.payload.playerId && typeof event.payload.playerTotalScore === 'number') {
                   return { ...p, score: event.payload.playerTotalScore };

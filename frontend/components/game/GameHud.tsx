@@ -110,11 +110,11 @@ export const GameHud: React.FC<GameHudProps> = ({
   };
 
   return (
-    <div className="relative z-10 flex shrink-0 flex-col border-b border-slate-700/55 bg-slate-950/90">
+    <div className="game-hud relative z-20 flex shrink-0 flex-col border-b border-slate-700/55 bg-slate-950/90">
       {/* ROW 1: System Bar (Exit, Logo, Connection, PIN, Log & Stats, Fullscreen) */}
-      <div className="mx-auto grid w-full max-w-[1920px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-2.5 py-2 sm:gap-x-4 sm:px-5 sm:py-2.5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+      <div className="game-hud-row mx-auto grid w-full max-w-[1920px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-2.5 py-2 sm:gap-x-4 sm:px-5 sm:py-2.5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         {/* Left: Exit, logo, connection, room PIN, and Log & Stats */}
-        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2.5">
+        <div className="game-hud-leading flex min-w-0 items-center gap-1.5 sm:gap-2.5">
           <button
             type="button"
             onClick={onExit}
@@ -175,7 +175,7 @@ export const GameHud: React.FC<GameHudProps> = ({
         </div>
 
         {/* Center: the active match state stays visually anchored to the board. */}
-        <div className="hidden items-center justify-center gap-2 lg:flex">
+        <div className="game-turn-island hidden items-center justify-center gap-2 lg:flex">
           {timer}
           <TurnBanner
             isMyTurn={isMyTurn}
@@ -191,7 +191,7 @@ export const GameHud: React.FC<GameHudProps> = ({
         </div>
 
         {/* Right: match utilities */}
-        <div className="col-start-2 row-start-1 flex items-center justify-end gap-1.5 sm:gap-2.5 lg:col-start-3 lg:row-start-1">
+        <div className="game-hud-tools col-start-2 row-start-1 flex items-center justify-end gap-1.5 sm:gap-2.5 lg:col-start-3 lg:row-start-1">
           {spectatorCount > 0 && (
             <div className="hidden lg:inline-flex shrink-0">
               <SpectatorBadge count={spectatorCount} />

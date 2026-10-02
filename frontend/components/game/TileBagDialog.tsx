@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { Layers, X } from 'lucide-react';
 import { TILE_THEME_STYLE } from '@/lib/tileTheme';
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const subscribeToNothing = () => () => {};
+const getClientMounted = () => true;
+const getServerMounted = () => false;
 
 interface TileBagDialogProps {
   tileBagCount: number;
@@ -16,12 +19,8 @@ interface TileBagDialogProps {
 
 /** How many of each letter are still in the bag. Portal mounted to document.body to avoid CSS transform clipping. */
 export const TileBagDialog: React.FC<TileBagDialogProps> = ({ tileBagCount, tileBagCounts, onClose }) => {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(subscribeToNothing, getClientMounted, getServerMounted);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!mounted) return;

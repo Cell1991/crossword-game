@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useRef, useState } from 'react';
 import { playCard, UseCardPayload } from '@/lib/api';
 import { BoardCard, BoardCell, CellPosition, HintSuggestion, PlacedTile } from '@/lib/types';
 import { isCellCommitted } from '@/lib/tiles';
@@ -33,11 +33,9 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   const [busy, setBusy] = useState(false);
   const hasLoadedFromStorageRef = useRef(false);
 
-  useEffect(() => {
-    if (deferredFreezeTileId && !temporaryTiles.some(t => t.tile_id === deferredFreezeTileId)) {
-      setDeferredFreezeTileId(null);
-    }
-  }, [deferredFreezeTileId, temporaryTiles]);
+  const activeDeferredFreezeTileId = deferredFreezeTileId && temporaryTiles.some(t => t.tile_id === deferredFreezeTileId)
+    ? deferredFreezeTileId
+    : null;
 
   // Load persisted hints when player ID and game ID become available
   useEffect(() => {
@@ -49,13 +47,13 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed.suggestions) && parsed.suggestions.length > 0) {
-          setHintSuggestions(parsed.suggestions);
           const activeIdx = typeof parsed.activeIndex === 'number' ? parsed.activeIndex : 0;
-          setActiveHintIndex(activeIdx);
           const firstTile = parsed.suggestions[activeIdx]?.tiles?.[0];
-          if (firstTile) {
-            setHintCell({ row: firstTile.row, col: firstTile.col });
-          }
+          startTransition(() => {
+            setHintSuggestions(parsed.suggestions);
+            setActiveHintIndex(activeIdx);
+            setHintCell(firstTile ? { row: firstTile.row, col: firstTile.col } : null);
+          });
         }
       }
     } catch {
@@ -180,7 +178,7 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     pendingArmedCell,
     confirmArmedCardAt,
     cancelPendingArmedCell,
-    deferredFreezeTileId,
+    deferredFreezeTileId: activeDeferredFreezeTileId,
     cancelDeferredFreeze,
     hintCell,
     hintSuggestions,

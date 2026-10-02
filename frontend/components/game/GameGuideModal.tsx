@@ -30,12 +30,6 @@ export function GameGuideModal({
 }: GameGuideModalProps) {
   const [activeTab, setActiveTab] = useState<'board' | 'cards' | 'rules'>(defaultTab);
 
-  useEffect(() => {
-    if (isOpen) {
-      setActiveTab(defaultTab);
-    }
-  }, [isOpen, defaultTab]);
-
   // Lock body scroll when modal is open
   useEffect(() => {
     if (!isOpen) return;
