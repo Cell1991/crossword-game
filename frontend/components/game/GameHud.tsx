@@ -202,11 +202,15 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="tactile-button hidden sm:flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-white/15 bg-[#0a1220]/90 text-cyan-400 hover:border-cyan-400/70 hover:bg-[#121f35] hover:text-white hover:shadow-[0_0_14px_rgba(34,211,238,0.3)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 shrink-0 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
+            className="tactile-button flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-white/15 bg-[#0a1220]/90 text-cyan-400 hover:border-cyan-400/70 hover:bg-[#121f35] hover:text-white hover:shadow-[0_0_14px_rgba(34,211,238,0.3)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 shrink-0 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
             aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           >
-            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            {isFullscreen ? (
+              <Minimize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            ) : (
+              <Maximize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            )}
           </button>
         </div>
       </header>
