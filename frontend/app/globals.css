@@ -610,6 +610,11 @@ body {
   .wordx-game-shell .game-rack-module {
     margin: 0 !important;
     padding: 0 !important;
+    flex: none !important;
+  }
+  .wordx-game-shell .game-actions-container {
+    width: 320px !important;
+    flex: none !important;
   }
 }
 

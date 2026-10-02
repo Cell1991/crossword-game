@@ -330,7 +330,7 @@ export const TileRack = memo(function TileRack({
         </div>
 
         {/* RIGHT COLUMN: 2 BALANCED ACTION ROWS */}
-        <div className="game-actions-container order-2 flex w-full max-w-[340px] sm:max-w-[360px] flex-col gap-1.5">
+        <div className="game-actions-container order-2 flex w-full lg:w-[320px] shrink-0 flex-col gap-1.5">
           
           {/* Row 1: Utility Controls (Recall, Shuffle, Swap) */}
           <div className="grid grid-cols-3 gap-1.5 w-full">
@@ -399,14 +399,14 @@ export const TileRack = memo(function TileRack({
           </div>
 
           {/* Row 2: Turn Actions (CONFIRM / PLAY MOVE & Pass) */}
-          <div className="grid grid-cols-[2fr_1fr] gap-1.5 w-full">
+          <div className="w-full">
             {isExchanging ? (
               <motion.button
                 onClick={onConfirmExchange}
                 disabled={!canConfirmExchange}
                 whileHover={canConfirmExchange ? { scale: 1.02 } : undefined}
                 whileTap={canConfirmExchange ? { scale: 0.96 } : undefined}
-                className={`col-span-2 flex h-[38px] items-center justify-center gap-2 rounded-xl font-black text-xs transition-all ${
+                className={`flex w-full h-[38px] items-center justify-center gap-2 rounded-xl font-black text-xs transition-all ${
                   canConfirmExchange
                     ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-[0_0_16px_rgba(14,165,233,0.5)] border border-sky-300 cursor-pointer'
                     : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
@@ -416,14 +416,14 @@ export const TileRack = memo(function TileRack({
                 <span>{isSubmitting ? 'Swapping...' : `Confirm Swap (${exchangeCount} Tiles)`}</span>
               </motion.button>
             ) : passConfirming ? (
-              <div className="col-span-2 flex h-[38px] items-center justify-between gap-1.5 w-full">
+              <div className="grid grid-cols-[1fr_2fr] gap-1.5 w-full">
                 {/* Cancel Pass */}
                 <motion.button
                   onClick={() => setPassConfirming(false)}
                   disabled={isSubmitting}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.96 }}
-                  className="flex h-full flex-1 items-center justify-center rounded-xl text-xs sm:text-sm font-bold bg-[#152234] hover:bg-[#20344f] text-slate-300 hover:text-white border border-white/10 cursor-pointer transition-all shadow-sm"
+                  className="flex h-[38px] items-center justify-center rounded-xl text-xs sm:text-sm font-bold bg-[#152234] hover:bg-[#20344f] text-slate-300 hover:text-white border border-white/10 cursor-pointer transition-all shadow-sm"
                 >
                   <span>Cancel</span>
                 </motion.button>
@@ -434,13 +434,13 @@ export const TileRack = memo(function TileRack({
                   disabled={isSubmitting}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.96 }}
-                  className="flex h-full flex-[2] items-center justify-center rounded-xl font-black text-xs sm:text-sm bg-gradient-to-r from-rose-600 via-red-500 to-rose-600 hover:brightness-110 text-white border border-rose-300 shadow-[0_0_18px_rgba(244,63,94,0.6)] cursor-pointer transition-all"
+                  className="flex h-[38px] items-center justify-center rounded-xl font-black text-xs sm:text-sm bg-gradient-to-r from-rose-600 via-red-500 to-rose-600 hover:brightness-110 text-white border border-rose-300 shadow-[0_0_18px_rgba(244,63,94,0.6)] cursor-pointer transition-all"
                 >
                   <span>{isSubmitting ? 'Passing...' : 'Confirm Pass'}</span>
                 </motion.button>
               </div>
             ) : (
-              <>
+              <div className="grid grid-cols-[2fr_1fr] gap-1.5 w-full">
                 {/* Primary Confirm / Play Move Button */}
                 <motion.button
                   onClick={onConfirmMove}
@@ -481,7 +481,7 @@ export const TileRack = memo(function TileRack({
                   <SkipForward className="w-3.5 h-3.5 text-slate-400" />
                   <span>Pass</span>
                 </motion.button>
-              </>
+              </div>
             )}
           </div>
         </div>
