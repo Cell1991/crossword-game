@@ -29,30 +29,11 @@ export const PendingEffectBanner: React.FC<{
   </div>
 );
 
-/** The card a player just earned: a lightning flash, then the card face. */
-export const CardRevealOverlay: React.FC<{ reveal: CardReveal }> = ({ reveal }) => (
-  <div className="pointer-events-none absolute inset-0 z-[60] flex items-center justify-center">
-    <div className={`flex h-56 w-40 flex-col items-center justify-center rounded-2xl border-4 border-red-500/90 bg-slate-950/90 shadow-[0_0_35px_rgba(14,165,233,0.75),inset_0_0_28px_rgba(14,165,233,0.24)] transition-all duration-300 ${reveal.phase === 'lightning' ? 'scale-100' : 'scale-110'}`}>
-      {reveal.phase === 'lightning' ? (
-        <>
-          <div className="flex items-center justify-center gap-1 text-yellow-300 drop-shadow-[0_0_16px_rgba(250,204,21,0.95)]">
-            <Zap className="h-9 w-9 fill-yellow-300 text-yellow-100 animate-pulse" />
-            <Zap className="h-24 w-24 fill-yellow-300 text-yellow-100 animate-pulse" />
-            <Zap className="h-9 w-9 fill-yellow-300 text-yellow-100 animate-pulse" />
-          </div>
-          <span className="mt-3 text-xs font-bold uppercase tracking-[0.35em] text-cyan-200">Power</span>
-        </>
-      ) : (
-        <>
-          <span className="text-7xl leading-none drop-shadow-[0_0_20px_rgba(125,211,252,1)]">
-            {cardIcon(reveal.card, 'h-20 w-20', <span className="text-6xl font-black text-amber-300">×2</span>) ?? '✨'}
-          </span>
-          <span className="mt-3 text-xs font-bold uppercase tracking-[0.25em] text-cyan-200">Card found</span>
-        </>
-      )}
-    </div>
-  </div>
-);
+import { EpicCardRevealOverlay, CardActivationOverlay } from './CardEffectsOverlay';
+
+/** Re-export the epic 3D holographic card reveal overlay */
+export const CardRevealOverlay = EpicCardRevealOverlay;
+export { CardActivationOverlay };
 
 /** Toasts stack with smooth spring animations, status glow, and interactive dismissal button. */
 export const ToastStack: React.FC<{

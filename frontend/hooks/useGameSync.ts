@@ -35,6 +35,11 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
   const [moveHistory, setMoveHistory] = useState<MoveHistoryEntry[]>([]);
   const [cardUseEffects, setCardUseEffects] = useState<Record<string, string>>({});
   const [cardReveal, setCardReveal] = useState<CardReveal | null>(null);
+  const [activeCardCast, setActiveCardCast] = useState<{
+    playerName: string;
+    card: string;
+    targetPlayerName?: string | null;
+  } | null>(null);
   const [remotePlacements, setRemotePlacements] = useState<{ row: number; col: number }[]>([]);
   const [remoteBotTiles, setRemoteBotTiles] = useState<PlacedTile[]>([]);
   /** Server clock minus this device's clock. The turn timer runs on server time so every device agrees. */
@@ -189,12 +194,20 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
         const playerId = event.payload?.playerId;
         const card = event.payload?.card;
         if (!playerId || !card) break;
+        const sourceName = nameOf(playerId, playerId === myPlayerId ? 'You' : 'Player');
+        const targetId = (event.payload?.pendingDoubleTargetId || event.payload?.targetPlayerId) as string | undefined;
+        const targetName = targetId ? nameOf(targetId, targetId === myPlayerId ? 'You' : 'Opponent') : null;
+
+        setActiveCardCast({
+          playerName: sourceName,
+          card,
+          targetPlayerName: targetName,
+        });
+        window.setTimeout(() => setActiveCardCast(null), 2500);
+
         setCardUseEffects(previous => ({ ...previous, [playerId]: card }));
-        if (event.payload?.pendingDoubleTargetId || event.payload?.targetPlayerId) {
-          const targetId = (event.payload.pendingDoubleTargetId || event.payload.targetPlayerId) as string;
+        if (targetId) {
           replaceGameState(prev => prev ? { ...prev, pending_double_target_id: targetId } : prev);
-          const sourceName = nameOf(playerId, 'Player');
-          const targetName = nameOf(targetId, 'Opponent');
           flashInfo(`${sourceName} targeted ${targetName} with Word ×2!`);
         }
         loadGameState();
@@ -298,6 +311,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
     moveHistory,
     cardUseEffects,
     cardReveal,
+    activeCardCast,
     remotePlacements,
     remoteBotTiles,
     clearRemotePlacements,
