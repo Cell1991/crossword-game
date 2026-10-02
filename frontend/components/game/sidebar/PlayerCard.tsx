@@ -76,14 +76,16 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Rank Badge */}
           <div
-            className={`w-5.5 h-5.5 rounded-lg flex items-center justify-center font-black text-[10px] shrink-0 font-mono shadow-sm transition-transform ${
+            className={`w-5.5 h-5.5 rounded-lg flex items-center justify-center font-black text-[11px] shrink-0 font-mono shadow-sm transition-transform ${
               isLeader
                 ? 'bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-600 text-amber-950 font-extrabold border border-yellow-200/90 shadow-[0_0_12px_rgba(245,158,11,0.55),inset_0_1px_1px_rgba(255,255,255,0.8)]'
                 : isSecond
                 ? 'bg-gradient-to-br from-white via-slate-200 to-slate-400 text-slate-950 font-extrabold border border-white/90 shadow-[0_0_12px_rgba(226,232,240,0.5),inset_0_1px_1px_rgba(255,255,255,0.9)]'
                 : isThird
                 ? 'bg-gradient-to-br from-amber-300 via-amber-600 to-orange-700 text-amber-950 font-extrabold border border-amber-300/80 shadow-[0_0_12px_rgba(217,119,6,0.45),inset_0_1px_1px_rgba(254,215,170,0.7)]'
-                : 'bg-slate-800/90 text-slate-400 font-bold border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                : isDead || hasLeft
+                ? 'bg-slate-900/60 text-slate-500 font-bold border border-white/5'
+                : 'bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 text-slate-100 font-extrabold border border-slate-500/50 shadow-[0_2px_6px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.25)] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]'
             }`}
             title={`Rank #${rankIndex + 1}`}
           >
@@ -94,7 +96,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
             ) : isThird ? (
               <Award className="w-3.5 h-3.5 text-amber-950 drop-shadow-[0_1px_1px_rgba(254,215,170,0.5)]" />
             ) : (
-              rankIndex + 1
+              <span>{rankIndex + 1}</span>
             )}
           </div>
 
