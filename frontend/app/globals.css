@@ -621,7 +621,7 @@ body {
 /* Mobile & Tablet layout (< 1024px) */
 @media (max-width: 1023px) {
   .wordx-game-shell .gameplay-control-stage {
-    padding-bottom: max(16px, calc(env(safe-area-inset-bottom) + 12px)) !important;
+    padding-bottom: max(8px, calc(env(safe-area-inset-bottom) + 4px)) !important;
   }
   .wordx-game-shell .game-control-layout {
     display: flex !important;
