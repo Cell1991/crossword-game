@@ -61,7 +61,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         isDead || hasLeft
           ? 'bg-slate-950/40 border border-white/[0.04] opacity-40 grayscale-[40%]'
           : isTargeted
-          ? 'bg-gradient-to-r from-[#2e0e1f]/95 via-[#1a0815]/95 to-[#0e040c]/95 border-2 border-rose-500 shadow-[0_0_24px_rgba(244,63,94,0.45),inset_0_1px_0_rgba(255,255,255,0.2)] ring-1 ring-rose-400/60'
+          ? 'bg-gradient-to-r from-[#20101c]/90 via-[#140b15]/90 to-[#0b060d]/95 border border-rose-500/75 shadow-[0_0_16px_rgba(244,63,94,0.3)] ring-1 ring-rose-400/40'
           : isActiveTurn
           ? 'bg-gradient-to-r from-[#0d2a3d]/95 via-[#081e2d]/95 to-[#05131d]/95 border-2 border-cyan-400 shadow-[0_0_24px_rgba(34,211,197,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] ring-1 ring-cyan-400/40'
           : isMe
@@ -69,9 +69,9 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           : 'bg-gradient-to-r from-[#132033]/80 via-[#0c1524]/85 to-[#080e1a]/90 hover:from-[#17273d]/90 hover:to-[#0d1828] border border-white/10 hover:border-white/20 shadow-[0_4px_14px_rgba(0,0,0,0.35)]'
       }`}
     >
-      {/* Targeted red/rose glow accent */}
+      {/* Targeted subtle red/rose ambient glow */}
       {isTargeted && !isDead && !hasLeft && (
-        <div className="absolute top-0 right-0 w-36 h-36 bg-rose-500/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />
       )}
       {/* Active turn cyan glow accent */}
       {isActiveTurn && !isTargeted && (
@@ -112,7 +112,9 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
             <span
               className={`text-xs sm:text-sm font-extrabold truncate ${
-                isMe
+                isTargeted
+                  ? 'text-rose-200'
+                  : isMe
                   ? 'text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]'
                   : isActiveTurn
                   ? 'text-white'
@@ -130,14 +132,14 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
               </span>
             )}
 
-            {/* Double Damage Target Reticle Badge */}
+            {/* Double Damage Target Mini Badge */}
             {isTargeted && !isDead && !hasLeft && (
               <span
-                className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gradient-to-r from-rose-600 via-purple-600 to-rose-600 border border-rose-400/90 text-[9px] font-black tracking-wide text-white shadow-[0_0_12px_rgba(244,63,94,0.7)] animate-pulse shrink-0"
-                title="Targeted for 2× Double Damage!"
+                className="flex items-center gap-0.5 px-1 py-0.2 rounded bg-rose-500/25 border border-rose-400/50 text-[9px] font-black text-rose-200 shrink-0 transition-opacity hover:opacity-100"
+                title="Targeted for 2× Double Damage"
               >
-                <Crosshair className="w-2.5 h-2.5 text-rose-200 animate-spin" style={{ animationDuration: '4s' }} />
-                <span>TARGET ×2</span>
+                <Crosshair className="w-2.5 h-2.5 text-rose-300 animate-spin" style={{ animationDuration: '6s' }} />
+                <span>×2</span>
               </span>
             )}
 
