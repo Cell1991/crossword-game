@@ -27,11 +27,11 @@ export const PlayersPanel: React.FC<PlayersPanelProps> = ({
     <section aria-label="Players scoreboard" className="w-full shrink-0 flex flex-col">
       {/* Section Header */}
       <div className="flex items-center justify-between px-1 pb-2">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-[#91A0B5] uppercase">
-          <Users className="w-3.5 h-3.5 text-[#91A0B5]" />
-          <span>PLAYERS</span>
+        <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase">
+          <Users className="w-3.5 h-3.5 text-[#22D3C5]" />
+          <span className="text-[#F2F6FC]">PLAYERS</span>
         </div>
-        <span className="text-[11px] font-medium text-[#66758A]">
+        <span className="text-[11px] font-bold text-[#22D3C5] bg-[#22D3C5]/10 px-2 py-0.5 rounded-full border border-[#22D3C5]/25">
           {players.length} {players.length === 1 ? 'player' : 'players'}
         </span>
       </div>
