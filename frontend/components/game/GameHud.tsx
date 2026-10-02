@@ -93,7 +93,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={onExit}
-            className="tactile-button flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-[#0a1220]/90 text-slate-200 hover:text-white hover:border-cyan-400/60 hover:bg-[#121f35] hover:shadow-[0_0_14px_rgba(34,211,238,0.3)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
+            className="tactile-button flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-[#0a1220]/90 text-slate-200 hover:text-white hover:border-cyan-400/60 hover:bg-[#121f35] hover:shadow-[0_0_14px_rgba(34,211,238,0.3)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
             title={isSpectator ? 'Stop watching' : 'Exit game'}
             aria-label={isSpectator ? 'Stop watching' : 'Exit game'}
           >
@@ -104,7 +104,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             <button
               type="button"
               onClick={handleCopyPin}
-              className={`tactile-button flex h-9 sm:h-10 shrink-0 items-center gap-1.5 sm:gap-2 rounded-xl border px-2.5 sm:px-3 font-mono text-xs sm:text-sm font-bold transition-all shadow-[0_2px_8px_rgba(0,0,0,0.4)] cursor-pointer ${
+              className={`tactile-button flex h-8 sm:h-10 shrink-0 items-center gap-1 sm:gap-2 rounded-xl border px-2 sm:px-3 font-mono text-xs sm:text-sm font-bold transition-all shadow-[0_2px_8px_rgba(0,0,0,0.4)] cursor-pointer ${
                 copiedPin
                   ? 'border-emerald-400 bg-emerald-950/95 text-emerald-300 shadow-[0_0_14px_rgba(16,185,129,0.5)]'
                   : 'border-white/15 bg-[#0a1220]/90 text-slate-200 hover:border-cyan-400/60 hover:bg-[#121f35] hover:text-white hover:shadow-[0_0_14px_rgba(34,211,238,0.25)]'
@@ -126,7 +126,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           )}
 
           <div
-            className={`gameplay-live-indicator flex h-9 sm:h-10 items-center gap-1.5 rounded-xl px-2.5 text-xs sm:text-sm font-black uppercase tracking-wider border shadow-[0_2px_8px_rgba(0,0,0,0.4)] ${
+            className={`gameplay-live-indicator hidden md:flex h-9 sm:h-10 items-center gap-1.5 rounded-xl px-2.5 text-xs sm:text-sm font-black uppercase tracking-wider border shadow-[0_2px_8px_rgba(0,0,0,0.4)] ${
               isConnected
                 ? 'border-emerald-400/50 bg-emerald-950/70 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
                 : 'border-rose-400/50 bg-rose-950/70 text-rose-300 shadow-[0_0_10px_rgba(239,68,68,0.2)]'
@@ -140,7 +140,7 @@ export const GameHud: React.FC<GameHudProps> = ({
                   : 'bg-rose-400 shadow-[0_0_10px_#f87171]'
               }`}
             />
-            <span className="hidden md:inline">{isConnected ? 'LIVE' : 'OFFLINE'}</span>
+            <span>{isConnected ? 'LIVE' : 'OFFLINE'}</span>
           </div>
         </div>
 
@@ -178,11 +178,11 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={onOpenInfo}
-            className="gameplay-info-button tactile-button flex lg:hidden h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-white/15 bg-[#0a1220]/90 px-2.5 sm:px-3 text-xs font-bold text-slate-100 hover:border-cyan-400/60 shadow-[0_2px_8px_rgba(0,0,0,0.4)] shrink-0 cursor-pointer"
+            className="gameplay-info-button tactile-button flex lg:hidden h-8 sm:h-10 items-center gap-1 sm:gap-1.5 rounded-xl border border-white/15 bg-[#0a1220]/90 px-2 sm:px-3 text-xs font-bold text-slate-100 hover:border-cyan-400/60 shadow-[0_2px_8px_rgba(0,0,0,0.4)] shrink-0 cursor-pointer"
             title="Match stats & word history"
             aria-label="Open match stats and word history"
           >
-            <ScrollText className="h-4 w-4 text-cyan-400" />
+            <ScrollText className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-400" />
             <span>Stats</span>
           </button>
 
