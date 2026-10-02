@@ -126,7 +126,7 @@ export const RightSidebar = memo(function RightSidebar({
     <aside className={`game-match-sidebar flex h-full min-h-0 min-w-0 shrink-0 flex-col select-none ${mobile ? 'w-full p-0 bg-transparent' : 'w-full border-l border-slate-800/70 bg-slate-950/35'}`}>
       <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
         {/* TOP SECTION: COMPACT TILES STATUS CARD */}
-        <div className="shrink-0 px-4 pb-3 pt-3">
+        <div className="game-bag-panel shrink-0 px-4 pb-3 pt-3">
           <button
             ref={tileBagButtonRef}
             type="button"
@@ -148,7 +148,7 @@ export const RightSidebar = memo(function RightSidebar({
         </div>
 
         {/* MAIN SECTION: SCOREBOARD */}
-        <div className="shrink-0 flex flex-col px-4 pb-4 pt-2">
+        <div className="game-score-panel shrink-0 flex flex-col px-4 pb-4 pt-2">
           {/* Section Header */}
           <div className="mb-2 flex items-center justify-between border-b border-slate-800/80 pb-2">
             <div className="flex items-center gap-2">
@@ -163,7 +163,7 @@ export const RightSidebar = memo(function RightSidebar({
           </div>
 
           {/* Players List */}
-          <div className="max-h-[42vh] space-y-1 overflow-y-auto px-0.5">
+          <div className="game-players-list max-h-[42vh] space-y-1 overflow-y-auto px-0.5">
             {sortedPlayers.map((player, idx) => {
               const isCurrent = player.id === currentPlayerId;
               const isMe = player.id === myPlayerId;

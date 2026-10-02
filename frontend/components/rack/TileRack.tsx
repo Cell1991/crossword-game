@@ -204,15 +204,15 @@ export const TileRack = memo(function TileRack({
 
       {/* Utility row belongs to the same dock, keeping cards clear of playable board cells. */}
       {powerCardSlot && (
-        <div className="flex w-full items-center justify-center border-b border-slate-800/80 pb-2">
+        <div className="game-power-strip flex w-full items-center justify-center border-b border-slate-800/80 pb-2">
           {powerCardSlot}
         </div>
       )}
 
       {/* ROW 2: Premium Player Control Hub: 3-column balanced layout (Left Pod, Center Tray, Right Pod) */}
-      <div className="flex w-full flex-row flex-wrap items-end justify-center gap-1.5 sm:gap-2 lg:flex-nowrap lg:gap-4">
+      <div className="game-rack-layout flex w-full flex-row flex-wrap items-end justify-center gap-1.5 sm:gap-2 lg:flex-nowrap lg:gap-4">
         {/* CENTER POD: COSMIC BLUE TILE TRAY */}
-        <div className="relative order-1 flex w-full max-w-full shrink-0 flex-col items-center lg:order-2 lg:w-auto">
+        <div className="game-rack-center relative order-1 flex w-full max-w-full shrink-0 flex-col items-center lg:order-2 lg:w-auto">
 
           {/* Mobile Score Badge above Tray */}
           <AnimatePresence>
@@ -355,7 +355,7 @@ export const TileRack = memo(function TileRack({
         <div className="order-2 relative flex w-auto max-w-full flex-row items-center justify-center gap-1 lg:contents">
 
         {/* LEFT POD: GAME MANAGEMENT */}
-        <div className="flex shrink flex-col items-center lg:order-1 lg:flex-1 lg:basis-0 lg:items-end min-w-0">
+        <div className="game-rack-tools flex shrink flex-col items-center lg:order-1 lg:flex-1 lg:basis-0 lg:items-end min-w-0">
           <div className="flex min-h-[40px] w-auto items-center justify-center gap-1 sm:min-h-[46px]">
             {isExchanging ? (
               <div className="flex items-center gap-2 px-1">
@@ -432,7 +432,7 @@ export const TileRack = memo(function TileRack({
         <div className="h-5 w-px bg-slate-700/60 mx-0.5 lg:hidden" />
 
         {/* RIGHT POD: TURN ACTIONS */}
-        <div className="flex shrink flex-col items-center lg:order-3 lg:flex-1 lg:basis-0 lg:items-start min-w-0">
+        <div className="game-turn-actions flex shrink flex-col items-center lg:order-3 lg:flex-1 lg:basis-0 lg:items-start min-w-0">
           <div className="mb-1.5 hidden lg:flex w-full items-center justify-between gap-2 px-2">
             {/* Points / Validity preview badge & Bingo indicator with smooth pop and shake animations */}
             <AnimatePresence mode="wait">
