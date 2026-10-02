@@ -4,7 +4,7 @@ from sqlalchemy import inspect, text, select, func, insert
 from sqlalchemy.pool import NullPool
 from app.core.config import settings
 from app.database.models import (
-    Base, Game, GamePlayer, BoardCell, GameTile, PlayerCard, DictionaryWord, WordDefinition
+    Base, Game, GamePlayer, BoardCell, PlayerCard, DictionaryWord, WordDefinition
 )
 from app.game.dictionary import dictionary_service
 
@@ -62,10 +62,14 @@ async def init_db():
 
 
 async def _backfill_normalized_state(session: AsyncSession):
-    """Backfill normalized tables once, preserving databases created by older builds."""
+    """Backfill board cells and cards for databases created by older builds.
+
+    Bags and racks are already stored in the authoritative JSON columns. The
+    game_tiles table is only a fallback for older rows without those columns;
+    copying every historical bag into it on startup can collide because legacy
+    tile IDs were shortened to eight characters and are not unique across games.
+    """
     board_game_ids = set((await session.execute(select(BoardCell.game_id).distinct())).scalars())
-    tile_game_ids = set((await session.execute(select(GameTile.game_id).distinct())).scalars())
-    tile_player_ids = set((await session.execute(select(GameTile.player_id).distinct())).scalars())
     card_player_ids = set((await session.execute(select(PlayerCard.player_id).distinct())).scalars())
 
     games = (await session.execute(select(Game))).scalars().all()
@@ -85,25 +89,8 @@ async def _backfill_normalized_state(session: AsyncSession):
                 if cell.get("player_id") or game.current_player_id
             ])
 
-        if game.id not in tile_game_ids and game.tile_bag:
-            session.add_all([
-                GameTile(
-                    id=tile["id"], game_id=game.id, location="BAG", position=index,
-                    letter=tile["letter"].upper(), value=tile["value"]
-                )
-                for index, tile in enumerate(game.tile_bag)
-            ])
-
     players = (await session.execute(select(GamePlayer))).scalars().all()
     for player in players:
-        if player.id not in tile_player_ids and player.rack:
-            session.add_all([
-                GameTile(
-                    id=tile["id"], game_id=player.game_id, player_id=player.id,
-                    location="RACK", position=index, letter=tile["letter"].upper(), value=tile["value"]
-                )
-                for index, tile in enumerate(player.rack)
-            ])
         if player.id not in card_player_ids and player.cards:
             session.add_all([PlayerCard(player_id=player.id, card_type=card) for card in player.cards])
 

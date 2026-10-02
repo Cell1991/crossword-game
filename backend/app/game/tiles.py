@@ -39,7 +39,7 @@ class TileService:
             val = values.get(letter, 1)
             for _ in range(count * multiplier):
                 bag.append({
-                    "id": str(uuid.uuid4())[:8],
+                    "id": str(uuid.uuid4()),
                     "letter": letter.upper(),
                     "value": val
                 })
