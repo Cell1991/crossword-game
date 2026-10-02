@@ -565,11 +565,16 @@ export const PowerCardBar = memo(function PowerCardBar({
           return (
             <div
               key={`empty-card-slot-${slotIndex}`}
-              title={`Card Slot ${slotIndex + 1} (Empty)`}
-              className="group relative flex h-8 sm:h-9 min-w-[92px] sm:min-w-[102px] items-center justify-center gap-1.5 rounded-lg border border-dashed border-sky-500/25 bg-[#060e1d]/75 px-2.5 py-1 text-[11px] font-semibold text-slate-500 select-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] transition-all hover:border-sky-400/40"
+              title={`Card Slot ${slotIndex + 1} (Empty - Maximum 3 Skill Cards)`}
+              className="group relative flex h-8 sm:h-9 min-w-[92px] sm:min-w-[102px] items-center justify-center gap-1.5 rounded-lg border border-sky-400/20 bg-gradient-to-b from-[#0c182c]/80 to-[#040914]/95 px-2.5 py-1 select-none shadow-[inset_0_2px_5px_rgba(0,0,0,0.7),0_1px_0_rgba(255,255,255,0.06)] transition-all"
             >
-              <div className="h-1.5 w-1.5 rounded-full border border-sky-400/40 bg-sky-500/20" />
-              <span className="font-mono text-[10px] tracking-wider text-slate-400/80">Slot {slotIndex + 1}</span>
+              <svg className="w-3.5 h-3.5 text-sky-400/40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="18" height="18" rx="3" strokeDasharray="3 3" />
+                <path d="M12 8v8M8 12h8" strokeWidth="1.5" strokeOpacity="0.4" />
+              </svg>
+              <span className="text-[10px] font-black tracking-widest text-slate-400/80 font-mono">
+                SLOT {slotIndex + 1}
+              </span>
             </div>
           );
         }
