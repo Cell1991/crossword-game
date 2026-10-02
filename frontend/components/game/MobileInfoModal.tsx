@@ -1,10 +1,15 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { ScrollText, X, Sparkles } from 'lucide-react';
 import { Player, MoveHistoryEntry } from '@/lib/types';
 import { RightSidebar } from './RightSidebar';
+
+const subscribeToNothing = () => () => {};
+const getClientMounted = () => true;
+const getServerMounted = () => false;
 
 interface MobileInfoModalProps {
   isOpen: boolean;
@@ -33,6 +38,8 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
   moveHistory = [],
   cardUseEffects = {},
 }) => {
+  const mounted = useSyncExternalStore(subscribeToNothing, getClientMounted, getServerMounted);
+
   // Prevent body scroll when modal is open on mobile & handle Escape
   useEffect(() => {
     if (!isOpen) return;
@@ -50,7 +57,9 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
     };
   }, [isOpen, onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -58,8 +67,8 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.16 }}
-          className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/75 p-0 sm:items-center sm:p-5"
+          transition={{ duration: 0.18, ease: 'easeOut' }}
+          className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/85 sm:backdrop-blur-sm p-0 sm:items-center sm:p-5"
           onClick={onClose}
           role="dialog"
           aria-modal="true"
@@ -70,9 +79,10 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
             key="mobile-info-card"
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 380 }}
-            className="relative flex max-h-[84dvh] w-full max-w-md flex-col overflow-hidden rounded-b-3xl border-b border-x border-slate-700/70 bg-slate-950 shadow-[0_16px_50px_rgba(0,0,0,0.85)] sm:rounded-3xl sm:border-t sm:border-cyan-500/25 sm:shadow-[0_16px_50px_rgba(0,0,0,0.45)]"
+            exit={{ opacity: 0, scale: 0.96, y: -16 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
+            className="transform-gpu relative flex max-h-[84dvh] w-full max-w-md flex-col overflow-hidden rounded-b-3xl border-b border-x border-slate-700/70 bg-slate-950 shadow-[0_16px_50px_rgba(0,0,0,0.85)] sm:rounded-3xl sm:border-t sm:border-cyan-500/25 sm:shadow-[0_16px_50px_rgba(0,0,0,0.45)]"
             onClick={(e) => e.stopPropagation()}
           >
         {/* Bottom Atmospheric Aura Highlight */}
@@ -124,6 +134,7 @@ export const MobileInfoModal: React.FC<MobileInfoModalProps> = ({
       </motion.div>
     </motion.div>
   )}
-</AnimatePresence>
+</AnimatePresence>,
+    document.body
   );
 };
