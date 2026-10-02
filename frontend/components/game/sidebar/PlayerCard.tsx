@@ -60,8 +60,6 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
       className={`relative flex flex-col p-2.5 rounded-2xl transition-all duration-200 select-none overflow-hidden ${
         isDead || hasLeft
           ? 'bg-slate-950/40 border border-white/[0.04] opacity-40 grayscale-[40%]'
-          : isTargeted
-          ? 'bg-gradient-to-r from-[#20101c]/90 via-[#140b15]/90 to-[#0b060d]/95 border border-rose-500/75 shadow-[0_0_16px_rgba(244,63,94,0.3)] ring-1 ring-rose-400/40'
           : isActiveTurn
           ? 'bg-gradient-to-r from-[#0d2a3d]/95 via-[#081e2d]/95 to-[#05131d]/95 border-2 border-cyan-400 shadow-[0_0_24px_rgba(34,211,197,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] ring-1 ring-cyan-400/40'
           : isMe
@@ -69,12 +67,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           : 'bg-gradient-to-r from-[#132033]/80 via-[#0c1524]/85 to-[#080e1a]/90 hover:from-[#17273d]/90 hover:to-[#0d1828] border border-white/10 hover:border-white/20 shadow-[0_4px_14px_rgba(0,0,0,0.35)]'
       }`}
     >
-      {/* Targeted subtle red/rose ambient glow */}
-      {isTargeted && !isDead && !hasLeft && (
-        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />
-      )}
       {/* Active turn cyan glow accent */}
-      {isActiveTurn && !isTargeted && (
+      {isActiveTurn && (
         <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 rounded-full blur-2xl pointer-events-none" />
       )}
 
@@ -114,9 +108,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
             <div className="flex items-center gap-1.5 min-w-0">
               <span
                 className={`text-xs sm:text-sm font-extrabold truncate ${
-                  isTargeted
-                    ? 'text-rose-200'
-                    : isMe
+                  isMe
                     ? 'text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]'
                     : isActiveTurn
                     ? 'text-white'
