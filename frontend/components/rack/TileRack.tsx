@@ -207,10 +207,10 @@ export const TileRack = memo(function TileRack({
         {/* Specular Edge Highlight Trim */}
         <div aria-hidden="true" className="pedestal-top-glint absolute inset-x-8 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent pointer-events-none" />
 
-        {/* TOP / CENTER: 7-TILE RACK (TOP) & POWER CARDS (BOTTOM) */}
+        {/* LEFT / CENTER: 7-TILE RACK & POWER CARDS */}
         <div className="game-rack-module game-rack-center relative order-1 flex w-full max-w-full shrink-0 flex-col items-center gap-1.5 lg:w-auto">
-          {/* Top Subdeck: 7-Tile Stand (Closest to board) */}
-          <div className="w-full overflow-x-auto overflow-y-hidden px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible">
+          {/* 7-Tile Stand: Top on mobile (order-1), Lower on desktop (lg:order-2) */}
+          <div className="order-1 lg:order-2 w-full overflow-x-auto overflow-y-hidden px-1 sm:px-0 flex justify-center hide-scrollbar scroll-smooth lg:overflow-visible">
             <div
               ref={rackRef}
               className={`game-tile-tray relative flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl border px-2 py-1.5 sm:w-auto sm:gap-1.5 sm:px-2.5 sm:py-1.5 min-h-[52px] sm:min-h-[56px] ${
@@ -321,16 +321,173 @@ export const TileRack = memo(function TileRack({
             </div>
           </div>
 
-          {/* Middle Subdeck: Power Cards Bay */}
+          {/* Power Cards Bay: Middle on mobile (order-2), Upper on desktop (lg:order-1) */}
           {powerCardSlot && (
-            <div className="game-power-strip flex w-full max-w-full items-center justify-center">
+            <div className="game-power-strip order-2 lg:order-1 flex w-full max-w-full items-center justify-center">
               {powerCardSlot}
             </div>
           )}
         </div>
 
-        {/* BOTTOM / RIGHT: 1 COMPACT SINGLE-ROW ACTION BAR (Icons only, minimal height) */}
-        <div className="game-actions-container order-2 flex w-full max-w-[340px] sm:max-w-[360px] lg:w-[340px] shrink-0 flex-col">
+        {/* RIGHT / BOTTOM: ACTION CONTROLS */}
+        {/* DESKTOP VIEW (>= 1024px): 2 BALANCED ROWS WITH FULL TEXT LABELS (Original PC UI) */}
+        <div className="game-actions-container hidden lg:flex order-2 w-[320px] shrink-0 flex-col gap-1.5">
+          {/* Desktop Row 1: Utility Controls (Recall, Shuffle, Swap) */}
+          <div className="grid grid-cols-3 gap-1.5 w-full">
+            {isExchanging ? (
+              <div className="col-span-3 flex items-center justify-between gap-2 px-2 py-1 bg-rose-950/40 border border-rose-700/50 rounded-xl">
+                <motion.button
+                  onClick={onCancelExchange}
+                  disabled={isSubmitting}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="flex h-[32px] items-center gap-1 px-2.5 rounded-lg font-bold text-xs bg-rose-900/80 text-rose-200 hover:bg-rose-800 border border-rose-600 cursor-pointer shadow-sm"
+                >
+                  <X className="w-3.5 h-3.5 text-rose-300" />
+                  <span>Cancel</span>
+                </motion.button>
+                <span className="text-[10.5px] text-slate-300 truncate font-medium">
+                  {exchangeCount > tileBagCount ? `Only ${tileBagCount} in bag` : 'Select tiles to swap'}
+                </span>
+              </div>
+            ) : (
+              <>
+                {/* Recall */}
+                <motion.button
+                  onClick={onCancelMove}
+                  disabled={!hasTemporaryTiles || isSubmitting}
+                  whileHover={hasTemporaryTiles ? { scale: 1.02 } : undefined}
+                  whileTap={hasTemporaryTiles ? { scale: 0.96 } : undefined}
+                  className={`flex h-[34px] sm:h-[36px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs transition-all select-none ${
+                    hasTemporaryTiles
+                      ? 'bg-rose-950/90 text-rose-200 hover:bg-rose-900 border border-rose-600/80 cursor-pointer shadow-md shadow-rose-950/40'
+                      : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                  }`}
+                  title="Recall placed tiles to rack"
+                >
+                  <RotateCcw className={`w-3.5 h-3.5 ${hasTemporaryTiles ? 'text-rose-400' : 'text-slate-500'}`} />
+                  <span>Recall{hasTemporaryTiles ? ` (${stagedTileCount})` : ''}</span>
+                </motion.button>
+
+                {/* Shuffle */}
+                <motion.button
+                  onClick={onShuffleRack}
+                  disabled={tileCount < 2 || isSubmitting}
+                  whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.02 } : undefined}
+                  whileTap={tileCount >= 2 && !isSubmitting ? { scale: 0.96 } : undefined}
+                  className="flex h-[34px] sm:h-[36px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs text-amber-200 hover:text-white bg-[#221808]/80 hover:bg-[#33240c] border border-amber-500/40 hover:border-amber-400 disabled:text-slate-500 disabled:bg-[#152234]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
+                  title="Shuffle rack tiles"
+                >
+                  <Shuffle className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Shuffle</span>
+                </motion.button>
+
+                {/* Swap */}
+                <motion.button
+                  onClick={onStartExchange}
+                  disabled={!canStartExchange}
+                  whileHover={canStartExchange ? { scale: 1.02 } : undefined}
+                  whileTap={canStartExchange ? { scale: 0.96 } : undefined}
+                  className="flex h-[34px] sm:h-[36px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs text-sky-200 hover:text-white bg-[#0a1e32]/80 hover:bg-[#112d4a] border border-sky-500/40 hover:border-sky-400 disabled:text-slate-500 disabled:bg-[#152234]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
+                  title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
+                >
+                  <ArrowLeftRight className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Swap</span>
+                </motion.button>
+              </>
+            )}
+          </div>
+
+          {/* Desktop Row 2: Turn Actions (CONFIRM / PLAY MOVE & Pass) */}
+          <div className="w-full">
+            {isExchanging ? (
+              <motion.button
+                onClick={onConfirmExchange}
+                disabled={!canConfirmExchange}
+                whileHover={canConfirmExchange ? { scale: 1.02 } : undefined}
+                whileTap={canConfirmExchange ? { scale: 0.96 } : undefined}
+                className={`flex w-full h-[38px] items-center justify-center gap-2 rounded-xl font-black text-xs transition-all ${
+                  canConfirmExchange
+                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-[0_0_16px_rgba(14,165,233,0.5)] border border-sky-300 cursor-pointer'
+                    : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                }`}
+              >
+                <ArrowLeftRight className="w-4 h-4" />
+                <span>{isSubmitting ? 'Swapping...' : `Confirm Swap (${exchangeCount} Tiles)`}</span>
+              </motion.button>
+            ) : passConfirming ? (
+              <div className="grid grid-cols-[1fr_2fr] gap-1.5 w-full">
+                {/* Cancel Pass */}
+                <motion.button
+                  onClick={() => setPassConfirming(false)}
+                  disabled={isSubmitting}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="flex h-[38px] items-center justify-center rounded-xl text-xs sm:text-sm font-bold bg-[#152234] hover:bg-[#20344f] text-slate-300 hover:text-white border border-white/10 cursor-pointer transition-all shadow-sm"
+                >
+                  <span>Cancel</span>
+                </motion.button>
+
+                {/* Confirm Pass Button */}
+                <motion.button
+                  onClick={() => { setPassConfirming(false); onPassTurn(); }}
+                  disabled={isSubmitting}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="flex h-[38px] items-center justify-center rounded-xl font-black text-xs sm:text-sm bg-gradient-to-r from-rose-600 via-red-500 to-rose-600 hover:brightness-110 text-white border border-rose-300 shadow-[0_0_18px_rgba(244,63,94,0.6)] cursor-pointer transition-all"
+                >
+                  <span>{isSubmitting ? 'Passing...' : 'Confirm Pass'}</span>
+                </motion.button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-[2fr_1fr] gap-1.5 w-full">
+                {/* Primary Confirm / Play Move Button */}
+                <motion.button
+                  onClick={onConfirmMove}
+                  disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
+                  whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.02 } : undefined}
+                  whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.96 } : undefined}
+                  className={`game-primary-action flex h-[38px] items-center justify-center gap-1.5 rounded-xl px-3 font-black text-xs sm:text-sm transition-all select-none ${
+                    isMyTurn && hasTemporaryTiles && placementValid === true
+                      ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.7)] border border-emerald-200 hover:brightness-110 cursor-pointer font-black'
+                      : isMyTurn && hasTemporaryTiles && placementValid === false
+                      ? 'bg-rose-950/90 text-rose-300 border border-rose-600/80 cursor-not-allowed'
+                      : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                  }`}
+                >
+                  <Check className={`w-4 h-4 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-slate-950' : 'text-slate-500'}`} />
+                  <span className="tracking-wide truncate font-black">
+                    {isSubmitting
+                      ? 'Submitting...'
+                      : placementValid === true && estimatedScore !== undefined && estimatedScore > 0
+                      ? `CONFIRM (+${estimatedScore})`
+                      : 'CONFIRM MOVE'}
+                  </span>
+                </motion.button>
+
+                {/* Pass Button */}
+                <motion.button
+                  onClick={() => setPassConfirming(true)}
+                  disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
+                  whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.02 } : undefined}
+                  whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.96 } : undefined}
+                  className={`flex h-[38px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs transition-all select-none ${
+                    isMyTurn && !hasTemporaryTiles
+                      ? 'bg-[#152234] hover:bg-[#20344f] text-slate-200 hover:text-white border border-slate-600/60 hover:border-sky-400/60 cursor-pointer shadow-sm'
+                      : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                  }`}
+                  title="Pass your turn"
+                >
+                  <SkipForward className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Pass</span>
+                </motion.button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* MOBILE VIEW (< 1024px): 1 ULTRA-SLEEK COMPACT ROW (Icons only) */}
+        <div className="game-actions-container flex lg:hidden order-2 w-full max-w-[340px] sm:max-w-[360px] shrink-0 flex-col">
           {isExchanging ? (
             <div className="grid grid-cols-[1fr_2fr] gap-1.5 w-full">
               {/* Cancel Exchange */}
