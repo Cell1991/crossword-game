@@ -335,9 +335,22 @@ export default function LobbyPage() {
           <button
             onClick={handleStart}
             disabled={starting || leaving || players.length < MIN_PLAYERS}
-            className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+            className="tactile-button group relative w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 hover:from-emerald-400 hover:via-emerald-300 hover:to-teal-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-xl shadow-[0_10px_30px_rgba(16,185,129,0.3)] hover:shadow-[0_14px_38px_rgba(16,185,129,0.45)] cursor-pointer flex items-center justify-center gap-2 border border-emerald-300/40"
           >
-            {starting ? 'Starting...' : '▶ Start Game'}
+            {starting ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-slate-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Launching match...</span>
+              </span>
+            ) : (
+              <>
+                <span className="group-hover:scale-110 transition-transform duration-150">▶</span>
+                <span>Start Game</span>
+              </>
+            )}
           </button>
         )}
 
@@ -355,7 +368,7 @@ export default function LobbyPage() {
         <button
           onClick={handleLeave}
           disabled={leaving || starting}
-          className="text-slate-500 hover:text-slate-300 text-sm transition-colors disabled:opacity-40"
+          className="tactile-button py-1.5 px-3 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-white/5 text-sm transition-all disabled:opacity-40 cursor-pointer"
         >
           {leaving ? 'Leaving...' : isSpectator ? '← Stop watching' : '← Leave lobby'}
         </button>

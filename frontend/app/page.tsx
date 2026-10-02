@@ -354,7 +354,7 @@ export default function HomePage() {
         <div className="w-full rounded-2xl sm:rounded-[1.75rem] border border-white/[0.1] bg-slate-900/90 sm:bg-slate-900/65 sm:backdrop-blur-md p-4 sm:p-5 shadow-[0_28px_90px_rgba(2,6,23,0.38)]">
 
           {mode === 'home' && (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 menu-tab-enter">
               {error && (
                 error.toLowerCase().includes('dissolved') ? (
                   <div className="relative overflow-hidden rounded-2xl border border-amber-400/40 bg-gradient-to-r from-amber-500/15 via-slate-800/90 to-amber-500/10 p-3.5 sm:p-4 shadow-[0_6px_25px_rgba(245,158,11,0.15)] backdrop-blur-md">
@@ -410,14 +410,16 @@ export default function HomePage() {
                   <p className="text-sm font-semibold text-white">Start playing</p>
                   <p className="mt-0.5 text-xs text-slate-400">Choose how you want to enter</p>
                 </div>
-                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" aria-label="Online" />
+                <div className="relative flex h-3 w-3 items-center justify-center" title="Online & Ready">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 live-status-dot" aria-label="Online" />
+                </div>
               </div>
               <button
                 onClick={() => { setMode('create'); setError(''); }}
-                className="group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-amber-200/50 bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3.5 sm:px-5 sm:py-4 text-left text-slate-950 shadow-[0_14px_34px_rgba(245,158,11,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:from-amber-200 hover:to-amber-300 hover:shadow-[0_18px_42px_rgba(245,158,11,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0"
+                className="tactile-button group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-amber-200/50 bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3.5 sm:px-5 sm:py-4 text-left text-slate-950 shadow-[0_14px_34px_rgba(245,158,11,0.2)] hover:from-amber-200 hover:to-amber-300 hover:shadow-[0_18px_42px_rgba(245,158,11,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer"
               >
                 <span className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950/10">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950/10 group-hover:scale-105 transition-transform duration-150">
                     <Plus className="h-5 w-5" strokeWidth={2.5} />
                   </span>
                   <span>
@@ -425,15 +427,15 @@ export default function HomePage() {
                     <span className="block text-lg font-bold tracking-tight">Create Game</span>
                   </span>
                 </span>
-                <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+                <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1.5" />
               </button>
               <div className="flex items-stretch gap-2 sm:gap-2.5 w-full">
                 <button
                   onClick={() => { setMode('join'); setError(''); }}
-                  className="group flex flex-1 items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-3.5 py-3 sm:px-5 sm:py-4 text-left text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200/30 hover:from-indigo-300/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0 min-w-0"
+                  className="tactile-button group flex flex-1 items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-3.5 py-3 sm:px-5 sm:py-4 text-left text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] hover:border-indigo-200/30 hover:from-indigo-300/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 min-w-0 cursor-pointer"
                 >
                   <span className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-300/15 text-indigo-200">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-300/15 text-indigo-200 group-hover:scale-105 transition-transform duration-150">
                       <LogIn className="h-5 w-5" strokeWidth={2.2} />
                     </span>
                     <span className="min-w-0">
@@ -441,7 +443,7 @@ export default function HomePage() {
                       <span className="block text-base sm:text-lg font-bold tracking-tight truncate">Join Game</span>
                     </span>
                   </span>
-                  <ArrowRight className="h-4 sm:h-5 w-4 sm:w-5 shrink-0 text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-white ml-1" />
+                  <ArrowRight className="h-4 sm:h-5 w-4 sm:w-5 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-1 group-hover:text-white ml-1" />
                 </button>
 
                 <button
@@ -449,9 +451,9 @@ export default function HomePage() {
                   onClick={() => { setMode('bot'); setError(''); }}
                   title="Play vs Bot"
                   aria-label="Play with Bot"
-                  className="group relative flex flex-col items-center justify-center shrink-0 w-20 sm:w-24 rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-2 py-2.5 sm:py-3 text-center text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400/35 hover:from-white/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-0 cursor-pointer"
+                  className="tactile-button group relative flex flex-col items-center justify-center shrink-0 w-20 sm:w-24 rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-2 py-2.5 sm:py-3 text-center text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] hover:border-amber-400/35 hover:from-white/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer"
                 >
-                  <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/20 group-hover:scale-105 group-hover:bg-amber-400/20 group-hover:text-amber-200 transition-all shadow-[0_2px_10px_rgba(245,158,11,0.15)]">
+                  <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/20 group-hover:scale-108 group-hover:bg-amber-400/20 group-hover:text-amber-200 transition-all shadow-[0_2px_10px_rgba(245,158,11,0.15)]">
                     <Bot className="h-4.5 w-4.5" strokeWidth={2.2} />
                   </span>
                   <span className="mt-1.5 block">
@@ -468,10 +470,10 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setIsGuideOpen(true)}
-                className="group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.1] bg-gradient-to-r from-slate-800/40 via-slate-800/25 to-slate-900/40 px-4 py-3 sm:px-5 sm:py-3.5 text-left text-white shadow-[0_4px_16px_rgba(0,0,0,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-slate-800/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/50 active:translate-y-0 cursor-pointer"
+                className="tactile-button group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.1] bg-gradient-to-r from-slate-800/40 via-slate-800/25 to-slate-900/40 px-4 py-3 sm:px-5 sm:py-3.5 text-left text-white shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:border-amber-400/30 hover:bg-slate-800/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/50 cursor-pointer"
               >
                 <span className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300/90 border border-amber-400/20">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300/90 border border-amber-400/20 group-hover:scale-105 transition-transform duration-150">
                     <BookOpen className="h-4.5 w-4.5" strokeWidth={2} />
                   </span>
                   <span>
@@ -481,14 +483,14 @@ export default function HomePage() {
                 </span>
                 <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 group-hover:text-amber-200 transition-colors">
                   <span>View Guide</span>
-                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1.5" />
                 </span>
               </button>
             </div>
           )}
 
           {mode === 'create' && (
-            <div className="flex flex-col gap-3.5 sm:gap-4">
+            <div className="flex flex-col gap-3.5 sm:gap-4 menu-tab-enter">
               {/* Header */}
               <div className="flex items-center gap-3 pb-2 border-b border-white/[0.06]">
                 <button
@@ -739,7 +741,7 @@ export default function HomePage() {
               <button
                 onClick={handleCreate}
                 disabled={loading}
-                className="w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-amber-400 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_10px_25px_rgba(245,158,11,0.2)] transition-all hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px cursor-pointer"
+                className="tactile-button w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-amber-400 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_10px_25px_rgba(245,158,11,0.2)] hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -755,7 +757,7 @@ export default function HomePage() {
           )}
 
           {mode === 'join' && (
-            <div className="flex flex-col gap-3.5 sm:gap-4">
+            <div className="flex flex-col gap-3.5 sm:gap-4 menu-tab-enter">
               {/* Header */}
               <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
                 <div className="flex items-center gap-3">
@@ -842,7 +844,7 @@ export default function HomePage() {
                         <div
                           key={room.id}
                           onClick={() => handleSelectRoom(room)}
-                          className={`group relative flex items-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none active:scale-[0.98] ${
+                          className={`tactile-button group relative flex items-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none ${
                             isSingle ? 'col-span-2' : ''
                           } ${
                             isSelected
@@ -920,7 +922,7 @@ export default function HomePage() {
                     type="button"
                     onClick={isSelectedRoomPlaying ? handleWatch : handleJoin}
                     disabled={loading || !pin.trim()}
-                    className="group absolute right-1.5 top-1.5 bottom-1.5 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 px-4 text-xs sm:text-sm font-black text-slate-950 shadow-[0_2px_14px_rgba(245,158,11,0.35)] hover:shadow-[0_2px_20px_rgba(245,158,11,0.5)] transition-all duration-200 disabled:opacity-35 disabled:shadow-none disabled:cursor-not-allowed disabled:hover:from-amber-400 disabled:hover:via-amber-500 disabled:hover:to-orange-500 active:scale-95 cursor-pointer"
+                    className="tactile-button group absolute right-1.5 top-1.5 bottom-1.5 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 px-4 text-xs sm:text-sm font-black text-slate-950 shadow-[0_2px_14px_rgba(245,158,11,0.35)] hover:shadow-[0_2px_20px_rgba(245,158,11,0.5)] transition-all duration-200 disabled:opacity-35 disabled:shadow-none disabled:cursor-not-allowed disabled:hover:from-amber-400 disabled:hover:via-amber-500 disabled:hover:to-orange-500 cursor-pointer"
                   >
                     {loading ? (
                       <span className="flex items-center gap-1.5">
@@ -971,7 +973,7 @@ export default function HomePage() {
           )}
 
           {mode === 'bot' && (
-            <div className="flex flex-col gap-3.5 sm:gap-4">
+            <div className="flex flex-col gap-3.5 sm:gap-4 menu-tab-enter">
               {/* Header */}
               <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
                 <div className="flex items-center gap-3">
@@ -1200,7 +1202,7 @@ export default function HomePage() {
               <button
                 onClick={handleCreateBot}
                 disabled={loading}
-                className="w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-gradient-to-r from-amber-400 to-amber-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_10px_25px_rgba(245,158,11,0.2)] transition-all hover:from-amber-300 hover:to-amber-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px cursor-pointer flex items-center justify-center gap-2"
+                className="tactile-button w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-gradient-to-r from-amber-400 to-amber-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_10px_25px_rgba(245,158,11,0.2)] hover:from-amber-300 hover:to-amber-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">

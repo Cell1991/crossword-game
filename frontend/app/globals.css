@@ -341,6 +341,51 @@ body {
   animation: slow-twinkle 4.5s ease-in-out infinite 2.25s;
 }
 
+@keyframes live-status-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(52, 211, 153, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+  }
+}
+
+.live-status-dot {
+  animation: live-status-pulse 2.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes menu-tab-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-tab-enter {
+  animation: menu-tab-appear 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.tactile-button {
+  transition: transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 140ms ease, background-color 140ms ease, border-color 140ms ease;
+  will-change: transform;
+}
+@media (hover: hover) {
+  .tactile-button:hover {
+    transform: translateY(-1.5px);
+  }
+}
+.tactile-button:active {
+  transform: translateY(1px) scale(0.985) !important;
+}
+
 .gold-shimmer-text {
   background: linear-gradient(
     110deg,
@@ -375,6 +420,9 @@ body {
   .board-freeze-pulse,
   .board-ice-shimmer,
   .board-frost-sparkle { animation: none !important; }
+  .live-status-dot,
+  .menu-tab-enter { animation: none !important; }
+  .tactile-button { transform: none !important; transition: none !important; }
 }
 
 /* Allow live preview animations inside Game Guide modal on mobile & touch devices */
