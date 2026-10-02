@@ -361,7 +361,17 @@ async def execute_bot_move(
                     BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=15.0)
                 )
 
-        return {"status": "success", "action": "MOVE", "score_earned": res.score_earned, "next_player_id": res.next_player_id}
+        return {
+            "status": "success",
+            "action": "MOVE",
+            "score_earned": res.score_earned,
+            "next_player_id": res.next_player_id,
+            "board_state": game.board_state,
+            "turn_number": game.turn_number,
+            "player_total_score": player.score,
+            "placed_tiles": [t.model_dump() for t in placed_tiles],
+            "words_formed": [w.model_dump() for w in res.words_formed],
+        }
 
     elif action == "EXCHANGE":
         tile_ids = req.get("tile_ids", [])
@@ -376,7 +386,13 @@ async def execute_bot_move(
                 "turnNumber": game.turn_number,
             }
         ).model_dump())
-        return {"status": "success", "action": "EXCHANGE", "next_player_id": game.current_player_id}
+        return {
+            "status": "success",
+            "action": "EXCHANGE",
+            "next_player_id": game.current_player_id,
+            "board_state": game.board_state,
+            "turn_number": game.turn_number,
+        }
 
     else:
         game, is_over, reason, winner_id = await GameService.pass_turn(db, game_id, bot_player_id)
@@ -390,5 +406,11 @@ async def execute_bot_move(
                 "consecutivePasses": game.consecutive_passes,
             }
         ).model_dump())
-        return {"status": "success", "action": "PASS", "next_player_id": game.current_player_id}
+        return {
+            "status": "success",
+            "action": "PASS",
+            "next_player_id": game.current_player_id,
+            "board_state": game.board_state,
+            "turn_number": game.turn_number,
+        }
 

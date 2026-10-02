@@ -451,12 +451,67 @@ export default function GamePage() {
           await new Promise(r => setTimeout(r, 500));
 
           console.log('[Bot] Committing move with tiles:', activePlan.tiles);
-          await executeBotMove(gameId, activePlan);
+          const execRes = await executeBotMove(gameId, activePlan);
           lastCompletedBotTurnRef.current = turnKey;
+
+          // Optimistically bake bot tiles directly into board_state
+          // BEFORE clearing botStagedTiles so tiles NEVER vanish from the board!
+          if (execRes?.board_state) {
+            setGameState(prev => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                board_state: execRes.board_state,
+                current_player_id: execRes.next_player_id ?? prev.current_player_id,
+                turn_number: execRes.turn_number ?? prev.turn_number,
+                players: prev.players.map(p => {
+                  if (p.id === currentTurnPlayer.id && typeof execRes.player_total_score === 'number') {
+                    return { ...p, score: execRes.player_total_score };
+                  }
+                  return p;
+                }),
+              };
+            });
+          } else {
+            setGameState(prev => {
+              if (!prev) return prev;
+              const nextBoard = { ...prev.board_state };
+              for (const t of planTiles) {
+                nextBoard[`${t.row}_${t.col}`] = {
+                  row: t.row,
+                  col: t.col,
+                  letter: t.letter,
+                  value: t.value,
+                  player_id: currentTurnPlayer.id,
+                  turn_number: prev.turn_number,
+                };
+              }
+              return {
+                ...prev,
+                board_state: nextBoard,
+                current_player_id: execRes?.next_player_id ?? prev.current_player_id,
+              };
+            });
+          }
+
+          if (execRes?.words_formed?.length) {
+            const wordList = execRes.words_formed.map((w: { word: string }) => w.word.toUpperCase());
+            const wordsStr = wordList.join(', ');
+            const pts = execRes.score_earned ?? 0;
+            toasts.flashInfo(`${currentTurnPlayer.display_name} played ${wordsStr} (+${pts} pts)`);
+          }
         } else {
           console.log('[Bot] Executing fallback move on backend');
-          await executeBotMove(gameId, { action: 'MOVE', bot_player_id: gameState.current_player_id || '' });
+          const execRes = await executeBotMove(gameId, { action: 'MOVE', bot_player_id: gameState.current_player_id || '' });
           lastCompletedBotTurnRef.current = turnKey;
+          if (execRes?.board_state) {
+            setGameState(prev => prev ? {
+              ...prev,
+              board_state: execRes.board_state,
+              current_player_id: execRes.next_player_id ?? prev.current_player_id,
+              turn_number: execRes.turn_number ?? prev.turn_number,
+            } : prev);
+          }
         }
 
         setBotStagedTiles([]);
@@ -465,8 +520,16 @@ export default function GamePage() {
         console.error('[Bot] Turn execution error, falling back to server execution:', err);
         try {
           if (gameState.current_player_id) {
-            await executeBotMove(gameId, { action: 'MOVE', bot_player_id: gameState.current_player_id });
+            const retryRes = await executeBotMove(gameId, { action: 'MOVE', bot_player_id: gameState.current_player_id });
             lastCompletedBotTurnRef.current = turnKey;
+            if (retryRes?.board_state) {
+              setGameState(prev => prev ? {
+                ...prev,
+                board_state: retryRes.board_state,
+                current_player_id: retryRes.next_player_id ?? prev.current_player_id,
+                turn_number: retryRes.turn_number ?? prev.turn_number,
+              } : prev);
+            }
             reloadRef.current?.();
           }
         } catch (retryErr) {

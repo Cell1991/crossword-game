@@ -42,8 +42,9 @@ class ConnectionManager:
         await self._send_to_all(game_id, lambda _player_id: message)
 
     async def broadcast_preview(self, game_id: str, owner_id: str, message: dict[str, Any]):
-        """Send a placement preview while hiding letters from every other player."""
+        """Send a placement preview while hiding letters from every other player (unless bot tiles)."""
         tiles = message["payload"].get("tiles")
+        bot_tiles = message["payload"].get("botTiles")
         hidden = {
             **message,
             "payload": {
@@ -55,6 +56,7 @@ class ConnectionManager:
                     if isinstance(tile, dict) and isinstance(tile.get("row"), int) and isinstance(tile.get("col"), int)
                 ],
                 "valid": None,
+                **({"botTiles": bot_tiles} if bot_tiles else {}),
             },
         }
         await self._send_to_all(game_id, lambda player_id: message if player_id == owner_id else hidden)

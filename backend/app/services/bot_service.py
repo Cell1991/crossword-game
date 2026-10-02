@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import random
+import uuid
 from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
@@ -225,7 +226,7 @@ class BotService:
                     "col": int(t["col"]),
                     "letter": letter,
                     "value": int(matched_tile.get("value", DEFAULT_LETTER_VALUES.get(letter, 1))),
-                    "tile_id": str(matched_tile.get("id") or matched_tile.get("tile_id") or ""),
+                    "tile_id": str(matched_tile.get("id") or matched_tile.get("tile_id") or uuid.uuid4().hex[:8]),
                 })
             else:
                 unmatched_needed.append(t)
