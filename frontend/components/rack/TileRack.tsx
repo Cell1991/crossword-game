@@ -365,14 +365,14 @@ export const TileRack = memo(function TileRack({
                 {/* Primary Confirm / Play Move Button */}
                 <motion.button
                   onClick={onConfirmMove}
-                  disabled={!isMyTurn || !hasTemporaryTiles || placementValid === false || isSubmitting}
-                  whileHover={isMyTurn && hasTemporaryTiles && placementValid !== false ? { scale: 1.02 } : undefined}
-                  whileTap={isMyTurn && hasTemporaryTiles && placementValid !== false ? { scale: 0.96 } : undefined}
+                  disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
+                  whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.02 } : undefined}
+                  whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.96 } : undefined}
                   className={`game-primary-action flex h-[38px] items-center justify-center gap-1.5 rounded-xl px-3 font-black text-xs sm:text-sm transition-all select-none ${
-                    isMyTurn && hasTemporaryTiles && placementValid !== false
+                    isMyTurn && hasTemporaryTiles && placementValid === true
                       ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.7)] border border-emerald-200 hover:brightness-110 cursor-pointer font-black'
-                      : isMyTurn && hasTemporaryTiles && placementValid === false
-                      ? 'bg-rose-950/90 text-rose-300 border border-rose-600/80 cursor-not-allowed'
+                      : isMyTurn && hasTemporaryTiles
+                      ? 'bg-rose-950/90 text-rose-300 border border-rose-600/80 shadow-[0_0_12px_rgba(244,63,94,0.35)] cursor-not-allowed'
                       : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
                   }`}
                 >
@@ -535,25 +535,25 @@ export const TileRack = memo(function TileRack({
               {/* 5. Primary Confirm / Play Move Button */}
               <motion.button
                 onClick={onConfirmMove}
-                disabled={!isMyTurn || !hasTemporaryTiles || placementValid === false || isSubmitting}
-                whileHover={isMyTurn && hasTemporaryTiles && placementValid !== false ? { scale: 1.03 } : undefined}
-                whileTap={isMyTurn && hasTemporaryTiles && placementValid !== false ? { scale: 0.97 } : undefined}
+                disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
+                whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.03 } : undefined}
+                whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.97 } : undefined}
                 className={`game-primary-action flex h-[36px] items-center justify-center gap-1 rounded-xl px-2 font-black text-xs transition-all select-none ${
-                  isMyTurn && hasTemporaryTiles && placementValid !== false
+                  isMyTurn && hasTemporaryTiles && placementValid === true
                     ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 text-slate-950 shadow-[0_0_18px_rgba(52,211,153,0.7)] border border-emerald-200 hover:brightness-110 cursor-pointer font-black'
-                    : isMyTurn && hasTemporaryTiles && placementValid === false
-                    ? 'bg-rose-950/90 text-rose-300 border border-rose-600/80 cursor-not-allowed'
+                    : isMyTurn && hasTemporaryTiles
+                    ? 'bg-rose-950/90 text-rose-300 border border-rose-600/80 shadow-[0_0_12px_rgba(244,63,94,0.35)] cursor-not-allowed'
                     : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
                 }`}
                 title={
-                  placementValid !== false && estimatedScore !== undefined && estimatedScore > 0
+                  placementValid === true && estimatedScore !== undefined && estimatedScore > 0
                     ? `Play word (+${estimatedScore} pts)`
                     : 'Play placed tiles'
                 }
                 aria-label="Confirm move"
               >
-                <Check className={`w-4 h-4 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid !== false ? 'text-slate-950' : 'text-slate-500'}`} />
-                {placementValid !== false && estimatedScore !== undefined && estimatedScore > 0 && (
+                <Check className={`w-4 h-4 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-slate-950' : 'text-slate-500'}`} />
+                {placementValid === true && estimatedScore !== undefined && estimatedScore > 0 && (
                   <span className="font-mono text-xs font-black tracking-tight text-slate-950">
                     +{estimatedScore}
                   </span>
