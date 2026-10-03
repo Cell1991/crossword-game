@@ -625,12 +625,12 @@ export const PowerCardBar = memo(function PowerCardBar({
               <div className="absolute inset-x-2 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/40 to-transparent pointer-events-none" />
 
               {/* Slot Indicator */}
-              <div className="flex items-center justify-center w-4 h-4 rounded-md bg-amber-400/20 border border-amber-300/50 text-amber-200 shadow-[0_0_8px_rgba(251,191,36,0.35)]">
+              <div className="flex items-center justify-center w-4 h-4 rounded-md bg-amber-400 text-slate-950 font-black shadow-[0_0_8px_rgba(251,191,36,0.7)] shrink-0">
                 <span className="text-[10px] font-black leading-none">{slotIndex + 1}</span>
               </div>
 
               {/* Celestial Text */}
-              <span className="text-[10.5px] sm:text-[11.5px] font-black tracking-wider text-slate-100 uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] truncate">
+              <span className="text-[10.5px] sm:text-[11.5px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] truncate">
                 CARD {slotIndex + 1}
               </span>
             </div>
