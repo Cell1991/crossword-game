@@ -309,7 +309,7 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                             <span className="text-[11px]">Looking up archives...</span>
                           </div>
                         ) : definition && definition.meanings && definition.meanings.length > 0 ? (
-                          <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1 scrollbar-thin">
+                          <div className="space-y-1.5">
                             {definition.meanings.map((m, mIdx) => (
                               <div
                                 key={mIdx}
