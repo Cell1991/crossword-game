@@ -209,14 +209,14 @@ export const TileRack = memo(function TileRack({
                           : isMarkedForExchange
                           ? '-translate-y-2.5 border-2 border-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.7),inset_0_2px_1px_rgba(255,255,255,0.9)] ring-4 ring-amber-300/70 cursor-pointer duration-100'
                           : isSelected
-                          ? '-translate-y-2.5 border-2 border-amber-300 shadow-[0_0_24px_rgba(251,191,36,0.8),inset_0_2px_1px_rgba(255,255,255,0.9)] ring-4 ring-amber-400/60 duration-100'
+                          ? '-translate-y-2.5 border-2 border-cyan-300 shadow-[0_0_24px_rgba(56,189,248,0.9),inset_0_2px_1px_rgba(255,255,255,0.9)] ring-4 ring-sky-400/80 duration-100'
                           : canStageMove
                           ? 'hover:-translate-y-1 hover:brightness-110 cursor-pointer duration-100'
                           : 'opacity-65 cursor-not-allowed shadow-md transition-none'
                       }`}
                     >
-                      {/* Top Edge Subtle Golden Highlight */}
-                      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-100/60 to-transparent pointer-events-none z-10" />
+                      {/* Top Edge Subtle Golden/Cyan Highlight */}
+                      <div className={`absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent ${isSelected ? 'via-cyan-200/90' : 'via-amber-100/60'} to-transparent pointer-events-none z-10`} />
 
                       {/* Letter / Wildcard Star */}
                       {isBlankLetter(tile.letter) && !isDesignatedBlank ? (
