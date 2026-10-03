@@ -244,6 +244,8 @@ async def use_card(
         return {"success": True}
 
     if card == "DESTROY_TILE":
+        if game.current_player_id != player.id:
+            raise HTTPException(status_code=400, detail="Destroy Tile can only be used on your turn")
         if request.row is None or request.col is None or Board.is_center(request.row, request.col):
             raise HTTPException(status_code=400, detail="Choose a non-center board tile")
         key = Board.key(request.row, request.col)

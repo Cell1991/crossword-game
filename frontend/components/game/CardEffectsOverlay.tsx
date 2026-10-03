@@ -96,8 +96,8 @@ export const CARD_DETAILS: Record<string, CardStyleData> = {
   DESTROY_TILE: {
     title: 'Destroy Tile',
     subtitle: 'BREAK 1 BOARD TILE',
-    description: 'Target and remove 1 tile from the board to break enemy words and reopen bonus cells.',
-    element: 'ANYTIME',
+    description: 'Target and remove 1 tile from the board to break enemy words and reopen bonus cells. (Your turn only)',
+    element: 'YOUR TURN',
     icon: <Flame className="w-14 h-14 sm:w-16 sm:h-16 text-amber-300 fill-orange-500/30 drop-shadow-[0_0_16px_#f97316]" />,
     bgGradient: 'from-orange-950/95 via-[#2a1006]/98 to-[#0e0718]/95',
     borderGlow: 'border-orange-400 shadow-[0_0_50px_rgba(249,115,22,0.65),inset_0_0_24px_rgba(249,115,22,0.35)] ring-1 ring-orange-300/40',

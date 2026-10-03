@@ -406,11 +406,11 @@ export function GameGuideModal({
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-sm sm:text-base font-semibold text-white">Destroy Tile</h3>
                     <span className="rounded-full border border-orange-400/25 bg-orange-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-orange-300">
-                      Anytime
+                      Your Turn
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Permanently <span className="text-amber-200/95 font-medium">removes 1 tile from the board</span> to break enemy words or reopen multiplier cells.
+                    Permanently <span className="text-amber-200/95 font-medium">removes 1 tile from the board</span> to break enemy words or reopen multiplier cells. Can only be activated on your turn.
                   </p>
                 </div>
               </div>
