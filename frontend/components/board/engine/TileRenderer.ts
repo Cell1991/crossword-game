@@ -50,61 +50,46 @@ function drawStarburst(
   ctx.closePath();
 }
 
-function drawFrostMist(
+function drawCryoIceFacets(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   tileW: number
 ) {
-  // 1. Diagonal frosty ice sheet sheen
-  const sheenGrad = ctx.createLinearGradient(x, y, x + tileW, y + tileW);
-  sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
-  sheenGrad.addColorStop(0.18, 'rgba(224, 242, 254, 0.45)');
-  sheenGrad.addColorStop(0.42, 'rgba(56, 189, 248, 0.12)');
-  sheenGrad.addColorStop(0.68, 'rgba(224, 242, 254, 0.35)');
-  sheenGrad.addColorStop(1, 'rgba(255, 255, 255, 0.55)');
+  // 1. Diagonal crystalline gloss facet
+  const sheenGrad = ctx.createLinearGradient(x, y, x + tileW * 0.75, y + tileW * 0.75);
+  sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.65)');
+  sheenGrad.addColorStop(0.2, 'rgba(224, 242, 254, 0.3)');
+  sheenGrad.addColorStop(0.5, 'rgba(56, 189, 248, 0)');
   ctx.fillStyle = sheenGrad;
   ctx.fillRect(x, y, tileW, tileW);
 
-  // 2. Swirling ice mist fog clouds (bottom-left cold vapor puff)
-  const fog1 = ctx.createRadialGradient(
-    x + tileW * 0.28,
-    y + tileW * 0.75,
-    tileW * 0.05,
-    x + tileW * 0.28,
-    y + tileW * 0.75,
-    tileW * 0.55
-  );
-  fog1.addColorStop(0, 'rgba(240, 249, 255, 0.6)');
-  fog1.addColorStop(0.45, 'rgba(186, 230, 253, 0.32)');
-  fog1.addColorStop(1, 'rgba(186, 230, 253, 0)');
-  ctx.fillStyle = fog1;
-  ctx.fillRect(x, y, tileW, tileW);
+  // 2. Polygonal Diamond Ice Crystal Cut (Geometric Glaze)
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x + tileW * 0.08, y + tileW * 0.08);
+  ctx.lineTo(x + tileW * 0.58, y + tileW * 0.04);
+  ctx.lineTo(x + tileW * 0.38, y + tileW * 0.46);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+  ctx.fill();
 
-  // 3. Top-right drifting sub-zero mist
-  const fog2 = ctx.createRadialGradient(
-    x + tileW * 0.75,
-    y + tileW * 0.28,
-    tileW * 0.05,
-    x + tileW * 0.75,
-    y + tileW * 0.28,
-    tileW * 0.5
-  );
-  fog2.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
-  fog2.addColorStop(0.45, 'rgba(125, 211, 252, 0.28)');
-  fog2.addColorStop(1, 'rgba(125, 211, 252, 0)');
-  ctx.fillStyle = fog2;
-  ctx.fillRect(x, y, tileW, tileW);
+  ctx.beginPath();
+  ctx.moveTo(x + tileW * 0.92, y + tileW * 0.28);
+  ctx.lineTo(x + tileW * 0.96, y + tileW * 0.88);
+  ctx.lineTo(x + tileW * 0.62, y + tileW * 0.68);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(2, 132, 199, 0.4)';
+  ctx.fill();
 
-  // 4. Center ethereal mist band
-  const mistBand = ctx.createLinearGradient(x, y + tileW * 0.38, x + tileW, y + tileW * 0.62);
-  mistBand.addColorStop(0, 'rgba(255, 255, 255, 0)');
-  mistBand.addColorStop(0.3, 'rgba(224, 242, 254, 0.3)');
-  mistBand.addColorStop(0.5, 'rgba(255, 255, 255, 0.42)');
-  mistBand.addColorStop(0.75, 'rgba(186, 230, 253, 0.22)');
-  mistBand.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  ctx.fillStyle = mistBand;
-  ctx.fillRect(x, y, tileW, tileW);
+  // 3. Deep sapphire bottom chiseled edge
+  const botIceShade = ctx.createLinearGradient(0, y + tileW * 0.75, 0, y + tileW);
+  botIceShade.addColorStop(0, 'rgba(3, 20, 45, 0)');
+  botIceShade.addColorStop(1, 'rgba(3, 20, 45, 0.7)');
+  ctx.fillStyle = botIceShade;
+  ctx.fillRect(x, y + tileW * 0.75, tileW, tileW * 0.25);
+
+  ctx.restore();
 }
 
 function drawIceCrystals(
@@ -120,7 +105,7 @@ function drawIceCrystals(
 
   // 1. Top-Left Frost Crystal Shard / Fracture line
   ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
   ctx.lineWidth = Math.max(1, cellSize * 0.024);
   ctx.moveTo(x + tileW * 0.08, y + tileW * 0.24);
   ctx.lineTo(x + tileW * 0.22, y + tileW * 0.17);
@@ -130,7 +115,7 @@ function drawIceCrystals(
 
   // Branch offshoot
   ctx.beginPath();
-  ctx.strokeStyle = 'rgba(224, 242, 254, 0.65)';
+  ctx.strokeStyle = 'rgba(224, 242, 254, 0.75)';
   ctx.lineWidth = Math.max(0.75, cellSize * 0.016);
   ctx.moveTo(x + tileW * 0.22, y + tileW * 0.17);
   ctx.lineTo(x + tileW * 0.2, y + tileW * 0.07);
@@ -140,7 +125,7 @@ function drawIceCrystals(
 
   // 2. Bottom-Right Frost Spikes / Ice Crystal Cluster
   ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
   ctx.lineWidth = Math.max(0.85, cellSize * 0.02);
   ctx.moveTo(x + tileW * 0.92, y + tileW * 0.66);
   ctx.lineTo(x + tileW * 0.78, y + tileW * 0.78);
@@ -148,7 +133,7 @@ function drawIceCrystals(
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.strokeStyle = 'rgba(186, 230, 253, 0.6)';
+  ctx.strokeStyle = 'rgba(186, 230, 253, 0.7)';
   ctx.moveTo(x + tileW * 0.78, y + tileW * 0.78);
   ctx.lineTo(x + tileW * 0.82, y + tileW * 0.92);
   ctx.stroke();
@@ -205,26 +190,34 @@ export class TileRenderer {
     const tileW = cellSize - pad * 2;
     const radius = Math.max(2, cellSize * 0.12);
 
-    // Animation physics (spring drop & bounce when placed)
+    // Animation physics (spring drop & bounce when placed, or gemstone morph on confirm)
     const animStart = tileAnimations?.get(`${row}_${col}`);
     let scale = 1.0;
     let bounceY = 0;
     let animProgress = 1.0;
-    if (animStart && animTime) {
-      const elapsed = animTime - animStart;
-      if (elapsed >= 0 && elapsed < 320) {
-        animProgress = elapsed / 320;
-        // Elastic spring formula: starts elevated and slightly larger, lands with a micro-bounce
-        scale = 1.0 + 0.26 * Math.exp(-animProgress * 5) * Math.cos(animProgress * 10);
-        bounceY = -Math.max(0, 1 - animProgress) * cellSize * 0.16;
-      }
-    }
+    let morphProgress = 1.0;
 
     const isConfirmed = !isTemporary && !isRemote;
     const is2L = isConfirmed && isDoubleLetterCell(row, col);
     const is3L = isConfirmed && isTripleLetterCell(row, col);
     const isPower = isConfirmed && isPowerCell(row, col);
     const isSpecialCellTile = is2L || is3L || isPower;
+
+    if (animStart && animTime) {
+      const elapsed = animTime - animStart;
+      if (isSpecialCellTile || isFrozen) {
+        if (elapsed >= 0 && elapsed < 650) {
+          morphProgress = elapsed / 650;
+          // Juicy elastic jewel bounce & pulse
+          scale = 1.0 + 0.18 * Math.sin(morphProgress * Math.PI) * Math.exp(-morphProgress * 2.5);
+        }
+      } else if (elapsed >= 0 && elapsed < 320) {
+        animProgress = elapsed / 320;
+        // Elastic spring formula: starts elevated and slightly larger, lands with a micro-bounce
+        scale = 1.0 + 0.26 * Math.exp(-animProgress * 5) * Math.cos(animProgress * 10);
+        bounceY = -Math.max(0, 1 - animProgress) * cellSize * 0.16;
+      }
+    }
 
     const isGolden = !isRemote && !isFrozen && !isSpecialCellTile;
     const isCorrectPlacement = !isRemote && isTemporary && temporaryTilesValid === true;
@@ -341,7 +334,7 @@ export class TileRenderer {
     // 2. Tile face fill
     if (isFrozen) {
       const iceGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-      iceGrad.addColorStop(0, '#bae6fd');
+      iceGrad.addColorStop(0, '#7dd3fc');
       iceGrad.addColorStop(0.18, '#38bdf8');
       iceGrad.addColorStop(0.55, '#0284c7');
       iceGrad.addColorStop(0.85, '#0369a1');
@@ -444,14 +437,14 @@ export class TileRenderer {
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.clip();
 
-      // 1. Draw billowing frost mist clouds
-      drawFrostMist(ctx, x + pad, y + pad, tileW);
+      // 1. Draw crystalline diamond facets
+      drawCryoIceFacets(ctx, x + pad, y + pad, tileW);
 
       // 2. Inner frosty condensation border
       const innerFrostGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad, y + pad + tileW);
-      innerFrostGrad.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
-      innerFrostGrad.addColorStop(0.5, 'rgba(186, 230, 253, 0.45)');
-      innerFrostGrad.addColorStop(1, 'rgba(56, 189, 248, 0.65)');
+      innerFrostGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+      innerFrostGrad.addColorStop(0.5, 'rgba(186, 230, 253, 0.5)');
+      innerFrostGrad.addColorStop(1, 'rgba(56, 189, 248, 0.7)');
       ctx.strokeStyle = innerFrostGrad;
       ctx.lineWidth = Math.max(1.2, cellSize * 0.03);
       drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW - 2, Math.max(1, radius - 1));
@@ -630,10 +623,25 @@ export class TileRenderer {
       ctx.stroke();
 
       ctx.restore();
-    } else if (isLastMove) {
+    } else if (is2L) {
+      ctx.strokeStyle = 'rgba(74, 222, 128, 0.95)';
+      ctx.lineWidth = 1.3;
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
+    } else if (is3L) {
+      ctx.strokeStyle = 'rgba(251, 113, 133, 0.95)';
+      ctx.lineWidth = 1.3;
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
+    } else if (isPower) {
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.95)';
+      ctx.lineWidth = 1.3;
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
+    } else if (isLastMove && !isSpecialCellTile && !isFrozen) {
       ctx.save();
 
-      // Radiant Amber-Gold outline for most recently completed move
+      // Radiant Amber-Gold outline for most recently completed move (ONLY for normal gold tiles)
       const amberGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad + tileW, y + pad + tileW);
       amberGrad.addColorStop(0, '#fef08a');
       amberGrad.addColorStop(0.4, '#facc15');
@@ -657,21 +665,6 @@ export class TileRenderer {
       ctx.stroke();
 
       ctx.restore();
-    } else if (is2L) {
-      ctx.strokeStyle = 'rgba(74, 222, 128, 0.95)';
-      ctx.lineWidth = 1.3;
-      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-      ctx.stroke();
-    } else if (is3L) {
-      ctx.strokeStyle = 'rgba(251, 113, 133, 0.95)';
-      ctx.lineWidth = 1.3;
-      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-      ctx.stroke();
-    } else if (isPower) {
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.95)';
-      ctx.lineWidth = 1.3;
-      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-      ctx.stroke();
     } else if (isGolden) {
       ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
       ctx.lineWidth = 1.3;
@@ -710,13 +703,7 @@ export class TileRenderer {
         ctx.fill();
       } else {
         const letterFill = tilePalette.letter.color;
-        if (isFrozen) {
-          const frostLetterGrad = ctx.createLinearGradient(0, y + cellSize * 0.25, 0, y + cellSize * 0.75);
-          frostLetterGrad.addColorStop(0, '#ffffff');
-          frostLetterGrad.addColorStop(0.65, '#f0f9ff');
-          frostLetterGrad.addColorStop(1, '#bae6fd');
-          ctx.fillStyle = frostLetterGrad;
-        } else if (isRemote) {
+        if (isRemote) {
           const letterGrad = ctx.createLinearGradient(0, y + cellSize * 0.27, 0, y + cellSize * 0.72);
           letterGrad.addColorStop(0, '#0f172a');
           letterGrad.addColorStop(1, '#334155');
@@ -743,10 +730,10 @@ export class TileRenderer {
         if (!isRemote) {
           ctx.lineJoin = 'round';
           ctx.lineWidth = Math.max(2.2, fontSize * 0.10);
-          ctx.strokeStyle = isFrozen ? '#02182b' : tilePalette.letter.stroke;
+          ctx.strokeStyle = isFrozen ? '#011627' : tilePalette.letter.stroke;
           ctx.strokeText(letter, 0, 0);
         }
-        ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(56, 189, 248, 0.85)' : tilePalette.letter.shadow;
+        ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(56, 189, 248, 0.95)' : tilePalette.letter.shadow;
         ctx.shadowBlur = isRemote ? 0 : isFrozen ? Math.max(4, cellSize * 0.09) : Math.max(2, cellSize * 0.06);
         ctx.shadowOffsetY = isRemote ? 0 : Math.max(1.2, cellSize * 0.04);
         ctx.fillText(letter, 0, 0);
@@ -763,10 +750,10 @@ export class TileRenderer {
         const numY = y + cellSize - pad * 1.5;
 
         ctx.save();
-        ctx.shadowColor = isFrozen ? 'rgba(250, 204, 21, 0.9)' : tilePalette.score.glow;
+        ctx.shadowColor = isFrozen ? 'rgba(56, 189, 248, 0.9)' : tilePalette.score.glow;
         ctx.shadowBlur = lowPower ? 2 : Math.max(4, numFontSize * 0.6);
         ctx.lineWidth = Math.max(1.2, numFontSize * 0.12);
-        ctx.strokeStyle = isFrozen ? '#020617' : tilePalette.score.stroke;
+        ctx.strokeStyle = isFrozen ? '#011627' : tilePalette.score.stroke;
         ctx.strokeText(`${effectiveValue}`, numX, numY);
         ctx.fillStyle = tilePalette.score.color;
         ctx.fillText(`${effectiveValue}`, numX, numY);
@@ -774,8 +761,8 @@ export class TileRenderer {
       }
     }
 
-    // 5.5 Corner Status Pip for staged / recently placed tiles
-    if (cellSize >= 16 && !isRemote && (isPlacedTile || isLastMove)) {
+    // 5.5 Corner Status Pip for staged / recently placed tiles (ONLY on normal gold tiles)
+    if (cellSize >= 16 && !isRemote && !isSpecialCellTile && !isFrozen && (isPlacedTile || isLastMove)) {
       ctx.save();
       const pipOffset = Math.max(3.5, cellSize * 0.12);
       const pipX = x + pad + pipOffset;
@@ -851,8 +838,42 @@ export class TileRenderer {
       ctx.restore();
     }
 
+    // 6. Gemstone Transformation FX: Shockwave Aura Ring & Specular Beam Sweep
+    if (morphProgress < 1.0 && !lowPower && (isSpecialCellTile || isFrozen)) {
+      ctx.save();
+      const waveRadius = tileW * (0.4 + morphProgress * 0.75);
+      const waveAlpha = (1 - morphProgress) * 0.85;
+      let auraColor = 'rgba(34, 197, 94, ';
+      if (is3L) auraColor = 'rgba(244, 63, 94, ';
+      else if (isPower || isFrozen) auraColor = 'rgba(56, 189, 248, ';
+
+      // 6.1 Expanding Shockwave Ring
+      ctx.strokeStyle = `${auraColor}${waveAlpha})`;
+      ctx.lineWidth = Math.max(1.5, cellSize * 0.045 * (1 - morphProgress));
+      ctx.shadowColor = `${auraColor}1)`;
+      ctx.shadowBlur = Math.max(4, cellSize * 0.18);
+      ctx.beginPath();
+      ctx.arc(cx, cy, waveRadius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 6.2 Diagonal Specular Gleam Sweep across the newly transformed face
+      ctx.beginPath();
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.clip();
+
+      const gleamX = x + pad - tileW * 0.8 + morphProgress * tileW * 2.6;
+      const gleamGrad = ctx.createLinearGradient(gleamX, y + pad, gleamX + tileW * 0.6, y + pad + tileW);
+      gleamGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+      gleamGrad.addColorStop(0.5, `rgba(255, 255, 255, ${0.85 * (1 - morphProgress)})`);
+      gleamGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = gleamGrad;
+      ctx.fillRect(x + pad, y + pad, tileW, tileW);
+
+      ctx.restore();
+    }
+
     // Landing drop shockwave on the board
-    if (animStart && animProgress < 1.0 && !lowPower) {
+    if (animStart && animProgress < 1.0 && !lowPower && !isSpecialCellTile && !isFrozen) {
       ctx.save();
       ctx.beginPath();
       const waveRadius = (tileW * 0.48) + (cellSize * 0.38) * animProgress;

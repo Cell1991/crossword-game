@@ -102,6 +102,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   const prevTemporaryTilesRef = useRef<PlacedTile[]>([]);
   const prevRemotePlacementsRef = useRef<{ row: number; col: number }[]>([]);
   const prevBoardStateRef = useRef<Record<string, BoardCell>>({});
+  const prevFrozenTileRef = useRef<CellPosition | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const hoverTrailMapRef = useRef<Map<string, { row: number; col: number; time: number }>>(new Map());
   const currentHoverCellRef = useRef<CellPosition | null>(dragHoverCell ?? null);
@@ -231,11 +232,19 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
         }
       }
     }
+    const prevFrozen = prevFrozenTileRef.current;
+    if (frozenTile && (!prevFrozen || prevFrozen.row !== frozenTile.row || prevFrozen.col !== frozenTile.col)) {
+      tilePlacementTimesRef.current.set(`${frozenTile.row}_${frozenTile.col}`, now);
+      hasNew = true;
+    }
+    prevFrozenTileRef.current = frozenTile;
+
     // Clean up placements that were unstaged/recalled
     const currentKeys = new Set([
       ...temporaryTiles.map(t => `${t.row}_${t.col}`),
       ...remotePlacements.map(r => `${r.row}_${r.col}`),
       ...Object.keys(boardState || {}),
+      ...(frozenTile ? [`${frozenTile.row}_${frozenTile.col}`] : []),
     ]);
     for (const key of Array.from(tilePlacementTimesRef.current.keys())) {
       if (key.includes('_') && !currentKeys.has(key)) {
@@ -252,7 +261,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
         draw();
         let stillAnimating = false;
         for (const ts of tilePlacementTimesRef.current.values()) {
-          if (time - ts < 350) {
+          if (time - ts < 650) {
             stillAnimating = true;
             break;
           }
