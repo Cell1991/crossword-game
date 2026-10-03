@@ -263,7 +263,7 @@ export const TileRack = memo(function TileRack({
           {/* Desktop Row 1: Utility Controls (Recall, Shuffle, Swap) */}
           <div className="grid grid-cols-3 gap-1.5 w-full">
             {isExchanging ? (
-              <div className="col-span-3 flex items-center justify-between gap-2 px-3 py-1 bg-gradient-to-r from-[#101438]/95 via-[#0c0f2a]/95 to-[#080a1c]/95 border border-indigo-400/35 rounded-xl shadow-[0_4px_14px_rgba(0,0,0,0.6),0_0_12px_rgba(99,102,241,0.15),inset_0_1px_1px_rgba(255,255,255,0.12)] relative overflow-hidden backdrop-blur-xl">
+              <div className="col-span-3 flex items-center justify-between gap-2 px-3 py-1 bg-gradient-to-r from-[#220b16]/95 via-[#130b20]/95 to-[#0a0b1c]/95 border border-red-500/30 rounded-xl shadow-[0_4px_14px_rgba(0,0,0,0.6),0_0_12px_rgba(220,38,38,0.15),inset_0_1px_1px_rgba(255,255,255,0.12)] relative overflow-hidden backdrop-blur-xl">
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
                 <button
                   type="button"
@@ -272,10 +272,10 @@ export const TileRack = memo(function TileRack({
                   className="game-btn-base game-btn-cancel flex h-[32px] items-center gap-1.5 px-3 rounded-lg font-black text-xs cursor-pointer"
                 >
                   <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
-                  <X className="w-3.5 h-3.5 text-indigo-200 relative z-10 stroke-[2.5]" />
-                  <span className="relative z-10 uppercase tracking-wider text-[11px]">Cancel</span>
+                  <X className="w-3.5 h-3.5 text-red-100 relative z-10 stroke-[2.5]" />
+                  <span className="relative z-10 uppercase tracking-wider text-[11px] text-white font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">Cancel</span>
                 </button>
-                <span className="text-[11px] text-sky-200/90 font-bold truncate tracking-wide relative z-10">
+                <span className="text-[11px] text-amber-200/90 font-bold truncate tracking-wide relative z-10">
                   {exchangeCount > tileBagCount ? `Only ${tileBagCount} in bag` : 'Pick tiles to swap'}
                 </span>
               </div>
@@ -468,8 +468,8 @@ export const TileRack = memo(function TileRack({
                 aria-label="Cancel Swap"
               >
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
-                <X className="w-4 h-4 text-indigo-200 relative z-10 stroke-[2.5]" />
-                <span className="relative z-10 uppercase tracking-wider">Cancel</span>
+                <X className="w-4 h-4 text-red-100 relative z-10 stroke-[2.5]" />
+                <span className="relative z-10 uppercase tracking-wider text-white font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">Cancel</span>
               </button>
 
               {/* Confirm Exchange */}
