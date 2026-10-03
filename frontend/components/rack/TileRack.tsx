@@ -75,6 +75,8 @@ export const TileRack = memo(function TileRack({
   const [draggedSlot, setDraggedSlot] = useState<number | null>(null);
   /** True when the user has clicked Pass once and we're waiting for confirm/cancel. */
   const [passConfirming, setPassConfirming] = useState(false);
+  /** Captured score for the float-away exit animation when move is confirmed. */
+  const [floatingExitScore, setFloatingExitScore] = useState<number | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number; slotIndex: number; tile: Tile } | null>(null);
   const didDragRef = useRef(false);
 
@@ -84,6 +86,16 @@ export const TileRack = memo(function TileRack({
   // Rules §5: exchanging is only allowed while the bag still holds at least 7 tiles.
   const canStartExchange = isMyTurn && canStageMove && !hasTemporaryTiles && !isSubmitting && tileCount > 0 && tileBagCount >= 7;
   const canConfirmExchange = isMyTurn && !isSubmitting && exchangeCount > 0 && exchangeCount <= tileBagCount;
+
+  const handleConfirmMove = () => {
+    if (estimatedScore !== undefined && estimatedScore > 0) {
+      setFloatingExitScore(estimatedScore);
+      setTimeout(() => {
+        setFloatingExitScore(null);
+      }, 1100);
+    }
+    onConfirmMove();
+  };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, slotIndex: number, tile: Tile) => {
     if (!canStageMove) return;
@@ -137,13 +149,22 @@ export const TileRack = memo(function TileRack({
       {/* Compact High-Tech Gaming Console Dock */}
       <div className="game-control-layout relative flex w-full flex-col lg:flex-row items-center justify-center gap-1.5 sm:gap-2 lg:gap-4 overflow-visible">
         {/* Floating Estimated Score Pill Centered Above Deck */}
-        {isMyTurn && hasTemporaryTiles && placementValid === true && estimatedScore !== undefined && estimatedScore > 0 && (
-          <div className="absolute -top-10 sm:-top-11 left-1/2 -translate-x-1/2 z-30 pointer-events-none whitespace-nowrap">
+        {floatingExitScore !== null ? (
+          <div
+            key={`floating-score-exit-${floatingExitScore}`}
+            className="absolute -top-10 sm:-top-11 left-1/2 z-30 pointer-events-none whitespace-nowrap animate-score-pill-float-away"
+          >
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 sm:px-4 sm:py-1 rounded-full bg-gradient-to-b from-[#3a250a]/95 via-[#221505]/95 to-[#0e0802]/95 border-2 border-amber-200 shadow-[0_0_28px_rgba(251,191,36,0.85),0_6px_16px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.7)] text-[#fffbeb] font-black text-xs sm:text-sm tracking-wider leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]">
+              +{floatingExitScore} PTS
+            </span>
+          </div>
+        ) : isMyTurn && hasTemporaryTiles && placementValid === true && estimatedScore !== undefined && estimatedScore > 0 ? (
+          <div className="absolute -top-10 sm:-top-11 left-1/2 -translate-x-1/2 z-30 pointer-events-none whitespace-nowrap transition-all duration-200">
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1 sm:px-4 sm:py-1 rounded-full bg-gradient-to-b from-[#2e1d08]/95 via-[#1a1004]/95 to-[#0b0702]/95 border border-amber-300/90 shadow-[0_0_20px_rgba(245,158,11,0.65),0_4px_12px_rgba(0,0,0,0.85),inset_0_1px_1px_rgba(255,255,255,0.5)] text-[#fef08a] font-black text-xs sm:text-sm tracking-wider leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
               +{estimatedScore} PTS
             </span>
           </div>
-        )}
+        ) : null}
 
         {/* Specular Edge Highlight Trim */}
         <div aria-hidden="true" className="pedestal-top-glint absolute inset-x-8 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-300/70 to-transparent pointer-events-none" />
@@ -398,7 +419,7 @@ export const TileRack = memo(function TileRack({
                 {/* Primary Confirm / Play Move Button */}
                 <button
                   type="button"
-                  onClick={onConfirmMove}
+                  onClick={handleConfirmMove}
                   disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
                   className={`game-primary-action game-btn-base group flex h-[40px] sm:h-[42px] items-center justify-center gap-2 rounded-xl px-3 font-black text-xs sm:text-sm ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
@@ -594,7 +615,7 @@ export const TileRack = memo(function TileRack({
               {/* 5. Primary Confirm / Play Move Button */}
               <button
                 type="button"
-                onClick={onConfirmMove}
+                onClick={handleConfirmMove}
                 disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
                 className={`game-primary-action game-btn-base group flex h-[38px] items-center justify-center gap-1 rounded-xl px-2 font-black text-xs ${
                   isMyTurn && hasTemporaryTiles && placementValid === true
