@@ -666,20 +666,13 @@ export const PowerCardBar = memo(function PowerCardBar({
             <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none z-10" />
 
             {/* Glowing Element Icon */}
-            <div className="relative z-20 flex shrink-0 items-center scale-90 sm:scale-100">
+            <div className="relative z-20 flex shrink-0 items-center">
               {meta.icon}
             </div>
 
-            {/* Card Label */}
-            <span className="relative z-20 text-[10.5px] sm:text-[11.5px] font-black tracking-wide leading-none truncate drop-shadow-sm">
+            {/* Card Name */}
+            <span className="relative z-20 text-[11px] sm:text-[12px] font-black tracking-wide leading-none drop-shadow-sm truncate">
               {meta.title}
-            </span>
-
-            {/* Micro Element Badge */}
-            <span
-              className={`relative z-20 hidden sm:inline-block px-1 py-0.2 rounded text-[8.5px] font-black tracking-wider uppercase border leading-tight ${meta.badgeBg}`}
-            >
-              {meta.element}
             </span>
           </button>
         );
