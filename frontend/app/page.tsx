@@ -9,6 +9,7 @@ import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
+import { RockerSwitch } from '@/components/ui/RockerSwitch';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
 
 type Mode = 'home' | 'create' | 'join' | 'bot';
@@ -730,33 +731,10 @@ export default function HomePage() {
                   </div>
                 </fieldset>
 
-                {/* Column 2: Grimoire (Switch Only) */}
+                {/* Column 2: Grimoire (Tactile Rocker Switch) */}
                 <div>
                   <label className="mb-1.5 block text-xs font-semibold text-slate-300">Grimoire</label>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={enableGrimoire}
-                    onClick={() => setEnableGrimoire(prev => !prev)}
-                    className={`w-full flex h-[41px] sm:h-[42px] items-center justify-center rounded-xl border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
-                      enableGrimoire
-                        ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_14px_rgba(251,191,36,0.2)]'
-                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
-                    }`}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                        enableGrimoire ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.6)]' : 'bg-slate-700'
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          enableGrimoire ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </span>
-                  </button>
+                  <RockerSwitch checked={enableGrimoire} onChange={setEnableGrimoire} />
                 </div>
               </div>
 
