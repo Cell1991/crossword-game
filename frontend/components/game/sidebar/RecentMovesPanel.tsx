@@ -212,9 +212,8 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                       <div className="flex items-center gap-1.5 shrink-0 relative z-10">
                         <div className="flex flex-col items-end gap-1">
                           {entry.score !== undefined && entry.score > 0 ? (
-                            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-purple-950/90 via-violet-950/80 to-purple-950/90 border border-purple-400/50 text-[11px] font-black text-purple-200 shadow-[0_0_10px_rgba(168,85,247,0.3),inset_0_1px_1px_rgba(255,255,255,0.15)]">
+                            <div className="inline-flex items-center justify-center px-2 py-0.5 rounded-md bg-gradient-to-r from-purple-950/90 via-violet-950/80 to-purple-950/90 border border-purple-400/50 text-[11px] font-black text-purple-200 shadow-[0_0_10px_rgba(168,85,247,0.3),inset_0_1px_1px_rgba(255,255,255,0.15)] min-w-[30px]">
                               <span className="tracking-tight drop-shadow-[0_0_4px_rgba(192,132,252,0.4)]">+{entry.score}</span>
-                              <span className="text-[8px] font-extrabold text-purple-300/80 tracking-wider">PTS</span>
                             </div>
                           ) : null}
                           {entry.turn_number ? (
