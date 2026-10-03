@@ -1,4 +1,4 @@
-import { cellMultiplier } from '@/lib/board';
+import { cellMultiplier, isDoubleLetterCell, isTripleLetterCell, isPowerCell } from '@/lib/board';
 import { isBlankLetter } from '@/lib/tiles';
 import { TILE_THEME, type TilePalette } from '@/lib/tileTheme';
 
@@ -220,7 +220,13 @@ export class TileRenderer {
       }
     }
 
-    const isGolden = !isRemote && !isFrozen;
+    const isConfirmed = !isTemporary && !isRemote;
+    const is2L = isConfirmed && isDoubleLetterCell(row, col);
+    const is3L = isConfirmed && isTripleLetterCell(row, col);
+    const isPower = isConfirmed && isPowerCell(row, col);
+    const isSpecialCellTile = is2L || is3L || isPower;
+
+    const isGolden = !isRemote && !isFrozen && !isSpecialCellTile;
     const isCorrectPlacement = !isRemote && isTemporary && temporaryTilesValid === true;
     const isInvalidPlacement = !isRemote && isTemporary && temporaryTilesValid === false;
     const isPendingPlacement = !isRemote && isTemporary && (temporaryTilesValid === null || temporaryTilesValid === undefined);
@@ -262,9 +268,15 @@ export class TileRenderer {
     } else {
       const shadowFill = isRemote
         ? 'rgba(6, 182, 212, 0.5)'
+        : is2L
+        ? 'rgba(4, 30, 15, 0.7)'
+        : is3L
+        ? 'rgba(45, 6, 15, 0.7)'
+        : isPower
+        ? 'rgba(4, 24, 48, 0.7)'
         : TILE_THEME.face.shadow;
 
-      if (!lowPower || isPlacedTile || isLastMove || isRemote) {
+      if (!lowPower || isPlacedTile || isLastMove || isRemote || isSpecialCellTile) {
         ctx.save();
         if (isCorrectPlacement) {
           ctx.shadowColor = 'rgba(34, 197, 94, 0.85)';
@@ -281,6 +293,15 @@ export class TileRenderer {
         } else if (isRemote) {
           ctx.shadowColor = 'rgba(6, 182, 212, 0.8)';
           ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
+        } else if (is2L) {
+          ctx.shadowColor = 'rgba(34, 197, 94, 0.65)';
+          ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
+        } else if (is3L) {
+          ctx.shadowColor = 'rgba(244, 63, 94, 0.65)';
+          ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
+        } else if (isPower) {
+          ctx.shadowColor = 'rgba(14, 165, 233, 0.7)';
+          ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
         } else {
           ctx.shadowColor = shadowFill;
           ctx.shadowBlur = lowPower ? 1 : Math.max(4, cellSize * 0.1);
@@ -289,9 +310,9 @@ export class TileRenderer {
       ctx.fillStyle = shadowFill;
       drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
       ctx.fill();
-      if (!lowPower || isPlacedTile || isLastMove || isRemote) ctx.restore();
+      if (!lowPower || isPlacedTile || isLastMove || isRemote || isSpecialCellTile) ctx.restore();
 
-      // Atmospheric outer aura on the board under the tile (rendered BEFORE the face so gold stays 100% pure)
+      // Atmospheric outer aura on the board under the tile
       if (!lowPower && (isPlacedTile || isLastMove)) {
         ctx.save();
         if (isCorrectPlacement) {
@@ -333,7 +354,35 @@ export class TileRenderer {
       ghostGrad.addColorStop(0.7, '#075985');
       ghostGrad.addColorStop(1, '#082f49');
       ctx.fillStyle = ghostGrad;
+    } else if (is2L) {
+      // 2L Emerald Green Gemstone Face Gradient
+      const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
+      grad.addColorStop(0, '#4ade80');
+      grad.addColorStop(0.25, '#22c55e');
+      grad.addColorStop(0.60, '#16a34a');
+      grad.addColorStop(0.85, '#15803d');
+      grad.addColorStop(1, '#064e3b');
+      ctx.fillStyle = grad;
+    } else if (is3L) {
+      // 3L Ruby Crimson Gemstone Face Gradient
+      const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
+      grad.addColorStop(0, '#fb7185');
+      grad.addColorStop(0.25, '#f43f5e');
+      grad.addColorStop(0.60, '#e11d48');
+      grad.addColorStop(0.85, '#be123c');
+      grad.addColorStop(1, '#881337');
+      ctx.fillStyle = grad;
+    } else if (isPower) {
+      // Lightning Electric Cyan Power Gemstone Face Gradient
+      const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
+      grad.addColorStop(0, '#38bdf8');
+      grad.addColorStop(0.25, '#0ea5e9');
+      grad.addColorStop(0.60, '#0284c7');
+      grad.addColorStop(0.85, '#0369a1');
+      grad.addColorStop(1, '#082f49');
+      ctx.fillStyle = grad;
     } else {
+      // Standard Golden Amber Resin Face Gradient
       const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
       grad.addColorStop(0, '#fbbf24');
       grad.addColorStop(0.28, '#f59e0b');
@@ -420,22 +469,52 @@ export class TileRenderer {
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.clip();
 
-      // Top edge crisp subtle warm luster line (does not wash out the golden body)
+      // Top edge crisp subtle warm luster line (does not wash out the body)
       const topEdgeGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + Math.max(2, cellSize * 0.08));
-      topEdgeGrad.addColorStop(0, 'rgba(255, 245, 180, 0.65)');
-      topEdgeGrad.addColorStop(1, 'rgba(255, 245, 180, 0)');
+      if (is2L) {
+        topEdgeGrad.addColorStop(0, 'rgba(220, 255, 230, 0.7)');
+        topEdgeGrad.addColorStop(1, 'rgba(220, 255, 230, 0)');
+      } else if (is3L) {
+        topEdgeGrad.addColorStop(0, 'rgba(255, 225, 230, 0.75)');
+        topEdgeGrad.addColorStop(1, 'rgba(255, 225, 230, 0)');
+      } else if (isPower) {
+        topEdgeGrad.addColorStop(0, 'rgba(224, 242, 254, 0.8)');
+        topEdgeGrad.addColorStop(1, 'rgba(224, 242, 254, 0)');
+      } else {
+        topEdgeGrad.addColorStop(0, 'rgba(255, 245, 180, 0.65)');
+        topEdgeGrad.addColorStop(1, 'rgba(255, 245, 180, 0)');
+      }
       ctx.fillStyle = topEdgeGrad;
       ctx.fillRect(x + pad, y + pad, tileW, Math.max(2, cellSize * 0.08));
 
       // Bottom subtle chiseled bevel shadow
       const botShade = ctx.createLinearGradient(0, y + pad + tileW * 0.78, 0, y + pad + tileW);
-      botShade.addColorStop(0, 'rgba(60, 20, 0, 0)');
-      botShade.addColorStop(1, 'rgba(60, 20, 0, 0.55)');
+      if (is2L) {
+        botShade.addColorStop(0, 'rgba(3, 30, 15, 0)');
+        botShade.addColorStop(1, 'rgba(3, 30, 15, 0.6)');
+      } else if (is3L) {
+        botShade.addColorStop(0, 'rgba(50, 5, 15, 0)');
+        botShade.addColorStop(1, 'rgba(50, 5, 15, 0.65)');
+      } else if (isPower) {
+        botShade.addColorStop(0, 'rgba(3, 20, 45, 0)');
+        botShade.addColorStop(1, 'rgba(3, 20, 45, 0.65)');
+      } else {
+        botShade.addColorStop(0, 'rgba(60, 20, 0, 0)');
+        botShade.addColorStop(1, 'rgba(60, 20, 0, 0.55)');
+      }
       ctx.fillStyle = botShade;
       ctx.fillRect(x + pad, y + pad + tileW * 0.78, tileW, tileW * 0.22);
 
-      // Inner crisp golden rim
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+      // Inner crisp glowing rim
+      if (is2L) {
+        ctx.strokeStyle = 'rgba(187, 247, 208, 0.45)';
+      } else if (is3L) {
+        ctx.strokeStyle = 'rgba(254, 205, 211, 0.45)';
+      } else if (isPower) {
+        ctx.strokeStyle = 'rgba(186, 230, 253, 0.45)';
+      } else {
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+      }
       ctx.lineWidth = 1;
       drawRoundedRect(ctx, x + pad + 0.5, y + pad + 0.5, tileW - 1, tileW - 1, Math.max(1, radius - 0.5));
       ctx.stroke();
@@ -578,6 +657,21 @@ export class TileRenderer {
       ctx.stroke();
 
       ctx.restore();
+    } else if (is2L) {
+      ctx.strokeStyle = 'rgba(74, 222, 128, 0.95)';
+      ctx.lineWidth = 1.3;
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
+    } else if (is3L) {
+      ctx.strokeStyle = 'rgba(251, 113, 133, 0.95)';
+      ctx.lineWidth = 1.3;
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
+    } else if (isPower) {
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.95)';
+      ctx.lineWidth = 1.3;
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.stroke();
     } else if (isGolden) {
       ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
       ctx.lineWidth = 1.3;
@@ -590,7 +684,7 @@ export class TileRenderer {
       ctx.stroke();
     }
 
-    const multiplier = (!isRemote && (isGolden || isFrozen))
+    const multiplier = (!isRemote && (isGolden || isSpecialCellTile || isFrozen))
       ? cellMultiplier(row, col)
       : 1;
     const effectiveValue = value * multiplier;
