@@ -30,6 +30,7 @@ import { GameHud } from '@/components/game/GameHud';
 import { TurnTimer } from '@/components/game/TurnTimer';
 import { GameOverScreen } from '@/components/game/GameOverScreen';
 import { CardRevealOverlay, CardActivationOverlay, PendingEffectBanner, ToastStack } from '@/components/game/GameOverlays';
+import { ScreenVignettePulse, SpySwapNotificationOverlay, BoardEffectsLayer } from '@/components/game/CardCinematicEffects';
 import { HintSuggestionsOverlay } from '@/components/game/HintSuggestionsOverlay';
 import { BlankTilePickerModal } from '@/components/game/BlankTilePickerModal';
 import { ConfirmExitModal } from '@/components/game/ConfirmExitModal';
@@ -734,6 +735,18 @@ export default function GamePage() {
         {sync.activeCardCast && <CardActivationOverlay event={sync.activeCardCast} />}
       </AnimatePresence>
 
+      {/* Screen-wide Environmental Vignette Pulses (Freeze frost, Destroy fireball, etc.) */}
+      <ScreenVignettePulse
+        type={sync.screenVignette}
+        onComplete={sync.clearScreenVignette}
+      />
+
+      {/* Spy Swap Dramatic Notification Overlay (Victim warning + Caster confirmation) */}
+      <SpySwapNotificationOverlay
+        data={sync.spySwapAlert}
+        onDismiss={sync.dismissSpySwapAlert}
+      />
+
       <div className="gameplay-body relative z-10 flex min-h-0 flex-1">
       <div className="gameplay-play-area flex min-h-0 min-w-0 flex-1 flex-col">
       {/* Main: Board */}
@@ -795,6 +808,12 @@ export default function GamePage() {
               hintTiles={cards.activeHintTiles}
               pendingArmedCell={cards.pendingArmedCell ?? deferredFreezeCell}
               pendingArmedCard={cards.armedCard ?? (cards.deferredFreezeTileId ? 'FREEZE_TILE' : null)}
+            />
+            {/* Cinematic Board Burst & Particle Blast Effects (Freeze shockwave & Destroy incineration) */}
+            <BoardEffectsLayer
+              camera={camera}
+              effects={sync.boardCellEffects}
+              onEffectEnd={sync.removeBoardCellEffect}
             />
             {dragSession && (
               <FloatingTile

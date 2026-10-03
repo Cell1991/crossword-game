@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getGameState, resolvePendingEffect, StoredSession } from '@/lib/api';
 import { BoardCell, CardReveal, GameState, MoveHistoryEntry, PlacedTile, WebSocketEvent } from '@/lib/types';
+import { BoardCellEffect, SpySwapAlertData } from '@/components/game/CardCinematicEffects';
 import { useGameSocket } from './useGameSocket';
 import { GameToasts } from './useGameToasts';
 
@@ -81,6 +82,22 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
     card: string;
     targetPlayerName?: string | null;
   } | null>(null);
+  const [boardCellEffects, setBoardCellEffects] = useState<BoardCellEffect[]>([]);
+  const [spySwapAlert, setSpySwapAlert] = useState<SpySwapAlertData | null>(null);
+  const [screenVignette, setScreenVignette] = useState<'FREEZE' | 'DESTROY' | 'HEAL' | 'DOUBLE_DAMAGE' | 'SWAP' | null>(null);
+
+  const removeBoardCellEffect = useCallback((id: string) => {
+    setBoardCellEffects(prev => prev.filter(fx => fx.id !== id));
+  }, []);
+
+  const dismissSpySwapAlert = useCallback(() => {
+    setSpySwapAlert(null);
+  }, []);
+
+  const clearScreenVignette = useCallback(() => {
+    setScreenVignette(null);
+  }, []);
+
   const [remotePlacements, setRemotePlacements] = useState<{ row: number; col: number }[]>([]);
   const [remoteBotTiles, setRemoteBotTiles] = useState<PlacedTile[]>([]);
   /** Server clock minus this device's clock. The turn timer runs on server time so every device agrees. */
@@ -268,6 +285,35 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
         });
         window.setTimeout(() => setActiveCardCast(null), 2500);
 
+        // Trigger cinematic board burst & screen vignette pulses
+        if (card === 'FREEZE_TILE') {
+          setScreenVignette('FREEZE');
+          const row = typeof event.payload?.row === 'number' ? event.payload.row : undefined;
+          const col = typeof event.payload?.col === 'number' ? event.payload.col : undefined;
+          if (row !== undefined && col !== undefined) {
+            setBoardCellEffects(prev => [
+              ...prev,
+              { id: `freeze-${Date.now()}-${Math.random()}`, type: 'FREEZE', row, col, timestamp: Date.now() },
+            ]);
+          }
+        } else if (card === 'DESTROY_TILE') {
+          setScreenVignette('DESTROY');
+          const row = typeof event.payload?.row === 'number' ? event.payload.row : undefined;
+          const col = typeof event.payload?.col === 'number' ? event.payload.col : undefined;
+          if (row !== undefined && col !== undefined) {
+            setBoardCellEffects(prev => [
+              ...prev,
+              { id: `destroy-${Date.now()}-${Math.random()}`, type: 'DESTROY', row, col, timestamp: Date.now() },
+            ]);
+          }
+        } else if (card === 'HEAL') {
+          setScreenVignette('HEAL');
+        } else if (card === 'DOUBLE_DAMAGE') {
+          setScreenVignette('DOUBLE_DAMAGE');
+        } else if (card === 'SPY_SWAP') {
+          setScreenVignette('SWAP');
+        }
+
         setCardUseEffects(previous => ({ ...previous, [playerId]: card }));
         if (targetId) {
           replaceGameState(prev => prev ? { ...prev, pending_double_target_id: targetId } : prev);
@@ -305,6 +351,30 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
         loadGameState();
         break;
       case 'EFFECT_RESOLVED': {
+        const effectType = event.payload?.type;
+        if (effectType === 'SPY_SWAP' || effectType === 'SWAP') {
+          const sourcePlayerId = event.payload?.sourcePlayerId as string | undefined;
+          const targetPlayerId = event.payload?.targetPlayerId as string | undefined;
+          const count = (event.payload?.count as number) || 1;
+          if (sourcePlayerId && targetPlayerId) {
+            const isVictim = targetPlayerId === myPlayerId;
+            const isCaster = sourcePlayerId === myPlayerId;
+            const sourcePlayerName = nameOf(sourcePlayerId, 'Player');
+            const targetPlayerName = nameOf(targetPlayerId, 'Player');
+            setSpySwapAlert({
+              id: `${Date.now()}-${Math.random()}`,
+              sourcePlayerId,
+              sourcePlayerName,
+              targetPlayerId,
+              targetPlayerName,
+              count,
+              isVictim,
+              isCaster,
+            });
+            setScreenVignette('SWAP');
+          }
+        }
+
         if (event.payload?.applied && typeof event.payload.applied === 'object') {
           const applied = event.payload.applied as Record<string, number>;
           replaceGameState(prev => {
@@ -376,6 +446,12 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
     cardReveal,
     dismissCardReveal,
     activeCardCast,
+    boardCellEffects,
+    removeBoardCellEffect,
+    spySwapAlert,
+    dismissSpySwapAlert,
+    screenVignette,
+    clearScreenVignette,
     remotePlacements,
     remoteBotTiles,
     clearRemotePlacements,

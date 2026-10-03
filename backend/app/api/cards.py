@@ -133,7 +133,13 @@ async def use_card(
     await replace_player_cards(db, player.id, cards)
     await manager.broadcast(game_id, WebSocketEvent(
         type=EventType.CARD_USED,
-        payload={"playerId": player.id, "card": card},
+        payload={
+            "playerId": player.id,
+            "card": card,
+            "row": request.row,
+            "col": request.col,
+            "targetPlayerId": request.target_player_id,
+        },
     ).model_dump())
 
     if card == "HEAL":
