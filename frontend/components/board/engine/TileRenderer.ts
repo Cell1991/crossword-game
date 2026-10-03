@@ -630,16 +630,26 @@ export class TileRenderer {
         } else {
           ctx.fillStyle = letterFill;
         }
-        const fontSize = Math.max(12, Math.round(cellSize * 0.70));
+        const letterScale = letter === 'W' ? 0.78 : letter === 'M' ? 0.86 : 1.0;
+        let fontSize = Math.max(10, Math.round(cellSize * 0.68 * letterScale));
         ctx.font = `italic 900 ${fontSize}px 'Inter Black Italic', sans-serif`;
+
+        // Safety clamp: ensure wide letters never touch tile borders or score numbers
+        const metrics = ctx.measureText(letter);
+        const maxAllowedW = tileW * 0.68;
+        if (metrics.width > maxAllowedW && metrics.width > 0) {
+          fontSize = Math.max(9, Math.round(fontSize * (maxAllowedW / metrics.width)));
+          ctx.font = `italic 900 ${fontSize}px 'Inter Black Italic', sans-serif`;
+        }
+
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        const textX = x + cellSize / 2;
+        const textX = x + cellSize / 2 + (letter === 'W' ? -0.5 : 0);
         const textY = y + cellSize / 2 + fontSize * 0.04;
         
         if (!isRemote) {
           ctx.lineJoin = 'round';
-          ctx.lineWidth = Math.max(2.2, fontSize * 0.10);
+          ctx.lineWidth = Math.max(2.0, fontSize * 0.10);
           ctx.strokeStyle = isFrozen ? '#02182b' : tilePalette.letter.stroke;
           ctx.strokeText(letter, textX, textY);
         }

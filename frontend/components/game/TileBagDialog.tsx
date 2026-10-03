@@ -108,7 +108,9 @@ export const TileBagDialog: React.FC<TileBagDialogProps> = ({ tileBagCount, tile
                   }`}
                   aria-label={`${letter}, ${count} remaining`}
                 >
-                  <span className="tile-face tile-letter tile-letter-orange flex h-9 w-9 items-center justify-center rounded-lg border border-amber-100/80 font-maple text-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_4px_8px_rgba(0,0,0,0.35)] shrink-0">
+                  <span className={`tile-face tile-letter tile-letter-orange flex h-9 w-9 items-center justify-center rounded-lg border border-amber-100/80 font-maple shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_4px_8px_rgba(0,0,0,0.35)] shrink-0 ${
+                    letter === 'W' ? 'text-lg -translate-x-[0.5px]' : letter === 'M' ? 'text-xl' : 'text-2xl'
+                  }`}>
                     {letter}
                   </span>
                   <span className={`min-w-5 text-right font-mono text-sm font-black ${count === 0 ? 'text-slate-600' : 'text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]'}`}>
