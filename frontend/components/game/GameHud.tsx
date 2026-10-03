@@ -115,7 +115,7 @@ export const GameHud: React.FC<GameHudProps> = ({
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-48 h-12 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
       {/* ROW 1: System Bar */}
-      <header className="gameplay-top-hud relative z-10 grid w-full items-center grid-cols-[1fr_auto_1fr] gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2">
+      <header className="gameplay-top-hud relative z-10 flex md:grid w-full items-center justify-between md:grid-cols-[1fr_auto_1fr] gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2">
         {/* Left HUD cluster */}
         <div className="gameplay-hud-cluster gameplay-hud-left flex min-w-0 items-center gap-1.5 sm:gap-2.5">
           {/* Back / Exit Button */}
@@ -194,8 +194,8 @@ export const GameHud: React.FC<GameHudProps> = ({
           </div>
         </div>
 
-        {/* Center: WordX Brand & Turn state */}
-        <div className="gameplay-hud-center flex min-w-0 items-center justify-center gap-3">
+        {/* Center: WordX Brand & Turn state (visible on md+) */}
+        <div className="gameplay-hud-center hidden md:flex min-w-0 items-center justify-center gap-3">
           <div className="gameplay-brand flex items-center select-none cursor-default py-0.5 group">
             <span className="text-xl sm:text-2xl font-black tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
               Word
