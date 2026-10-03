@@ -5,7 +5,7 @@ export const dynamicParams = true;
 
 import React, { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { Bug, Eye } from 'lucide-react';
+import { Bug, Eye, Skull } from 'lucide-react';
 import { commitMove, exchangeTiles, executeBotMove, expireTurn, getBotPlan, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'motion/react';
@@ -813,19 +813,46 @@ export default function GamePage() {
       <footer className="gameplay-control-stage absolute bottom-0 left-0 right-0 z-20 flex w-full justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-6 sm:px-5 sm:pb-4 pointer-events-none">
         <div className="gameplay-control-content w-full min-w-0 pointer-events-auto">
           {isSpectator ? (
-            <div className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-xl border border-sky-500/25 bg-sky-950/40 px-4 py-2.5 text-center text-xs text-sky-300 select-none sm:text-sm">
-              <Eye className="h-4 w-4 shrink-0 text-sky-400" />
-              <span>You are watching this game. Players&apos; tiles stay hidden.</span>
+            <div className="relative mx-auto flex max-w-md items-center justify-center gap-3 rounded-2xl border border-sky-400/40 bg-gradient-to-b from-[#0a182c]/95 via-[#061020]/98 to-[#030814]/95 px-5 py-3 text-center text-xs text-sky-200 shadow-[0_12px_36px_rgba(0,0,0,0.85),0_0_25px_rgba(14,165,233,0.3),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-sky-400/25 select-none overflow-hidden backdrop-blur-xl">
+              <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-300/40 to-transparent pointer-events-none" />
+              <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-400/50 shadow-[0_0_12px_rgba(14,165,233,0.4)] shrink-0">
+                <Eye className="h-4.5 w-4.5 text-sky-300 animate-pulse drop-shadow-[0_0_8px_#38bdf8]" />
+              </div>
+              <div className="flex flex-col text-left min-w-0">
+                <span className="font-black font-maple text-sky-100 text-xs sm:text-[13px] tracking-wider uppercase drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]">
+                  Spectator Mode
+                </span>
+                <span className="text-[11px] text-sky-300/80 font-medium">
+                  You are observing this match. Players&apos; racks stay hidden.
+                </span>
+              </div>
             </div>
           ) : isEliminated ? (
-            <div className="mx-auto flex max-w-lg flex-col items-center justify-center rounded-2xl border border-rose-500/40 bg-rose-950/45 px-4 py-3.5 text-center sm:px-6">
-              <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-rose-300 sm:text-base">
-                <span className="text-xl">☠️</span>
-                <span>You Have Been Knocked Out</span>
+            <div className="relative mx-auto flex max-w-lg flex-col items-center justify-center rounded-2xl border border-rose-500/50 bg-gradient-to-b from-[#1c0818]/95 via-[#130512]/98 to-[#09020a]/95 px-6 py-4 text-center shadow-[0_14px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(244,63,94,0.35),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-rose-500/30 overflow-hidden select-none backdrop-blur-xl">
+              {/* Specular gloss shimmer & ambient rose glow */}
+              <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-rose-400/60 to-transparent pointer-events-none" />
+              <div className="absolute -top-10 inset-x-0 h-20 bg-rose-500/15 rounded-full blur-2xl pointer-events-none" />
+
+              {/* Elimination Crest Header */}
+              <div className="relative z-10 flex items-center justify-center gap-2.5">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-rose-500/30 to-purple-900/40 border border-rose-400/60 shadow-[0_0_16px_rgba(244,63,94,0.6),inset_0_1px_1px_rgba(255,255,255,0.2)] shrink-0">
+                  <Skull className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-rose-300 drop-shadow-[0_0_10px_#fb7185]" />
+                </div>
+                <span className="text-sm sm:text-base font-black font-maple uppercase tracking-wider bg-gradient-to-r from-rose-100 via-rose-200 to-amber-200 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(244,63,94,0.7)]">
+                  You Have Been Knocked Out
+                </span>
               </div>
-              <p className="mt-1 text-xs text-slate-300">
+
+              {/* Status explanation */}
+              <p className="relative z-10 mt-1.5 text-xs text-slate-300/90 font-medium max-w-sm leading-relaxed">
                 Your HP reached 0. You are now spectating the remaining players in the room.
               </p>
+
+              {/* Spectating Pill Indicator */}
+              <div className="relative z-10 mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-950/80 border border-rose-500/40 text-[11px] font-bold text-rose-200 shadow-[0_0_10px_rgba(244,63,94,0.2)]">
+                <Eye className="w-3.5 h-3.5 text-rose-400 animate-pulse shrink-0" />
+                <span className="tracking-wider uppercase text-[10px]">Spectator Mode Active</span>
+              </div>
             </div>
           ) : (
             <TileRack
