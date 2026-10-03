@@ -27,6 +27,7 @@ type SpySwapStep = 'own' | 'opponent' | 'tiles';
 
 export interface CardPowerMeta {
   title: string;
+  shortTitle?: string;
   subtitle: string;
   element: string;
   description: string;
@@ -44,6 +45,7 @@ export interface CardPowerMeta {
 export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
   DOUBLE_DAMAGE: {
     title: 'Double Damage',
+    shortTitle: '2× DMG',
     subtitle: '2× DAMAGE',
     element: 'HP MODE',
     description: 'Your next word deals double (2×) damage to a targeted opponent.',
@@ -59,6 +61,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
   },
   SHIELD: {
     title: 'Shield',
+    shortTitle: 'Shield',
     subtitle: 'PROTECTION',
     element: 'PASSIVE',
     description: 'Blocks the next incoming attack damage or hostile tile swap.',
@@ -74,6 +77,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
   },
   FREEZE_TILE: {
     title: 'Freeze Tile',
+    shortTitle: 'Freeze',
     subtitle: 'LOCK CELL',
     element: 'YOUR TURN',
     description: 'Locks a board tile in ice so opponents cannot connect words to it.',
@@ -89,6 +93,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
   },
   DESTROY_TILE: {
     title: 'Destroy Tile',
+    shortTitle: 'Destroy',
     subtitle: 'BREAK TILE',
     element: 'ANYTIME',
     description: 'Removes 1 tile from the board to disrupt words and reopen bonus cells.',
@@ -104,6 +109,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
   },
   HEAL: {
     title: 'Heal',
+    shortTitle: 'Heal',
     subtitle: 'RESTORE HP',
     element: 'HP MODE',
     description: 'Restores HP equal to the total point value of tiles in your rack.',
@@ -119,6 +125,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
   },
   HINT: {
     title: 'Hint',
+    shortTitle: 'Hint',
     subtitle: 'TOP 3 MOVES',
     element: 'YOUR TURN',
     description: 'Highlights the top 3 highest-scoring word placements on the board.',
@@ -134,6 +141,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
   },
   SPY_SWAP: {
     title: 'Spy Swap',
+    shortTitle: 'Spy Swap',
     subtitle: 'STEAL TILES',
     element: 'ANYTIME',
     description: 'Swap 1 to 3 rack tiles with random tiles stolen from an opponent.',
@@ -205,7 +213,7 @@ export const PowerCardBar = memo(function PowerCardBar({
             <Snowflake className="w-3.5 h-3.5 text-cyan-200" />
           </div>
           <span className="font-semibold text-slate-100 text-xs truncate">
-            <strong className="text-cyan-300 font-extrabold">Freeze Tile Armed</strong> — will freeze on move confirm
+            <strong className="text-cyan-300 font-extrabold">Freeze Armed</strong> — activates on move
           </span>
         </div>
         <button
@@ -223,7 +231,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   if (armedCard && pendingArmedCell) {
     const meta = POWER_CARDS_META[armedCard];
     const isDestroy = armedCard === 'DESTROY_TILE';
-    const verb = isDestroy ? 'Clear Tile' : 'Freeze Tile';
+    const verb = isDestroy ? 'Destroy' : 'Freeze';
 
     return (
       <div
@@ -244,7 +252,7 @@ export const PowerCardBar = memo(function PowerCardBar({
             {meta?.icon}
           </div>
           <span className="font-extrabold text-slate-100 text-xs truncate">
-            {verb} at ({pendingArmedCell.row + 1}, {pendingArmedCell.col + 1})?
+            {verb} ({pendingArmedCell.row + 1},{pendingArmedCell.col + 1})?
           </span>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -295,7 +303,7 @@ export const PowerCardBar = memo(function PowerCardBar({
             {meta?.icon}
           </div>
           <span className="font-extrabold text-slate-100 text-xs truncate">
-            {isDestroy ? 'Tap any board tile to incinerate & clear' : 'Tap any board tile to freeze in ice'}
+            {isDestroy ? 'Tap tile to destroy' : 'Tap tile to freeze'}
           </span>
         </div>
         <button
@@ -348,11 +356,11 @@ export const PowerCardBar = memo(function PowerCardBar({
                   {POWER_CARDS_META.SPY_SWAP?.icon}
                 </div>
                 <div>
-                  <span className="font-extrabold text-emerald-300 text-xs">SWAP WORD: Choose 1-3 tiles to trade:</span>
+                  <span className="font-extrabold text-emerald-300 text-xs">Pick 1–3 tiles to swap:</span>
                 </div>
               </div>
               <span className="font-mono font-black text-emerald-300 text-xs bg-emerald-950/90 px-2.5 py-0.5 rounded-lg border border-emerald-500/40">
-                {spyOwnTileIds.length}/3 Selected
+                {spyOwnTileIds.length}/3 Picked
               </span>
             </div>
 
@@ -444,7 +452,7 @@ export const PowerCardBar = memo(function PowerCardBar({
         {spySwapStep === 'tiles' && selectedOpponent && (
           <div className="flex flex-col items-center gap-2 w-full">
             <span className="font-extrabold text-emerald-300 text-xs self-start">
-              Pick {spyOwnTileIds.length} hidden tiles from {selectedOpponent.display_name}:
+              Pick {spyOwnTileIds.length} from {selectedOpponent.display_name}:
             </span>
             <div className="flex flex-nowrap items-center justify-center gap-2 w-full overflow-x-auto hide-scrollbar py-1">
               {Array.from({ length: selectedOpponent.rack_count }, (_, index) => {
@@ -563,7 +571,7 @@ export const PowerCardBar = memo(function PowerCardBar({
             {meta?.icon}
           </div>
           <span className="font-extrabold text-slate-100 text-xs truncate">
-            Activate <span className="font-black text-white">{meta.title}</span> ({meta.subtitle})?
+            Use <span className="font-black text-white">{meta.title}</span>?
           </span>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -671,8 +679,8 @@ export const PowerCardBar = memo(function PowerCardBar({
             </div>
 
             {/* Card Name */}
-            <span className="relative z-20 text-[11px] sm:text-[12px] font-black tracking-wide leading-none drop-shadow-sm truncate">
-              {meta.title}
+            <span className="relative z-20 text-[11px] sm:text-[12px] font-black tracking-wide leading-none drop-shadow-sm whitespace-nowrap">
+              {meta.shortTitle ?? meta.title}
             </span>
           </button>
         );
