@@ -54,15 +54,16 @@ export const BlankTilePickerModal = React.memo(function BlankTilePickerModal({
 
         {/* Header */}
         <div className="relative flex items-center justify-between border-b border-cyan-400/15 pb-3">
-          <div className="tile-face flex h-9 w-9 items-center justify-center rounded-xl border border-amber-100/70 shadow-[0_0_18px_rgba(34,211,238,0.2)]">
-            <svg viewBox="0 0 24 24" className="tile-blank-star h-5 w-5" fill="currentColor">
+          <div className="tile-face relative flex h-10 w-10 items-center justify-center rounded-xl border border-amber-200/90 shadow-[0_4px_12px_rgba(0,0,0,0.5),0_0_16px_rgba(251,191,36,0.3)] overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-100/70 to-transparent pointer-events-none z-10" />
+            <svg viewBox="0 0 24 24" className="tile-blank-star relative z-20 h-6 w-6" fill="currentColor">
               <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
             </svg>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="group relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-cyan-300/55 bg-gradient-to-br from-cyan-400/20 via-blue-500/15 to-slate-900/70 text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_0_16px_rgba(34,211,238,0.2)] transition-all hover:border-cyan-200 hover:bg-cyan-300/25 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_22px_rgba(34,211,238,0.55)] active:scale-95"
+            className="group relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-cyan-300/55 bg-gradient-to-br from-cyan-400/20 via-blue-500/15 to-slate-900/70 text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_0_16px_rgba(34,211,238,0.2)] transition-all hover:border-cyan-200 hover:bg-cyan-300/25 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_22px_rgba(34,211,238,0.55)] active:scale-95 cursor-pointer"
             aria-label="Close"
           >
             <span className="absolute inset-1 rounded-lg border border-white/10 transition-colors group-hover:border-cyan-100/35" />
@@ -77,12 +78,20 @@ export const BlankTilePickerModal = React.memo(function BlankTilePickerModal({
               key={letter}
               type="button"
               onClick={() => onSelect(letter)}
-              className="tile-face group relative flex h-12 w-11 flex-col items-center justify-center overflow-hidden rounded-xl border border-amber-100/70 shadow-[0_2px_5px_rgba(0,0,0,0.38)] transition-[transform,border-color,filter] hover:-translate-y-0.5 hover:scale-[1.03] hover:border-amber-300 hover:brightness-110 active:translate-y-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 sm:h-14 sm:w-13"
+              className="tile-face group relative flex h-12 w-11 flex-col items-center justify-center overflow-hidden rounded-xl border border-amber-200/90 shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-all hover:-translate-y-1 hover:scale-105 hover:border-amber-300 hover:brightness-110 active:translate-y-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer sm:h-14 sm:w-13"
             >
-              {/* Glass Top Bevel Highlight */}
-              <div className="absolute inset-x-1 top-0.5 h-[35%] rounded-t-lg bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
+              {/* Top Edge Subtle Golden Highlight */}
+              <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-100/70 to-transparent pointer-events-none z-10" />
 
-              <span className="blank-picker-letter relative z-10 text-2xl font-maple sm:text-[1.7rem]">
+              <span
+                className={`tile-letter tile-letter-orange relative z-20 text-2xl font-maple sm:text-[1.7rem] leading-none inline-block ${
+                  letter === 'W'
+                    ? 'scale-x-90 -translate-x-[0.5px]'
+                    : letter === 'M'
+                    ? 'scale-x-95'
+                    : ''
+                }`}
+              >
                 {letter}
               </span>
             </button>

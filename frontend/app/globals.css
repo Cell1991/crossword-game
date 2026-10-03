@@ -75,8 +75,19 @@ input[type="number"] {
 }
 
 .blank-picker-letter {
-  color: #fff;
-  text-shadow: -1px -1px 0 #111827, 1px -1px 0 #111827, -1px 1px 0 #111827, 1px 1px 0 #111827, 0 2px 3px rgba(0, 0, 0, 0.75);
+  color: var(--tile-letter-color-desktop);
+  text-shadow: 
+    -2px -2px 0 var(--tile-letter-stroke-desktop),
+     2px -2px 0 var(--tile-letter-stroke-desktop),
+    -2px  2px 0 var(--tile-letter-stroke-desktop),
+     2px  2px 0 var(--tile-letter-stroke-desktop),
+    -2px  0   0 var(--tile-letter-stroke-desktop),
+     2px  0   0 var(--tile-letter-stroke-desktop),
+     0   -2px 0 var(--tile-letter-stroke-desktop),
+     0    2px 0 var(--tile-letter-stroke-desktop),
+    0 2px 1px rgba(0, 0, 0, 0.95), 
+    0 4px 6px rgba(0, 0, 0, 0.8), 
+    var(--tile-letter-shadow-desktop);
 }
 
 .tile-score-blue {
