@@ -215,10 +215,8 @@ export const TileRack = memo(function TileRack({
                           : 'opacity-65 cursor-not-allowed shadow-md transition-none'
                       }`}
                     >
-                      {/* Top Specular Arc Glint */}
-                      <div className="absolute inset-x-1 top-0.5 h-[40%] rounded-t-lg bg-gradient-to-b from-white/35 via-white/10 to-transparent pointer-events-none z-10" />
-                      {/* Micro Corner Glint */}
-                      <div className="absolute top-1 left-1.5 w-1.5 h-1.5 rounded-full bg-white/75 blur-[0.4px] pointer-events-none z-10" />
+                      {/* Top Edge Subtle Golden Highlight */}
+                      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-100/60 to-transparent pointer-events-none z-10" />
 
                       {/* Letter / Wildcard Star */}
                       {isBlankLetter(tile.letter) && !isDesignatedBlank ? (

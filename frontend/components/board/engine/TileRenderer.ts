@@ -335,11 +335,11 @@ export class TileRenderer {
       ctx.fillStyle = ghostGrad;
     } else {
       const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-      grad.addColorStop(0, '#ffea79');
-      grad.addColorStop(0.22, '#fbbf24');
-      grad.addColorStop(0.6, '#f59e0b');
-      grad.addColorStop(0.85, '#b45309');
-      grad.addColorStop(1, '#8c3503');
+      grad.addColorStop(0, '#fbbf24');
+      grad.addColorStop(0.28, '#f59e0b');
+      grad.addColorStop(0.65, '#d97706');
+      grad.addColorStop(0.88, '#b45309');
+      grad.addColorStop(1, '#78350f');
       ctx.fillStyle = grad;
     }
     drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
@@ -420,23 +420,22 @@ export class TileRenderer {
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.clip();
 
-      // Top-down specular bevel luster
-      const topSheen = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW * 0.45);
-      topSheen.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
-      topSheen.addColorStop(0.5, 'rgba(255, 255, 255, 0.12)');
-      topSheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = topSheen;
-      ctx.fillRect(x + pad, y + pad, tileW, tileW * 0.45);
+      // Top edge crisp subtle warm luster line (does not wash out the golden body)
+      const topEdgeGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + Math.max(2, cellSize * 0.08));
+      topEdgeGrad.addColorStop(0, 'rgba(255, 245, 180, 0.65)');
+      topEdgeGrad.addColorStop(1, 'rgba(255, 245, 180, 0)');
+      ctx.fillStyle = topEdgeGrad;
+      ctx.fillRect(x + pad, y + pad, tileW, Math.max(2, cellSize * 0.08));
 
-      // Bottom chiseled bevel shadow
-      const botShade = ctx.createLinearGradient(0, y + pad + tileW * 0.72, 0, y + pad + tileW);
+      // Bottom subtle chiseled bevel shadow
+      const botShade = ctx.createLinearGradient(0, y + pad + tileW * 0.78, 0, y + pad + tileW);
       botShade.addColorStop(0, 'rgba(60, 20, 0, 0)');
-      botShade.addColorStop(1, 'rgba(60, 20, 0, 0.45)');
+      botShade.addColorStop(1, 'rgba(60, 20, 0, 0.55)');
       ctx.fillStyle = botShade;
-      ctx.fillRect(x + pad, y + pad + tileW * 0.72, tileW, tileW * 0.28);
+      ctx.fillRect(x + pad, y + pad + tileW * 0.78, tileW, tileW * 0.22);
 
-      // Inner glowing ambient rim
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      // Inner crisp golden rim
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
       ctx.lineWidth = 1;
       drawRoundedRect(ctx, x + pad + 0.5, y + pad + 0.5, tileW - 1, tileW - 1, Math.max(1, radius - 0.5));
       ctx.stroke();
@@ -580,7 +579,7 @@ export class TileRenderer {
 
       ctx.restore();
     } else if (isGolden) {
-      ctx.strokeStyle = 'rgba(226, 184, 93, 0.9)';
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
       ctx.lineWidth = 1.3;
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
@@ -640,13 +639,13 @@ export class TileRenderer {
         
         if (!isRemote) {
           ctx.lineJoin = 'round';
-          ctx.lineWidth = Math.max(1.8, fontSize * 0.09);
+          ctx.lineWidth = Math.max(2.2, fontSize * 0.10);
           ctx.strokeStyle = isFrozen ? '#02182b' : tilePalette.letter.stroke;
           ctx.strokeText(letter, textX, textY);
         }
         ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(56, 189, 248, 0.85)' : tilePalette.letter.shadow;
         ctx.shadowBlur = isRemote ? 0 : isFrozen ? Math.max(4, cellSize * 0.09) : Math.max(2, cellSize * 0.06);
-        ctx.shadowOffsetY = isRemote ? 0 : Math.max(1, cellSize * 0.035);
+        ctx.shadowOffsetY = isRemote ? 0 : Math.max(1.2, cellSize * 0.04);
         ctx.fillText(letter, textX, textY);
       }
       ctx.restore();
@@ -662,7 +661,7 @@ export class TileRenderer {
         ctx.save();
         ctx.shadowColor = isFrozen ? 'rgba(250, 204, 21, 0.9)' : tilePalette.score.glow;
         ctx.shadowBlur = lowPower ? 2 : Math.max(4, numFontSize * 0.6);
-        ctx.lineWidth = Math.max(0.6, numFontSize * 0.06);
+        ctx.lineWidth = Math.max(1.2, numFontSize * 0.12);
         ctx.strokeStyle = isFrozen ? '#020617' : tilePalette.score.stroke;
         ctx.strokeText(`${effectiveValue}`, numX, numY);
         ctx.fillStyle = tilePalette.score.color;
