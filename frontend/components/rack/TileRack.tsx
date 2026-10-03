@@ -263,19 +263,19 @@ export const TileRack = memo(function TileRack({
           {/* Desktop Row 1: Utility Controls (Recall, Shuffle, Swap) */}
           <div className="grid grid-cols-3 gap-1.5 w-full">
             {isExchanging ? (
-              <div className="col-span-3 flex items-center justify-between gap-2 px-3 py-1 bg-gradient-to-r from-[#2a0c18]/95 via-[#18091e]/95 to-[#0e0a24]/95 border border-rose-500/50 rounded-xl shadow-[0_4px_14px_rgba(0,0,0,0.6),0_0_14px_rgba(244,63,94,0.25),inset_0_1px_1px_rgba(255,255,255,0.15)] relative overflow-hidden backdrop-blur-xl">
-                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent pointer-events-none" />
+              <div className="col-span-3 flex items-center justify-between gap-2 px-3 py-1 bg-gradient-to-r from-[#101438]/95 via-[#0c0f2a]/95 to-[#080a1c]/95 border border-indigo-400/35 rounded-xl shadow-[0_4px_14px_rgba(0,0,0,0.6),0_0_12px_rgba(99,102,241,0.15),inset_0_1px_1px_rgba(255,255,255,0.12)] relative overflow-hidden backdrop-blur-xl">
+                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
                 <button
                   type="button"
                   onClick={onCancelExchange}
                   disabled={isSubmitting}
-                  className="game-btn-base flex h-[32px] items-center gap-1.5 px-3 rounded-lg font-black text-xs bg-gradient-to-b from-rose-700 to-rose-900 text-white hover:from-rose-600 hover:to-rose-800 border border-rose-400/60 cursor-pointer shadow-[0_2px_8px_rgba(244,63,94,0.4),inset_0_1px_1px_rgba(255,255,255,0.3)]"
+                  className="game-btn-base game-btn-cancel flex h-[32px] items-center gap-1.5 px-3 rounded-lg font-black text-xs cursor-pointer"
                 >
                   <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
-                  <X className="w-3.5 h-3.5 text-rose-200 relative z-10" />
+                  <X className="w-3.5 h-3.5 text-indigo-200 relative z-10 stroke-[2.5]" />
                   <span className="relative z-10 uppercase tracking-wider text-[11px]">Cancel</span>
                 </button>
-                <span className="text-[11px] text-amber-200/90 font-bold truncate tracking-wide relative z-10">
+                <span className="text-[11px] text-sky-200/90 font-bold truncate tracking-wide relative z-10">
                   {exchangeCount > tileBagCount ? `Only ${tileBagCount} in bag` : 'Pick tiles to swap'}
                 </span>
               </div>
@@ -463,12 +463,12 @@ export const TileRack = memo(function TileRack({
                 type="button"
                 onClick={onCancelExchange}
                 disabled={isSubmitting}
-                className="game-btn-base flex h-[38px] items-center justify-center gap-1 px-2.5 rounded-xl font-black text-xs bg-gradient-to-b from-rose-700 to-rose-900 text-white hover:from-rose-600 hover:to-rose-800 border border-rose-400/60 cursor-pointer shadow-[0_2px_8px_rgba(244,63,94,0.4),inset_0_1px_1px_rgba(255,255,255,0.3)]"
+                className="game-btn-base game-btn-cancel flex h-[38px] items-center justify-center gap-1.5 px-2.5 rounded-xl font-black text-xs cursor-pointer"
                 title="Cancel Swap"
                 aria-label="Cancel Swap"
               >
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
-                <X className="w-4 h-4 text-rose-200 relative z-10" />
+                <X className="w-4 h-4 text-indigo-200 relative z-10 stroke-[2.5]" />
                 <span className="relative z-10 uppercase tracking-wider">Cancel</span>
               </button>
 

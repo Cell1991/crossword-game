@@ -828,6 +828,20 @@ div[data-nextjs-dialog-backdrop] {
   filter: brightness(1.1);
 }
 
+/* Cancel Button: Midnight Indigo Slate */
+.game-btn-cancel {
+  background: linear-gradient(180deg, #1e2352 0%, #15183d 50%, #0d0f26 100%);
+  border: 1.5px solid rgba(165, 180, 252, 0.35);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.2), inset 0 1.5px 0 rgba(255, 255, 255, 0.25), inset 0 -2px 0 rgba(0, 0, 0, 0.5), 0 3px 6px rgba(0, 0, 0, 0.4);
+  color: #e2e8f0;
+}
+.game-btn-cancel:hover:not(:disabled) {
+  background: linear-gradient(180deg, #2b3272 0%, #1e2352 50%, #13173a 100%);
+  border-color: rgba(199, 210, 254, 0.55);
+  color: #ffffff;
+  filter: brightness(1.1);
+}
+
 /* PLAY Move: Deep Imperial Amber-Gold Champion Button */
 .game-btn-play-ready {
   background: linear-gradient(180deg, #b45309 0%, #92400e 32%, #78350f 68%, #451a03 100%);
