@@ -188,7 +188,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         {/* Right: Celestial Score Counter */}
         <div className="flex items-baseline gap-1 shrink-0 pl-2">
           <span
-            className={`text-xl sm:text-2xl font-black font-maple tracking-tight tabular-nums ${
+            className={`inline-block pr-1.5 text-xl sm:text-2xl font-black font-maple tracking-tight tabular-nums ${
               isLeader
                 ? 'bg-gradient-to-b from-amber-100 via-amber-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(245,158,11,0.7)]'
                 : isActiveTurn

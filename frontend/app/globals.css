@@ -589,14 +589,14 @@ body {
   width: auto;
 }
 
-/* Console Pedestal (Game Control Layout Deck) */
+/* Console Pedestal (Celestial Game Control Layout Deck) */
 .wordx-game-shell .game-control-layout {
   position: relative;
-  border-radius: 20px;
-  background: radial-gradient(130% 120% at 50% 0%, rgba(22, 38, 62, 0.98) 0%, rgba(11, 20, 34, 0.99) 45%, rgba(6, 12, 22, 1) 100%);
-  border: 1.5px solid rgba(56, 189, 248, 0.65);
-  box-shadow: 0 0 20px rgba(0, 210, 255, 0.25), 0 -8px 28px rgba(0, 0, 0, 0.8), inset 0 0 12px rgba(0, 210, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(20px);
+  border-radius: 22px;
+  background: radial-gradient(130% 120% at 50% 0%, rgba(28, 25, 60, 0.96) 0%, rgba(16, 14, 38, 0.98) 45%, rgba(9, 8, 24, 1) 100%);
+  border: 1.5px solid rgba(251, 191, 36, 0.35);
+  box-shadow: 0 0 24px rgba(251, 191, 36, 0.12), 0 -8px 28px rgba(0, 0, 0, 0.85), inset 0 0 14px rgba(168, 85, 247, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(24px);
   padding: 6px 12px 6px;
 }
 
@@ -609,7 +609,7 @@ body {
     justify-content: center !important;
     gap: 14px !important;
     padding: 8px 18px 8px !important;
-    border-radius: 22px !important;
+    border-radius: 24px !important;
   }
   .wordx-game-shell .game-rack-module {
     margin: 0 !important;
@@ -646,15 +646,15 @@ body {
 }
 
 .wordx-game-shell .game-tile-tray {
-  border: 1px solid rgba(56, 189, 248, 0.22) !important;
+  border: 1px solid rgba(251, 191, 36, 0.25) !important;
   border-radius: 16px !important;
-  background: radial-gradient(120% 100% at 50% 0%, rgba(14, 28, 48, 0.95) 0%, rgba(5, 10, 20, 0.98) 100%) !important;
-  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+  background: radial-gradient(120% 100% at 50% 0%, rgba(18, 16, 42, 0.96) 0%, rgba(7, 6, 18, 0.98) 100%) !important;
+  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.45) !important;
 }
 .wordx-game-shell .game-power-strip {
-  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 12px !important;
-  background: radial-gradient(120% 100% at 50% 0%, rgba(12, 24, 42, 0.98) 0%, rgba(4, 9, 18, 1) 100%) !important;
+  background: radial-gradient(120% 100% at 50% 0%, rgba(17, 15, 38, 0.96) 0%, rgba(6, 5, 16, 1) 100%) !important;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.08) !important;
   padding: 3px 6px !important;
   min-height: 36px !important;

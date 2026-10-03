@@ -50,7 +50,7 @@ export const LetterBagCard: React.FC<LetterBagCardProps> = ({
 
         {/* Right: Giant Golden Starlight Tile Count & Chevron */}
         <div className="flex items-center gap-2 shrink-0 relative z-10">
-          <span className="text-2xl sm:text-3xl font-black font-maple bg-gradient-to-b from-amber-100 via-amber-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(245,158,11,0.7)] tabular-nums leading-none">
+          <span className="inline-block pr-1 text-2xl sm:text-3xl font-black font-maple bg-gradient-to-b from-amber-100 via-amber-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(245,158,11,0.7)] tabular-nums leading-none">
             {tileBagCount}
           </span>
           <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all" />

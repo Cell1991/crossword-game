@@ -611,18 +611,18 @@ export const PowerCardBar = memo(function PowerCardBar({
             <div
               key={`empty-card-slot-${slotIndex}`}
               title={`Power Card Slot ${slotIndex + 1} (Empty)`}
-              className="group relative flex h-7 sm:h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border border-sky-400/25 bg-gradient-to-b from-[#0b1424]/90 via-[#0d1c33]/70 to-[#070e1c]/90 px-2 py-0.5 select-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.7),0_0_8px_rgba(56,189,248,0.08)] transition-all overflow-hidden"
+              className="group relative flex h-7 sm:h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-gradient-to-b from-[#14122d]/90 via-[#0e0d24]/80 to-[#080718]/90 px-2 py-0.5 select-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.8),0_0_8px_rgba(251,191,36,0.06)] transition-all overflow-hidden"
             >
               {/* Top Glass Specular Line */}
-              <div className="absolute inset-x-2 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/30 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-2 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/25 to-transparent pointer-events-none" />
 
               {/* Slot Indicator */}
-              <div className="flex items-center justify-center w-3.5 h-3.5 rounded bg-sky-400/15 border border-sky-300/30 text-sky-300 shadow-[0_0_6px_rgba(56,189,248,0.2)]">
+              <div className="flex items-center justify-center w-3.5 h-3.5 rounded bg-amber-400/15 border border-amber-300/30 text-amber-300 shadow-[0_0_6px_rgba(251,191,36,0.2)]">
                 <span className="text-[9px] font-black">{slotIndex + 1}</span>
               </div>
 
-              {/* Holographic Text */}
-              <span className="text-[9.5px] sm:text-[10.5px] font-extrabold tracking-wider text-sky-300/70 truncate">
+              {/* Celestial Text */}
+              <span className="text-[9.5px] sm:text-[10.5px] font-extrabold tracking-wider text-slate-300/80 truncate">
                 CARD {slotIndex + 1}
               </span>
             </div>

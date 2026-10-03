@@ -138,7 +138,7 @@ export const TileRack = memo(function TileRack({
       {/* Compact High-Tech Gaming Console Dock */}
       <div className="game-control-layout relative flex w-full flex-col lg:flex-row items-center justify-center gap-1.5 sm:gap-2 lg:gap-4">
         {/* Specular Edge Highlight Trim */}
-        <div aria-hidden="true" className="pedestal-top-glint absolute inset-x-8 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent pointer-events-none" />
+        <div aria-hidden="true" className="pedestal-top-glint absolute inset-x-8 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-300/70 to-transparent pointer-events-none" />
 
         {/* LEFT / CENTER: 7-TILE RACK & POWER CARDS */}
         <div className="game-rack-module game-rack-center relative order-1 flex w-full max-w-full shrink-0 flex-col items-center gap-1.5 lg:w-[344px] lg:max-w-[344px] overflow-visible">
@@ -148,8 +148,8 @@ export const TileRack = memo(function TileRack({
               ref={rackRef}
               className={`game-tile-tray relative flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl border px-2 py-1.5 sm:w-auto sm:gap-1.5 sm:px-2.5 sm:py-1.5 min-h-[52px] sm:min-h-[56px] ${
                 isExternalDragActive
-                  ? 'border-cyan-300/80 bg-cyan-950/40 ring-2 ring-cyan-300/40'
-                  : 'border-white/10 bg-[#070f1a]/90 shadow-[inset_0_2px_8px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)]'
+                  ? 'border-amber-300/80 bg-amber-950/40 ring-2 ring-amber-300/40'
+                  : 'border-amber-400/25 bg-[#09081a]/90 shadow-[inset_0_2px_8px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.1)]'
               } transition-all`}
             >
               {slots.map((tile, slotIndex) => {
@@ -159,13 +159,13 @@ export const TileRack = memo(function TileRack({
                       key={`slot-${slotIndex}`}
                       data-rack-slot={slotIndex}
                       aria-hidden="true"
-                      className={`relative shrink-0 h-[44px] w-[38px] sm:h-[46px] sm:w-[42px] rounded-[10px] border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:rounded-xl ${
+                      className={`relative shrink-0 h-[44px] w-[38px] sm:h-[46px] sm:w-[42px] rounded-[10px] border border-indigo-950/70 bg-[#060516]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.85)] transition-all sm:rounded-xl ${
                         isExternalDragActive
-                          ? 'ring-1 ring-sky-400/40'
+                          ? 'ring-1 ring-amber-400/40'
                           : ''
                       }`}
                     >
-                      <span className="absolute inset-[6px] rounded-md border border-dashed border-sky-400/20" />
+                      <span className="absolute inset-[6px] rounded-md border border-dashed border-amber-400/20" />
                     </div>
                   );
                 }
@@ -184,13 +184,13 @@ export const TileRack = memo(function TileRack({
                     {/* Slot frame / seat behind tile */}
                     <div
                       aria-hidden="true"
-                      className={`absolute inset-0 rounded-[10px] border border-blue-900/40 bg-[#060d1c]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.75)] transition-all sm:rounded-xl ${
+                      className={`absolute inset-0 rounded-[10px] border border-indigo-950/70 bg-[#060516]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.85)] transition-all sm:rounded-xl ${
                         isExternalDragActive
-                          ? 'ring-1 ring-sky-400/40'
+                          ? 'ring-1 ring-amber-400/40'
                           : ''
                       }`}
                     >
-                      <span className="absolute inset-[6px] rounded-md border border-dashed border-sky-400/20" />
+                      <span className="absolute inset-[6px] rounded-md border border-dashed border-amber-400/20" />
                     </div>
 
                     {/* Tile Button with GPU CSS transforms */}
@@ -203,16 +203,16 @@ export const TileRack = memo(function TileRack({
                       onPointerUp={(event) => handlePointerUp(event, tile)}
                       disabled={!canStageMove}
                       aria-pressed={isExchanging ? isMarkedForExchange : undefined}
-                      className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-100/80 font-sans transition-transform duration-100 select-none touch-none overflow-hidden sm:rounded-xl active:scale-95 ${
+                      className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-100/80 font-sans select-none touch-none overflow-hidden sm:rounded-xl active:scale-95 ${
                         isDragging
-                          ? 'z-20 scale-105 -translate-y-2.5 opacity-40 shadow-2xl cursor-grabbing'
+                          ? 'z-20 scale-105 -translate-y-2.5 opacity-40 shadow-2xl cursor-grabbing transition-none'
                           : isMarkedForExchange
-                          ? '-translate-y-2.5 border-2 border-amber-100 shadow-lg shadow-amber-500/40 ring-4 ring-amber-300/70 cursor-pointer'
+                          ? '-translate-y-2.5 border-2 border-amber-100 shadow-lg shadow-amber-500/40 ring-4 ring-amber-300/70 cursor-pointer transition-transform duration-100'
                           : isSelected
-                          ? '-translate-y-2.5 border-2 border-cyan-300 shadow-[0_0_18px_rgba(59,130,246,0.55)] ring-4 ring-cyan-400/60'
+                          ? '-translate-y-2.5 border-2 border-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.6)] ring-4 ring-amber-400/50 transition-transform duration-100'
                           : canStageMove
-                          ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_6px_12px_rgba(74,34,8,0.48),0_2px_4px_rgba(34,24,20,0.35)] hover:-translate-y-1 hover:brightness-110 cursor-pointer'
-                          : 'opacity-65 cursor-not-allowed shadow-md'
+                          ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_6px_12px_rgba(74,34,8,0.48),0_2px_4px_rgba(34,24,20,0.35)] hover:-translate-y-1 hover:brightness-110 cursor-pointer transition-transform duration-100'
+                          : 'opacity-65 cursor-not-allowed shadow-md transition-none'
                       }`}
                     >
                       {/* 3D Specular Top Bevel Glass Highlight */}
@@ -251,12 +251,12 @@ export const TileRack = memo(function TileRack({
         </div>
 
         {/* RIGHT / BOTTOM: ACTION CONTROLS */}
-        {/* DESKTOP VIEW (>= 1024px): 2 BALANCED ROWS WITH FULL TEXT LABELS (Original PC UI) */}
+        {/* DESKTOP VIEW (>= 1024px): 2 BALANCED ROWS WITH FULL TEXT LABELS */}
         <div className="game-actions-container hidden lg:flex order-2 w-[320px] shrink-0 flex-col gap-1.5">
           {/* Desktop Row 1: Utility Controls (Recall, Shuffle, Swap) */}
           <div className="grid grid-cols-3 gap-1.5 w-full">
             {isExchanging ? (
-              <div className="col-span-3 flex items-center justify-between gap-2 px-2 py-1 bg-rose-950/40 border border-rose-700/50 rounded-xl">
+              <div className="col-span-3 flex items-center justify-between gap-2 px-2 py-1 bg-rose-950/50 border border-rose-700/60 rounded-xl">
                 <motion.button
                   onClick={onCancelExchange}
                   disabled={isSubmitting}
@@ -281,8 +281,8 @@ export const TileRack = memo(function TileRack({
                   whileTap={hasTemporaryTiles ? { scale: 0.96 } : undefined}
                   className={`flex h-[34px] sm:h-[36px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs transition-all select-none ${
                     hasTemporaryTiles
-                      ? 'bg-rose-950/90 text-rose-200 hover:bg-rose-900 border border-rose-600/80 cursor-pointer shadow-md shadow-rose-950/40'
-                      : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                      ? 'bg-[#2e0e1c]/90 text-rose-200 hover:bg-[#3f1225] border border-rose-600/80 cursor-pointer shadow-md shadow-rose-950/40'
+                      : 'bg-[#13122c]/70 text-slate-500 border border-white/5 cursor-not-allowed'
                   }`}
                   title="Recall placed tiles to rack"
                 >
@@ -296,7 +296,7 @@ export const TileRack = memo(function TileRack({
                   disabled={tileCount < 2 || isSubmitting}
                   whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.02 } : undefined}
                   whileTap={tileCount >= 2 && !isSubmitting ? { scale: 0.96 } : undefined}
-                  className="flex h-[34px] sm:h-[36px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs text-amber-200 hover:text-white bg-[#221808]/80 hover:bg-[#33240c] border border-amber-500/40 hover:border-amber-400 disabled:text-slate-500 disabled:bg-[#152234]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
+                  className="flex h-[34px] sm:h-[36px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs text-amber-200 hover:text-white bg-[#241a08]/80 hover:bg-[#36260c] border border-amber-500/45 hover:border-amber-400 disabled:text-slate-500 disabled:bg-[#13122c]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
                   title="Shuffle rack tiles"
                 >
                   <Shuffle className="w-3.5 h-3.5 text-amber-400" />
@@ -309,10 +309,10 @@ export const TileRack = memo(function TileRack({
                   disabled={!canStartExchange}
                   whileHover={canStartExchange ? { scale: 1.02 } : undefined}
                   whileTap={canStartExchange ? { scale: 0.96 } : undefined}
-                  className="flex h-[34px] sm:h-[36px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs text-sky-200 hover:text-white bg-[#0a1e32]/80 hover:bg-[#112d4a] border border-sky-500/40 hover:border-sky-400 disabled:text-slate-500 disabled:bg-[#152234]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
+                  className="flex h-[34px] sm:h-[36px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs text-indigo-200 hover:text-white bg-[#101438]/80 hover:bg-[#181f54] border border-indigo-500/45 hover:border-indigo-400 disabled:text-slate-500 disabled:bg-[#13122c]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
                   title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in the bag' : 'Swap tiles with the bag (uses your turn)'}
                 >
-                  <ArrowLeftRight className="w-3.5 h-3.5 text-sky-400" />
+                  <ArrowLeftRight className="w-3.5 h-3.5 text-indigo-300" />
                   <span>Swap</span>
                 </motion.button>
               </>
@@ -329,8 +329,8 @@ export const TileRack = memo(function TileRack({
                 whileTap={canConfirmExchange ? { scale: 0.96 } : undefined}
                 className={`flex w-full h-[38px] items-center justify-center gap-2 rounded-xl font-black text-xs transition-all ${
                   canConfirmExchange
-                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-[0_0_16px_rgba(14,165,233,0.5)] border border-sky-300 cursor-pointer'
-                    : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-indigo-500 via-blue-600 to-indigo-600 text-white shadow-[0_0_16px_rgba(99,102,241,0.5)] border border-indigo-300 cursor-pointer'
+                    : 'bg-[#13122c]/80 text-slate-500 border border-white/5 cursor-not-allowed'
                 }`}
               >
                 <ArrowLeftRight className="w-4 h-4" />
@@ -344,7 +344,7 @@ export const TileRack = memo(function TileRack({
                   disabled={isSubmitting}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.96 }}
-                  className="flex h-[38px] items-center justify-center rounded-xl text-xs sm:text-sm font-bold bg-[#152234] hover:bg-[#20344f] text-slate-300 hover:text-white border border-white/10 cursor-pointer transition-all shadow-sm"
+                  className="flex h-[38px] items-center justify-center rounded-xl text-xs sm:text-sm font-bold bg-[#141530] hover:bg-[#1f2148] text-slate-300 hover:text-white border border-white/10 cursor-pointer transition-all shadow-sm"
                 >
                   <span>Cancel</span>
                 </motion.button>
@@ -373,7 +373,7 @@ export const TileRack = memo(function TileRack({
                       ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.7)] border border-emerald-200 hover:brightness-110 cursor-pointer font-black'
                       : isMyTurn && hasTemporaryTiles
                       ? 'bg-rose-950/90 text-rose-300 border border-rose-600/80 shadow-[0_0_12px_rgba(244,63,94,0.35)] cursor-not-allowed'
-                      : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                      : 'bg-[#13122c]/80 text-slate-500 border border-white/5 cursor-not-allowed'
                   }`}
                 >
                   <Check className={`w-4 h-4 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-slate-950' : 'text-slate-500'}`} />
@@ -394,8 +394,8 @@ export const TileRack = memo(function TileRack({
                   whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.96 } : undefined}
                   className={`flex h-[38px] items-center justify-center gap-1.5 rounded-xl font-bold text-xs transition-all select-none ${
                     isMyTurn && !hasTemporaryTiles
-                      ? 'bg-[#152234] hover:bg-[#20344f] text-slate-200 hover:text-white border border-slate-600/60 hover:border-sky-400/60 cursor-pointer shadow-sm'
-                      : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                      ? 'bg-[#141530] hover:bg-[#1f2148] text-slate-200 hover:text-white border border-slate-700/60 hover:border-amber-400/50 cursor-pointer shadow-sm'
+                      : 'bg-[#13122c]/80 text-slate-500 border border-white/5 cursor-not-allowed'
                   }`}
                   title="Pass your turn"
                 >
@@ -407,7 +407,7 @@ export const TileRack = memo(function TileRack({
           </div>
         </div>
 
-        {/* MOBILE VIEW (< 1024px): 1 ULTRA-SLEEK COMPACT ROW (Icons only) */}
+        {/* MOBILE VIEW (< 1024px): 1 ULTRA-SLEEK COMPACT ROW */}
         <div className="game-actions-container flex lg:hidden order-2 w-full max-w-[340px] sm:max-w-[360px] shrink-0 flex-col">
           {isExchanging ? (
             <div className="grid grid-cols-[1fr_2fr] gap-1.5 w-full">
@@ -433,8 +433,8 @@ export const TileRack = memo(function TileRack({
                 whileTap={canConfirmExchange ? { scale: 0.96 } : undefined}
                 className={`flex h-[36px] items-center justify-center gap-1.5 rounded-xl font-black text-xs transition-all ${
                   canConfirmExchange
-                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-[0_0_16px_rgba(14,165,233,0.5)] border border-sky-300 cursor-pointer'
-                    : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-indigo-500 via-blue-600 to-indigo-600 text-white shadow-[0_0_16px_rgba(99,102,241,0.5)] border border-indigo-300 cursor-pointer'
+                    : 'bg-[#13122c]/80 text-slate-500 border border-white/5 cursor-not-allowed'
                 }`}
               >
                 <ArrowLeftRight className="w-4 h-4" />
@@ -449,7 +449,7 @@ export const TileRack = memo(function TileRack({
                 disabled={isSubmitting}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
-                className="flex h-[36px] items-center justify-center gap-1 rounded-xl text-xs font-bold bg-[#152234] hover:bg-[#20344f] text-slate-300 hover:text-white border border-white/10 cursor-pointer transition-all shadow-sm"
+                className="flex h-[36px] items-center justify-center gap-1 rounded-xl text-xs font-bold bg-[#141530] hover:bg-[#1f2148] text-slate-300 hover:text-white border border-white/10 cursor-pointer transition-all shadow-sm"
               >
                 <X className="w-4 h-4 text-slate-400" />
                 <span>Cancel</span>
@@ -477,15 +477,15 @@ export const TileRack = memo(function TileRack({
                 whileTap={hasTemporaryTiles ? { scale: 0.95 } : undefined}
                 className={`flex h-[36px] items-center justify-center gap-1 rounded-xl transition-all select-none ${
                   hasTemporaryTiles
-                    ? 'bg-rose-950/90 text-rose-200 hover:bg-rose-900 border border-rose-600/80 cursor-pointer shadow-md shadow-rose-950/40'
-                    : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                    ? 'bg-[#2e0e1c]/90 text-rose-200 hover:bg-[#3f1225] border border-rose-600/80 cursor-pointer shadow-md shadow-rose-950/40'
+                    : 'bg-[#13122c]/70 text-slate-500 border border-white/5 cursor-not-allowed'
                 }`}
                 title={`Recall placed tiles${hasTemporaryTiles ? ` (${stagedTileCount})` : ''}`}
                 aria-label="Recall placed tiles"
               >
                 <RotateCcw className={`w-4 h-4 ${hasTemporaryTiles ? 'text-rose-400' : 'text-slate-500'}`} />
                 {hasTemporaryTiles && (
-                  <span className="text-[10px] font-mono font-bold leading-none text-rose-200">{stagedTileCount}</span>
+                  <span className="text-[10px] font-bold leading-none text-rose-200">{stagedTileCount}</span>
                 )}
               </motion.button>
 
@@ -495,7 +495,7 @@ export const TileRack = memo(function TileRack({
                 disabled={tileCount < 2 || isSubmitting}
                 whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.05 } : undefined}
                 whileTap={tileCount >= 2 && !isSubmitting ? { scale: 0.95 } : undefined}
-                className="flex h-[36px] items-center justify-center rounded-xl text-amber-200 hover:text-white bg-[#221808]/80 hover:bg-[#33240c] border border-amber-500/40 hover:border-amber-400 disabled:text-slate-500 disabled:bg-[#152234]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
+                className="flex h-[36px] items-center justify-center rounded-xl text-amber-200 hover:text-white bg-[#241a08]/80 hover:bg-[#36260c] border border-amber-500/45 hover:border-amber-400 disabled:text-slate-500 disabled:bg-[#13122c]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
                 title="Shuffle rack tiles"
                 aria-label="Shuffle rack tiles"
               >
@@ -508,11 +508,11 @@ export const TileRack = memo(function TileRack({
                 disabled={!canStartExchange}
                 whileHover={canStartExchange ? { scale: 1.05 } : undefined}
                 whileTap={canStartExchange ? { scale: 0.95 } : undefined}
-                className="flex h-[36px] items-center justify-center rounded-xl text-sky-200 hover:text-white bg-[#0a1e32]/80 hover:bg-[#112d4a] border border-sky-500/40 hover:border-sky-400 disabled:text-slate-500 disabled:bg-[#152234]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
+                className="flex h-[36px] items-center justify-center rounded-xl text-indigo-200 hover:text-white bg-[#101438]/80 hover:bg-[#181f54] border border-indigo-500/45 hover:border-indigo-400 disabled:text-slate-500 disabled:bg-[#13122c]/40 disabled:border-white/5 disabled:cursor-not-allowed shadow-sm transition-all cursor-pointer"
                 title={tileBagCount < 7 ? 'Exchanging needs at least 7 tiles in bag' : 'Swap tiles with bag'}
                 aria-label="Swap tiles with bag"
               >
-                <ArrowLeftRight className="w-4 h-4 text-sky-400" />
+                <ArrowLeftRight className="w-4 h-4 text-indigo-300" />
               </motion.button>
 
               {/* 4. Pass */}
@@ -523,13 +523,13 @@ export const TileRack = memo(function TileRack({
                 whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.95 } : undefined}
                 className={`flex h-[36px] items-center justify-center rounded-xl transition-all select-none ${
                   isMyTurn && !hasTemporaryTiles
-                    ? 'bg-[#152234] hover:bg-[#20344f] text-slate-200 hover:text-white border border-slate-600/60 hover:border-sky-400/60 cursor-pointer shadow-sm'
-                    : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                    ? 'bg-[#141530] hover:bg-[#1f2148] text-slate-200 hover:text-white border border-slate-700/60 hover:border-amber-400/50 cursor-pointer shadow-sm'
+                    : 'bg-[#13122c]/80 text-slate-500 border border-white/5 cursor-not-allowed'
                 }`}
                 title="Pass your turn"
                 aria-label="Pass your turn"
               >
-                <SkipForward className="w-4 h-4 text-slate-400" />
+                <SkipForward className="w-3.5 h-3.5 text-slate-400" />
               </motion.button>
 
               {/* 5. Primary Confirm / Play Move Button */}
@@ -543,7 +543,7 @@ export const TileRack = memo(function TileRack({
                     ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 text-slate-950 shadow-[0_0_18px_rgba(52,211,153,0.7)] border border-emerald-200 hover:brightness-110 cursor-pointer font-black'
                     : isMyTurn && hasTemporaryTiles
                     ? 'bg-rose-950/90 text-rose-300 border border-rose-600/80 shadow-[0_0_12px_rgba(244,63,94,0.35)] cursor-not-allowed'
-                    : 'bg-[#152234]/80 text-slate-500 border border-white/5 cursor-not-allowed'
+                    : 'bg-[#13122c]/80 text-slate-500 border border-white/5 cursor-not-allowed'
                 }`}
                 title={
                   placementValid === true && estimatedScore !== undefined && estimatedScore > 0
@@ -554,7 +554,7 @@ export const TileRack = memo(function TileRack({
               >
                 <Check className={`w-4 h-4 stroke-[3] ${isMyTurn && hasTemporaryTiles && placementValid === true ? 'text-slate-950' : 'text-slate-500'}`} />
                 {placementValid === true && estimatedScore !== undefined && estimatedScore > 0 && (
-                  <span className="font-mono text-xs font-black tracking-tight text-slate-950">
+                  <span className="text-xs font-black tracking-tight text-slate-950">
                     +{estimatedScore}
                   </span>
                 )}

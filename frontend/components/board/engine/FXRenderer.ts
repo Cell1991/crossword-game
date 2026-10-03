@@ -153,7 +153,8 @@ export class FXRenderer {
     trailMap: Map<string, { row: number; col: number; time: number }> | undefined,
     offset: { x: number; y: number },
     cellSize: number,
-    now: number
+    now: number,
+    lowPower: boolean = false
   ): void {
     if (!activeHover && (!trailMap || trailMap.size === 0)) return;
 
@@ -163,8 +164,8 @@ export class FXRenderer {
 
     ctx.save();
 
-    // 1. Render fading comet trail cells
-    if (trailMap) {
+    // 1. Render fading comet trail cells (desktop only)
+    if (trailMap && !lowPower) {
       for (const [key, item] of trailMap.entries()) {
         const isCurrent = activeHover && activeHover.row === item.row && activeHover.col === item.col;
         if (isCurrent) continue;
@@ -198,41 +199,57 @@ export class FXRenderer {
       }
     }
 
-    // 2. Render active hovered cell with radiant celestial starlight aura
+    // 2. Render active hovered cell with radiant starlight aura
     if (activeHover) {
       const x = offset.x + activeHover.col * cellSize + pad;
       const y = offset.y + activeHover.row * cellSize + pad;
       const w = cellSize - pad * 2;
 
-      // Inner radiant flare
-      const centerFlare = ctx.createRadialGradient(
-        x + w / 2, y + w / 2, 0,
-        x + w / 2, y + w / 2, w * 0.75
-      );
-      centerFlare.addColorStop(0, 'rgba(255, 255, 255, 0.38)');
-      centerFlare.addColorStop(0.5, 'rgba(255, 255, 255, 0.20)');
-      centerFlare.addColorStop(1, 'rgba(255, 255, 255, 0.06)');
+      if (lowPower) {
+        // Mobile / lowPower: Fast, zero-blur GPU rasterized starlight aura
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+        drawRoundedRect(ctx, x, y, w, w, radius);
+        ctx.fill();
 
-      ctx.fillStyle = centerFlare;
-      drawRoundedRect(ctx, x, y, w, w, radius);
-      ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = Math.max(2, cellSize * 0.05);
+        drawRoundedRect(ctx, x, y, w, w, radius);
+        ctx.stroke();
 
-      // Outer luminous starlight halo
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.95)';
-      ctx.shadowBlur = Math.max(8, cellSize * 0.24);
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = Math.max(2, cellSize * 0.045);
-      drawRoundedRect(ctx, x, y, w, w, radius);
-      ctx.stroke();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 1;
+        const innerPad = 1;
+        drawRoundedRect(ctx, x + innerPad, y + innerPad, w - innerPad * 2, w - innerPad * 2, Math.max(1, radius - innerPad));
+        ctx.stroke();
+      } else {
+        // Desktop: Full celestial starlight flare with halo
+        const centerFlare = ctx.createRadialGradient(
+          x + w / 2, y + w / 2, 0,
+          x + w / 2, y + w / 2, w * 0.75
+        );
+        centerFlare.addColorStop(0, 'rgba(255, 255, 255, 0.38)');
+        centerFlare.addColorStop(0.5, 'rgba(255, 255, 255, 0.20)');
+        centerFlare.addColorStop(1, 'rgba(255, 255, 255, 0.06)');
 
-      // Inner specular crisp ring
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.lineWidth = 1;
-      const innerPad = 1;
-      drawRoundedRect(ctx, x + innerPad, y + innerPad, w - innerPad * 2, w - innerPad * 2, Math.max(1, radius - innerPad));
-      ctx.stroke();
+        ctx.fillStyle = centerFlare;
+        drawRoundedRect(ctx, x, y, w, w, radius);
+        ctx.fill();
+
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.95)';
+        ctx.shadowBlur = Math.max(8, cellSize * 0.24);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = Math.max(2, cellSize * 0.045);
+        drawRoundedRect(ctx, x, y, w, w, radius);
+        ctx.stroke();
+
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 1;
+        const innerPad = 1;
+        drawRoundedRect(ctx, x + innerPad, y + innerPad, w - innerPad * 2, w - innerPad * 2, Math.max(1, radius - innerPad));
+        ctx.stroke();
+      }
     }
 
     ctx.restore();

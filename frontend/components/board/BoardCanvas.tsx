@@ -133,12 +133,17 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   }, [camera, lowPower]);
 
   const startHoverAnimLoop = useCallback(() => {
+    if (lowPower) {
+      // Mobile / lowPower: instant single draw on cell transition with 0ms CPU overhead
+      draw();
+      return;
+    }
     if (dragHoverAnimRef.current !== null) return;
     const step = (time: number) => {
       draw();
-      let stillAnimating = Boolean(currentHoverCellRef.current);
+      let stillAnimating = false;
       for (const [key, item] of hoverTrailMapRef.current.entries()) {
-        if (time - item.time < 350) {
+        if (time - item.time < 320) {
           stillAnimating = true;
         } else {
           hoverTrailMapRef.current.delete(key);
@@ -152,7 +157,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       }
     };
     dragHoverAnimRef.current = requestAnimationFrame(step);
-  }, [draw]);
+  }, [draw, lowPower]);
 
   const handleHoverCellChange = useCallback((cell: CellPosition | null) => {
     const prev = currentHoverCellRef.current;
@@ -167,7 +172,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       sceneRef.current.dragHoverCell = cell;
       sceneRef.current.dragHoverTrails = hoverTrailMapRef.current;
     }
-    if (cell) {
+    if (cell && !lowPower) {
       hoverTrailMapRef.current.set(`${cell.row}_${cell.col}`, {
         row: cell.row,
         col: cell.col,
@@ -175,7 +180,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       });
     }
     startHoverAnimLoop();
-  }, [startHoverAnimLoop]);
+  }, [lowPower, startHoverAnimLoop]);
 
   useEffect(() => {
     onRegisterHoverHandler?.(handleHoverCellChange);

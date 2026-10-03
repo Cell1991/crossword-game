@@ -24,7 +24,7 @@ export const FloatingTile: React.FC<FloatingTileProps> = ({ letter, value, posit
   return createPortal(
     <div
       ref={ref}
-      className="tile-face pointer-events-none fixed left-0 top-0 z-[9999] flex h-14 w-14 flex-col items-center justify-center rounded-xl border border-amber-100/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_14px_28px_rgba(71,31,5,0.58)] overflow-hidden will-change-transform"
+      className="tile-face pointer-events-none fixed left-0 top-0 z-[9999] flex h-14 w-14 flex-col items-center justify-center rounded-xl border border-amber-100/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_14px_28px_rgba(71,31,5,0.58)] overflow-hidden will-change-transform transform-gpu"
       style={{
         ...TILE_THEME_STYLE,
         transform: `translate3d(${position.x}px, ${position.y}px, 0) translate(-50%, -50%) rotate(2deg) scale(1.05)`,

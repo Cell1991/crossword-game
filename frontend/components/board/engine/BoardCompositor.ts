@@ -85,7 +85,8 @@ export class BoardCompositor {
         config.dragHoverTrails,
         offset,
         cellSize,
-        config.animTime ?? performance.now()
+        config.animTime ?? performance.now(),
+        config.lowPower
       );
     }
 
