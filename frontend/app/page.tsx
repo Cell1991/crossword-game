@@ -61,7 +61,7 @@ export default function HomePage() {
   const [customTurnCount, setCustomTurnCount] = useState('28');
   const [hpOption, setHpOption] = useState('100');
   const [customHp, setCustomHp] = useState('100');
-  const [playerLimitOption, setPlayerLimitOption] = useState<'4' | '6' | '8' | '10' | 'custom'>('4');
+  const [playerLimitOption, setPlayerLimitOption] = useState<'4' | 'custom'>('4');
   const [customMaxPlayers, setCustomMaxPlayers] = useState('10');
   const [enableGrimoire, setEnableGrimoire] = useState(false);
   const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>('medium');
@@ -697,31 +697,65 @@ export default function HomePage() {
                 </div>
               )}
 
-              {/* Player Limit */}
+              {/* Player Limit & Grimoire Row */}
               <fieldset>
-                <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Player Limit</legend>
-                <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
-                  {([
-                    ['4', '4P'],
-                    ['6', '6P'],
-                    ['8', '8P'],
-                    ['10', '10P'],
-                    ['custom', 'Custom'],
-                  ] as const).map(([val, label]) => (
-                    <button
-                      key={val}
-                      type="button"
-                      aria-pressed={playerLimitOption === val}
-                      onClick={() => setPlayerLimitOption(val)}
-                      className={`rounded-xl border py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
-                        playerLimitOption === val
-                          ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
-                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                <div className="mb-1.5 flex items-center justify-between">
+                  <legend className="text-xs font-semibold text-slate-300">Player Limit</legend>
+                  <span className="text-xs font-semibold text-slate-300">Grimoire</span>
+                </div>
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                  <button
+                    type="button"
+                    aria-pressed={playerLimitOption === '4'}
+                    onClick={() => setPlayerLimitOption('4')}
+                    className={`rounded-xl border py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                      playerLimitOption === '4'
+                        ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
+                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    4P
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={playerLimitOption === 'custom'}
+                    onClick={() => setPlayerLimitOption('custom')}
+                    className={`rounded-xl border py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                      playerLimitOption === 'custom'
+                        ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
+                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    Custom
+                  </button>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={enableGrimoire}
+                    onClick={() => setEnableGrimoire(prev => !prev)}
+                    className={`flex items-center justify-between gap-1 sm:gap-1.5 rounded-xl border px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                      enableGrimoire
+                        ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.15)]'
+                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <BookMarked className={`h-4 w-4 ${enableGrimoire ? 'text-amber-300' : 'text-slate-400'}`} />
+                      <span className="font-bold text-white text-xs sm:text-sm">Grimoire</span>
+                    </div>
+                    <span
+                      aria-hidden="true"
+                      className={`relative inline-flex h-4 w-7 shrink-0 rounded-full border border-transparent transition-colors duration-200 ease-in-out ${
+                        enableGrimoire ? 'bg-amber-400' : 'bg-slate-600'
                       }`}
                     >
-                      {label}
-                    </button>
-                  ))}
+                      <span
+                        className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          enableGrimoire ? 'translate-x-3' : 'translate-x-0'
+                        }`}
+                      />
+                    </span>
+                  </button>
                 </div>
               </fieldset>
 
@@ -759,48 +793,6 @@ export default function HomePage() {
                   </button>
                 </div>
               )}
-
-              {/* Grimoire Mode (โหมดตำรา) */}
-              <div className="rounded-xl border border-white/10 bg-slate-800/40 p-3 sm:p-3.5 flex items-center justify-between gap-3">
-                <div className="flex items-start gap-2.5">
-                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
-                    enableGrimoire 
-                      ? 'border-amber-400/50 bg-amber-400/20 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.3)]' 
-                      : 'border-white/10 bg-slate-800/80 text-slate-400'
-                  }`}>
-                    <BookMarked className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs sm:text-sm font-bold text-white">โหมดตำรา (Grimoire Mode)</span>
-                      <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
-                        enableGrimoire ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : 'bg-slate-700/60 text-slate-400'
-                      }`}>
-                        {enableGrimoire ? 'เปิดใช้งาน' : 'ปิด (Default)'}
-                      </span>
-                    </div>
-                    <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
-                      แนะนำคำศัพท์ 3 ตัวอักษรขึ้นไปที่สามารถต่อได้บนกระดาน (สูงสุด 20 คำ)
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={enableGrimoire}
-                  onClick={() => setEnableGrimoire(prev => !prev)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    enableGrimoire ? 'bg-amber-400' : 'bg-slate-700'
-                  }`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      enableGrimoire ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
 
               {/* Your Name */}
               <div>

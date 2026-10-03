@@ -254,7 +254,7 @@ export const GameHud: React.FC<GameHudProps> = ({
                   ? 'border-amber-400/50 bg-gradient-to-b from-[#251a0c]/90 via-[#181208]/95 to-[#0e0a04]/95 text-amber-200 hover:text-white hover:border-amber-400/80 hover:shadow-[0_0_18px_rgba(245,158,11,0.35)]'
                   : 'border-slate-700/50 bg-gradient-to-b from-[#161832]/80 to-[#0c0e1e]/90 text-slate-400 hover:text-rose-300 hover:border-rose-400/50'
               }`}
-              title={isGrimoireEnabled ? 'ตำราคำศัพท์ (Grimoire Word Guide)' : 'ตำราคำศัพท์ (ล็อค)'}
+              title={isGrimoireEnabled ? 'Grimoire (Word Guide)' : 'Grimoire (Locked)'}
               aria-label="Open Word Grimoire"
             >
               <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent pointer-events-none" />
@@ -264,7 +264,7 @@ export const GameHud: React.FC<GameHudProps> = ({
                 <Lock className="h-3.5 w-3.5 text-rose-400/80 relative z-10" />
               )}
               <span className="relative z-10 font-black text-[11px] sm:text-xs">
-                ตำรา
+                Grimoire
               </span>
             </button>
           )}

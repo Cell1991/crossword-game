@@ -443,7 +443,7 @@ async def get_grimoire_words(
             "enabled": False,
             "words": [],
             "count": 0,
-            "message": "โหมดตำราถูกล็อคเนื่องจากไม่ได้เปิดใช้งานสำหรับห้องนี้",
+            "message": "Grimoire mode is locked because it is disabled for this room.",
         }
 
     # Identify the requesting player
