@@ -37,6 +37,7 @@ import { ConfirmExitModal } from '@/components/game/ConfirmExitModal';
 import { MobileInfoModal } from '@/components/game/MobileInfoModal';
 import BackgroundMusic from '@/components/audio/BackgroundMusic';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
+import { GrimoireModal } from '@/components/game/GrimoireModal';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 import ParticleField from '@/components/effects/ParticleField';
 
@@ -138,6 +139,7 @@ export default function GamePage() {
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isGrimoireOpen, setIsGrimoireOpen] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
   const [scoreBurst, setScoreBurst] = useState<{ score: number; isBingo: boolean; key: number } | null>(null);
 
@@ -682,6 +684,8 @@ export default function GamePage() {
         onExit={handleExit}
         onOpenInfo={() => setIsMobileInfoOpen(true)}
         onOpenGuide={() => setIsGuideOpen(true)}
+        onOpenGrimoire={() => setIsGrimoireOpen(true)}
+        isGrimoireEnabled={Boolean(gameState.enable_grimoire)}
         debugSlot={
           isDebug ? (
             <button
@@ -996,6 +1000,17 @@ export default function GamePage() {
         isOpen
         onClose={() => setIsGuideOpen(false)}
       />}
+
+      {/* Grimoire Word Guide Modal */}
+      <GrimoireModal
+        isOpen={isGrimoireOpen}
+        onClose={() => setIsGrimoireOpen(false)}
+        gameId={gameId}
+        sessionToken={session?.token}
+        playerId={myPlayerId ?? undefined}
+        isGrimoireEnabled={Boolean(gameState.enable_grimoire)}
+        turnNumber={gameState.turn_number ?? 1}
+      />
 
       {isDebug && (
         <DebugPanel

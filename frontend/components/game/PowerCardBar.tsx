@@ -658,9 +658,7 @@ export const PowerCardBar = memo(function PowerCardBar({
               } else if (card === 'SPY_SWAP') {
                 setSpySwapStep('own');
                 setSpyOwnTileIds([]);
-              } else if (card === 'HINT') {
-                onUseSimple('HINT');
-              } else if (card === 'HEAL' || card === 'SHIELD') {
+              } else if (card === 'HEAL' || card === 'HINT' || card === 'SHIELD') {
                 setConfirmingSimpleCard(card);
               } else {
                 onUseSimple(card as SimpleCard);

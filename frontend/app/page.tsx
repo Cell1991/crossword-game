@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, ArrowRight, BookOpen, Bot, Clock, Eye, LogIn, Minus, Plus, RefreshCw, User, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookMarked, BookOpen, Bot, Clock, Eye, LogIn, Minus, Plus, RefreshCw, User, X } from 'lucide-react';
 import { createRoom, getApiBase, getRoom, getRooms, joinRoom, startGame, sessionStore } from '@/lib/api';
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
@@ -63,6 +63,7 @@ export default function HomePage() {
   const [customHp, setCustomHp] = useState('100');
   const [playerLimitOption, setPlayerLimitOption] = useState<'4' | '6' | '8' | '10' | 'custom'>('4');
   const [customMaxPlayers, setCustomMaxPlayers] = useState('10');
+  const [enableGrimoire, setEnableGrimoire] = useState(false);
   const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>('medium');
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
@@ -163,6 +164,7 @@ export default function HomePage() {
         false,
         gameMode === 'HP' ? startingHp : null,
         maxPlayers,
+        enableGrimoire,
       );
       sessionStore.save({
         gameId: res.game_id,
@@ -214,6 +216,7 @@ export default function HomePage() {
         false,
         gameMode === 'HP' ? startingHp : null,
         2,
+        enableGrimoire,
       );
 
       sessionStore.save({
@@ -756,6 +759,48 @@ export default function HomePage() {
                   </button>
                 </div>
               )}
+
+              {/* Grimoire Mode (โหมดตำรา) */}
+              <div className="rounded-xl border border-white/10 bg-slate-800/40 p-3 sm:p-3.5 flex items-center justify-between gap-3">
+                <div className="flex items-start gap-2.5">
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                    enableGrimoire 
+                      ? 'border-amber-400/50 bg-amber-400/20 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.3)]' 
+                      : 'border-white/10 bg-slate-800/80 text-slate-400'
+                  }`}>
+                    <BookMarked className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-bold text-white">โหมดตำรา (Grimoire Mode)</span>
+                      <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
+                        enableGrimoire ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : 'bg-slate-700/60 text-slate-400'
+                      }`}>
+                        {enableGrimoire ? 'เปิดใช้งาน' : 'ปิด (Default)'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+                      แนะนำคำศัพท์ 3 ตัวอักษรขึ้นไปที่สามารถต่อได้บนกระดาน (สูงสุด 20 คำ)
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={enableGrimoire}
+                  onClick={() => setEnableGrimoire(prev => !prev)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    enableGrimoire ? 'bg-amber-400' : 'bg-slate-700'
+                  }`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      enableGrimoire ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
 
               {/* Your Name */}
               <div>
