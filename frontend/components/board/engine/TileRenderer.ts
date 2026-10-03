@@ -50,49 +50,118 @@ function drawStarburst(
   ctx.closePath();
 }
 
-function drawCryoIceFacets(
+function drawSnowflake(
   ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  tileW: number
+  cx: number,
+  cy: number,
+  size: number,
+  alpha = 0.85
 ) {
-  // 1. Diagonal crystalline gloss facet
-  const sheenGrad = ctx.createLinearGradient(x, y, x + tileW * 0.75, y + tileW * 0.75);
-  sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.65)');
-  sheenGrad.addColorStop(0.2, 'rgba(224, 242, 254, 0.3)');
-  sheenGrad.addColorStop(0.5, 'rgba(56, 189, 248, 0)');
-  ctx.fillStyle = sheenGrad;
-  ctx.fillRect(x, y, tileW, tileW);
-
-  // 2. Polygonal Diamond Ice Crystal Cut (Geometric Glaze)
   ctx.save();
+  ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+  ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+  ctx.lineWidth = Math.max(0.9, size * 0.12);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const arms = 6;
+  const angleStep = (Math.PI * 2) / arms;
+
+  // Center hex glint core
   ctx.beginPath();
-  ctx.moveTo(x + tileW * 0.08, y + tileW * 0.08);
-  ctx.lineTo(x + tileW * 0.58, y + tileW * 0.04);
-  ctx.lineTo(x + tileW * 0.38, y + tileW * 0.46);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+  ctx.arc(cx, cy, Math.max(0.6, size * 0.16), 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.beginPath();
-  ctx.moveTo(x + tileW * 0.92, y + tileW * 0.28);
-  ctx.lineTo(x + tileW * 0.96, y + tileW * 0.88);
-  ctx.lineTo(x + tileW * 0.62, y + tileW * 0.68);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(2, 132, 199, 0.4)';
-  ctx.fill();
+  for (let i = 0; i < arms; i++) {
+    const angle = i * angleStep;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
 
-  // 3. Deep sapphire bottom chiseled edge
-  const botIceShade = ctx.createLinearGradient(0, y + tileW * 0.75, 0, y + tileW);
-  botIceShade.addColorStop(0, 'rgba(3, 20, 45, 0)');
-  botIceShade.addColorStop(1, 'rgba(3, 20, 45, 0.7)');
-  ctx.fillStyle = botIceShade;
-  ctx.fillRect(x, y + tileW * 0.75, tileW, tileW * 0.25);
+    // Main radial spine
+    const ex = cx + cos * size;
+    const ey = cy + sin * size;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+
+    // Outer chevron needles
+    const b1x = cx + cos * (size * 0.62);
+    const b1y = cy + sin * (size * 0.62);
+    const perpX = -sin;
+    const perpY = cos;
+    const branchLen = size * 0.32;
+
+    ctx.beginPath();
+    ctx.moveTo(b1x + (perpX * 0.7 + cos * 0.5) * branchLen, b1y + (perpY * 0.7 + sin * 0.5) * branchLen);
+    ctx.lineTo(b1x, b1y);
+    ctx.lineTo(b1x + (-perpX * 0.7 + cos * 0.5) * branchLen, b1y + (-perpY * 0.7 + sin * 0.5) * branchLen);
+    ctx.stroke();
+
+    // Inner chevron needles
+    const b2x = cx + cos * (size * 0.35);
+    const b2y = cy + sin * (size * 0.35);
+    const branchLen2 = size * 0.20;
+
+    ctx.beginPath();
+    ctx.moveTo(b2x + (perpX * 0.7 + cos * 0.5) * branchLen2, b2y + (perpY * 0.7 + sin * 0.5) * branchLen2);
+    ctx.lineTo(b2x, b2y);
+    ctx.lineTo(b2x + (-perpX * 0.7 + cos * 0.5) * branchLen2, b2y + (-perpY * 0.7 + sin * 0.5) * branchLen2);
+    ctx.stroke();
+  }
 
   ctx.restore();
 }
 
-function drawIceCrystals(
+function drawSnowDriftCap(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  ctx.save();
+  
+  // Fluffy organic snow layer resting on top of the tile
+  ctx.beginPath();
+  ctx.moveTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h * 0.20);
+  
+  // Scalloped organic powdered snow accumulation curve
+  ctx.bezierCurveTo(x + w * 0.85, y + h * 0.14, x + w * 0.70, y + h * 0.26, x + w * 0.52, y + h * 0.18);
+  ctx.bezierCurveTo(x + w * 0.38, y + h * 0.12, x + w * 0.20, y + h * 0.28, x + w * 0.06, y + h * 0.16);
+  ctx.lineTo(x, y + h * 0.18);
+  ctx.closePath();
+
+  // Fresh snow gradient: pure diamond white on top to powdery soft ice-blue
+  const snowGrad = ctx.createLinearGradient(0, y, 0, y + h * 0.26);
+  snowGrad.addColorStop(0, '#ffffff');
+  snowGrad.addColorStop(0.55, '#f0f9ff');
+  snowGrad.addColorStop(1, '#bae6fd');
+  ctx.fillStyle = snowGrad;
+  ctx.fill();
+
+  // Crisp snow rim highlight
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Powder snow ambient drop shadow
+  ctx.strokeStyle = 'rgba(2, 132, 199, 0.4)';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(x + w, y + h * 0.20);
+  ctx.bezierCurveTo(x + w * 0.85, y + h * 0.14, x + w * 0.70, y + h * 0.26, x + w * 0.52, y + h * 0.18);
+  ctx.bezierCurveTo(x + w * 0.38, y + h * 0.12, x + w * 0.20, y + h * 0.28, x + w * 0.06, y + h * 0.16);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawFrostLaceAndIce(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -103,43 +172,40 @@ function drawIceCrystals(
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  // 1. Top-Left Frost Crystal Shard / Fracture line
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-  ctx.lineWidth = Math.max(1, cellSize * 0.024);
-  ctx.moveTo(x + tileW * 0.08, y + tileW * 0.24);
-  ctx.lineTo(x + tileW * 0.22, y + tileW * 0.17);
-  ctx.lineTo(x + tileW * 0.32, y + tileW * 0.25);
-  ctx.lineTo(x + tileW * 0.42, y + tileW * 0.14);
-  ctx.stroke();
+  // 1. Angular crystalline facet glazes
+  const sheenGrad = ctx.createLinearGradient(x, y, x + tileW * 0.75, y + tileW * 0.75);
+  sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+  sheenGrad.addColorStop(0.25, 'rgba(224, 242, 254, 0.35)');
+  sheenGrad.addColorStop(0.6, 'rgba(56, 189, 248, 0)');
+  ctx.fillStyle = sheenGrad;
+  ctx.fillRect(x, y, tileW, tileW);
 
-  // Branch offshoot
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(224, 242, 254, 0.75)';
-  ctx.lineWidth = Math.max(0.75, cellSize * 0.016);
-  ctx.moveTo(x + tileW * 0.22, y + tileW * 0.17);
-  ctx.lineTo(x + tileW * 0.2, y + tileW * 0.07);
-  ctx.moveTo(x + tileW * 0.32, y + tileW * 0.25);
-  ctx.lineTo(x + tileW * 0.36, y + tileW * 0.33);
-  ctx.stroke();
+  // 2. Beautiful 6-armed Snowflake rosettes
+  if (cellSize >= 16) {
+    // Top-Right primary snowflake
+    drawSnowflake(ctx, x + tileW * 0.78, y + tileW * 0.26, Math.max(3.5, cellSize * 0.17), 0.9);
+    // Bottom-Left secondary snowflake
+    drawSnowflake(ctx, x + tileW * 0.22, y + tileW * 0.76, Math.max(2.6, cellSize * 0.12), 0.75);
+  }
 
-  // 2. Bottom-Right Frost Spikes / Ice Crystal Cluster
+  // 3. Frost needles & ice crack branches
   ctx.beginPath();
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-  ctx.lineWidth = Math.max(0.85, cellSize * 0.02);
-  ctx.moveTo(x + tileW * 0.92, y + tileW * 0.66);
-  ctx.lineTo(x + tileW * 0.78, y + tileW * 0.78);
-  ctx.lineTo(x + tileW * 0.64, y + tileW * 0.74);
+  ctx.lineWidth = Math.max(0.8, cellSize * 0.02);
+  ctx.moveTo(x + tileW * 0.88, y + tileW * 0.60);
+  ctx.lineTo(x + tileW * 0.72, y + tileW * 0.74);
+  ctx.lineTo(x + tileW * 0.58, y + tileW * 0.70);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.strokeStyle = 'rgba(186, 230, 253, 0.7)';
-  ctx.moveTo(x + tileW * 0.78, y + tileW * 0.78);
-  ctx.lineTo(x + tileW * 0.82, y + tileW * 0.92);
+  ctx.strokeStyle = 'rgba(186, 230, 253, 0.75)';
+  ctx.lineWidth = Math.max(0.6, cellSize * 0.015);
+  ctx.moveTo(x + tileW * 0.72, y + tileW * 0.74);
+  ctx.lineTo(x + tileW * 0.76, y + tileW * 0.88);
   ctx.stroke();
 
-  // 3. Ice Glint Stars (Sparkling Ice Diamonds)
-  const drawGlint = (gx: number, gy: number, r: number) => {
+  // 4. Sparkling Diamond Snow Glints
+  const drawSnowSparkle = (gx: number, gy: number, r: number) => {
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
     ctx.moveTo(gx, gy - r * 1.8);
@@ -153,19 +219,80 @@ function drawIceCrystals(
     ctx.closePath();
     ctx.fill();
 
-    // Glint core point
     ctx.fillStyle = '#e0f2fe';
     ctx.beginPath();
-    ctx.arc(gx, gy, r * 0.45, 0, Math.PI * 2);
+    ctx.arc(gx, gy, r * 0.4, 0, Math.PI * 2);
     ctx.fill();
   };
 
-  // Primary frost diamond star (top left)
-  drawGlint(x + tileW * 0.18, y + tileW * 0.18, Math.max(1.8, cellSize * 0.045));
-  // Secondary micro glint (top right)
-  drawGlint(x + tileW * 0.82, y + tileW * 0.22, Math.max(1.2, cellSize * 0.028));
-  // Micro glint (bottom left)
-  drawGlint(x + tileW * 0.24, y + tileW * 0.82, Math.max(1.0, cellSize * 0.022));
+  drawSnowSparkle(x + tileW * 0.16, y + tileW * 0.22, Math.max(1.5, cellSize * 0.04));
+  drawSnowSparkle(x + tileW * 0.84, y + tileW * 0.82, Math.max(1.2, cellSize * 0.03));
+  drawSnowSparkle(x + tileW * 0.50, y + tileW * 0.88, Math.max(1.0, cellSize * 0.024));
+
+  ctx.restore();
+}
+
+function drawElectricLightningArcs(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  tileW: number,
+  cellSize: number
+) {
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'miter';
+
+  // 1. Diagonal High-Voltage Electric Bolt
+  ctx.beginPath();
+  ctx.moveTo(x + tileW * 0.18, y + tileW * 0.12);
+  ctx.lineTo(x + tileW * 0.40, y + tileW * 0.34);
+  ctx.lineTo(x + tileW * 0.30, y + tileW * 0.46);
+  ctx.lineTo(x + tileW * 0.58, y + tileW * 0.68);
+  ctx.lineTo(x + tileW * 0.48, y + tileW * 0.76);
+  ctx.lineTo(x + tileW * 0.70, y + tileW * 0.92);
+
+  // Outer electric cyan glow
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.95)';
+  ctx.lineWidth = Math.max(2.4, cellSize * 0.055);
+  ctx.shadowColor = '#38bdf8';
+  ctx.shadowBlur = Math.max(5, cellSize * 0.14);
+  ctx.stroke();
+
+  // Inner white-hot plasma core
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = Math.max(1, cellSize * 0.022);
+  ctx.shadowBlur = 0;
+  ctx.stroke();
+
+  // 2. Secondary electric branch
+  ctx.beginPath();
+  ctx.moveTo(x + tileW * 0.40, y + tileW * 0.34);
+  ctx.lineTo(x + tileW * 0.62, y + tileW * 0.28);
+  ctx.lineTo(x + tileW * 0.78, y + tileW * 0.40);
+
+  ctx.strokeStyle = 'rgba(125, 211, 252, 0.85)';
+  ctx.lineWidth = Math.max(1, cellSize * 0.024);
+  ctx.stroke();
+
+  // 3. Electric sparks / energy spark stars
+  const drawSpark = (sx: number, sy: number, r: number) => {
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(sx, sy - r * 1.5);
+    ctx.lineTo(sx + r * 0.3, sy);
+    ctx.lineTo(sx + r * 1.5, sy);
+    ctx.lineTo(sx + r * 0.3, sy);
+    ctx.lineTo(sx, sy + r * 1.5);
+    ctx.lineTo(sx - r * 0.3, sy);
+    ctx.lineTo(sx - r * 1.5, sy);
+    ctx.lineTo(sx - r * 0.3, sy);
+    ctx.closePath();
+    ctx.fill();
+  };
+
+  drawSpark(x + tileW * 0.84, y + tileW * 0.18, Math.max(1.5, cellSize * 0.036));
+  drawSpark(x + tileW * 0.20, y + tileW * 0.82, Math.max(1.2, cellSize * 0.028));
 
   ctx.restore();
 }
@@ -333,12 +460,13 @@ export class TileRenderer {
 
     // 2. Tile face fill
     if (isFrozen) {
+      // Arctic Blizzard Snow & Glacier Ice Gradient
       const iceGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-      iceGrad.addColorStop(0, '#7dd3fc');
-      iceGrad.addColorStop(0.18, '#38bdf8');
-      iceGrad.addColorStop(0.55, '#0284c7');
-      iceGrad.addColorStop(0.85, '#0369a1');
-      iceGrad.addColorStop(1, '#082f49');
+      iceGrad.addColorStop(0, '#ffffff');    // Pure frosted snow-white top
+      iceGrad.addColorStop(0.18, '#e0f2fe');  // Frosted powdery ice-blue
+      iceGrad.addColorStop(0.48, '#38bdf8');  // Radiant crystal glacier cyan
+      iceGrad.addColorStop(0.78, '#0284c7');  // Deep polar blue
+      iceGrad.addColorStop(1, '#075985');     // Deep abyss glacier
       ctx.fillStyle = iceGrad;
     } else if (isRemote) {
       const ghostGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
@@ -366,13 +494,13 @@ export class TileRenderer {
       grad.addColorStop(1, '#881337');
       ctx.fillStyle = grad;
     } else if (isPower) {
-      // Lightning Electric Cyan Power Gemstone Face Gradient
+      // High-Voltage Electric Cyan / Plasma Midnight Face Gradient
       const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
       grad.addColorStop(0, '#38bdf8');
-      grad.addColorStop(0.25, '#0ea5e9');
-      grad.addColorStop(0.60, '#0284c7');
-      grad.addColorStop(0.85, '#0369a1');
-      grad.addColorStop(1, '#082f49');
+      grad.addColorStop(0.20, '#0284c7');
+      grad.addColorStop(0.55, '#1e3a8a');
+      grad.addColorStop(0.85, '#0f172a');
+      grad.addColorStop(1, '#020617');
       ctx.fillStyle = grad;
     } else {
       // Standard Golden Amber Resin Face Gradient
@@ -387,7 +515,7 @@ export class TileRenderer {
     drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
     ctx.fill();
 
-    // 3. Specular Sheen, Chiseled Facets & Holographic Glyphs / Ice Frost
+    // 3. Specular Sheen, Chiseled Facets & Holographic Glyphs / Snow & Ice / Lightning
     if (isRemote) {
       ctx.save();
       ctx.beginPath();
@@ -437,23 +565,51 @@ export class TileRenderer {
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.clip();
 
-      // 1. Draw crystalline diamond facets
-      drawCryoIceFacets(ctx, x + pad, y + pad, tileW);
+      // 1. Draw 6-armed snowflakes, frost crystal lace & diamond sparkles
+      drawFrostLaceAndIce(ctx, x + pad, y + pad, tileW, cellSize);
 
-      // 2. Inner frosty condensation border
+      // 2. Draw soft organic powdered snow accumulation on top
+      drawSnowDriftCap(ctx, x + pad, y + pad, tileW, tileW, radius);
+
+      // 3. Inner frosty condensation border
       const innerFrostGrad = ctx.createLinearGradient(x + pad, y + pad, x + pad, y + pad + tileW);
-      innerFrostGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-      innerFrostGrad.addColorStop(0.5, 'rgba(186, 230, 253, 0.5)');
-      innerFrostGrad.addColorStop(1, 'rgba(56, 189, 248, 0.7)');
+      innerFrostGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+      innerFrostGrad.addColorStop(0.5, 'rgba(186, 230, 253, 0.6)');
+      innerFrostGrad.addColorStop(1, 'rgba(56, 189, 248, 0.8)');
       ctx.strokeStyle = innerFrostGrad;
       ctx.lineWidth = Math.max(1.2, cellSize * 0.03);
       drawRoundedRect(ctx, x + pad + 1, y + pad + 1, tileW - 2, tileW - 2, Math.max(1, radius - 1));
       ctx.stroke();
 
-      // 3. Draw crystalline ice shards, fractures & diamond frost stars
-      if (cellSize >= 14) {
-        drawIceCrystals(ctx, x + pad, y + pad, tileW, cellSize);
-      }
+      ctx.restore();
+    } else if (isPower) {
+      ctx.save();
+      ctx.beginPath();
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.clip();
+
+      // 1. Draw High-Voltage Electric Lightning Arcs and corner sparks
+      drawElectricLightningArcs(ctx, x + pad, y + pad, tileW, cellSize);
+
+      // 2. Top edge crisp electric cyan luster
+      const topEdgeGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + Math.max(2, cellSize * 0.08));
+      topEdgeGrad.addColorStop(0, 'rgba(125, 211, 252, 0.85)');
+      topEdgeGrad.addColorStop(1, 'rgba(125, 211, 252, 0)');
+      ctx.fillStyle = topEdgeGrad;
+      ctx.fillRect(x + pad, y + pad, tileW, Math.max(2, cellSize * 0.08));
+
+      // 3. Bottom deep dark voltage shadow
+      const botShade = ctx.createLinearGradient(0, y + pad + tileW * 0.78, 0, y + pad + tileW);
+      botShade.addColorStop(0, 'rgba(2, 6, 23, 0)');
+      botShade.addColorStop(1, 'rgba(2, 6, 23, 0.8)');
+      ctx.fillStyle = botShade;
+      ctx.fillRect(x + pad, y + pad + tileW * 0.78, tileW, tileW * 0.22);
+
+      // 4. Inner crisp electric rim
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, x + pad + 0.5, y + pad + 0.5, tileW - 1, tileW - 1, Math.max(1, radius - 0.5));
+      ctx.stroke();
 
       ctx.restore();
     } else if (!isFrozen && !isRemote) {
@@ -470,9 +626,6 @@ export class TileRenderer {
       } else if (is3L) {
         topEdgeGrad.addColorStop(0, 'rgba(255, 225, 230, 0.75)');
         topEdgeGrad.addColorStop(1, 'rgba(255, 225, 230, 0)');
-      } else if (isPower) {
-        topEdgeGrad.addColorStop(0, 'rgba(224, 242, 254, 0.8)');
-        topEdgeGrad.addColorStop(1, 'rgba(224, 242, 254, 0)');
       } else {
         topEdgeGrad.addColorStop(0, 'rgba(255, 245, 180, 0.65)');
         topEdgeGrad.addColorStop(1, 'rgba(255, 245, 180, 0)');
@@ -488,23 +641,18 @@ export class TileRenderer {
       } else if (is3L) {
         botShade.addColorStop(0, 'rgba(50, 5, 15, 0)');
         botShade.addColorStop(1, 'rgba(50, 5, 15, 0.65)');
-      } else if (isPower) {
-        botShade.addColorStop(0, 'rgba(3, 20, 45, 0)');
-        botShade.addColorStop(1, 'rgba(3, 20, 45, 0.65)');
       } else {
         botShade.addColorStop(0, 'rgba(60, 20, 0, 0)');
         botShade.addColorStop(1, 'rgba(60, 20, 0, 0.55)');
       }
       ctx.fillStyle = botShade;
-      ctx.fillRect(x + pad, y + pad + tileW * 0.78, tileW, tileW * 0.22);
+      ctx.fillRect(x + pad, y + pad, tileW, tileW * 0.22);
 
       // Inner crisp glowing rim
       if (is2L) {
         ctx.strokeStyle = 'rgba(187, 247, 208, 0.45)';
       } else if (is3L) {
         ctx.strokeStyle = 'rgba(254, 205, 211, 0.45)';
-      } else if (isPower) {
-        ctx.strokeStyle = 'rgba(186, 230, 253, 0.45)';
       } else {
         ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
       }
@@ -518,14 +666,14 @@ export class TileRenderer {
     // 4. Stroke outline
     if (isFrozen) {
       ctx.save();
-      ctx.shadowColor = '#38bdf8';
+      ctx.shadowColor = '#bae6fd';
       ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
-      ctx.strokeStyle = '#e0f2fe';
+      ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = Math.max(2, cellSize * 0.048);
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
 
-      ctx.strokeStyle = '#00f0ff';
+      ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = Math.max(1, cellSize * 0.024);
       drawRoundedRect(ctx, x + pad + 0.5, y + pad + 0.5, tileW - 1, tileW - 1, radius);
       ctx.stroke();
@@ -634,10 +782,19 @@ export class TileRenderer {
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
     } else if (isPower) {
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.95)';
-      ctx.lineWidth = 1.3;
+      ctx.save();
+      ctx.shadowColor = '#0284c7';
+      ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = Math.max(1.8, cellSize * 0.042);
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
+
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, x + pad + 0.5, y + pad + 0.5, tileW - 1, tileW - 1, radius);
+      ctx.stroke();
+      ctx.restore();
     } else if (isLastMove && !isSpecialCellTile && !isFrozen) {
       ctx.save();
 
@@ -689,7 +846,7 @@ export class TileRenderer {
         const cx = x + cellSize / 2;
         const cy = y + cellSize / 2;
         const starSize = Math.max(6, cellSize * 0.28);
-        ctx.shadowColor = isFrozen ? '#38bdf8' : tilePalette.blank.glow;
+        ctx.shadowColor = isFrozen ? '#bae6fd' : isPower ? '#38bdf8' : tilePalette.blank.glow;
         ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.12);
         ctx.fillStyle = tilePalette.blank.color;
         drawStarburst(ctx, cx, cy, starSize, starSize * 0.4);
@@ -730,10 +887,10 @@ export class TileRenderer {
         if (!isRemote) {
           ctx.lineJoin = 'round';
           ctx.lineWidth = Math.max(2.2, fontSize * 0.10);
-          ctx.strokeStyle = isFrozen ? '#011627' : tilePalette.letter.stroke;
+          ctx.strokeStyle = isFrozen ? '#032b43' : isPower ? '#020617' : tilePalette.letter.stroke;
           ctx.strokeText(letter, 0, 0);
         }
-        ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(56, 189, 248, 0.95)' : tilePalette.letter.shadow;
+        ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(224, 242, 254, 0.95)' : isPower ? 'rgba(56, 189, 248, 0.95)' : tilePalette.letter.shadow;
         ctx.shadowBlur = isRemote ? 0 : isFrozen ? Math.max(4, cellSize * 0.09) : Math.max(2, cellSize * 0.06);
         ctx.shadowOffsetY = isRemote ? 0 : Math.max(1.2, cellSize * 0.04);
         ctx.fillText(letter, 0, 0);
@@ -750,10 +907,10 @@ export class TileRenderer {
         const numY = y + cellSize - pad * 1.5;
 
         ctx.save();
-        ctx.shadowColor = isFrozen ? 'rgba(56, 189, 248, 0.9)' : tilePalette.score.glow;
+        ctx.shadowColor = isFrozen ? 'rgba(224, 242, 254, 0.95)' : isPower ? 'rgba(56, 189, 248, 0.95)' : tilePalette.score.glow;
         ctx.shadowBlur = lowPower ? 2 : Math.max(4, numFontSize * 0.6);
         ctx.lineWidth = Math.max(1.2, numFontSize * 0.12);
-        ctx.strokeStyle = isFrozen ? '#011627' : tilePalette.score.stroke;
+        ctx.strokeStyle = isFrozen ? '#032b43' : isPower ? '#020617' : tilePalette.score.stroke;
         ctx.strokeText(`${effectiveValue}`, numX, numY);
         ctx.fillStyle = tilePalette.score.color;
         ctx.fillText(`${effectiveValue}`, numX, numY);
@@ -845,7 +1002,8 @@ export class TileRenderer {
       const waveAlpha = (1 - morphProgress) * 0.85;
       let auraColor = 'rgba(34, 197, 94, ';
       if (is3L) auraColor = 'rgba(244, 63, 94, ';
-      else if (isPower || isFrozen) auraColor = 'rgba(56, 189, 248, ';
+      else if (isFrozen) auraColor = 'rgba(224, 242, 254, ';
+      else if (isPower) auraColor = 'rgba(56, 189, 248, ';
 
       // 6.1 Expanding Shockwave Ring
       ctx.strokeStyle = `${auraColor}${waveAlpha})`;
