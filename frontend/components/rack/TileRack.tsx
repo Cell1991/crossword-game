@@ -410,7 +410,7 @@ export const TileRack = memo(function TileRack({
                   <div className="flex items-center gap-2 relative z-10 min-w-0">
                     <span className={`tracking-wider uppercase font-black truncate ${
                       isMyTurn && hasTemporaryTiles && placementValid === true
-                        ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]'
+                        ? 'text-white drop-shadow-[0_1px_0_#000] drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]'
                         : isMyTurn && hasTemporaryTiles
                         ? 'text-rose-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]'
                         : 'text-slate-300'
@@ -424,7 +424,7 @@ export const TileRack = memo(function TileRack({
                         : 'CONFIRM MOVE'}
                     </span>
                     {isMyTurn && hasTemporaryTiles && placementValid === true && estimatedScore !== undefined && estimatedScore > 0 && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-black/45 border border-yellow-200/50 shadow-[inset_0_1px_3px_rgba(0,0,0,0.8),0_1px_0_rgba(255,255,255,0.2)] text-amber-200 font-black text-xs tracking-wider shrink-0 leading-none">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#090603]/90 border border-amber-300/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9),0_1px_0_rgba(255,255,255,0.2)] text-[#fef08a] font-black text-xs tracking-wider shrink-0 leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                         +{estimatedScore} PTS
                       </span>
                     )}
@@ -617,13 +617,13 @@ export const TileRack = memo(function TileRack({
                   <Check className="w-4 h-4 stroke-[2.5] text-slate-400 relative z-10 shrink-0" />
                 )}
                 {isMyTurn && hasTemporaryTiles && placementValid === true && estimatedScore !== undefined && estimatedScore > 0 ? (
-                  <span className="text-[11px] font-black tracking-tight text-amber-200 bg-black/45 px-1.5 py-0.5 rounded border border-yellow-200/40 relative z-10 leading-none">
+                  <span className="text-[11px] font-black tracking-tight text-[#fef08a] bg-[#090603]/90 px-1.5 py-0.5 rounded border border-amber-300/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9)] relative z-10 leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                     +{estimatedScore}
                   </span>
                 ) : (
                   <span className={`text-[10px] font-black uppercase tracking-wider relative z-10 truncate ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
+                      ? 'text-white drop-shadow-[0_1px_0_#000] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
                       : isMyTurn && hasTemporaryTiles
                       ? 'text-rose-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
                       : 'text-slate-300'
