@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useState } from 'react';
-import { Sparkles, ChevronDown, ChevronUp, Loader2, Copy, Check, BookOpen } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp, Loader2, Copy, Check } from 'lucide-react';
 import { MoveHistoryEntry, WordDefinition } from '@/lib/types';
 import { getWordDefinition } from '@/lib/api';
 
@@ -210,26 +210,27 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
 
                       {/* Right: Score + Turn indicator */}
                       <div className="flex items-center gap-2 shrink-0 relative z-10">
-                        <div className="flex flex-col items-end gap-0.5">
+                        <div className="flex flex-col items-end gap-1">
                           {entry.score !== undefined && entry.score > 0 ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-gradient-to-r from-emerald-500/25 to-teal-500/20 border border-emerald-400/60 text-xs font-black text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.35)]">
-                              +{entry.score}{' '}
-                              <span className="text-[9.5px] text-emerald-300/90 font-bold">PTS</span>
-                            </span>
+                            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-amber-500/25 via-yellow-400/20 to-amber-500/25 border border-amber-400/60 text-xs font-black text-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.3),inset_0_1px_1px_rgba(255,255,255,0.25)]">
+                              <span className="tracking-tight drop-shadow-sm">+{entry.score}</span>
+                              <span className="text-[9px] font-extrabold text-amber-200/90 tracking-wider">PTS</span>
+                            </div>
                           ) : null}
                           {entry.turn_number ? (
-                            <span className="text-[10px] font-mono font-bold text-slate-400">
-                              T{String(entry.turn_number).padStart(2, '0')}
-                            </span>
+                            <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/10 text-[9.5px] font-mono font-bold text-slate-300 shadow-sm">
+                              <span className="text-[8px] font-sans text-slate-400 font-extrabold tracking-wider">TURN</span>
+                              <span className="text-amber-200/90 font-mono font-black">{entry.turn_number}</span>
+                            </div>
                           ) : null}
                         </div>
 
                         {hasWords && (
-                          <div className="text-slate-400 group-hover:text-amber-300">
+                          <div className="p-1 rounded-lg bg-white/[0.04] border border-white/10 group-hover:border-amber-400/40 text-slate-400 group-hover:text-amber-300 transition-colors">
                             {isExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]" />
+                              <ChevronUp className="w-3.5 h-3.5 text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]" />
                             ) : (
-                              <ChevronDown className="w-4 h-4" />
+                              <ChevronDown className="w-3.5 h-3.5" />
                             )}
                           </div>
                         )}
@@ -238,7 +239,7 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
 
                     {/* Accordion Word Definition (Vibrant Celestial Lexicon Pod) */}
                     {isExpanded && hasWords && words && (
-                      <div className="p-3.5 border-t border-indigo-400/25 bg-gradient-to-b from-[#0e102c]/95 to-[#07081a]/98 space-y-2.5 select-text cursor-text">
+                      <div className="p-3 border-t border-white/10 bg-gradient-to-b from-[#0c0e24]/95 to-[#060714]/98 space-y-2.5 select-text cursor-text">
                         {/* Multi-word Tabs (Only if move formed > 1 word) */}
                         {words.length > 1 ? (
                           <div className="flex flex-wrap items-center gap-1.5 pb-1 border-b border-white/[0.08] select-none">
@@ -263,19 +264,17 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                           </div>
                         ) : null}
 
-                        {/* Lexicon Header & Copy Tool */}
-                        <div className="flex items-center justify-between gap-2 pb-0.5">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <BookOpen className="w-4 h-4 text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] shrink-0" />
-                            <span className="font-black text-[11px] tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-indigo-200 to-amber-200 uppercase drop-shadow-sm">
-                              CELESTIAL DICTIONARY
+                        {/* Top Bar with phonetic & Copy Tool */}
+                        <div className="flex items-center justify-between gap-2">
+                          {definition?.phonetic ? (
+                            <span className="px-2 py-0.5 rounded-md border border-indigo-400/30 bg-indigo-950/70 text-[11px] font-mono text-indigo-200 italic shadow-sm">
+                              {definition.phonetic}
                             </span>
-                            {definition?.phonetic && (
-                              <span className="px-1.5 py-0.2 rounded border border-indigo-400/30 bg-indigo-950/70 text-[11px] font-mono text-indigo-200 italic shadow-sm">
-                                {definition.phonetic}
-                              </span>
-                            )}
-                          </div>
+                          ) : (
+                            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-300/80">
+                              DEFINITION
+                            </span>
+                          )}
 
                           {definition && (
                             <button
@@ -284,7 +283,7 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                                 e.stopPropagation();
                                 copyDefinitionText(activeWord, definition);
                               }}
-                              className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-200 hover:text-white border border-indigo-400/35 hover:border-amber-400/60 transition-all cursor-pointer text-[10.5px] font-bold shadow-sm"
+                              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-indigo-950 text-slate-300 hover:text-white border border-white/10 hover:border-amber-400/50 transition-all cursor-pointer text-[11px] font-bold shadow-sm active:scale-95"
                               title="Copy definition"
                               aria-label={`Copy definition for ${activeWord}`}
                             >
@@ -295,7 +294,7 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                                 </>
                               ) : (
                                 <>
-                                  <Copy className="w-3.5 h-3.5 text-indigo-300" />
+                                  <Copy className="w-3.5 h-3.5 text-slate-400" />
                                   <span>Copy</span>
                                 </>
                               )}
@@ -307,21 +306,23 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                         {isLoading ? (
                           <div className="flex items-center gap-2 py-3 text-xs text-indigo-300 select-none">
                             <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-                            <span>Looking up star archives...</span>
+                            <span>Looking up archives...</span>
                           </div>
                         ) : definition && definition.meanings && definition.meanings.length > 0 ? (
-                          <div className="space-y-2 max-h-52 overflow-y-auto pr-1 scrollbar-thin">
+                          <div className="space-y-2 max-h-56 overflow-y-auto pr-1 scrollbar-thin">
                             {definition.meanings.map((m, mIdx) => (
                               <div
                                 key={mIdx}
-                                className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:border-white/15 transition-all flex items-start gap-2.5 shadow-sm"
+                                className="p-2.5 rounded-xl bg-gradient-to-b from-[#121430]/90 to-[#0a0c20]/90 border border-white/10 hover:border-amber-400/30 transition-all flex flex-col gap-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
                               >
-                                <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider border shrink-0 mt-0.5 ${getPosBadgeClass(m.partOfSpeech)}`}>
-                                  {m.partOfSpeech}
-                                </span>
-                                <span className="text-xs sm:text-[12.5px] font-medium leading-relaxed text-slate-100 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9.5px] font-black uppercase tracking-wider border shadow-sm ${getPosBadgeClass(m.partOfSpeech)}`}>
+                                    {m.partOfSpeech}
+                                  </span>
+                                </div>
+                                <p className="text-xs sm:text-[12.5px] leading-relaxed text-slate-100 font-medium tracking-wide">
                                   {m.definitions[0]}
-                                </span>
+                                </p>
                               </div>
                             ))}
                           </div>
