@@ -167,11 +167,20 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                   entry.display_name ||
                   (isMe ? 'You' : entry.text.includes(':') ? entry.text.split(':')[0] : 'Player');
 
-                const wordLabel = hasWords
-                  ? words?.join(', ')
-                  : entry.text.includes(':')
-                  ? entry.text.slice(entry.text.indexOf(':') + 1).trim()
-                  : entry.text;
+                let wordLabel = entry.text;
+                if (hasWords && words && words.length > 0) {
+                  wordLabel = words.join(', ');
+                } else if (entry.type === 'exchange' || entry.text.toLowerCase().includes('swap')) {
+                  wordLabel = 'Swapped tiles';
+                } else if (entry.type === 'pass' || entry.text.toLowerCase().includes('pass')) {
+                  wordLabel = 'Passed turn';
+                } else if (entry.text.includes(':')) {
+                  wordLabel = entry.text.slice(entry.text.indexOf(':') + 1).trim();
+                } else {
+                  const regex = new RegExp(`^(${actorName}|You|Player)\\s+`, 'i');
+                  const stripped = entry.text.replace(regex, '').trim();
+                  wordLabel = stripped ? stripped.charAt(0).toUpperCase() + stripped.slice(1) : entry.text;
+                }
 
                 return (
                   <div
