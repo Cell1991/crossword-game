@@ -12,6 +12,15 @@ interface RecentMovesPanelProps {
   onToggleOpen: () => void;
 }
 
+const getPosBadgeClass = (pos: string) => {
+  const p = pos.toLowerCase();
+  if (p.includes('noun')) return 'bg-sky-500/15 border-sky-400/40 text-sky-300';
+  if (p.includes('verb')) return 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300';
+  if (p.includes('adj')) return 'bg-purple-500/15 border-purple-400/40 text-purple-300';
+  if (p.includes('adv')) return 'bg-amber-500/15 border-amber-400/40 text-amber-300';
+  return 'bg-slate-700/40 border-slate-600/40 text-slate-300';
+};
+
 export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
   moveHistory = [],
   myPlayerId,
@@ -161,8 +170,8 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                     key={entry.id}
                     className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
                       isExpanded
-                        ? 'bg-[#141533]/95 border-amber-400/60 shadow-[0_0_18px_rgba(251,191,36,0.25)]'
-                        : 'bg-gradient-to-br from-[#16173a]/75 via-[#0f112b]/80 to-[#08091a]/85 hover:from-[#1d1f48]/90 hover:to-[#111333] border-white/10 hover:border-amber-400/30 shadow-sm'
+                        ? 'bg-gradient-to-br from-[#181a42]/95 via-[#10122e]/98 to-[#0b0c20]/95 border-indigo-400/40 shadow-[0_4px_18px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.15)]'
+                        : 'bg-gradient-to-br from-[#16173a]/75 via-[#0f112b]/80 to-[#08091a]/85 hover:from-[#1d1f48]/90 hover:to-[#111333] border-white/10 hover:border-indigo-400/30 shadow-sm'
                     }`}
                   >
                     {/* Row Summary */}
@@ -177,13 +186,13 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                       {/* Left: Identity + Word */}
                       <div className="flex flex-col min-w-0 flex-1">
                         <span
-                          className={`text-xs font-bold truncate ${
-                            isMe ? 'text-amber-300 drop-shadow-[0_0_6px_rgba(245,158,11,0.4)]' : 'text-slate-200'
+                          className={`text-[11px] font-bold truncate ${
+                            isMe ? 'text-amber-300 drop-shadow-[0_0_6px_rgba(245,158,11,0.4)]' : 'text-slate-300'
                           }`}
                         >
                           {actorName}
                         </span>
-                        <span className="text-xs font-black text-amber-200 tracking-wide truncate">
+                        <span className="text-xs sm:text-[13px] font-black text-white tracking-wide truncate mt-0.5">
                           {wordLabel}
                         </span>
                       </div>
@@ -192,13 +201,13 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                       <div className="flex items-center gap-2 shrink-0">
                         <div className="flex flex-col items-end gap-0.5">
                           {entry.score !== undefined && entry.score > 0 ? (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-md bg-emerald-500/15 border border-emerald-400/40 text-[11px] font-black text-emerald-300 drop-shadow-[0_0_6px_rgba(16,185,129,0.4)]">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-400/40 text-[11px] font-black text-emerald-300 shadow-[0_0_6px_rgba(16,185,129,0.3)]">
                               +{entry.score}{' '}
                               <span className="text-[9px] text-emerald-400/80 font-bold">PTS</span>
                             </span>
                           ) : null}
                           {entry.turn_number ? (
-                            <span className="text-[9.5px] font-bold text-slate-400">
+                            <span className="text-[9.5px] font-mono font-bold text-slate-400">
                               T{String(entry.turn_number).padStart(2, '0')}
                             </span>
                           ) : null}
@@ -216,12 +225,13 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                       </div>
                     </button>
 
-                    {/* Accordion Word Definition */}
+                    {/* Accordion Word Definition (Clean Lexicon Card) */}
                     {isExpanded && hasWords && words && (
-                      <div className="p-3 border-t border-amber-400/20 bg-[#0a0a1c]/95 space-y-2.5 select-text cursor-text">
-                        {/* Multi-word Tabs */}
-                        {words.length > 1 && (
-                          <div className="flex flex-wrap gap-1.5 pb-1 border-b border-white/10 select-none">
+                      <div className="p-3 border-t border-indigo-500/20 bg-[#080918]/90 space-y-2 select-text cursor-text">
+                        {/* Multi-word Tabs (Only if move formed > 1 word) */}
+                        {words.length > 1 ? (
+                          <div className="flex flex-wrap items-center gap-1.5 pb-1 border-b border-white/[0.08] select-none">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase mr-1">Words:</span>
                             {words.map(w => (
                               <button
                                 key={w}
@@ -230,27 +240,29 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                                   e.stopPropagation();
                                   selectWordForMove(entry.id, w);
                                 }}
-                                className={`px-2 py-0.5 rounded-md text-[11px] font-extrabold transition-all cursor-pointer ${
+                                className={`px-2 py-0.5 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
                                   activeWord === w
-                                    ? 'bg-amber-400/25 text-amber-200 border border-amber-400/60 shadow-[0_0_8px_rgba(251,191,36,0.3)]'
-                                    : 'bg-slate-800 text-slate-400 hover:text-white border border-white/10'
+                                    ? 'bg-amber-400/20 text-amber-200 border border-amber-400/50 shadow-[0_0_8px_rgba(251,191,36,0.3)]'
+                                    : 'bg-white/5 text-slate-400 hover:text-white border border-white/10'
                                 }`}
                               >
                                 {w}
                               </button>
                             ))}
                           </div>
-                        )}
+                        ) : null}
 
-                        {/* Header Word & Action */}
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-baseline gap-2 min-w-0">
-                            <span className="font-black text-sm text-amber-300 tracking-wider">
-                              {activeWord}
-                            </span>
-                            {definition?.phonetic && (
-                              <span className="text-xs text-slate-400">
+                        {/* Lexicon Header & Copy Tool */}
+                        <div className="flex items-center justify-between gap-2 pb-0.5">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <BookOpen className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
+                            {definition?.phonetic ? (
+                              <span className="text-xs font-mono text-slate-400 italic">
                                 {definition.phonetic}
+                              </span>
+                            ) : (
+                              <span className="text-[10.5px] font-bold tracking-wider text-slate-400 uppercase">
+                                Meaning
                               </span>
                             )}
                           </div>
@@ -262,14 +274,20 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                                 e.stopPropagation();
                                 copyDefinitionText(activeWord, definition);
                               }}
-                              className="p-1 rounded-md text-slate-400 hover:text-amber-300 hover:bg-white/10 transition-colors cursor-pointer"
+                              className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/[0.04] hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-colors cursor-pointer text-[10px]"
                               title="Copy definition"
                               aria-label={`Copy definition for ${activeWord}`}
                             >
                               {copiedWord === activeWord ? (
-                                <Check className="w-3.5 h-3.5 text-amber-400 stroke-[3]" />
+                                <>
+                                  <Check className="w-3 h-3 text-emerald-400 stroke-[3]" />
+                                  <span className="text-emerald-300 font-bold">Copied</span>
+                                </>
                               ) : (
-                                <Copy className="w-3.5 h-3.5" />
+                                <>
+                                  <Copy className="w-3 h-3" />
+                                  <span>Copy</span>
+                                </>
                               )}
                             </button>
                           )}
@@ -278,17 +296,17 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                         {/* Definition content */}
                         {isLoading ? (
                           <div className="flex items-center gap-2 py-2 text-xs text-slate-400 select-none">
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
-                            <span>Looking up celestial dictionary...</span>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
+                            <span>Looking up dictionary...</span>
                           </div>
                         ) : definition && definition.meanings && definition.meanings.length > 0 ? (
-                          <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1 scrollbar-thin">
+                          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
                             {definition.meanings.map((m, mIdx) => (
-                              <div key={mIdx} className="text-xs leading-relaxed">
-                                <span className="font-black text-[10px] text-amber-400 uppercase mr-1.5">
-                                  [{m.partOfSpeech}]
+                              <div key={mIdx} className="flex items-start gap-1.5 text-xs leading-relaxed">
+                                <span className={`inline-block px-1.5 py-0.5 rounded-md text-[9.5px] font-black uppercase tracking-wider border shrink-0 mt-0.5 ${getPosBadgeClass(m.partOfSpeech)}`}>
+                                  {m.partOfSpeech}
                                 </span>
-                                <span className="text-slate-200">{m.definitions[0]}</span>
+                                <span className="text-slate-200 flex-1">{m.definitions[0]}</span>
                               </div>
                             ))}
                           </div>
@@ -308,3 +326,4 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
     </section>
   );
 };
+
