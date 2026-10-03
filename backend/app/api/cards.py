@@ -128,6 +128,26 @@ async def use_card(
         ).model_dump())
         return {"success": True, "blocked": False, "has_shield": True}
 
+    if card == "DOUBLE_DAMAGE":
+        if game.current_player_id != player.id:
+            raise HTTPException(status_code=400, detail="Double Damage can only be used on your turn")
+        target = await _target_player(db, game_id, request.target_player_id, player.id)
+        game.pending_double_target_id = target.id
+        cards.remove(card)
+        player.cards = cards
+        await replace_player_cards(db, player.id, cards)
+        await db.commit()
+        await manager.broadcast(game_id, WebSocketEvent(
+            type=EventType.CARD_USED,
+            payload={
+                "playerId": player.id,
+                "card": card,
+                "targetPlayerId": target.id,
+                "pendingDoubleTargetId": target.id,
+            },
+        ).model_dump())
+        return {"success": True, "target_player_id": target.id}
+
     cards.remove(card)
     player.cards = cards
     await replace_player_cards(db, player.id, cards)
@@ -207,23 +227,6 @@ async def use_card(
             },
         ).model_dump())
         return {"success": True, "pending": True}
-
-    if card == "DOUBLE_DAMAGE":
-        if game.current_player_id != player.id:
-            raise HTTPException(status_code=400, detail="You can only use this on your turn")
-        target = await _target_player(db, game_id, request.target_player_id, player.id)
-        game.pending_double_target_id = target.id
-        await db.commit()
-        await manager.broadcast(game_id, WebSocketEvent(
-            type=EventType.CARD_USED,
-            payload={
-                "playerId": player.id,
-                "card": card,
-                "targetPlayerId": target.id,
-                "pendingDoubleTargetId": target.id,
-            },
-        ).model_dump())
-        return {"success": True, "target_player_id": target.id}
 
     if card == "FREEZE_TILE":
         if game.current_player_id != player.id:

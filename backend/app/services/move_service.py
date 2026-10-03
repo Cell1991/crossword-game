@@ -339,15 +339,18 @@ class MoveService:
         # Score is authoritative damage to every other living player, doubled for a
         # DOUBLE_DAMAGE target. Applied after a short SHIELD window if any opponent has shield,
         # or applied immediately if no opponent can shield.
+        double_damage_target_id = game.pending_double_target_id
+        damage_dealt: dict[str, int] = {}
         if score > 0 and game.max_turns is None:
             has_shield_holder = any(
                 getattr(p, "has_shield", False) or "SHIELD" in (p.cards or [])
                 for p in all_players if p.id != player.id and p.hp > 0
             )
             amounts = {
-                opponent.id: score * (2 if opponent.id == game.pending_double_target_id else 1)
+                opponent.id: score * (2 if opponent.id == double_damage_target_id else 1)
                 for opponent in all_players if opponent.id != player.id and opponent.hp > 0
             }
+            damage_dealt = amounts
             game.pending_double_target_id = None
             if has_shield_holder:
                 await GameService.queue_pending_effect(
@@ -397,6 +400,8 @@ class MoveService:
             winner_id=winner,
             card_awarded=cards_awarded[0] if cards_awarded else None,
             cards_awarded=cards_awarded,
+            damage_dealt=damage_dealt if damage_dealt else None,
+            double_damage_target_id=double_damage_target_id,
         )
 
         return res, game, player

@@ -30,7 +30,7 @@ import { GameHud } from '@/components/game/GameHud';
 import { TurnTimer } from '@/components/game/TurnTimer';
 import { GameOverScreen } from '@/components/game/GameOverScreen';
 import { CardRevealOverlay, CardActivationOverlay, PendingEffectBanner, ToastStack } from '@/components/game/GameOverlays';
-import { ScreenVignettePulse, SpySwapNotificationOverlay, BoardEffectsLayer } from '@/components/game/CardCinematicEffects';
+import { ScreenVignettePulse, SpySwapNotificationOverlay, TargetLockNotificationOverlay, BoardEffectsLayer } from '@/components/game/CardCinematicEffects';
 import { HintSuggestionsOverlay } from '@/components/game/HintSuggestionsOverlay';
 import { BlankTilePickerModal } from '@/components/game/BlankTilePickerModal';
 import { ConfirmExitModal } from '@/components/game/ConfirmExitModal';
@@ -745,6 +745,12 @@ export default function GamePage() {
       <SpySwapNotificationOverlay
         data={sync.spySwapAlert}
         onDismiss={sync.dismissSpySwapAlert}
+      />
+
+      {/* Double Damage Target Lock Notification Overlay (Victim warning + Caster confirmation) */}
+      <TargetLockNotificationOverlay
+        data={sync.targetLockAlert}
+        onDismiss={sync.dismissTargetLockAlert}
       />
 
       <div className="gameplay-body relative z-10 flex min-h-0 flex-1">

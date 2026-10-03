@@ -43,6 +43,8 @@ class CommitMoveResponse(BaseModel):
     winner_id: Optional[str] = None
     card_awarded: Optional[str] = None
     cards_awarded: list[str] = []
+    damage_dealt: Optional[dict[str, int]] = None
+    double_damage_target_id: Optional[str] = None
 
 class ExchangeTilesRequest(BaseModel):
     # No upper bound: cards such as DRAW_TILE can push a rack past RACK_SIZE.

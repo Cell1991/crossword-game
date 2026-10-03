@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getGameState, resolvePendingEffect, StoredSession } from '@/lib/api';
 import { BoardCell, CardReveal, GameState, MoveHistoryEntry, PlacedTile, WebSocketEvent } from '@/lib/types';
-import { BoardCellEffect, SpySwapAlertData } from '@/components/game/CardCinematicEffects';
+import { BoardCellEffect, SpySwapAlertData, TargetLockAlertData } from '@/components/game/CardCinematicEffects';
 import { useGameSocket } from './useGameSocket';
 import { GameToasts } from './useGameToasts';
 
@@ -84,6 +84,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
   } | null>(null);
   const [boardCellEffects, setBoardCellEffects] = useState<BoardCellEffect[]>([]);
   const [spySwapAlert, setSpySwapAlert] = useState<SpySwapAlertData | null>(null);
+  const [targetLockAlert, setTargetLockAlert] = useState<TargetLockAlertData | null>(null);
   const [screenVignette, setScreenVignette] = useState<'FREEZE' | 'DESTROY' | 'HEAL' | 'DOUBLE_DAMAGE' | 'SWAP' | null>(null);
 
   const removeBoardCellEffect = useCallback((id: string) => {
@@ -92,6 +93,10 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
 
   const dismissSpySwapAlert = useCallback(() => {
     setSpySwapAlert(null);
+  }, []);
+
+  const dismissTargetLockAlert = useCallback(() => {
+    setTargetLockAlert(null);
   }, []);
 
   const clearScreenVignette = useCallback(() => {
@@ -202,6 +207,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
         if (event.type === 'MOVE_COMMITTED') {
           const rawBoard = (event.payload?.boardState || event.payload?.board_state || {}) as Record<string, BoardCell>;
           const placed = (event.payload?.placedTiles || []) as PlacedTile[];
+          const updatedPlayers = event.payload?.players as Array<{ id: string; hp: number; score: number }> | undefined;
           const newBoard: Record<string, BoardCell> = { ...rawBoard };
           for (const pt of placed) {
             newBoard[`${pt.row}_${pt.col}`] = {
@@ -221,7 +227,12 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
               current_player_id: (event.payload?.nextPlayerId as string | null | undefined) ?? prev.current_player_id,
               turn_number: (event.payload?.turnNumber as number | undefined) ?? prev.turn_number,
               pending_effect: event.payload?.pendingEffect !== undefined ? (event.payload.pendingEffect as GameState['pending_effect']) : prev.pending_effect,
+              pending_double_target_id: null,
               players: prev.players.map(p => {
+                if (updatedPlayers) {
+                  const up = updatedPlayers.find(u => u.id === p.id);
+                  if (up) return { ...p, hp: up.hp, score: up.score };
+                }
                 if (p.id === event.payload?.playerId && typeof event.payload?.playerTotalScore === 'number') {
                   return { ...p, score: event.payload.playerTotalScore };
                 }
@@ -229,6 +240,17 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
               }),
             };
           });
+
+          if (event.payload?.doubleDamageTargetId) {
+            const doubleTargetId = event.payload.doubleDamageTargetId as string;
+            const doubleTargetName = nameOf(doubleTargetId, 'Opponent');
+            const isMeVictim = doubleTargetId === myPlayerId;
+            const damageAmount = (event.payload.damageDealt as Record<string, number> | undefined)?.[doubleTargetId] ?? ((event.payload.scoreEarned ?? 0) * 2);
+            flashInfo(`CRITICAL HIT! ${doubleTargetName} took ${damageAmount} (2×) Damage!`);
+            if (isMeVictim) {
+              setScreenVignette('DOUBLE_DAMAGE');
+            }
+          }
         }
         loadGameState();
         const wordsFormed = event.payload?.wordsFormed ?? [];
@@ -310,6 +332,19 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
           setScreenVignette('HEAL');
         } else if (card === 'DOUBLE_DAMAGE') {
           setScreenVignette('DOUBLE_DAMAGE');
+          if (targetId) {
+            const isVictim = targetId === myPlayerId;
+            const isCaster = playerId === myPlayerId;
+            setTargetLockAlert({
+              id: `lock-${Date.now()}-${Math.random()}`,
+              sourcePlayerId: playerId,
+              sourcePlayerName: sourceName,
+              targetPlayerId: targetId,
+              targetPlayerName: targetName ?? 'Opponent',
+              isVictim,
+              isCaster,
+            });
+          }
         } else if (card === 'SPY_SWAP') {
           setScreenVignette('SWAP');
         }
@@ -450,6 +485,8 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
     removeBoardCellEffect,
     spySwapAlert,
     dismissSpySwapAlert,
+    targetLockAlert,
+    dismissTargetLockAlert,
     screenVignette,
     clearScreenVignette,
     remotePlacements,

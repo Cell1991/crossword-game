@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Header, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.database.models import GamePlayer
 from app.database.session import get_db
 from app.schemas.move import (
     ValidateMoveRequest,
@@ -36,6 +37,9 @@ async def commit_move(
     # Save before telling anyone: clients reload the game the moment an event arrives.
     await db.commit()
 
+    stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id)
+    all_game_players = (await db.execute(stmt_players)).scalars().all()
+
     # Broadcast MOVE_COMMITTED
     await manager.broadcast(game_id, WebSocketEvent(
         type=EventType.MOVE_COMMITTED,
@@ -51,6 +55,12 @@ async def commit_move(
             "pendingEffect": game.pending_effect,
             "cardAwarded": res.card_awarded,
             "cardsAwarded": res.cards_awarded,
+            "damageDealt": res.damage_dealt,
+            "doubleDamageTargetId": res.double_damage_target_id,
+            "players": [
+                {"id": p.id, "hp": p.hp, "score": p.score, "has_shield": getattr(p, "has_shield", False)}
+                for p in all_game_players
+            ],
         }
     ).model_dump())
 
@@ -64,8 +74,6 @@ async def commit_move(
         ).model_dump())
     elif res.next_player_id:
         import asyncio
-        from sqlalchemy import select
-        from app.database.models import GamePlayer
         from app.services.bot_service import BotService
         stmt_next = select(GamePlayer).where(GamePlayer.id == res.next_player_id)
         next_p = (await db.execute(stmt_next)).scalar_one_or_none()

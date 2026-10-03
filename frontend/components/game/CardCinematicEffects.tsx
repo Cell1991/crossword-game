@@ -25,6 +25,16 @@ export interface SpySwapAlertData {
   isCaster: boolean;
 }
 
+export interface TargetLockAlertData {
+  id: string;
+  sourcePlayerId: string;
+  sourcePlayerName: string;
+  targetPlayerId: string;
+  targetPlayerName: string;
+  isVictim: boolean;
+  isCaster: boolean;
+}
+
 /**
  * 1. Screen-Wide Cinematic Environmental Vignette (Frost, Fire, Healing, Bloodlust)
  */
@@ -216,6 +226,97 @@ export const SpySwapNotificationOverlay: React.FC<{
               }`}
             >
               {data.isVictim ? 'Acknowledge' : 'Continue'}
+            </button>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+};
+
+/**
+ * 2.5. Dramatic Double Damage Target Lock Notification Overlay
+ */
+export const TargetLockNotificationOverlay: React.FC<{
+  data: TargetLockAlertData | null;
+  onDismiss: () => void;
+}> = ({ data, onDismiss }) => {
+  useEffect(() => {
+    if (!data) return;
+    soundFx.playCardActivate('DOUBLE_DAMAGE');
+    const timer = setTimeout(() => {
+      onDismiss();
+    }, 4200);
+    return () => clearTimeout(timer);
+  }, [data, onDismiss]);
+
+  if (!data) return null;
+
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[95] flex items-center justify-center p-4 select-none">
+      <AnimatePresence>
+        <motion.div
+          initial={{ scale: 0.6, y: 40, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.8, y: -30, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+          className={`pointer-events-auto relative max-w-md w-full overflow-hidden rounded-3xl border-2 p-6 text-center shadow-2xl backdrop-blur-xl ${
+            data.isVictim
+              ? 'border-purple-500 bg-gradient-to-b from-[#220738]/98 via-[#150424]/98 to-[#090112]/98 shadow-[0_0_60px_rgba(168,85,247,0.65),inset_0_0_30px_rgba(168,85,247,0.35)]'
+              : 'border-purple-400 bg-gradient-to-b from-[#1c0830]/98 via-[#10031c]/98 to-[#06010a]/98 shadow-[0_0_60px_rgba(168,85,247,0.6),inset_0_0_30px_rgba(168,85,247,0.3)]'
+          }`}
+        >
+          {/* Top light sheen */}
+          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
+
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="absolute top-3.5 right-3.5 p-1.5 rounded-full border border-white/20 bg-black/40 text-slate-300 hover:text-white hover:border-white/40 active:scale-95 transition-all cursor-pointer z-20"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          {/* Icon Badge */}
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl border-2 shadow-xl relative z-10 border-purple-400 bg-purple-500/20 shadow-purple-500/40 animate-pulse">
+            <Swords className="h-10 w-10 text-purple-300 drop-shadow-[0_0_14px_#c084fc]" />
+          </div>
+
+          {/* Header Title */}
+          <h2 className="text-2xl sm:text-3xl font-black font-maple tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] text-purple-200">
+            {data.isVictim ? 'TARGET LOCKED!' : 'DOUBLE DAMAGE READY!'}
+          </h2>
+
+          <span className="mt-1 inline-block text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-purple-400">
+            {data.isVictim ? '2X DAMAGE INCOMING' : 'TARGET LOCKED ON RIVAL'}
+          </span>
+
+          {/* Detailed Message Box */}
+          <div className="mt-4 rounded-2xl border border-white/15 bg-black/60 p-3.5 sm:p-4 text-center relative z-10 backdrop-blur-md">
+            <p className="text-sm sm:text-base font-bold text-slate-100 leading-snug drop-shadow-sm">
+              {data.isVictim ? (
+                <>
+                  <span className="text-amber-300 font-extrabold">{data.sourcePlayerName}</span> has locked onto you! Their next word will deal{' '}
+                  <span className="text-purple-300 font-black text-lg">2× DAMAGE</span> directly to your HP!
+                </>
+              ) : (
+                <>
+                  Locked onto <span className="text-amber-300 font-extrabold">{data.targetPlayerName}</span>! Your next word will deal{' '}
+                  <span className="text-purple-300 font-black text-lg">2× CRITICAL DAMAGE</span>!
+                </>
+              )}
+            </p>
+          </div>
+
+          {/* Action button */}
+          <div className="mt-5 flex justify-center">
+            <button
+              type="button"
+              onClick={onDismiss}
+              className="px-6 py-2 rounded-full border text-xs sm:text-sm font-black tracking-wider transition-all shadow-lg active:scale-95 cursor-pointer border-purple-400 bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/50"
+            >
+              {data.isVictim ? 'Brace for Impact' : 'Continue'}
             </button>
           </div>
         </motion.div>
