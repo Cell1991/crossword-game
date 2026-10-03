@@ -5,7 +5,6 @@ import { Tile } from '@/lib/types';
 import { isBlankLetter } from '@/lib/tiles';
 import { moveFixedElement } from '@/lib/dom';
 import { RotateCcw, Check, SkipForward, Shuffle, ArrowLeftRight, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 import { FloatingTile } from './FloatingTile';
 
 interface TileRackProps {
@@ -266,17 +265,16 @@ export const TileRack = memo(function TileRack({
             {isExchanging ? (
               <div className="col-span-3 flex items-center justify-between gap-2 px-3 py-1 bg-gradient-to-r from-[#2a0c18]/95 via-[#18091e]/95 to-[#0e0a24]/95 border border-rose-500/50 rounded-xl shadow-[0_4px_14px_rgba(0,0,0,0.6),0_0_14px_rgba(244,63,94,0.25),inset_0_1px_1px_rgba(255,255,255,0.15)] relative overflow-hidden backdrop-blur-xl">
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent pointer-events-none" />
-                <motion.button
+                <button
+                  type="button"
                   onClick={onCancelExchange}
                   disabled={isSubmitting}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.96 }}
-                  className="group relative flex h-[32px] items-center gap-1.5 px-3 rounded-lg font-black text-xs bg-gradient-to-b from-rose-700 to-rose-900 text-white hover:from-rose-600 hover:to-rose-800 border border-rose-400/60 cursor-pointer shadow-[0_2px_8px_rgba(244,63,94,0.4),inset_0_1px_1px_rgba(255,255,255,0.3)] transition-all overflow-hidden"
+                  className="group relative flex h-[32px] items-center gap-1.5 px-3 rounded-lg font-black text-xs bg-gradient-to-b from-rose-700 to-rose-900 text-white hover:from-rose-600 hover:to-rose-800 border border-rose-400/60 cursor-pointer shadow-[0_2px_8px_rgba(244,63,94,0.4),inset_0_1px_1px_rgba(255,255,255,0.3)] transition-transform active:scale-95 overflow-hidden"
                 >
                   <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
                   <X className="w-3.5 h-3.5 text-rose-200 relative z-10" />
                   <span className="relative z-10 uppercase tracking-wider text-[11px]">Cancel</span>
-                </motion.button>
+                </button>
                 <span className="text-[11px] text-amber-200/90 font-bold truncate tracking-wide relative z-10">
                   {exchangeCount > tileBagCount ? `Only ${tileBagCount} in bag` : 'Pick tiles to swap'}
                 </span>
@@ -284,12 +282,11 @@ export const TileRack = memo(function TileRack({
             ) : (
               <>
                 {/* Recall */}
-                <motion.button
+                <button
+                  type="button"
                   onClick={onCancelMove}
                   disabled={!hasTemporaryTiles || isSubmitting}
-                  whileHover={hasTemporaryTiles ? { scale: 1.03 } : undefined}
-                  whileTap={hasTemporaryTiles ? { scale: 0.96 } : undefined}
-                  className={`group relative flex h-[36px] sm:h-[38px] items-center justify-center gap-1.5 rounded-xl font-black text-xs transition-all select-none overflow-hidden ${
+                  className={`group relative flex h-[36px] sm:h-[38px] items-center justify-center gap-1.5 rounded-xl font-black text-xs transition-transform active:scale-95 select-none overflow-hidden ${
                     hasTemporaryTiles
                       ? 'bg-gradient-to-b from-[#9f1239] via-[#881337] to-[#4c0519] hover:from-[#be123c] hover:to-[#881337] text-white border-2 border-rose-300/90 shadow-[0_0_16px_rgba(244,63,94,0.45),inset_0_1px_1px_rgba(255,255,255,0.4)] cursor-pointer'
                       : 'bg-gradient-to-b from-[#1c2045] to-[#0f1228] text-slate-400 font-bold border border-indigo-400/25 shadow-inner cursor-not-allowed'
@@ -301,15 +298,14 @@ export const TileRack = memo(function TileRack({
                   <span className={`relative z-10 uppercase tracking-wider text-[11px] font-black ${hasTemporaryTiles ? 'text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]' : 'text-slate-300'}`}>
                     Recall{hasTemporaryTiles ? ` (${stagedTileCount})` : ''}
                   </span>
-                </motion.button>
+                </button>
 
                 {/* Shuffle */}
-                <motion.button
+                <button
+                  type="button"
                   onClick={onShuffleRack}
                   disabled={tileCount < 2 || isSubmitting}
-                  whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.03 } : undefined}
-                  whileTap={tileCount >= 2 && !isSubmitting ? { scale: 0.96 } : undefined}
-                  className={`group relative flex h-[36px] sm:h-[38px] items-center justify-center gap-1.5 rounded-xl font-black text-xs transition-all select-none overflow-hidden ${
+                  className={`group relative flex h-[36px] sm:h-[38px] items-center justify-center gap-1.5 rounded-xl font-black text-xs transition-transform active:scale-95 select-none overflow-hidden ${
                     tileCount >= 2 && !isSubmitting
                       ? 'bg-gradient-to-b from-[#b45309] via-[#92400e] to-[#78350f] hover:from-[#d97706] hover:to-[#92400e] text-white border-2 border-amber-300/90 shadow-[0_0_18px_rgba(245,158,11,0.45),inset_0_1px_1px_rgba(255,255,255,0.4)] cursor-pointer'
                       : 'bg-gradient-to-b from-[#1c2045] to-[#0f1228] text-slate-400 font-bold border border-indigo-400/25 cursor-not-allowed'
@@ -321,15 +317,14 @@ export const TileRack = memo(function TileRack({
                   <span className={`relative z-10 uppercase tracking-wider text-[11px] font-black ${tileCount >= 2 && !isSubmitting ? 'text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]' : 'text-slate-300'}`}>
                     Shuffle
                   </span>
-                </motion.button>
+                </button>
 
                 {/* Swap */}
-                <motion.button
+                <button
+                  type="button"
                   onClick={onStartExchange}
                   disabled={!canStartExchange}
-                  whileHover={canStartExchange ? { scale: 1.03 } : undefined}
-                  whileTap={canStartExchange ? { scale: 0.96 } : undefined}
-                  className={`group relative flex h-[36px] sm:h-[38px] items-center justify-center gap-1.5 rounded-xl font-black text-xs transition-all select-none overflow-hidden ${
+                  className={`group relative flex h-[36px] sm:h-[38px] items-center justify-center gap-1.5 rounded-xl font-black text-xs transition-transform active:scale-95 select-none overflow-hidden ${
                     canStartExchange
                       ? 'bg-gradient-to-b from-[#1d4ed8] via-[#1e40af] to-[#172554] hover:from-[#2563eb] hover:to-[#1e40af] text-white border-2 border-blue-300/90 shadow-[0_0_18px_rgba(59,130,246,0.45),inset_0_1px_1px_rgba(255,255,255,0.4)] cursor-pointer'
                       : 'bg-gradient-to-b from-[#1c2045] to-[#0f1228] text-slate-400 font-bold border border-indigo-400/25 cursor-not-allowed'
@@ -341,7 +336,7 @@ export const TileRack = memo(function TileRack({
                   <span className={`relative z-10 uppercase tracking-wider text-[11px] font-black ${canStartExchange ? 'text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]' : 'text-slate-300'}`}>
                     Swap
                   </span>
-                </motion.button>
+                </button>
               </>
             )}
           </div>
@@ -349,12 +344,11 @@ export const TileRack = memo(function TileRack({
           {/* Desktop Row 2: Turn Actions (CONFIRM / PLAY MOVE & Pass) */}
           <div className="w-full">
             {isExchanging ? (
-              <motion.button
+              <button
+                type="button"
                 onClick={onConfirmExchange}
                 disabled={!canConfirmExchange}
-                whileHover={canConfirmExchange ? { scale: 1.02 } : undefined}
-                whileTap={canConfirmExchange ? { scale: 0.97 } : undefined}
-                className={`group relative flex w-full h-[40px] sm:h-[42px] items-center justify-center gap-2 rounded-xl font-black text-xs sm:text-sm transition-all overflow-hidden ${
+                className={`group relative flex w-full h-[40px] sm:h-[42px] items-center justify-center gap-2 rounded-xl font-black text-xs sm:text-sm transition-transform active:scale-95 overflow-hidden ${
                   canConfirmExchange
                     ? 'bg-gradient-to-b from-[#1d4ed8] via-[#1e40af] to-[#172554] text-white shadow-[0_0_22px_rgba(59,130,246,0.6),inset_0_1px_1px_rgba(255,255,255,0.4)] border-2 border-blue-200 hover:brightness-110 cursor-pointer'
                     : 'bg-gradient-to-b from-[#1c2045] to-[#0f1228] text-slate-400 border border-indigo-400/25 cursor-not-allowed'
@@ -365,42 +359,39 @@ export const TileRack = memo(function TileRack({
                 <span className="relative z-10 uppercase tracking-wider font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
                   {isSubmitting ? 'Swapping...' : `Confirm Swap (${exchangeCount} Tiles)`}
                 </span>
-              </motion.button>
+              </button>
             ) : passConfirming ? (
               <div className="grid grid-cols-[1fr_2fr] gap-1.5 w-full">
                 {/* Cancel Pass */}
-                <motion.button
+                <button
+                  type="button"
                   onClick={() => setPassConfirming(false)}
                   disabled={isSubmitting}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.96 }}
-                  className="group relative flex h-[40px] sm:h-[42px] items-center justify-center rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider bg-gradient-to-b from-[#1e2352] to-[#121636] hover:from-[#2a3174] text-white border border-indigo-400/40 cursor-pointer transition-all shadow-[0_4px_12px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.2)] overflow-hidden"
+                  className="group relative flex h-[40px] sm:h-[42px] items-center justify-center rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider bg-gradient-to-b from-[#1e2352] to-[#121636] hover:from-[#2a3174] text-white border border-indigo-400/40 cursor-pointer transition-transform active:scale-95 shadow-[0_4px_12px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.2)] overflow-hidden"
                 >
                   <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent pointer-events-none" />
                   <span className="relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">Cancel</span>
-                </motion.button>
+                </button>
 
                 {/* Confirm Pass Button */}
-                <motion.button
+                <button
+                  type="button"
                   onClick={() => { setPassConfirming(false); onPassTurn(); }}
                   disabled={isSubmitting}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.96 }}
-                  className="group relative flex h-[40px] sm:h-[42px] items-center justify-center rounded-xl font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-b from-[#dc2626] via-[#b91c1c] to-[#7f1d1d] hover:brightness-110 text-white border-2 border-rose-300 shadow-[0_0_22px_rgba(239,68,68,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)] cursor-pointer transition-all overflow-hidden"
+                  className="group relative flex h-[40px] sm:h-[42px] items-center justify-center rounded-xl font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-b from-[#dc2626] via-[#b91c1c] to-[#7f1d1d] hover:brightness-110 text-white border-2 border-rose-300 shadow-[0_0_22px_rgba(239,68,68,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)] cursor-pointer transition-transform active:scale-95 overflow-hidden"
                 >
                   <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
                   <span className="relative z-10 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">{isSubmitting ? 'Passing...' : 'Confirm Pass'}</span>
-                </motion.button>
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-[2fr_1fr] gap-1.5 w-full">
                 {/* Primary Confirm / Play Move Button */}
-                <motion.button
+                <button
+                  type="button"
                   onClick={onConfirmMove}
                   disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
-                  whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.02 } : undefined}
-                  whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.97 } : undefined}
-                  className={`game-primary-action group relative flex h-[40px] sm:h-[42px] items-center justify-center gap-2 rounded-xl px-3 font-black text-xs sm:text-sm transition-all select-none overflow-hidden ${
+                  className={`game-primary-action group relative flex h-[40px] sm:h-[42px] items-center justify-center gap-2 rounded-xl px-3 font-black text-xs sm:text-sm transition-transform active:scale-95 select-none overflow-hidden ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
                       ? 'bg-gradient-to-b from-[#10b981] via-[#059669] to-[#047857] hover:from-[#34d399] hover:to-[#059669] text-white border-2 border-emerald-300 shadow-[0_0_24px_rgba(16,185,129,0.7),inset_0_2px_1px_rgba(255,255,255,0.7),inset_0_-2px_2px_rgba(0,0,0,0.4)] cursor-pointer'
                       : isMyTurn && hasTemporaryTiles
@@ -432,15 +423,14 @@ export const TileRack = memo(function TileRack({
                       </span>
                     )}
                   </div>
-                </motion.button>
+                </button>
 
                 {/* Pass Button */}
-                <motion.button
+                <button
+                  type="button"
                   onClick={() => setPassConfirming(true)}
                   disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
-                  whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.03 } : undefined}
-                  whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.96 } : undefined}
-                  className={`group relative flex h-[40px] sm:h-[42px] items-center justify-center gap-1.5 rounded-xl font-black text-xs transition-all select-none overflow-hidden ${
+                  className={`group relative flex h-[40px] sm:h-[42px] items-center justify-center gap-1.5 rounded-xl font-black text-xs transition-transform active:scale-95 select-none overflow-hidden ${
                     isMyTurn && !hasTemporaryTiles
                       ? 'bg-gradient-to-b from-[#3730a3] via-[#312e81] to-[#1e1b4b] hover:from-[#4338ca] hover:to-[#312e81] text-white border-2 border-indigo-300/80 shadow-[0_0_14px_rgba(99,102,241,0.4),inset_0_1px_1px_rgba(255,255,255,0.3)] cursor-pointer'
                       : 'bg-gradient-to-b from-[#1c2045] to-[#0f1228] text-slate-400 font-bold border border-indigo-400/25 shadow-inner cursor-not-allowed'
@@ -452,7 +442,7 @@ export const TileRack = memo(function TileRack({
                   <span className={`relative z-10 uppercase tracking-wider text-[11px] font-black ${isMyTurn && !hasTemporaryTiles ? 'text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]' : 'text-slate-300'}`}>
                     Pass
                   </span>
-                </motion.button>
+                </button>
               </div>
             )}
           </div>
@@ -463,27 +453,25 @@ export const TileRack = memo(function TileRack({
           {isExchanging ? (
             <div className="grid grid-cols-[1fr_2fr] gap-1.5 w-full">
               {/* Cancel Exchange */}
-              <motion.button
+              <button
+                type="button"
                 onClick={onCancelExchange}
                 disabled={isSubmitting}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.96 }}
-                className="group relative flex h-[38px] items-center justify-center gap-1 px-2.5 rounded-xl font-black text-xs bg-gradient-to-b from-rose-700 to-rose-900 text-white hover:from-rose-600 hover:to-rose-800 border border-rose-400/60 cursor-pointer shadow-[0_2px_8px_rgba(244,63,94,0.4),inset_0_1px_1px_rgba(255,255,255,0.3)] overflow-hidden"
+                className="group relative flex h-[38px] items-center justify-center gap-1 px-2.5 rounded-xl font-black text-xs bg-gradient-to-b from-rose-700 to-rose-900 text-white hover:from-rose-600 hover:to-rose-800 border border-rose-400/60 cursor-pointer shadow-[0_2px_8px_rgba(244,63,94,0.4),inset_0_1px_1px_rgba(255,255,255,0.3)] transition-transform active:scale-95 overflow-hidden"
                 title="Cancel Swap"
                 aria-label="Cancel Swap"
               >
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
                 <X className="w-4 h-4 text-rose-200 relative z-10" />
                 <span className="relative z-10 uppercase tracking-wider">Cancel</span>
-              </motion.button>
+              </button>
 
               {/* Confirm Exchange */}
-              <motion.button
+              <button
+                type="button"
                 onClick={onConfirmExchange}
                 disabled={!canConfirmExchange}
-                whileHover={canConfirmExchange ? { scale: 1.02 } : undefined}
-                whileTap={canConfirmExchange ? { scale: 0.96 } : undefined}
-                className={`group relative flex h-[38px] items-center justify-center gap-1.5 rounded-xl font-black text-xs transition-all overflow-hidden ${
+                className={`group relative flex h-[38px] items-center justify-center gap-1.5 rounded-xl font-black text-xs transition-transform active:scale-95 overflow-hidden ${
                   canConfirmExchange
                     ? 'bg-gradient-to-r from-indigo-500 via-blue-500 to-indigo-600 text-white shadow-[0_0_20px_rgba(99,102,241,0.6),inset_0_1px_1px_rgba(255,255,255,0.3)] border border-indigo-200 cursor-pointer'
                     : 'bg-gradient-to-b from-[#101228]/70 to-[#080914]/85 text-slate-600 border border-white/[0.06] cursor-not-allowed'
@@ -494,45 +482,42 @@ export const TileRack = memo(function TileRack({
                 <span className="relative z-10 uppercase tracking-wider font-black">
                   {isSubmitting ? 'Swapping...' : `Swap (${exchangeCount})`}
                 </span>
-              </motion.button>
+              </button>
             </div>
           ) : passConfirming ? (
             <div className="grid grid-cols-[1fr_2fr] gap-1.5 w-full">
               {/* Cancel Pass */}
-              <motion.button
+              <button
+                type="button"
                 onClick={() => setPassConfirming(false)}
                 disabled={isSubmitting}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                className="group relative flex h-[38px] items-center justify-center gap-1 rounded-xl text-xs font-black uppercase tracking-wider bg-gradient-to-b from-[#1e2352] to-[#121636] hover:from-[#2a3174] text-white border border-indigo-400/40 cursor-pointer transition-all shadow-sm overflow-hidden"
+                className="group relative flex h-[38px] items-center justify-center gap-1 rounded-xl text-xs font-black uppercase tracking-wider bg-gradient-to-b from-[#1e2352] to-[#121636] hover:from-[#2a3174] text-white border border-indigo-400/40 cursor-pointer transition-transform active:scale-95 shadow-sm overflow-hidden"
               >
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent pointer-events-none" />
                 <X className="w-4 h-4 text-slate-300 relative z-10" />
                 <span className="relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">Cancel</span>
-              </motion.button>
+              </button>
 
               {/* Confirm Pass Button */}
-              <motion.button
+              <button
+                type="button"
                 onClick={() => { setPassConfirming(false); onPassTurn(); }}
                 disabled={isSubmitting}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                className="group relative flex h-[38px] items-center justify-center gap-1.5 rounded-xl font-black text-xs uppercase tracking-wider bg-gradient-to-b from-[#dc2626] via-[#b91c1c] to-[#7f1d1d] hover:brightness-110 text-white border-2 border-rose-300 shadow-[0_0_20px_rgba(239,68,68,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)] cursor-pointer transition-all overflow-hidden"
+                className="group relative flex h-[38px] items-center justify-center gap-1.5 rounded-xl font-black text-xs uppercase tracking-wider bg-gradient-to-b from-[#dc2626] via-[#b91c1c] to-[#7f1d1d] hover:brightness-110 text-white border-2 border-rose-300 shadow-[0_0_20px_rgba(239,68,68,0.7),inset_0_1px_1px_rgba(255,255,255,0.4)] cursor-pointer transition-transform active:scale-95 overflow-hidden"
               >
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
                 <SkipForward className="w-4 h-4 text-white relative z-10" />
                 <span className="relative z-10 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">{isSubmitting ? 'Passing...' : 'Confirm Pass'}</span>
-              </motion.button>
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1.8fr] gap-1.5 w-full">
               {/* 1. Recall */}
-              <motion.button
+              <button
+                type="button"
                 onClick={onCancelMove}
                 disabled={!hasTemporaryTiles || isSubmitting}
-                whileHover={hasTemporaryTiles ? { scale: 1.05 } : undefined}
-                whileTap={hasTemporaryTiles ? { scale: 0.95 } : undefined}
-                className={`group relative flex h-[38px] items-center justify-center gap-1 rounded-xl transition-all select-none overflow-hidden ${
+                className={`group relative flex h-[38px] items-center justify-center gap-1 rounded-xl transition-transform active:scale-95 select-none overflow-hidden ${
                   hasTemporaryTiles
                     ? 'bg-gradient-to-b from-[#9f1239] via-[#881337] to-[#4c0519] hover:from-[#be123c] hover:to-[#881337] text-white border-2 border-rose-300/90 shadow-[0_0_14px_rgba(244,63,94,0.45),inset_0_1px_1px_rgba(255,255,255,0.4)] cursor-pointer'
                     : 'bg-gradient-to-b from-[#1c2045] to-[#0f1228] text-slate-400 font-bold border border-indigo-400/25 cursor-not-allowed'
@@ -545,15 +530,14 @@ export const TileRack = memo(function TileRack({
                 {hasTemporaryTiles && (
                   <span className="text-[10px] font-black leading-none text-white relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">{stagedTileCount}</span>
                 )}
-              </motion.button>
+              </button>
 
               {/* 2. Shuffle */}
-              <motion.button
+              <button
+                type="button"
                 onClick={onShuffleRack}
                 disabled={tileCount < 2 || isSubmitting}
-                whileHover={tileCount >= 2 && !isSubmitting ? { scale: 1.05 } : undefined}
-                whileTap={tileCount >= 2 && !isSubmitting ? { scale: 0.95 } : undefined}
-                className={`group relative flex h-[38px] items-center justify-center rounded-xl transition-all overflow-hidden ${
+                className={`group relative flex h-[38px] items-center justify-center rounded-xl transition-transform active:scale-95 overflow-hidden ${
                   tileCount >= 2 && !isSubmitting
                     ? 'bg-gradient-to-b from-[#b45309] via-[#92400e] to-[#78350f] hover:from-[#d97706] hover:to-[#92400e] text-white border-2 border-amber-300/90 shadow-[0_0_16px_rgba(245,158,11,0.45),inset_0_1px_1px_rgba(255,255,255,0.4)] cursor-pointer'
                     : 'bg-gradient-to-b from-[#1c2045] to-[#0f1228] text-slate-400 font-bold border border-indigo-400/25 cursor-not-allowed'
@@ -563,15 +547,14 @@ export const TileRack = memo(function TileRack({
               >
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
                 <Shuffle className={`w-4 h-4 relative z-10 ${tileCount >= 2 && !isSubmitting ? 'text-amber-200 stroke-[3] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]' : 'text-slate-400 stroke-[2.5]'}`} />
-              </motion.button>
+              </button>
 
               {/* 3. Swap */}
-              <motion.button
+              <button
+                type="button"
                 onClick={onStartExchange}
                 disabled={!canStartExchange}
-                whileHover={canStartExchange ? { scale: 1.05 } : undefined}
-                whileTap={canStartExchange ? { scale: 0.95 } : undefined}
-                className={`group relative flex h-[38px] items-center justify-center rounded-xl transition-all overflow-hidden ${
+                className={`group relative flex h-[38px] items-center justify-center rounded-xl transition-transform active:scale-95 overflow-hidden ${
                   canStartExchange
                     ? 'bg-gradient-to-b from-[#1d4ed8] via-[#1e40af] to-[#172554] hover:from-[#2563eb] hover:to-[#1e40af] text-white border-2 border-blue-300/90 shadow-[0_0_16px_rgba(59,130,246,0.45),inset_0_1px_1px_rgba(255,255,255,0.4)] cursor-pointer'
                     : 'bg-gradient-to-b from-[#1c2045] to-[#0f1228] text-slate-400 font-bold border border-indigo-400/25 cursor-not-allowed'
@@ -581,15 +564,14 @@ export const TileRack = memo(function TileRack({
               >
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
                 <ArrowLeftRight className={`w-4 h-4 relative z-10 ${canStartExchange ? 'text-sky-200 stroke-[3] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]' : 'text-slate-400 stroke-[2.5]'}`} />
-              </motion.button>
+              </button>
 
               {/* 4. Pass */}
-              <motion.button
+              <button
+                type="button"
                 onClick={() => setPassConfirming(true)}
                 disabled={!isMyTurn || hasTemporaryTiles || isSubmitting}
-                whileHover={isMyTurn && !hasTemporaryTiles ? { scale: 1.05 } : undefined}
-                whileTap={isMyTurn && !hasTemporaryTiles ? { scale: 0.95 } : undefined}
-                className={`group relative flex h-[38px] items-center justify-center rounded-xl transition-all select-none overflow-hidden ${
+                className={`group relative flex h-[38px] items-center justify-center rounded-xl transition-transform active:scale-95 select-none overflow-hidden ${
                   isMyTurn && !hasTemporaryTiles
                     ? 'bg-gradient-to-b from-[#3730a3] via-[#312e81] to-[#1e1b4b] hover:from-[#4338ca] hover:to-[#312e81] text-white border-2 border-indigo-300/80 shadow-[0_0_14px_rgba(99,102,241,0.4),inset_0_1px_1px_rgba(255,255,255,0.3)] cursor-pointer'
                     : 'bg-gradient-to-b from-[#1c2045] to-[#0f1228] text-slate-400 font-bold border border-indigo-400/25 cursor-not-allowed'
@@ -599,15 +581,14 @@ export const TileRack = memo(function TileRack({
               >
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent pointer-events-none" />
                 <SkipForward className={`w-3.5 h-3.5 relative z-10 ${isMyTurn && !hasTemporaryTiles ? 'text-amber-300 stroke-[3] drop-shadow-[0_0_6px_rgba(251,191,36,0.7)]' : 'text-slate-400 stroke-[2.5]'}`} />
-              </motion.button>
+              </button>
 
               {/* 5. Primary Confirm / Play Move Button */}
-              <motion.button
+              <button
+                type="button"
                 onClick={onConfirmMove}
                 disabled={!isMyTurn || !hasTemporaryTiles || placementValid !== true || isSubmitting}
-                whileHover={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 1.03 } : undefined}
-                whileTap={isMyTurn && hasTemporaryTiles && placementValid === true ? { scale: 0.97 } : undefined}
-                className={`game-primary-action group relative flex h-[38px] items-center justify-center gap-1 rounded-xl px-2 font-black text-xs transition-all select-none overflow-hidden ${
+                className={`game-primary-action group relative flex h-[38px] items-center justify-center gap-1 rounded-xl px-2 font-black text-xs transition-transform active:scale-95 select-none overflow-hidden ${
                   isMyTurn && hasTemporaryTiles && placementValid === true
                     ? 'bg-gradient-to-b from-[#10b981] via-[#059669] to-[#047857] text-white border-2 border-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.7),inset_0_2px_1px_rgba(255,255,255,0.6)] cursor-pointer'
                     : isMyTurn && hasTemporaryTiles
@@ -638,7 +619,7 @@ export const TileRack = memo(function TileRack({
                     {isMyTurn && hasTemporaryTiles ? 'INVALID' : 'CONFIRM'}
                   </span>
                 )}
-              </motion.button>
+              </button>
             </div>
           )}
         </div>

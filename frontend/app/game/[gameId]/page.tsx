@@ -285,42 +285,19 @@ export default function GamePage() {
 
     setIsSubmitting(true);
 
-    // 1. INSTANT (0ms) Feedback: Score burst, celebrations & optimistic state update
+    // 1. INSTANT (0ms) Feedback: Score burst & optimistic state update
     if (moveScore > 0) {
       soundFx.playScoreBurst(moveScore, wasBingo);
       setScoreBurst({ score: moveScore, isBingo: wasBingo, key: Date.now() });
-      setTimeout(() => setScoreBurst(null), 2200);
+      setTimeout(() => setScoreBurst(null), 1400);
     }
     if (wasBingo) {
       toasts.flashInfo('🎉 BINGO! All 7 tiles placed (+50 Bonus Points)!');
       confetti({
-        particleCount: 90,
-        spread: 80,
+        particleCount: 60,
+        spread: 70,
         origin: { y: 0.65 },
         colors: ['#38bdf8', '#fbbf24', '#34d399', '#f43f5e', '#a855f7'],
-      });
-      setTimeout(() => {
-        confetti({
-          particleCount: 50,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0.15, y: 0.65 },
-          colors: ['#38bdf8', '#fbbf24', '#34d399'],
-        });
-        confetti({
-          particleCount: 50,
-          angle: 120,
-          spread: 55,
-          origin: { x: 0.85, y: 0.65 },
-          colors: ['#38bdf8', '#fbbf24', '#34d399'],
-        });
-      }, 220);
-    } else if (moveScore >= 12) {
-      confetti({
-        particleCount: 35,
-        spread: 55,
-        origin: { y: 0.7 },
-        colors: ['#34d399', '#38bdf8', '#fbbf24'],
       });
     }
 

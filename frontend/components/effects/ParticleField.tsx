@@ -26,18 +26,20 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     const ctx = canvas?.getContext('2d', { alpha: true, desynchronized: true });
     if (!canvas || !ctx) return;
 
+    const isTouchDevice = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
+    if (isTouchDevice) return;
+
     let width = 0;
     let height = 0;
     let frame = 0;
     let nodes: Node[] = [];
     let beams: Beam[] = [];
     const device = navigator as Navigator & { deviceMemory?: number };
-    const isTouchDevice = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
     const isLowPowerDevice = (device.hardwareConcurrency ?? 8) <= 4 || (device.deviceMemory ?? 8) <= 4;
-    const nodeCount = isTouchDevice ? 30 : isLowPowerDevice ? 36 : NODE_COUNT;
-    const beamCount = isTouchDevice ? 6 : isLowPowerDevice ? 8 : BEAM_COUNT;
-    const linkDistance = isTouchDevice ? 80 : LINK_DISTANCE;
-    const frameInterval = isTouchDevice ? 1000 / 25 : 1000 / 30;
+    const nodeCount = isLowPowerDevice ? 36 : NODE_COUNT;
+    const beamCount = isLowPowerDevice ? 8 : BEAM_COUNT;
+    const linkDistance = LINK_DISTANCE;
+    const frameInterval = 1000 / 30;
     let lastDrawAt = 0;
     const mouse = { x: -1000, y: -1000 };
     /** The canvas box, measured on resize: reading it on every pointer move forced a layout each time. */
