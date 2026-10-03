@@ -41,12 +41,12 @@ export const FloatingTile: React.FC<FloatingTileProps> = ({ letter, value, posit
         </div>
       ) : (
         <span
-          className={`tile-letter tile-letter-orange relative z-20 leading-none font-maple ${
+          className={`tile-letter tile-letter-orange relative z-20 text-[38px] leading-none font-maple inline-block ${
             letter === 'W'
-              ? 'text-[30px] -translate-x-[1px]'
+              ? 'scale-x-90 -translate-x-[1px]'
               : letter === 'M'
-              ? 'text-[33px]'
-              : 'text-[38px]'
+              ? 'scale-x-95'
+              : ''
           }`}
         >
           {letter}

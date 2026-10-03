@@ -227,12 +227,12 @@ export const TileRack = memo(function TileRack({
                         </div>
                       ) : (
                         <span
-                          className={`tile-letter tile-letter-orange relative z-20 leading-none font-maple ${
+                          className={`tile-letter tile-letter-orange relative z-20 text-[26px] sm:text-[28px] leading-none font-maple inline-block ${
                             displayLetter === 'W'
-                              ? 'text-[21px] sm:text-[23px] -translate-x-[0.5px]'
+                              ? 'scale-x-90 -translate-x-[0.5px]'
                               : displayLetter === 'M'
-                              ? 'text-[23px] sm:text-[25px]'
-                              : 'text-[26px] sm:text-[28px]'
+                              ? 'scale-x-95'
+                              : ''
                           }`}
                         >
                           {displayLetter}

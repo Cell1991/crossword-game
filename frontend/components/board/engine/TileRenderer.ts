@@ -630,33 +630,33 @@ export class TileRenderer {
         } else {
           ctx.fillStyle = letterFill;
         }
-        const letterScale = letter === 'W' ? 0.78 : letter === 'M' ? 0.86 : 1.0;
-        let fontSize = Math.max(10, Math.round(cellSize * 0.68 * letterScale));
+        const fontSize = Math.max(12, Math.round(cellSize * 0.70));
         ctx.font = `italic 900 ${fontSize}px 'Inter Black Italic', sans-serif`;
-
-        // Safety clamp: ensure wide letters never touch tile borders or score numbers
-        const metrics = ctx.measureText(letter);
-        const maxAllowedW = tileW * 0.68;
-        if (metrics.width > maxAllowedW && metrics.width > 0) {
-          fontSize = Math.max(9, Math.round(fontSize * (maxAllowedW / metrics.width)));
-          ctx.font = `italic 900 ${fontSize}px 'Inter Black Italic', sans-serif`;
-        }
-
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        const textX = x + cellSize / 2 + (letter === 'W' ? -0.5 : 0);
-        const textY = y + cellSize / 2 + fontSize * 0.04;
+        const cx = x + cellSize / 2;
+        const cy = y + cellSize / 2 + fontSize * 0.04;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        if (letter === 'W') {
+          ctx.scale(0.86, 1.0);
+          ctx.translate(-cellSize * 0.02, 0);
+        } else if (letter === 'M') {
+          ctx.scale(0.92, 1.0);
+        }
         
         if (!isRemote) {
           ctx.lineJoin = 'round';
-          ctx.lineWidth = Math.max(2.0, fontSize * 0.10);
+          ctx.lineWidth = Math.max(2.2, fontSize * 0.10);
           ctx.strokeStyle = isFrozen ? '#02182b' : tilePalette.letter.stroke;
-          ctx.strokeText(letter, textX, textY);
+          ctx.strokeText(letter, 0, 0);
         }
         ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(56, 189, 248, 0.85)' : tilePalette.letter.shadow;
         ctx.shadowBlur = isRemote ? 0 : isFrozen ? Math.max(4, cellSize * 0.09) : Math.max(2, cellSize * 0.06);
         ctx.shadowOffsetY = isRemote ? 0 : Math.max(1.2, cellSize * 0.04);
-        ctx.fillText(letter, textX, textY);
+        ctx.fillText(letter, 0, 0);
+        ctx.restore();
       }
       ctx.restore();
 
