@@ -46,6 +46,8 @@ interface BoardCanvasProps {
   hintTiles?: HintTile[] | null;
   pendingArmedCell?: CellPosition | null;
   pendingArmedCard?: string | null;
+  dragHoverCell?: CellPosition | null;
+  onRegisterHoverHandler?: (handler: (cell: CellPosition | null) => void) => void;
 }
 
 /**
@@ -79,6 +81,8 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   hintTiles = null,
   pendingArmedCell = null,
   pendingArmedCard = null,
+  dragHoverCell,
+  onRegisterHoverHandler,
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<SceneContent | null>(null);
@@ -99,6 +103,9 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   const prevRemotePlacementsRef = useRef<{ row: number; col: number }[]>([]);
   const prevBoardStateRef = useRef<Record<string, BoardCell>>({});
   const animFrameRef = useRef<number | null>(null);
+  const hoverTrailMapRef = useRef<Map<string, { row: number; col: number; time: number }>>(new Map());
+  const currentHoverCellRef = useRef<CellPosition | null>(dragHoverCell ?? null);
+  const dragHoverAnimRef = useRef<number | null>(null);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -120,8 +127,74 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       model: modelRef.current,
       animTime: performance.now(),
       tileAnimations: tilePlacementTimesRef.current,
+      dragHoverCell: currentHoverCellRef.current,
+      dragHoverTrails: hoverTrailMapRef.current,
     });
   }, [camera, lowPower]);
+
+  const startHoverAnimLoop = useCallback(() => {
+    if (dragHoverAnimRef.current !== null) return;
+    const step = (time: number) => {
+      draw();
+      let stillAnimating = Boolean(currentHoverCellRef.current);
+      for (const [key, item] of hoverTrailMapRef.current.entries()) {
+        if (time - item.time < 350) {
+          stillAnimating = true;
+        } else {
+          hoverTrailMapRef.current.delete(key);
+        }
+      }
+      if (stillAnimating) {
+        dragHoverAnimRef.current = requestAnimationFrame(step);
+      } else {
+        dragHoverAnimRef.current = null;
+        draw();
+      }
+    };
+    dragHoverAnimRef.current = requestAnimationFrame(step);
+  }, [draw]);
+
+  const handleHoverCellChange = useCallback((cell: CellPosition | null) => {
+    const prev = currentHoverCellRef.current;
+    if (
+      (cell === null && prev === null) ||
+      (cell !== null && prev !== null && cell.row === prev.row && cell.col === prev.col)
+    ) {
+      return;
+    }
+    currentHoverCellRef.current = cell;
+    if (sceneRef.current) {
+      sceneRef.current.dragHoverCell = cell;
+      sceneRef.current.dragHoverTrails = hoverTrailMapRef.current;
+    }
+    if (cell) {
+      hoverTrailMapRef.current.set(`${cell.row}_${cell.col}`, {
+        row: cell.row,
+        col: cell.col,
+        time: performance.now(),
+      });
+    }
+    startHoverAnimLoop();
+  }, [startHoverAnimLoop]);
+
+  useEffect(() => {
+    onRegisterHoverHandler?.(handleHoverCellChange);
+  }, [onRegisterHoverHandler, handleHoverCellChange]);
+
+  useEffect(() => {
+    if (dragHoverCell !== undefined) {
+      handleHoverCellChange(dragHoverCell);
+    }
+  }, [dragHoverCell, handleHoverCellChange]);
+
+  useEffect(() => {
+    return () => {
+      if (dragHoverAnimRef.current) {
+        cancelAnimationFrame(dragHoverAnimRef.current);
+        dragHoverAnimRef.current = null;
+      }
+    };
+  }, []);
 
   // Track tile placement timestamps and drive active spring & gleam animations
   useEffect(() => {
@@ -216,6 +289,8 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       dragPreviewTile,
       dragPreviewIsValid,
       draggingTileId,
+      dragHoverCell: currentHoverCellRef.current,
+      dragHoverTrails: hoverTrailMapRef.current,
       frozenTile,
       hintCell,
       hintTiles,

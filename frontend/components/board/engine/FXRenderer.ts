@@ -146,4 +146,95 @@ export class FXRenderer {
 
     ctx.restore();
   }
+
+  public static renderDragHoverTrail(
+    ctx: CanvasRenderingContext2D,
+    activeHover: CellPosition | null,
+    trailMap: Map<string, { row: number; col: number; time: number }> | undefined,
+    offset: { x: number; y: number },
+    cellSize: number,
+    now: number
+  ): void {
+    if (!activeHover && (!trailMap || trailMap.size === 0)) return;
+
+    const pad = Math.max(1, cellSize * 0.05);
+    const radius = Math.max(3, cellSize * 0.14);
+    const FADE_DURATION = 320; // ms
+
+    ctx.save();
+
+    // 1. Render fading comet trail cells
+    if (trailMap) {
+      for (const [key, item] of trailMap.entries()) {
+        const isCurrent = activeHover && activeHover.row === item.row && activeHover.col === item.col;
+        if (isCurrent) continue;
+
+        const age = now - item.time;
+        if (age >= FADE_DURATION) {
+          trailMap.delete(key);
+          continue;
+        }
+
+        const progress = Math.max(0, 1 - age / FADE_DURATION);
+        const alpha = Math.pow(progress, 1.6);
+        if (alpha <= 0.01) continue;
+
+        const x = offset.x + item.col * cellSize + pad;
+        const y = offset.y + item.row * cellSize + pad;
+        const w = cellSize - pad * 2;
+
+        // Soft white starlight trail fill
+        ctx.fillStyle = `rgba(255, 255, 255, ${0.14 * alpha})`;
+        drawRoundedRect(ctx, x, y, w, w, radius);
+        ctx.fill();
+
+        // Soft starlight border
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.45 * alpha})`;
+        ctx.lineWidth = Math.max(1.5, cellSize * 0.035);
+        ctx.shadowColor = `rgba(255, 255, 255, ${0.6 * alpha})`;
+        ctx.shadowBlur = Math.max(4, cellSize * 0.12) * alpha;
+        drawRoundedRect(ctx, x, y, w, w, radius);
+        ctx.stroke();
+      }
+    }
+
+    // 2. Render active hovered cell with radiant celestial starlight aura
+    if (activeHover) {
+      const x = offset.x + activeHover.col * cellSize + pad;
+      const y = offset.y + activeHover.row * cellSize + pad;
+      const w = cellSize - pad * 2;
+
+      // Inner radiant flare
+      const centerFlare = ctx.createRadialGradient(
+        x + w / 2, y + w / 2, 0,
+        x + w / 2, y + w / 2, w * 0.75
+      );
+      centerFlare.addColorStop(0, 'rgba(255, 255, 255, 0.38)');
+      centerFlare.addColorStop(0.5, 'rgba(255, 255, 255, 0.20)');
+      centerFlare.addColorStop(1, 'rgba(255, 255, 255, 0.06)');
+
+      ctx.fillStyle = centerFlare;
+      drawRoundedRect(ctx, x, y, w, w, radius);
+      ctx.fill();
+
+      // Outer luminous starlight halo
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.95)';
+      ctx.shadowBlur = Math.max(8, cellSize * 0.24);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = Math.max(2, cellSize * 0.045);
+      drawRoundedRect(ctx, x, y, w, w, radius);
+      ctx.stroke();
+
+      // Inner specular crisp ring
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 1;
+      const innerPad = 1;
+      drawRoundedRect(ctx, x + innerPad, y + innerPad, w - innerPad * 2, w - innerPad * 2, Math.max(1, radius - innerPad));
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
 }

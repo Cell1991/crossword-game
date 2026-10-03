@@ -28,6 +28,7 @@ interface UseTileDragOptions {
   unstageTile: (tileId: string) => void;
   seatReturningTile: (tileId: string, targetSlot: number) => void;
   onSwapSlots?: (draggedSlot: number, targetSlot: number) => void;
+  onHoverCellChange?: (cell: CellPosition | null) => void;
 }
 
 const isInside = (rect: DOMRect | null, x: number, y: number): rect is DOMRect => Boolean(
@@ -67,7 +68,15 @@ export function useTileDrag(options: UseTileDragOptions) {
       const position = pointerRef.current;
       if (!position) return;
       moveFixedElement(ghostRef.current, position.x, position.y);
-      hoverCellRef.current = cellUnderPointer(position.x, position.y);
+      const cell = cellUnderPointer(position.x, position.y);
+      const prev = hoverCellRef.current;
+      if (
+        (cell === null && prev !== null) ||
+        (cell !== null && (prev === null || cell.row !== prev.row || cell.col !== prev.col))
+      ) {
+        hoverCellRef.current = cell;
+        latestRef.current.onHoverCellChange?.(cell);
+      }
     });
   }, [cellUnderPointer]);
 
@@ -78,6 +87,7 @@ export function useTileDrag(options: UseTileDragOptions) {
     }
     sessionRef.current = null;
     hoverCellRef.current = null;
+    latestRef.current.onHoverCellChange?.(null);
     setDragSession(null);
   }, []);
 

@@ -28,6 +28,8 @@ export interface BoardScene {
   hintTiles?: HintTile[] | null;
   pendingArmedCell: CellPosition | null;
   pendingArmedCard?: string | null;
+  dragHoverCell?: CellPosition | null;
+  dragHoverTrails?: Map<string, { row: number; col: number; time: number }>;
   lowPower: boolean;
   tilePalette: TilePalette;
   model?: BoardModel;

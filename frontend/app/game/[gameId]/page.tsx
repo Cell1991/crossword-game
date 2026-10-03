@@ -144,6 +144,8 @@ export default function GamePage() {
     seatReturning(tileId, targetSlot, pendingTileIds);
   }, [pendingTileIds, seatReturning]);
 
+  const hoverHandlerRef = useRef<((cell: CellPosition | null) => void) | null>(null);
+
   const {
     dragSession,
     ghostRef: dragGhostRef,
@@ -165,6 +167,7 @@ export default function GamePage() {
     unstageTile: staged.unstageTile,
     seatReturningTile,
     onSwapSlots: swapSeats,
+    onHoverCellChange: (cell) => hoverHandlerRef.current?.(cell),
   });
 
   // A new turn clears the selection, the verdict, the other player's preview and any exchange.
@@ -759,6 +762,9 @@ export default function GamePage() {
           <div className="absolute inset-0 z-10">
             <BoardCanvas
               containerRef={boardRef}
+              onRegisterHoverHandler={(handler) => {
+                hoverHandlerRef.current = handler;
+              }}
               boardState={boardState}
               temporaryTiles={
                 isBotTurn

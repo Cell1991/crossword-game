@@ -24,6 +24,8 @@ export interface SceneRenderConfig {
   hintTiles?: HintTile[] | null;
   pendingArmedCell: CellPosition | null;
   pendingArmedCard?: string | null;
+  dragHoverCell?: CellPosition | null;
+  dragHoverTrails?: Map<string, { row: number; col: number; time: number }>;
   lowPower: boolean;
   tilePalette: TilePalette;
   model: BoardModel;
@@ -73,6 +75,18 @@ export class BoardCompositor {
         model,
         bounds: { minRow, maxRow, minCol, maxCol },
       });
+    }
+
+    // 2.5 Layer 1.5: Drag Hover Aura & Smooth Starlight Comet Trail
+    if (config.dragHoverCell || (config.dragHoverTrails && config.dragHoverTrails.size > 0)) {
+      FXRenderer.renderDragHoverTrail(
+        ctx,
+        config.dragHoverCell ?? null,
+        config.dragHoverTrails,
+        offset,
+        cellSize,
+        config.animTime ?? performance.now()
+      );
     }
 
     const tileContext: TileRenderContext = {
