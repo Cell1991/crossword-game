@@ -76,8 +76,8 @@ export const CARD_DETAILS: Record<string, CardStyleData> = {
   SPY_SWAP: {
     title: 'Spy Swap',
     subtitle: 'STEAL 1–3 TILES',
-    description: 'Swap 1 to 3 rack tiles with random secret tiles stolen directly from an opponent.',
-    element: 'ANYTIME',
+    description: 'Swap 1 to 3 rack tiles with random secret tiles stolen directly from an opponent. (Your turn only)',
+    element: 'YOUR TURN',
     icon: <Repeat2 className="w-14 h-14 sm:w-16 sm:h-16 text-emerald-200 drop-shadow-[0_0_16px_#34d399]" />,
     bgGradient: 'from-emerald-950/95 via-[#062418]/98 to-[#050e18]/95',
     borderGlow: 'border-emerald-400 shadow-[0_0_50px_rgba(16,185,129,0.65),inset_0_0_24px_rgba(16,185,129,0.35)] ring-1 ring-emerald-300/40',

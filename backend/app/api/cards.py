@@ -148,6 +148,8 @@ async def use_card(
         return {"success": True, "hp": player.hp}
 
     if card == "SPY_SWAP":
+        if game.current_player_id != player.id:
+            raise HTTPException(status_code=400, detail="Spy Swap can only be used on your turn")
         target = await _target_player(db, game_id, request.target_player_id, player.id)
         player_rack_items = await player_rack(db, player.id)
         target_rack_items = await player_rack(db, target.id)

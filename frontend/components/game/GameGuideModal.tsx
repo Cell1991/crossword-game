@@ -370,11 +370,11 @@ export function GameGuideModal({
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-sm sm:text-base font-semibold text-white">Spy Swap</h3>
                     <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-300">
-                      Anytime
+                      Your Turn
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Swap 1 to 3 rack tiles with <span className="text-amber-200/95 font-medium">random tiles stolen directly from an opponent</span>.
+                    Swap 1 to 3 rack tiles with <span className="text-amber-200/95 font-medium">random tiles stolen directly from an opponent</span>. Can only be activated on your turn.
                   </p>
                 </div>
               </div>
