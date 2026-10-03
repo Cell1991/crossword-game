@@ -64,7 +64,15 @@ input[type="number"] {
     var(--tile-letter-shadow-desktop);
 }
 
-.tile-face { background-image: var(--tile-face-gradient); }
+.tile-face {
+  background-image: var(--tile-face-gradient);
+  box-shadow: 
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -2.5px 3px 0 rgba(80, 25, 0, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25),
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(45, 15, 0, 0.35);
+}
 
 .blank-picker-letter {
   color: #fff;
@@ -90,25 +98,25 @@ input[type="number"] {
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --tile-face-gradient: linear-gradient(to bottom, #fbbf24, #e8a600, #664a01);
+  --tile-face-gradient: linear-gradient(180deg, #ffea79 0%, #fbbf24 22%, #f59e0b 60%, #b45309 85%, #8c3503 100%);
   --tile-letter-color-desktop: #ffffff;
-  --tile-letter-stroke-desktop: #000000;
-  --tile-letter-shadow-desktop: 0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 4px 7px rgba(0, 0, 0, 0.72);
+  --tile-letter-stroke-desktop: #3b1400;
+  --tile-letter-shadow-desktop: 0 1px 0 #3b1400, 0 2px 1px rgba(35, 10, 0, 0.8), 0 3px 5px rgba(0, 0, 0, 0.55);
   --tile-score-color-desktop: #ffffff;
-  --tile-score-stroke-desktop: #000000;
-  --tile-score-shadow-desktop: 0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 2px 4px rgba(0, 0, 0, 0.72);
+  --tile-score-stroke-desktop: #3b1400;
+  --tile-score-shadow-desktop: 0 1px 0 #3b1400, 0 1.5px 1px rgba(35, 10, 0, 0.8), 0 2px 3px rgba(0, 0, 0, 0.6);
   --tile-blank-color-desktop: #ffffff;
-  --tile-blank-stroke-desktop: #000000;
-  --tile-blank-glow-desktop: rgba(0, 0, 0, 0.36);
+  --tile-blank-stroke-desktop: #3b1400;
+  --tile-blank-glow-desktop: rgba(255, 235, 160, 0.6);
   --tile-letter-color-mobile: #ffffff;
-  --tile-letter-stroke-mobile: #000000;
-  --tile-letter-shadow-mobile: 0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 4px 7px rgba(0, 0, 0, 0.72);
+  --tile-letter-stroke-mobile: #3b1400;
+  --tile-letter-shadow-mobile: 0 1px 0 #3b1400, 0 2px 1px rgba(35, 10, 0, 0.8), 0 3px 5px rgba(0, 0, 0, 0.55);
   --tile-score-color-mobile: #ffffff;
-  --tile-score-stroke-mobile: #000000;
-  --tile-score-shadow-mobile: 0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 2px 4px rgba(0, 0, 0, 0.72);
+  --tile-score-stroke-mobile: #3b1400;
+  --tile-score-shadow-mobile: 0 1px 0 #3b1400, 0 1.5px 1px rgba(35, 10, 0, 0.8), 0 2px 3px rgba(0, 0, 0, 0.6);
   --tile-blank-color-mobile: #ffffff;
-  --tile-blank-stroke-mobile: #000000;
-  --tile-blank-glow-mobile: rgba(0, 0, 0, 0.36);
+  --tile-blank-stroke-mobile: #3b1400;
+  --tile-blank-glow-mobile: rgba(255, 235, 160, 0.6);
 }
 
 @theme inline {

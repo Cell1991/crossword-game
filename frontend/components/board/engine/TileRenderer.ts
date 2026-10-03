@@ -335,9 +335,11 @@ export class TileRenderer {
       ctx.fillStyle = ghostGrad;
     } else {
       const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
-      grad.addColorStop(0, TILE_THEME.face.top);
-      grad.addColorStop(0.5, TILE_THEME.face.middle);
-      grad.addColorStop(1, TILE_THEME.face.bottom);
+      grad.addColorStop(0, '#ffea79');
+      grad.addColorStop(0.22, '#fbbf24');
+      grad.addColorStop(0.6, '#f59e0b');
+      grad.addColorStop(0.85, '#b45309');
+      grad.addColorStop(1, '#8c3503');
       ctx.fillStyle = grad;
     }
     drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
@@ -410,6 +412,34 @@ export class TileRenderer {
       if (cellSize >= 14) {
         drawIceCrystals(ctx, x + pad, y + pad, tileW, cellSize);
       }
+
+      ctx.restore();
+    } else if (!isFrozen && !isRemote) {
+      ctx.save();
+      ctx.beginPath();
+      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+      ctx.clip();
+
+      // Top-down specular bevel luster
+      const topSheen = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW * 0.45);
+      topSheen.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+      topSheen.addColorStop(0.5, 'rgba(255, 255, 255, 0.12)');
+      topSheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = topSheen;
+      ctx.fillRect(x + pad, y + pad, tileW, tileW * 0.45);
+
+      // Bottom chiseled bevel shadow
+      const botShade = ctx.createLinearGradient(0, y + pad + tileW * 0.72, 0, y + pad + tileW);
+      botShade.addColorStop(0, 'rgba(60, 20, 0, 0)');
+      botShade.addColorStop(1, 'rgba(60, 20, 0, 0.45)');
+      ctx.fillStyle = botShade;
+      ctx.fillRect(x + pad, y + pad + tileW * 0.72, tileW, tileW * 0.28);
+
+      // Inner glowing ambient rim
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, x + pad + 0.5, y + pad + 0.5, tileW - 1, tileW - 1, Math.max(1, radius - 0.5));
+      ctx.stroke();
 
       ctx.restore();
     }

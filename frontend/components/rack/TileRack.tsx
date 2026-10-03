@@ -203,20 +203,22 @@ export const TileRack = memo(function TileRack({
                       onPointerUp={(event) => handlePointerUp(event, tile)}
                       disabled={!canStageMove}
                       aria-pressed={isExchanging ? isMarkedForExchange : undefined}
-                      className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-100/80 font-sans select-none touch-none overflow-hidden sm:rounded-xl active:scale-95 ${
+                      className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-200/90 font-sans select-none touch-none overflow-hidden sm:rounded-xl active:scale-95 transition-all ${
                         isDragging
                           ? 'z-20 scale-105 -translate-y-2.5 opacity-40 shadow-2xl cursor-grabbing transition-none'
                           : isMarkedForExchange
-                          ? '-translate-y-2.5 border-2 border-amber-100 shadow-lg shadow-amber-500/40 ring-4 ring-amber-300/70 cursor-pointer transition-transform duration-100'
+                          ? '-translate-y-2.5 border-2 border-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.7),inset_0_2px_1px_rgba(255,255,255,0.9)] ring-4 ring-amber-300/70 cursor-pointer duration-100'
                           : isSelected
-                          ? '-translate-y-2.5 border-2 border-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.6)] ring-4 ring-amber-400/50 transition-transform duration-100'
+                          ? '-translate-y-2.5 border-2 border-amber-300 shadow-[0_0_24px_rgba(251,191,36,0.8),inset_0_2px_1px_rgba(255,255,255,0.9)] ring-4 ring-amber-400/60 duration-100'
                           : canStageMove
-                          ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_6px_12px_rgba(74,34,8,0.48),0_2px_4px_rgba(34,24,20,0.35)] hover:-translate-y-1 hover:brightness-110 cursor-pointer transition-transform duration-100'
+                          ? 'hover:-translate-y-1 hover:brightness-110 cursor-pointer duration-100'
                           : 'opacity-65 cursor-not-allowed shadow-md transition-none'
                       }`}
                     >
-                      {/* 3D Specular Top Bevel Glass Highlight */}
-                      <div className="absolute inset-x-1 top-0.5 h-[36%] rounded-t-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none z-10" />
+                      {/* Top Specular Arc Glint */}
+                      <div className="absolute inset-x-1 top-0.5 h-[40%] rounded-t-lg bg-gradient-to-b from-white/35 via-white/10 to-transparent pointer-events-none z-10" />
+                      {/* Micro Corner Glint */}
+                      <div className="absolute top-1 left-1.5 w-1.5 h-1.5 rounded-full bg-white/75 blur-[0.4px] pointer-events-none z-10" />
 
                       {/* Letter / Wildcard Star */}
                       {isBlankLetter(tile.letter) && !isDesignatedBlank ? (

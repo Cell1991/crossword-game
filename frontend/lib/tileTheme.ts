@@ -1,15 +1,15 @@
 import type { CSSProperties } from 'react';
 
 const face = {
-  top: '#fbbf24',
-  middle: '#e8a600',
-  bottom: '#664a01',
-  shadow: 'rgba(0, 0, 0, 0.58)',
+  top: '#ffea79',
+  middle: '#f59e0b',
+  bottom: '#8c3503',
+  shadow: 'rgba(45, 15, 2, 0.65)',
 };
 
 export const TILE_THEME = {
   face,
-  faceGradient: `linear-gradient(to bottom, ${face.top}, ${face.middle}, ${face.bottom})`,
+  faceGradient: 'linear-gradient(180deg, #ffea79 0%, #fbbf24 22%, #f59e0b 60%, #b45309 85%, #8c3503 100%)',
   remoteFace: {
     top: '#3d5e88',
     middle: '#2f4e77',
@@ -19,43 +19,43 @@ export const TILE_THEME = {
   mobile: {
     letter: {
       color: '#ffffff',
-      stroke: '#000000',
-      shadow: 'rgba(23, 58, 91, 0.28)',
-      textShadow: '0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 4px 7px rgba(0, 0, 0, 0.72)',
-      weight: 400,
+      stroke: '#3b1400',
+      shadow: 'rgba(35, 10, 0, 0.75)',
+      textShadow: '0 1px 0 #3b1400, 0 2px 1px rgba(35, 10, 0, 0.8), 0 3px 5px rgba(0, 0, 0, 0.55)',
+      weight: 900,
     },
     score: {
       color: '#ffffff',
-      stroke: '#000000',
-      glow: 'rgba(0, 0, 0, 0.5)',
-      textShadow: '0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 2px 4px rgba(0, 0, 0, 0.72)',
-      weight: 400,
+      stroke: '#3b1400',
+      glow: 'rgba(255, 230, 150, 0.5)',
+      textShadow: '0 1px 0 #3b1400, 0 1.5px 1px rgba(35, 10, 0, 0.8), 0 2px 3px rgba(0, 0, 0, 0.6)',
+      weight: 900,
     },
     blank: {
       color: '#ffffff',
-      stroke: '#000000',
-      glow: 'rgba(0, 0, 0, 0.36)',
+      stroke: '#3b1400',
+      glow: 'rgba(255, 235, 160, 0.6)',
     },
   },
   desktop: {
     letter: {
       color: '#ffffff',
-      stroke: '#000000',
-      shadow: 'rgba(23, 58, 91, 0.28)',
-      textShadow: '0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 4px 7px rgba(0, 0, 0, 0.72)',
-      weight: 400,
+      stroke: '#3b1400',
+      shadow: 'rgba(35, 10, 0, 0.75)',
+      textShadow: '0 1px 0 #3b1400, 0 2px 1px rgba(35, 10, 0, 0.8), 0 3px 5px rgba(0, 0, 0, 0.55)',
+      weight: 900,
     },
     score: {
       color: '#ffffff',
-      stroke: '#000000',
-      glow: 'rgba(0, 0, 0, 0.5)',
-      textShadow: '0 1px 0 rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.88), 0 2px 4px rgba(0, 0, 0, 0.72)',
-      weight: 400,
+      stroke: '#3b1400',
+      glow: 'rgba(255, 230, 150, 0.5)',
+      textShadow: '0 1px 0 #3b1400, 0 1.5px 1px rgba(35, 10, 0, 0.8), 0 2px 3px rgba(0, 0, 0, 0.6)',
+      weight: 900,
     },
     blank: {
       color: '#ffffff',
-      stroke: '#000000',
-      glow: 'rgba(0, 0, 0, 0.36)',
+      stroke: '#3b1400',
+      glow: 'rgba(255, 235, 160, 0.6)',
     },
   },
 } as const;
