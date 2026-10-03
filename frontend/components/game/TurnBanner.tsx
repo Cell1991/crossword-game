@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Player } from '@/lib/types';
-import { Bot, Eye, Hourglass, WifiOff, Zap } from 'lucide-react';
+import { Bot, Eye, Hourglass, WifiOff, Sparkles } from 'lucide-react';
 
 interface TurnBannerProps {
   isMyTurn: boolean;
@@ -42,10 +42,10 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
     }
   }, [isConnected, isMyTurn]);
 
-  let icon = <Hourglass className="h-4 w-4 shrink-0 text-cyan-400 drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]" />;
+  let icon = <Hourglass className="h-4 w-4 shrink-0 text-amber-400/80 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" />;
   let title = `${currentPlayer?.display_name || 'Opponent'}’s turn`;
   let detail = nextPlayer && !mobile ? `Next: ${nextPlayer.display_name}` : 'Waiting for move';
-  let tone = 'border-cyan-500/30 bg-gradient-to-r from-[#091526]/90 via-[#0e1f38]/90 to-[#091526]/90 text-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)]';
+  let tone = 'border-white/12 bg-gradient-to-r from-[#141535]/90 via-[#0e102b]/95 to-[#090a1f]/90 text-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)]';
 
   if (!isConnected) {
     icon = <WifiOff className="h-4 w-4 shrink-0 text-rose-300 drop-shadow-[0_0_6px_rgba(244,63,94,0.6)]" />;
@@ -53,22 +53,22 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
     detail = 'Restoring live match';
     tone = 'border-rose-500/50 bg-rose-950/85 text-rose-100 shadow-[0_2px_12px_rgba(239,68,68,0.4)]';
   } else if (spectating) {
-    icon = <Eye className="h-4 w-4 shrink-0 text-sky-300 drop-shadow-[0_0_6px_rgba(56,189,248,0.6)]" />;
+    icon = <Eye className="h-4 w-4 shrink-0 text-indigo-300 drop-shadow-[0_0_6px_rgba(129,140,248,0.6)]" />;
     title = 'Spectating';
     detail = currentPlayer ? `${currentPlayer.display_name} to play` : 'Watching live match';
-    tone = 'border-sky-500/50 bg-sky-950/85 text-sky-100 shadow-[0_2px_12px_rgba(56,189,248,0.3)]';
+    tone = 'border-indigo-500/40 bg-indigo-950/85 text-indigo-100 shadow-[0_2px_12px_rgba(99,102,241,0.25)]';
   } else if (isMyTurn) {
     title = 'Your Turn';
     detail = 'Place tiles · play move';
-    icon = <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399] animate-pulse" />;
-    tone = 'border-emerald-400/80 bg-gradient-to-r from-emerald-950/90 via-[#062c1d]/90 to-emerald-950/90 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.35),inset_0_0_12px_rgba(16,185,129,0.2)] ring-1 ring-emerald-400/50';
+    icon = <Sparkles className="h-4 w-4 shrink-0 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.85)] animate-pulse" />;
+    tone = 'border-amber-400/75 bg-gradient-to-r from-[#2a220e]/95 via-[#1c1a3e]/95 to-[#12102e]/95 text-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.3),inset_0_0_12px_rgba(251,191,36,0.15)] ring-1 ring-amber-400/40';
   } else if (isBot) {
-    icon = <Bot className={`h-4 w-4 shrink-0 ${isBotPlacing ? 'text-amber-300' : 'text-cyan-300'}`} />;
+    icon = <Bot className={`h-4 w-4 shrink-0 ${isBotPlacing ? 'text-amber-300' : 'text-indigo-300'}`} />;
     title = currentPlayer?.display_name || 'Game bot';
     detail = isBotPlacing ? 'Playing move' : 'Thinking';
     tone = isBotPlacing
       ? 'border-amber-400/60 bg-amber-950/85 text-amber-100 shadow-[0_2px_12px_rgba(245,158,11,0.35)]'
-      : 'border-cyan-400/60 bg-cyan-950/85 text-cyan-100 shadow-[0_2px_12px_rgba(34,211,238,0.35)]';
+      : 'border-indigo-400/50 bg-indigo-950/85 text-indigo-100 shadow-[0_2px_12px_rgba(99,102,241,0.25)]';
   }
 
   return (
@@ -90,7 +90,7 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
           </span>
         </div>
       </div>
-      <span className="shrink-0 rounded-lg border border-white/15 bg-black/60 px-2 py-0.5 font-mono text-[10px] font-black tabular-nums text-slate-200 shadow-inner">
+      <span className="shrink-0 rounded-lg border border-amber-400/25 bg-black/60 px-2 py-0.5 text-[10px] font-black tabular-nums text-amber-200 shadow-inner">
         {turnLabel}
       </span>
     </motion.div>

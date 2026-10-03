@@ -9,12 +9,12 @@ const SpectatorBadge: React.FC<{ count: number }> = ({ count }) => {
   if (count <= 0) return null;
   return (
     <div
-      className="inline-flex h-8 sm:h-9 items-center gap-1.5 rounded-xl border border-sky-400/30 bg-[#081220]/90 px-2.5 text-xs font-bold text-sky-300 shadow-[0_2px_10px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)]"
+      className="inline-flex h-8 sm:h-9 items-center gap-1.5 rounded-xl border border-indigo-400/30 bg-[#121432]/90 px-2.5 text-xs font-bold text-indigo-200 shadow-[0_2px_10px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)]"
       title={`${count} spectator${count > 1 ? 's' : ''} watching`}
       aria-label={`${count} spectator${count > 1 ? 's' : ''} watching`}
     >
-      <Eye className="h-3.5 w-3.5 text-sky-400 drop-shadow-[0_0_6px_rgba(56,189,248,0.6)]" />
-      <span className="font-mono font-black tabular-nums">{count}</span>
+      <Eye className="h-3.5 w-3.5 text-indigo-300 drop-shadow-[0_0_6px_rgba(129,140,248,0.6)]" />
+      <span className="font-bold tabular-nums">{count}</span>
     </div>
   );
 };
@@ -40,8 +40,8 @@ interface GameHudProps {
 }
 
 /**
- * World-Class Cyber/Fantasy Top Navigation HUD
- * High-end glassmorphism, responsive tactile buttons, neon status indicators, and 100% English UI.
+ * WordX Celestial Cosmic Top Navigation HUD
+ * High-end cosmic glassmorphism, responsive tactile buttons, starlight status indicators, and 100% English UI.
  */
 export const GameHud: React.FC<GameHudProps> = ({
   isSpectator,
@@ -105,12 +105,12 @@ export const GameHud: React.FC<GameHudProps> = ({
   };
 
   return (
-    <div className="gameplay-top-hud-container relative z-30 w-full shrink-0 flex flex-col border-b border-cyan-500/20 bg-gradient-to-r from-[#070e1b]/95 via-[#0b172a]/95 to-[#070e1b]/95 shadow-[0_4px_24px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-2xl">
-      {/* Top subtle cyan specular light edge */}
-      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/50 via-amber-300/40 to-transparent pointer-events-none" />
+    <div className="gameplay-top-hud-container relative z-30 w-full shrink-0 flex flex-col border-b border-white/10 bg-gradient-to-r from-[#0c0d24]/95 via-[#131438]/95 to-[#0c0d24]/95 shadow-[0_4px_24px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl">
+      {/* Top subtle starlight golden/violet specular light edge */}
+      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-300/40 via-purple-400/30 to-transparent pointer-events-none" />
 
       {/* Decorative center radiant glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-12 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-12 bg-amber-400/8 rounded-full blur-2xl pointer-events-none" />
 
       {/* ROW 1: System Bar */}
       <header className="gameplay-top-hud relative z-10 grid w-full items-center grid-cols-[1fr_auto_1fr] gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2">
@@ -120,7 +120,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={onExit}
-            className="tactile-button flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-[#0a1526]/90 text-slate-200 hover:text-white hover:border-cyan-400/70 hover:bg-[#10223d] hover:shadow-[0_0_16px_rgba(34,211,238,0.35)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] active:scale-95"
+            className="tactile-button flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl border border-white/12 bg-[#121430]/90 text-slate-200 hover:text-white hover:border-amber-400/60 hover:bg-[#1b1e48] hover:shadow-[0_0_14px_rgba(251,191,36,0.3)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] active:scale-95"
             title={isSpectator ? 'Stop watching' : 'Exit game'}
             aria-label={isSpectator ? 'Stop watching' : 'Exit game'}
           >
@@ -132,21 +132,21 @@ export const GameHud: React.FC<GameHudProps> = ({
             <button
               type="button"
               onClick={handleCopyPin}
-              className={`tactile-button flex h-8 sm:h-9 shrink-0 items-center gap-1.5 sm:gap-2 rounded-xl border px-2.5 sm:px-3 font-mono text-xs sm:text-sm font-bold transition-all shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] cursor-pointer active:scale-95 ${
+              className={`tactile-button flex h-8 sm:h-9 shrink-0 items-center gap-1.5 sm:gap-2 rounded-xl border px-2.5 sm:px-3 text-xs sm:text-sm font-bold transition-all shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] cursor-pointer active:scale-95 ${
                 copiedPin
                   ? 'border-emerald-400 bg-emerald-950/95 text-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.5)]'
-                  : 'border-white/15 bg-[#0a1526]/90 text-slate-200 hover:border-cyan-400/70 hover:bg-[#10223d] hover:text-white hover:shadow-[0_0_16px_rgba(34,211,238,0.25)]'
+                  : 'border-amber-400/30 bg-[#121430]/90 text-amber-200 hover:border-amber-400/60 hover:bg-[#1b1e48] hover:text-white hover:shadow-[0_0_14px_rgba(251,191,36,0.25)]'
               }`}
               title="Room PIN (click to copy)"
             >
               {copiedPin ? (
                 <>
                   <Check className="h-3.5 w-3.5 text-emerald-300 stroke-[3]" />
-                  <span className="font-sans text-[10px] sm:text-xs font-black uppercase tracking-wider">Copied</span>
+                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider">Copied</span>
                 </>
               ) : (
                 <>
-                  <span className="text-[9.5px] sm:text-[10.5px] font-black text-slate-400 uppercase tracking-wider">
+                  <span className="text-[9.5px] sm:text-[10.5px] font-black text-amber-300/80 uppercase tracking-wider">
                     PIN
                   </span>
                   <strong className="text-xs sm:text-sm font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
@@ -161,8 +161,8 @@ export const GameHud: React.FC<GameHudProps> = ({
           <div
             className={`gameplay-live-indicator hidden md:flex h-8 sm:h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-black uppercase tracking-wider border shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)] ${
               isConnected
-                ? 'border-emerald-400/50 bg-emerald-950/70 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
-                : 'border-rose-400/50 bg-rose-950/70 text-rose-300 shadow-[0_0_12px_rgba(239,68,68,0.25)]'
+                ? 'border-emerald-400/40 bg-emerald-950/70 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
+                : 'border-rose-400/40 bg-rose-950/70 text-rose-300 shadow-[0_0_12px_rgba(239,68,68,0.25)]'
             }`}
             title={isConnected ? 'Live match connected' : 'Reconnecting to match'}
           >
@@ -211,11 +211,11 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={onOpenInfo}
-            className="gameplay-info-button tactile-button flex lg:hidden h-8 sm:h-9 items-center gap-1 sm:gap-1.5 rounded-xl border border-white/15 bg-[#0a1526]/90 px-2.5 sm:px-3 text-xs font-bold text-slate-100 hover:border-cyan-400/60 shadow-[0_2px_8px_rgba(0,0,0,0.5)] shrink-0 cursor-pointer active:scale-95"
+            className="gameplay-info-button tactile-button flex lg:hidden h-8 sm:h-9 items-center gap-1 sm:gap-1.5 rounded-xl border border-white/12 bg-[#121430]/90 px-2.5 sm:px-3 text-xs font-bold text-slate-100 hover:border-amber-400/60 shadow-[0_2px_8px_rgba(0,0,0,0.5)] shrink-0 cursor-pointer active:scale-95"
             title="Match stats & word history"
             aria-label="Open match stats and word history"
           >
-            <ScrollText className="h-3.5 w-3.5 text-cyan-400" />
+            <ScrollText className="h-3.5 w-3.5 text-amber-300" />
             <span>Stats</span>
           </button>
 
@@ -227,7 +227,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             <button
               type="button"
               onClick={onOpenGuide}
-              className="tactile-button hidden sm:flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/15 bg-[#0a1526]/90 text-cyan-400 hover:border-cyan-400/70 hover:bg-[#10223d] hover:text-white hover:shadow-[0_0_16px_rgba(34,211,238,0.35)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 shrink-0 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] active:scale-95"
+              className="tactile-button hidden sm:flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/12 bg-[#121430]/90 text-slate-200 hover:border-amber-400/60 hover:bg-[#1b1e48] hover:text-white hover:shadow-[0_0_14px_rgba(251,191,36,0.3)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 shrink-0 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] active:scale-95"
               title="Game Guide & Cards"
               aria-label="Open Game Guide & Cards"
             >
@@ -237,7 +237,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="tactile-button flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/15 bg-[#0a1526]/90 text-cyan-400 hover:border-cyan-400/70 hover:bg-[#10223d] hover:text-white hover:shadow-[0_0_16px_rgba(34,211,238,0.35)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 shrink-0 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] active:scale-95"
+            className="tactile-button flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/12 bg-[#121430]/90 text-slate-200 hover:border-amber-400/60 hover:bg-[#1b1e48] hover:text-white hover:shadow-[0_0_14px_rgba(251,191,36,0.3)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 shrink-0 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] active:scale-95"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
             aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           >
