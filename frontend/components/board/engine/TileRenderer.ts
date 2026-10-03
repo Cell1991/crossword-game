@@ -396,7 +396,7 @@ export class TileRenderer {
     const isPower = isConfirmed && isPowerCell(row, col);
     const isSpecialCellTile = is2L || is3L || isPower;
 
-    if (animStart && animTime) {
+    if (!lowPower && animStart && animTime) {
       const elapsed = animTime - animStart;
       if (isSpecialCellTile || isFrozen) {
         if (elapsed >= 0 && elapsed < 650) {

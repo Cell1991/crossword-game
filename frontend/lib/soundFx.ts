@@ -174,6 +174,32 @@ class SoundSynthesizer {
       }
     }
   }
+
+  /** Crisp celebratory score burst chime */
+  playScoreBurst(score: number, isBingo = false) {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    const baseFreq = isBingo ? 587.33 : score >= 20 ? 523.25 : 440;
+    const intervals = isBingo ? [1, 1.25, 1.5, 2] : [1, 1.25, 1.5];
+
+    intervals.forEach((ratio, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(baseFreq * ratio, now + idx * 0.05);
+
+      gain.gain.setValueAtTime(0.001, now + idx * 0.05);
+      gain.gain.linearRampToValueAtTime(0.12, now + idx * 0.05 + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.45);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + idx * 0.05);
+      osc.stop(now + idx * 0.05 + 0.5);
+    });
+  }
 }
 
 export const soundFx = new SoundSynthesizer();

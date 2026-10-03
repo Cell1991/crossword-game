@@ -619,18 +619,18 @@ export const PowerCardBar = memo(function PowerCardBar({
             <div
               key={`empty-card-slot-${slotIndex}`}
               title={`Power Card Slot ${slotIndex + 1} (Empty)`}
-              className="group relative flex h-7 sm:h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-gradient-to-b from-[#14122d]/90 via-[#0e0d24]/80 to-[#080718]/90 px-2 py-0.5 select-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.8),0_0_8px_rgba(251,191,36,0.06)] transition-all overflow-hidden"
+              className="group relative flex h-7 sm:h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border border-indigo-400/35 bg-gradient-to-b from-[#1a1d48]/90 via-[#111334]/90 to-[#0a0c22]/95 px-2 py-0.5 select-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.8),0_2px_6px_rgba(0,0,0,0.5)] transition-all overflow-hidden"
             >
               {/* Top Glass Specular Line */}
-              <div className="absolute inset-x-2 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/25 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-2 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/40 to-transparent pointer-events-none" />
 
               {/* Slot Indicator */}
-              <div className="flex items-center justify-center w-3.5 h-3.5 rounded bg-amber-400/15 border border-amber-300/30 text-amber-300 shadow-[0_0_6px_rgba(251,191,36,0.2)]">
-                <span className="text-[9px] font-black">{slotIndex + 1}</span>
+              <div className="flex items-center justify-center w-4 h-4 rounded-md bg-amber-400 text-slate-950 font-black shadow-[0_0_8px_rgba(251,191,36,0.7)] shrink-0">
+                <span className="text-[10px] font-black leading-none">{slotIndex + 1}</span>
               </div>
 
               {/* Celestial Text */}
-              <span className="text-[9.5px] sm:text-[10.5px] font-extrabold tracking-wider text-slate-300/80 truncate">
+              <span className="text-[10.5px] sm:text-[11.5px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] truncate">
                 CARD {slotIndex + 1}
               </span>
             </div>

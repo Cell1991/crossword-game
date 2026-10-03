@@ -256,11 +256,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     prevBoardStateRef.current = boardState || {};
 
     const startAnimLoop = () => {
-      if (lowPower) {
-        // Mobile / lowPower: instant single draw on tile placement, 0ms CPU overhead, zero stutter
-        draw();
-        return;
-      }
+      if (lowPower) return;
       if (animFrameRef.current) return;
       const step = (time: number) => {
         draw();

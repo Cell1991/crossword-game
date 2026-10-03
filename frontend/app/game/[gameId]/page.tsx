@@ -8,6 +8,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Bug, Eye, Skull } from 'lucide-react';
 import { commitMove, exchangeTiles, executeBotMove, expireTurn, getBotPlan, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
 import confetti from 'canvas-confetti';
+import { soundFx } from '@/lib/soundFx';
 import { motion, AnimatePresence } from 'motion/react';
 import { buildRackSlots } from '@/lib/rack';
 import { BotDifficulty, CellPosition, GameState, Tile, Player, PlacedTile } from '@/lib/types';
@@ -38,6 +39,7 @@ import { MobileInfoModal } from '@/components/game/MobileInfoModal';
 import BackgroundMusic from '@/components/audio/BackgroundMusic';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
 import { GrimoireModal } from '@/components/game/GrimoireModal';
+import { ScoreBurstEffect } from '@/components/game/ScoreBurstEffect';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 import ParticleField from '@/components/effects/ParticleField';
 
@@ -285,41 +287,19 @@ export default function GamePage() {
 
     setIsSubmitting(true);
 
-    // 1. INSTANT (0ms) Feedback: Score burst, celebrations & optimistic state update
+    // 1. INSTANT (0ms) Feedback: Score burst & optimistic state update
     if (moveScore > 0) {
+      soundFx.playScoreBurst(moveScore, wasBingo);
       setScoreBurst({ score: moveScore, isBingo: wasBingo, key: Date.now() });
-      setTimeout(() => setScoreBurst(null), 2400);
+      setTimeout(() => setScoreBurst(null), 1400);
     }
     if (wasBingo) {
       toasts.flashInfo('🎉 BINGO! All 7 tiles placed (+50 Bonus Points)!');
       confetti({
-        particleCount: 90,
-        spread: 80,
+        particleCount: 60,
+        spread: 70,
         origin: { y: 0.65 },
         colors: ['#38bdf8', '#fbbf24', '#34d399', '#f43f5e', '#a855f7'],
-      });
-      setTimeout(() => {
-        confetti({
-          particleCount: 50,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0.15, y: 0.65 },
-          colors: ['#38bdf8', '#fbbf24', '#34d399'],
-        });
-        confetti({
-          particleCount: 50,
-          angle: 120,
-          spread: 55,
-          origin: { x: 0.85, y: 0.65 },
-          colors: ['#38bdf8', '#fbbf24', '#34d399'],
-        });
-      }, 220);
-    } else if (moveScore >= 12) {
-      confetti({
-        particleCount: 35,
-        spread: 55,
-        origin: { y: 0.7 },
-        colors: ['#34d399', '#38bdf8', '#fbbf24'],
       });
     }
 
@@ -955,28 +935,7 @@ export default function GamePage() {
       />
 
       {/* Floating Animated Score Burst Popup */}
-      <AnimatePresence>
-        {scoreBurst && (
-          <motion.div
-            key={scoreBurst.key}
-            initial={{ opacity: 0, scale: 0.6, y: 20 }}
-            animate={{ opacity: 1, scale: 1.15, y: -40 }}
-            exit={{ opacity: 0, scale: 0.8, y: -80 }}
-            transition={{ duration: 1.2, ease: 'easeOut' }}
-            className="fixed inset-x-0 bottom-40 sm:bottom-48 z-40 pointer-events-none flex flex-col items-center justify-center drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]"
-          >
-            {scoreBurst.isBingo && (
-              <span className="text-sm sm:text-base font-black tracking-widest text-amber-300 uppercase animate-bounce drop-shadow-[0_0_12px_rgba(245,158,11,0.8)]">
-                🎉 BINGO +50 BONUS!
-              </span>
-            )}
-            <div className="flex items-center gap-1.5 font-maple text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-yellow-200 to-amber-300 filter drop-shadow-[0_0_24px_rgba(16,185,129,0.7)]">
-              <span>+{scoreBurst.score}</span>
-              <span className="text-xl sm:text-2xl text-emerald-400 font-sans tracking-widest uppercase">PTS</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ScoreBurstEffect burst={scoreBurst} />
 
       {/* Wildcard Blank Tile Letter Picker Modal */}
       <BlankTilePickerModal
