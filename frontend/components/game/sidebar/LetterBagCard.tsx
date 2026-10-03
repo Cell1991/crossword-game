@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Layers, ChevronRight, Sparkles } from 'lucide-react';
+import { Layers, ChevronRight } from 'lucide-react';
 
 interface LetterBagCardProps {
   tileBagCount: number;
@@ -36,14 +36,8 @@ export const LetterBagCard: React.FC<LetterBagCardProps> = ({
             <Layers className="w-4.5 h-4.5 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.85)]" />
           </div>
           <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-1">
-              <span className="text-xs sm:text-[13px] font-black tracking-wider text-slate-100 uppercase group-hover:text-amber-200 transition-colors flex items-center gap-1">
-                TILE BAG
-                <Sparkles className="w-2.5 h-2.5 text-amber-400/70" />
-              </span>
-            </div>
-            <span className="text-[10px] font-semibold text-slate-400 tracking-wide">
-              Tap for breakdown
+            <span className="text-xs sm:text-[13px] font-black tracking-wider text-slate-100 uppercase group-hover:text-amber-200 transition-colors">
+              TILE BAG
             </span>
           </div>
         </div>

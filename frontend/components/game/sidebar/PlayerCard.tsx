@@ -62,8 +62,6 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           ? 'bg-slate-950/40 border border-white/[0.04] opacity-40 grayscale-[50%]'
           : isActiveTurn
           ? 'bg-gradient-to-br from-[#241e54]/95 via-[#18163f]/95 to-[#0f0e2b]/95 border-2 border-amber-300/80 shadow-[0_0_24px_rgba(251,191,36,0.35),0_0_14px_rgba(168,85,247,0.3),inset_0_1px_1px_rgba(255,255,255,0.3)] ring-1 ring-amber-400/40'
-          : isLeader
-          ? 'bg-gradient-to-br from-[#221c10]/90 via-[#18152e]/95 to-[#0d0c20]/95 border border-amber-400/45 shadow-[0_6px_20px_rgba(0,0,0,0.6),0_0_16px_rgba(245,158,11,0.2),inset_0_1px_1px_rgba(255,255,255,0.18)] hover:border-amber-300'
           : isMe
           ? 'bg-gradient-to-br from-[#1c1a40]/90 via-[#12112d]/95 to-[#0a0a1c]/95 border border-amber-400/35 hover:border-amber-400/60 shadow-[0_6px_18px_rgba(0,0,0,0.55),inset_0_1px_1px_rgba(255,255,255,0.16)]'
           : 'bg-gradient-to-br from-[#151636]/85 via-[#0e1028]/90 to-[#08091a]/95 hover:from-[#1b1d44]/90 hover:to-[#101330] border border-white/10 hover:border-white/20 shadow-[0_6px_18px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.12)]'
@@ -75,8 +73,6 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
       {/* Ambient Starlight / Aurora Halo */}
       {isActiveTurn ? (
         <div className="absolute top-0 right-0 w-36 h-36 bg-amber-400/15 rounded-full blur-2xl pointer-events-none" />
-      ) : isLeader ? (
-        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-xl pointer-events-none" />
       ) : null}
 
       {/* Top Row: Rank Crest + Identity + Score */}
