@@ -445,8 +445,10 @@ export class TileRenderer {
       ctx.fill();
 
       // Cold glacial shadow
-      ctx.shadowColor = 'rgba(56, 189, 248, 0.95)';
-      ctx.shadowBlur = lowPower ? 4 : Math.max(12, cellSize * 0.32);
+      if (!lowPower) {
+        ctx.shadowColor = 'rgba(56, 189, 248, 0.95)';
+        ctx.shadowBlur = Math.max(12, cellSize * 0.32);
+      }
       ctx.fillStyle = 'rgba(4, 28, 56, 0.8)';
       drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
       ctx.fill();
@@ -462,41 +464,41 @@ export class TileRenderer {
         ? 'rgba(4, 24, 48, 0.7)'
         : TILE_THEME.face.shadow;
 
-      if (!lowPower || isPlacedTile || isLastMove || isRemote || isSpecialCellTile) {
+      if (!lowPower) {
         ctx.save();
         if (isCorrectPlacement) {
           ctx.shadowColor = 'rgba(34, 197, 94, 0.85)';
-          ctx.shadowBlur = lowPower ? 2 : Math.max(14, cellSize * 0.32);
+          ctx.shadowBlur = Math.max(14, cellSize * 0.32);
         } else if (isInvalidPlacement) {
           ctx.shadowColor = 'rgba(244, 63, 94, 0.85)';
-          ctx.shadowBlur = lowPower ? 2 : Math.max(14, cellSize * 0.32);
+          ctx.shadowBlur = Math.max(14, cellSize * 0.32);
         } else if (isPendingPlacement) {
           ctx.shadowColor = 'rgba(14, 165, 233, 0.8)';
-          ctx.shadowBlur = lowPower ? 2 : Math.max(12, cellSize * 0.28);
+          ctx.shadowBlur = Math.max(12, cellSize * 0.28);
         } else if (isLastMove) {
           ctx.shadowColor = 'rgba(245, 158, 11, 0.75)';
-          ctx.shadowBlur = lowPower ? 2 : Math.max(10, cellSize * 0.24);
+          ctx.shadowBlur = Math.max(10, cellSize * 0.24);
         } else if (isRemote) {
           ctx.shadowColor = 'rgba(6, 182, 212, 0.8)';
-          ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
+          ctx.shadowBlur = Math.max(8, cellSize * 0.2);
         } else if (is2L) {
           ctx.shadowColor = 'rgba(34, 197, 94, 0.65)';
-          ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
+          ctx.shadowBlur = Math.max(8, cellSize * 0.2);
         } else if (is3L) {
           ctx.shadowColor = 'rgba(244, 63, 94, 0.65)';
-          ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
+          ctx.shadowBlur = Math.max(8, cellSize * 0.2);
         } else if (isPower) {
           ctx.shadowColor = 'rgba(14, 165, 233, 0.7)';
-          ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
+          ctx.shadowBlur = Math.max(8, cellSize * 0.2);
         } else {
           ctx.shadowColor = shadowFill;
-          ctx.shadowBlur = lowPower ? 1 : Math.max(4, cellSize * 0.1);
+          ctx.shadowBlur = Math.max(4, cellSize * 0.1);
         }
       }
       ctx.fillStyle = shadowFill;
       drawRoundedRect(ctx, x + pad, y + pad + 1.5, tileW, tileW, radius);
       ctx.fill();
-      if (!lowPower || isPlacedTile || isLastMove || isRemote || isSpecialCellTile) ctx.restore();
+      if (!lowPower) ctx.restore();
 
       // Atmospheric outer aura on the board under the tile
       if (!lowPower && (isPlacedTile || isLastMove)) {
@@ -890,9 +892,11 @@ export class TileRenderer {
           ctx.strokeStyle = isFrozen ? '#011627' : tilePalette.letter.stroke;
           ctx.strokeText(letter, 0, 0);
         }
-        ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(56, 189, 248, 0.95)' : tilePalette.letter.shadow;
-        ctx.shadowBlur = isRemote ? 0 : isFrozen ? Math.max(4, cellSize * 0.09) : Math.max(2, cellSize * 0.06);
-        ctx.shadowOffsetY = isRemote ? 0 : Math.max(1.2, cellSize * 0.04);
+        if (!lowPower && !isRemote) {
+          ctx.shadowColor = isFrozen ? 'rgba(56, 189, 248, 0.95)' : tilePalette.letter.shadow;
+          ctx.shadowBlur = isFrozen ? Math.max(4, cellSize * 0.09) : Math.max(2, cellSize * 0.06);
+          ctx.shadowOffsetY = Math.max(1.2, cellSize * 0.04);
+        }
         ctx.fillText(letter, 0, 0);
         ctx.restore();
       }
@@ -907,8 +911,10 @@ export class TileRenderer {
         const numY = y + cellSize - pad * 1.5;
 
         ctx.save();
-        ctx.shadowColor = isFrozen ? 'rgba(56, 189, 248, 0.95)' : tilePalette.score.glow;
-        ctx.shadowBlur = lowPower ? 2 : Math.max(4, numFontSize * 0.6);
+        if (!lowPower) {
+          ctx.shadowColor = isFrozen ? 'rgba(56, 189, 248, 0.95)' : tilePalette.score.glow;
+          ctx.shadowBlur = Math.max(4, numFontSize * 0.6);
+        }
         ctx.lineWidth = Math.max(1.4, numFontSize * 0.14);
         ctx.strokeStyle = isFrozen ? '#011627' : tilePalette.score.stroke;
         ctx.strokeText(`${effectiveValue}`, numX, numY);
