@@ -249,7 +249,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             <button
               type="button"
               onClick={onOpenGrimoire}
-              className={`group relative flex h-8 sm:h-9 items-center gap-1 sm:gap-1.5 rounded-xl border px-2 sm:px-2.5 text-xs font-bold transition-all shrink-0 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.15)] active:scale-95 overflow-hidden ${
+              className={`group relative flex h-8 w-8 sm:w-auto sm:h-9 items-center justify-center gap-1 sm:gap-1.5 rounded-xl border px-0 sm:px-2.5 text-xs font-bold transition-all shrink-0 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.15)] active:scale-95 overflow-hidden ${
                 isGrimoireEnabled
                   ? 'border-amber-400/50 bg-gradient-to-b from-[#251a0c]/90 via-[#181208]/95 to-[#0e0a04]/95 text-amber-200 hover:text-white hover:border-amber-400/80 hover:shadow-[0_0_18px_rgba(245,158,11,0.35)]'
                   : 'border-slate-700/50 bg-gradient-to-b from-[#161832]/80 to-[#0c0e1e]/90 text-slate-400 hover:text-rose-300 hover:border-rose-400/50'
@@ -263,7 +263,7 @@ export const GameHud: React.FC<GameHudProps> = ({
               ) : (
                 <Lock className="h-3.5 w-3.5 text-rose-400/80 relative z-10" />
               )}
-              <span className="relative z-10 font-black text-[11px] sm:text-xs">
+              <span className="relative z-10 font-black text-[11px] sm:text-xs hidden sm:inline">
                 Grimoire
               </span>
             </button>
