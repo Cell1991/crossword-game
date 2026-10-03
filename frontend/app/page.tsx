@@ -697,67 +697,68 @@ export default function HomePage() {
                 </div>
               )}
 
-              {/* Player Limit & Grimoire Row */}
-              <fieldset>
-                <div className="mb-1.5 flex items-center justify-between">
-                  <legend className="text-xs font-semibold text-slate-300">Player Limit</legend>
-                  <span className="text-xs font-semibold text-slate-300">Grimoire</span>
-                </div>
-                <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-                  <button
-                    type="button"
-                    aria-pressed={playerLimitOption === '4'}
-                    onClick={() => setPlayerLimitOption('4')}
-                    className={`rounded-xl border py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
-                      playerLimitOption === '4'
-                        ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
-                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
-                    }`}
-                  >
-                    4P
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={playerLimitOption === 'custom'}
-                    onClick={() => setPlayerLimitOption('custom')}
-                    className={`rounded-xl border py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
-                      playerLimitOption === 'custom'
-                        ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
-                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
-                    }`}
-                  >
-                    Custom
-                  </button>
+              {/* Settings Row: Player Limit & Grimoire (Balanced 2 Columns) */}
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                {/* Column 1: Player Limit */}
+                <fieldset>
+                  <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Player Limit</legend>
+                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                    <button
+                      type="button"
+                      aria-pressed={playerLimitOption === '4'}
+                      onClick={() => setPlayerLimitOption('4')}
+                      className={`rounded-xl border py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                        playerLimitOption === '4'
+                          ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
+                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                      }`}
+                    >
+                      4P
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={playerLimitOption === 'custom'}
+                      onClick={() => setPlayerLimitOption('custom')}
+                      className={`rounded-xl border py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                        playerLimitOption === 'custom'
+                          ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
+                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                      }`}
+                    >
+                      Custom
+                    </button>
+                  </div>
+                </fieldset>
+
+                {/* Column 2: Grimoire (Switch Only) */}
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-300">Grimoire</label>
                   <button
                     type="button"
                     role="switch"
                     aria-checked={enableGrimoire}
                     onClick={() => setEnableGrimoire(prev => !prev)}
-                    className={`flex items-center justify-between gap-1 sm:gap-1.5 rounded-xl border px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                    className={`w-full flex h-[41px] sm:h-[42px] items-center justify-center rounded-xl border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
                       enableGrimoire
-                        ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.15)]'
+                        ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_14px_rgba(251,191,36,0.2)]'
                         : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
                     }`}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <BookMarked className={`h-4 w-4 ${enableGrimoire ? 'text-amber-300' : 'text-slate-400'}`} />
-                      <span className="font-bold text-white text-xs sm:text-sm">Grimoire</span>
-                    </div>
                     <span
                       aria-hidden="true"
-                      className={`relative inline-flex h-4 w-7 shrink-0 rounded-full border border-transparent transition-colors duration-200 ease-in-out ${
-                        enableGrimoire ? 'bg-amber-400' : 'bg-slate-600'
+                      className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                        enableGrimoire ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.6)]' : 'bg-slate-700'
                       }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          enableGrimoire ? 'translate-x-3' : 'translate-x-0'
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          enableGrimoire ? 'translate-x-5' : 'translate-x-0'
                         }`}
                       />
                     </span>
                   </button>
                 </div>
-              </fieldset>
+              </div>
 
               {/* Custom Player Limit Stepper */}
               {playerLimitOption === 'custom' && (
