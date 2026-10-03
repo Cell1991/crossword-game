@@ -43,6 +43,7 @@ class GameStateResponse(BaseModel):
     # True when this game's room was created in debug mode: every player in it gets revealed racks
     # and debug tools, not just whoever navigated in with a ?debug=1 query string.
     is_debug: bool = False
+    enable_grimoire: bool = False
     winner_id: Optional[str] = None
     # Lets clients run the turn timer on the server's clock instead of their own.
     server_time: datetime

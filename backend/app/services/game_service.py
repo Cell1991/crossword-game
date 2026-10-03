@@ -462,6 +462,7 @@ class GameService:
             pending_double_target_id=game.pending_double_target_id,
             frozen_tile=GameService._visible_frozen_tile(game.frozen_tile, game.turn_number),
             is_debug=bool(room and room.is_debug),
+            enable_grimoire=bool(getattr(game, "enable_grimoire", False) or (room and getattr(room, "enable_grimoire", False))),
             winner_id=game.winner_id,
             server_time=datetime.now(timezone.utc),
             game_pin=room.game_pin if room else None,

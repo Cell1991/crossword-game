@@ -33,6 +33,7 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
         is_debug=req.is_debug, game_mode=req.game_mode, max_turns=req.max_turns,
         starting_hp=req.starting_hp,
         max_players=req.max_players,
+        enable_grimoire=req.enable_grimoire,
     )
     await db.commit()
     return CreateRoomResponse(
@@ -47,6 +48,7 @@ async def create_room(req: CreateRoomRequest, db: AsyncSession = Depends(get_db)
         max_turns=room.max_turns,
         starting_hp=room.starting_hp,
         max_players=room.max_players if room.max_players is not None else req.max_players or 4,
+        enable_grimoire=bool(getattr(room, "enable_grimoire", False)),
         created_at=room.created_at,
     )
 
@@ -157,6 +159,7 @@ async def get_room(game_pin: str, response: Response, db: AsyncSession = Depends
         max_turns=room.max_turns,
         starting_hp=room.starting_hp,
         is_debug=room.is_debug,
+        enable_grimoire=bool(getattr(room, "enable_grimoire", False)),
         max_players=room.max_players if room.max_players is not None else 4,
     )
 

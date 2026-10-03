@@ -411,3 +411,79 @@ async def execute_bot_move(
             "turn_number": game.turn_number,
         }
 
+
+@router.get("/{game_id}/grimoire")
+async def get_grimoire_words(
+    game_id: str,
+    token: Optional[str] = Query(None),
+    x_session_token: Optional[str] = Header(None, alias="X-Session-Token"),
+    x_player_id: Optional[str] = Header(None, alias="X-Player-ID"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Returns up to 20 playable words of length >= 3 for the requesting player's rack and current board.
+    If grimoire mode is disabled for the match, returns enabled=False.
+    """
+    from sqlalchemy import select
+    from app.database.models import Game, GameRoom, GamePlayer
+    from app.database.state import board_state, player_rack
+    from app.game.grimoire import find_grimoire_words
+
+    stmt_game = select(Game).where(Game.id == game_id)
+    game = (await db.execute(stmt_game)).scalar_one_or_none()
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+
+    stmt_room = select(GameRoom).where(GameRoom.id == game_id)
+    room = (await db.execute(stmt_room)).scalar_one_or_none()
+
+    is_enabled = bool(getattr(game, "enable_grimoire", False) or (room and getattr(room, "enable_grimoire", False)))
+    if not is_enabled:
+        return {
+            "enabled": False,
+            "words": [],
+            "count": 0,
+            "message": "โหมดตำราถูกล็อคเนื่องจากไม่ได้เปิดใช้งานสำหรับห้องนี้",
+        }
+
+    # Identify the requesting player
+    session_token = token or x_session_token
+    player = None
+    if session_token:
+        player = await GameService.get_player_by_token(db, session_token)
+    elif x_player_id:
+        stmt_p = select(GamePlayer).where(GamePlayer.id == x_player_id, GamePlayer.game_id == game_id)
+        player = (await db.execute(stmt_p)).scalar_one_or_none()
+
+    if not player:
+        if game.current_player_id:
+            stmt_p = select(GamePlayer).where(GamePlayer.id == game.current_player_id)
+            player = (await db.execute(stmt_p)).scalar_one_or_none()
+
+    if not player:
+        return {
+            "enabled": True,
+            "words": [],
+            "count": 0,
+            "message": "Player not found.",
+        }
+
+    rack = await player_rack(db, player.id)
+    board = await board_state(db, game_id)
+
+    words = find_grimoire_words(
+        board_cells=board,
+        rack_tiles=rack,
+        is_first_move=(len(board) == 0),
+        max_words=20,
+        min_len=3,
+    )
+
+    return {
+        "enabled": True,
+        "words": words,
+        "count": len(words),
+        "turn_number": game.turn_number,
+    }
+
+

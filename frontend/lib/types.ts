@@ -59,6 +59,7 @@ export interface GameState {
   frozen_tile: { row: number; col: number; set_by: string; expires_turn: number } | null;
   /** True when this game's room was created with debug mode on: every player in it gets it. */
   is_debug: boolean;
+  enable_grimoire?: boolean;
   winner_id: string | null;
   /** The server's clock when this snapshot was taken; the turn timer runs on it. */
   server_time: string;
@@ -191,6 +192,7 @@ export interface CreateRoomResponse {
   max_turns: number | null;
   starting_hp?: number | null;
   max_players?: number | null;
+  enable_grimoire?: boolean;
   created_at?: string;
 }
 
@@ -207,6 +209,7 @@ export interface JoinRoomResponse {
   max_turns?: number | null;
   starting_hp?: number | null;
   max_players?: number | null;
+  enable_grimoire?: boolean;
   created_at?: string;
 }
 
@@ -230,6 +233,7 @@ export interface RoomDetailResponse {
   starting_hp?: number | null;
   max_players?: number | null;
   is_debug: boolean;
+  enable_grimoire?: boolean;
 }
 
 export interface RoomSummary {
@@ -244,7 +248,16 @@ export interface RoomSummary {
   max_turns: number | null;
   starting_hp?: number | null;
   is_debug: boolean;
+  enable_grimoire?: boolean;
   created_at: string;
+}
+
+export interface GrimoireResponse {
+  enabled: boolean;
+  words: string[];
+  count: number;
+  turn_number?: number;
+  message?: string;
 }
 
 export interface ExchangeTilesResponse {

@@ -31,14 +31,22 @@ class DictionaryService:
 
     def _rebuild_indices(self) -> None:
         self._words_by_len: dict[int, list[str]] = {}
+        self._words_by_len_pos_char: dict[tuple[int, int, str], list[str]] = {}
         for w in self._words:
             length = len(w)
             self._words_by_len.setdefault(length, []).append(w)
+            for pos, ch in enumerate(w):
+                self._words_by_len_pos_char.setdefault((length, pos, ch), []).append(w)
 
     def get_words_of_length(self, length: int) -> list[str]:
         if not hasattr(self, "_words_by_len") or not self._words_by_len:
             self._rebuild_indices()
         return self._words_by_len.get(length, [])
+
+    def get_words_with_char_at(self, length: int, pos: int, char: str) -> list[str]:
+        if not hasattr(self, "_words_by_len_pos_char") or not self._words_by_len_pos_char:
+            self._rebuild_indices()
+        return self._words_by_len_pos_char.get((length, pos, char.upper()), [])
 
     def get_viable_words(
         self,

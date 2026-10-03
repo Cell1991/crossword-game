@@ -123,6 +123,7 @@ export async function createRoom(
   isDebug = false,
   startingHp: number | null = null,
   maxPlayers: number | null = 4,
+  enableGrimoire = false,
 ): Promise<CreateRoomResponse> {
   let res: Response;
   try {
@@ -138,6 +139,7 @@ export async function createRoom(
         max_turns: gameMode === 'TURNS' ? maxTurns : null,
         starting_hp: gameMode === 'HP' ? startingHp : null,
         is_debug: isDebug,
+        enable_grimoire: enableGrimoire,
         max_players: maxPlayers,
       }),
     });
@@ -597,5 +599,24 @@ export async function executeBotMove(gameId: string, plan: Partial<BotPlanRespon
   }
   return res.json();
 }
+
+export async function getGrimoireWords(
+  gameId: string,
+  token?: string,
+  playerId?: string
+): Promise<import('./types').GrimoireResponse> {
+  const headers: Record<string, string> = {};
+  if (token) headers['X-Session-Token'] = token;
+  if (playerId) headers['X-Player-ID'] = playerId;
+  const url = token
+    ? `${getApiBase()}/games/${gameId}/grimoire?token=${encodeURIComponent(token)}`
+    : `${getApiBase()}/games/${gameId}/grimoire`;
+  const res = await fetch(url, { headers });
+  if (!res.ok) {
+    return { enabled: false, words: [], count: 0, message: 'Failed to load grimoire words' };
+  }
+  return res.json();
+}
+
 
 

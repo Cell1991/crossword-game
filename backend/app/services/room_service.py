@@ -24,6 +24,7 @@ class RoomService:
         max_turns: int | None = None,
         starting_hp: int | None = None,
         max_players: int | None = 4,
+        enable_grimoire: bool = False,
     ) -> tuple[GameRoom, Game, GamePlayer]:
         pin = generate_game_pin()
         room_id = str(uuid.uuid4())
@@ -42,6 +43,7 @@ class RoomService:
             status="WAITING",
             turn_time_limit=turn_time_limit,
             is_debug=is_debug and settings.DEBUG_MODE,
+            enable_grimoire=enable_grimoire,
             game_mode=game_mode,
             max_turns=max_turns,
             starting_hp=hp_setting,
@@ -55,6 +57,7 @@ class RoomService:
             turn_number=1,
             max_turns=max_turns if game_mode == "TURNS" else None,
             starting_hp=hp_setting,
+            enable_grimoire=enable_grimoire,
             consecutive_passes=0,
             board_state={},
             tile_bag=tile_bag
@@ -216,6 +219,7 @@ class RoomService:
             is_debug=room.is_debug, game_mode=room.game_mode, max_turns=room.max_turns,
             starting_hp=room.starting_hp,
             max_players=room.max_players,
+            enable_grimoire=getattr(room, "enable_grimoire", False),
         )
         room.rematch_pin = new_room.game_pin
         await db.flush()
@@ -381,6 +385,7 @@ class RoomService:
                     "max_turns": room.max_turns,
                     "starting_hp": room.starting_hp if room.starting_hp is not None else 100,
                     "is_debug": bool(room.is_debug),
+                    "enable_grimoire": bool(getattr(room, "enable_grimoire", False)),
                     "created_at": room.created_at or get_utc_now(),
                 })
                 if len(results) >= limit:

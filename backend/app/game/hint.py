@@ -184,9 +184,13 @@ def find_hint_suggestions(
                     if not has_occupied or num_rack_needed == 0 or num_rack_needed > len(rack_letters):
                         continue
 
-                    # Search dictionary words matching this length and fixed letters
-                    words_for_len = viable_words_by_len.get(span_len, [])
-                    for word in words_for_len:
+                    # Direct index lookup using anchor letter at anchor offset
+                    anchor_pos = c - start_c
+                    words_for_anchor = dictionary_service.get_words_with_char_at(span_len, anchor_pos, board_char)
+                    if not words_for_anchor:
+                        continue
+
+                    for word in words_for_anchor:
                         if match_word_to_pattern(word, fixed_letters):
                             placed = [
                                 {"row": r, "col": start_c + i, "letter": word[i], "value": get_tile_val(word[i])}
@@ -211,13 +215,13 @@ def find_hint_suggestions(
                         break
 
             # Test vertical spans passing through (r, c)
-            top_limit = r - len(rack_letters)
-            bottom_limit = r + len(rack_letters) + 1
+            top_limit = max(0, r - len(rack_letters))
+            bottom_limit = min(Board.ROWS, r + len(rack_letters) + 1)
 
             for start_r in range(top_limit, r + 1):
                 for end_r in range(r + 1, bottom_limit + 1):
                     span_len = end_r - start_r
-                    if span_len < 2:
+                    if span_len < 2 or span_len > 15:
                         continue
 
                     # Word boundary checks
@@ -242,8 +246,13 @@ def find_hint_suggestions(
                     if not has_occupied or num_rack_needed == 0 or num_rack_needed > len(rack_letters):
                         continue
 
-                    words_for_len = viable_words_by_len.get(span_len, [])
-                    for word in words_for_len:
+                    # Direct index lookup using anchor letter at anchor offset
+                    anchor_pos = r - start_r
+                    words_for_anchor = dictionary_service.get_words_with_char_at(span_len, anchor_pos, board_char)
+                    if not words_for_anchor:
+                        continue
+
+                    for word in words_for_anchor:
                         if match_word_to_pattern(word, fixed_letters):
                             placed = [
                                 {"row": start_r + i, "col": c, "letter": word[i], "value": get_tile_val(word[i])}

@@ -31,6 +31,7 @@ class GameRoom(Base):
     # single tab intentionally drops one clone's socket on every "Act as" switch) without letting
     # any player grant that exemption to themselves in a real match by tacking a query param on.
     is_debug = Column(Boolean, default=False, nullable=False)
+    enable_grimoire = Column(Boolean, default=False, nullable=False)
     game_mode = Column(String(16), default="HP", nullable=False)
     max_turns = Column(Integer, nullable=True)
     starting_hp = Column(Integer, default=100, nullable=True)
@@ -52,6 +53,7 @@ class Game(Base):
     turn_number = Column(Integer, default=1, nullable=False)
     max_turns = Column(Integer, nullable=True)
     starting_hp = Column(Integer, default=100, nullable=True)
+    enable_grimoire = Column(Boolean, default=False, nullable=False)
     consecutive_passes = Column(Integer, default=0, nullable=False)
     # Sparse board state: {"r_c": {"row": r, "col": c, "letter": "A", "value": 1, "player_id": "...", "turn": 1}}
     board_state = Column(JSON, default=dict, nullable=False)

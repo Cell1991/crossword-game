@@ -9,6 +9,7 @@ class CreateRoomRequest(BaseModel):
     # Only the /debug solo-testing flow sets this. It only has any effect while settings.DEBUG_MODE
     # is on, same as every other debug affordance.
     is_debug: bool = False
+    enable_grimoire: bool = False
     game_mode: Literal["HP", "TURNS"] = "HP"
     max_turns: Optional[int] = Field(None, ge=1, le=500)
     starting_hp: Optional[int] = Field(None, ge=10, le=1000)
@@ -36,6 +37,7 @@ class CreateRoomResponse(BaseModel):
     max_turns: Optional[int] = None
     starting_hp: Optional[int] = 100
     max_players: Optional[int] = 4
+    enable_grimoire: bool = False
     created_at: Optional[datetime] = None
 
 class UpdateRoomRequest(BaseModel):
@@ -83,6 +85,7 @@ class RoomDetailResponse(BaseModel):
     max_turns: Optional[int] = None
     starting_hp: Optional[int] = 100
     is_debug: bool = False
+    enable_grimoire: bool = False
     max_players: Optional[int] = 4
 
 class RoomSummaryResponse(BaseModel):
@@ -97,4 +100,5 @@ class RoomSummaryResponse(BaseModel):
     max_turns: Optional[int] = None
     starting_hp: Optional[int] = 100
     is_debug: bool = False
+    enable_grimoire: bool = False
     created_at: Optional[datetime] = None

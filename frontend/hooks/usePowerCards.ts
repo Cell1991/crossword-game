@@ -104,6 +104,8 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
         } else {
           flashInfo('No valid words can be formed with your current rack tiles — Hint card returned.');
         }
+        void reload();
+        return;
       }
       await reload();
     } catch (error: unknown) {

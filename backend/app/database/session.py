@@ -171,6 +171,7 @@ def _upgrade_existing_schema(connection):
             "turn_started_at": "TIMESTAMP",
             "max_turns": "INTEGER",
             "starting_hp": "INTEGER",
+            "enable_grimoire": "BOOLEAN DEFAULT FALSE NOT NULL",
             "frozen_tile": "JSON",
             "pending_effect": "JSON",
             "pending_double_target_id": "VARCHAR(36)",
@@ -179,6 +180,7 @@ def _upgrade_existing_schema(connection):
         "game_rooms": {
             "turn_time_limit": "INTEGER",
             "is_debug": "BOOLEAN DEFAULT FALSE NOT NULL",
+            "enable_grimoire": "BOOLEAN DEFAULT FALSE NOT NULL",
             "game_mode": "VARCHAR(16) DEFAULT 'HP' NOT NULL",
             "max_turns": "INTEGER",
             "starting_hp": "INTEGER",
