@@ -421,7 +421,7 @@ export const TileRack = memo(function TileRack({
                         ? 'PLAY'
                         : isMyTurn && hasTemporaryTiles
                         ? 'INVALID WORD'
-                        : 'CONFIRM MOVE'}
+                        : 'PLAY'}
                     </span>
                     {isMyTurn && hasTemporaryTiles && placementValid === true && estimatedScore !== undefined && estimatedScore > 0 && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#090603]/90 border border-amber-300/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9),0_1px_0_rgba(255,255,255,0.2)] text-[#fef08a] font-black text-xs tracking-wider shrink-0 leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
@@ -628,7 +628,7 @@ export const TileRack = memo(function TileRack({
                       ? 'text-rose-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
                       : 'text-slate-300'
                   }`}>
-                    {isMyTurn && hasTemporaryTiles ? 'INVALID' : 'CONFIRM'}
+                    {isMyTurn && hasTemporaryTiles ? 'INVALID' : 'PLAY'}
                   </span>
                 )}
               </button>
