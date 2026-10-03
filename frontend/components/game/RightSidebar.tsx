@@ -22,11 +22,11 @@ export interface RightSidebarProps {
 }
 
 /**
- * WordX Clean Tactical Scoreboard & Match Information Sidebar.
+ * WordX Celestial Cosmic Scoreboard & Match Information Sidebar.
  * Features:
- * - Letter bag tile status summary card
- * - Compact high-contrast player scoreboard with active-player cyan highlight & health bar
- * - Collapsible Recent Moves history panel with dictionary lookup accordion
+ * - Starlight Tile Bag status summary card
+ * - Celestial Astral Scoreboard with dynamic turn aura, rank crests & vitality essence bar
+ * - Star Chronicle Recent Moves history panel with dictionary lookup accordion
  */
 export const RightSidebar = memo(function RightSidebar({
   players,
@@ -51,12 +51,20 @@ export const RightSidebar = memo(function RightSidebar({
 
   return (
     <aside
-      className={`flex h-full flex-col select-none ${
+      className={`relative flex h-full flex-col select-none ${
         mobile
           ? 'w-full p-2.5 gap-2.5 bg-transparent'
           : 'w-full p-2.5 gap-2.5'
       }`}
     >
+      {/* Subtle Celestial Nebula Ambient Backdrops */}
+      {!mobile && (
+        <>
+          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-1/4 left-0 w-36 h-36 bg-amber-500/8 rounded-full blur-2xl pointer-events-none" />
+        </>
+      )}
+
       {/* 1. Letter Bag Status Card */}
       <LetterBagCard
         tileBagCount={tileBagCount}

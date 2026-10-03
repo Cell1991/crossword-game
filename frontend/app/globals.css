@@ -538,19 +538,19 @@ body {
   padding: 0 10px 6px;
 }
 
-/* Desktop Sidebar */
+/* Desktop Celestial Space Sidebar */
 .wordx-game-shell .gameplay-match-hud {
   position: relative;
-  width: clamp(200px, 15vw, 235px);
+  width: clamp(205px, 16vw, 250px);
   height: 100%;
   max-height: none;
   flex: none;
   overflow-x: hidden;
   overflow-y: auto;
   border: 0;
-  border-left: 1px solid rgba(34, 211, 238, 0.22);
-  background: linear-gradient(180deg, rgba(8, 16, 28, 0.95) 0%, rgba(5, 10, 18, 0.98) 100%);
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.65), inset 1px 0 0 rgba(255, 255, 255, 0.05);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(13, 14, 32, 0.95) 0%, rgba(9, 10, 22, 0.98) 100%);
+  box-shadow: -10px 0 36px rgba(0, 0, 0, 0.8), inset 1px 0 0 rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(24px);
 }
 @media (max-width: 1023px) {

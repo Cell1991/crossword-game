@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useState } from 'react';
-import { History, ChevronDown, ChevronUp, Loader2, Copy, Check } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp, Loader2, Copy, Check, BookOpen } from 'lucide-react';
 import { MoveHistoryEntry, WordDefinition } from '@/lib/types';
 import { getWordDefinition } from '@/lib/api';
 
@@ -97,19 +97,19 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
 
   return (
     <section aria-label="Recent moves history" className="flex-1 min-h-0 flex flex-col pt-1">
-      {/* Header Trigger */}
+      {/* Celestial Header Trigger */}
       <button
         type="button"
         onClick={onToggleOpen}
-        className="flex w-full items-center justify-between px-1.5 py-1.5 text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 rounded-xl group select-none hover:bg-slate-800/40"
+        className="flex w-full items-center justify-between px-1.5 py-1.5 text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 rounded-xl group select-none hover:bg-white/[0.04]"
         aria-expanded={isOpen}
       >
-        <div className="flex items-center gap-1.5 text-[11.5px] font-black tracking-wider text-slate-400 group-hover:text-cyan-300 uppercase font-mono transition-colors">
-          <History className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-400 transition-colors drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]" />
+        <div className="flex items-center gap-1.5 text-xs font-black tracking-wider text-slate-300 group-hover:text-amber-300 uppercase transition-colors">
+          <Sparkles className="w-3.5 h-3.5 text-amber-400/80 group-hover:text-amber-300 transition-colors drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
           <span>MATCH LOG</span>
         </div>
-        <div className="text-slate-400 group-hover:text-white transition-colors">
-          {isOpen ? <ChevronDown className="w-4 h-4 text-cyan-400" /> : <ChevronUp className="w-4 h-4" />}
+        <div className="text-slate-400 group-hover:text-amber-200 transition-colors">
+          {isOpen ? <ChevronDown className="w-4 h-4 text-amber-400" /> : <ChevronUp className="w-4 h-4" />}
         </div>
       </button>
 
@@ -117,8 +117,8 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
       {isOpen && (
         <div className="flex-1 min-h-0 overflow-y-auto pr-1 mt-1 space-y-1.5 scrollbar-thin">
           {moveHistory.length === 0 ? (
-            <div className="py-6 text-center text-xs text-slate-500 italic font-mono">
-              Match moves will appear here...
+            <div className="py-6 text-center text-xs text-slate-400 italic">
+              Star chronicles will appear here...
             </div>
           ) : (
             moveHistory
@@ -161,8 +161,8 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                     key={entry.id}
                     className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
                       isExpanded
-                        ? 'bg-slate-900/95 border-cyan-400/70 shadow-[0_0_18px_rgba(6,182,212,0.25)]'
-                        : 'bg-gradient-to-r from-[#121f33]/70 via-[#0c1626]/75 to-[#080e1a]/80 hover:from-[#17273d]/85 hover:to-[#0f1b2e] border-white/10 hover:border-white/20 shadow-sm'
+                        ? 'bg-[#141533]/95 border-amber-400/60 shadow-[0_0_18px_rgba(251,191,36,0.25)]'
+                        : 'bg-gradient-to-br from-[#16173a]/75 via-[#0f112b]/80 to-[#08091a]/85 hover:from-[#1d1f48]/90 hover:to-[#111333] border-white/10 hover:border-amber-400/30 shadow-sm'
                     }`}
                   >
                     {/* Row Summary */}
@@ -183,31 +183,31 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                         >
                           {actorName}
                         </span>
-                        <span className="font-mono text-xs font-extrabold text-cyan-300 tracking-wide truncate">
+                        <span className="text-xs font-black text-amber-200 tracking-wide truncate">
                           {wordLabel}
                         </span>
                       </div>
 
                       {/* Right: Score + Turn indicator */}
                       <div className="flex items-center gap-2 shrink-0">
-                        <div className="flex flex-col items-end">
+                        <div className="flex flex-col items-end gap-0.5">
                           {entry.score !== undefined && entry.score > 0 ? (
-                            <span className="font-mono font-black text-xs text-emerald-400 drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-md bg-emerald-500/15 border border-emerald-400/40 text-[11px] font-black text-emerald-300 drop-shadow-[0_0_6px_rgba(16,185,129,0.4)]">
                               +{entry.score}{' '}
-                              <span className="text-[9.5px] text-slate-400 font-bold">PTS</span>
+                              <span className="text-[9px] text-emerald-400/80 font-bold">PTS</span>
                             </span>
                           ) : null}
                           {entry.turn_number ? (
-                            <span className="font-mono text-[9.5px] font-bold text-slate-500">
+                            <span className="text-[9.5px] font-bold text-slate-400">
                               T{String(entry.turn_number).padStart(2, '0')}
                             </span>
                           ) : null}
                         </div>
 
                         {hasWords && (
-                          <div className="text-slate-500 group-hover:text-cyan-300">
+                          <div className="text-slate-400 group-hover:text-amber-300">
                             {isExpanded ? (
-                              <ChevronUp className="w-3.5 h-3.5 text-cyan-400" />
+                              <ChevronUp className="w-3.5 h-3.5 text-amber-400" />
                             ) : (
                               <ChevronDown className="w-3.5 h-3.5" />
                             )}
@@ -218,7 +218,7 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
 
                     {/* Accordion Word Definition */}
                     {isExpanded && hasWords && words && (
-                      <div className="p-3 border-t border-cyan-400/20 bg-slate-950/95 space-y-2.5 select-text cursor-text">
+                      <div className="p-3 border-t border-amber-400/20 bg-[#0a0a1c]/95 space-y-2.5 select-text cursor-text">
                         {/* Multi-word Tabs */}
                         {words.length > 1 && (
                           <div className="flex flex-wrap gap-1.5 pb-1 border-b border-white/10 select-none">
@@ -230,9 +230,9 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                                   e.stopPropagation();
                                   selectWordForMove(entry.id, w);
                                 }}
-                                className={`px-2 py-0.5 rounded-md font-mono text-[11px] font-extrabold transition-all cursor-pointer ${
+                                className={`px-2 py-0.5 rounded-md text-[11px] font-extrabold transition-all cursor-pointer ${
                                   activeWord === w
-                                    ? 'bg-cyan-400/25 text-cyan-300 border border-cyan-400/60 shadow-[0_0_8px_rgba(34,211,197,0.3)]'
+                                    ? 'bg-amber-400/25 text-amber-200 border border-amber-400/60 shadow-[0_0_8px_rgba(251,191,36,0.3)]'
                                     : 'bg-slate-800 text-slate-400 hover:text-white border border-white/10'
                                 }`}
                               >
@@ -245,11 +245,11 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                         {/* Header Word & Action */}
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-baseline gap-2 min-w-0">
-                            <span className="font-mono font-black text-sm text-amber-300 tracking-wider">
+                            <span className="font-black text-sm text-amber-300 tracking-wider">
                               {activeWord}
                             </span>
                             {definition?.phonetic && (
-                              <span className="font-mono text-xs text-slate-400">
+                              <span className="text-xs text-slate-400">
                                 {definition.phonetic}
                               </span>
                             )}
@@ -262,12 +262,12 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                                 e.stopPropagation();
                                 copyDefinitionText(activeWord, definition);
                               }}
-                              className="p-1 rounded-md text-slate-400 hover:text-cyan-300 hover:bg-white/10 transition-colors cursor-pointer"
+                              className="p-1 rounded-md text-slate-400 hover:text-amber-300 hover:bg-white/10 transition-colors cursor-pointer"
                               title="Copy definition"
                               aria-label={`Copy definition for ${activeWord}`}
                             >
                               {copiedWord === activeWord ? (
-                                <Check className="w-3.5 h-3.5 text-cyan-400 stroke-[3]" />
+                                <Check className="w-3.5 h-3.5 text-amber-400 stroke-[3]" />
                               ) : (
                                 <Copy className="w-3.5 h-3.5" />
                               )}
@@ -278,14 +278,14 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                         {/* Definition content */}
                         {isLoading ? (
                           <div className="flex items-center gap-2 py-2 text-xs text-slate-400 select-none">
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
-                            <span>Looking up dictionary...</span>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                            <span>Looking up celestial dictionary...</span>
                           </div>
                         ) : definition && definition.meanings && definition.meanings.length > 0 ? (
                           <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1 scrollbar-thin">
                             {definition.meanings.map((m, mIdx) => (
                               <div key={mIdx} className="text-xs leading-relaxed">
-                                <span className="font-black text-[10px] text-cyan-400 uppercase font-mono mr-1.5">
+                                <span className="font-black text-[10px] text-amber-400 uppercase mr-1.5">
                                   [{m.partOfSpeech}]
                                 </span>
                                 <span className="text-slate-200">{m.definitions[0]}</span>
@@ -293,7 +293,7 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                             ))}
                           </div>
                         ) : (
-                          <p className="text-[11px] text-slate-500 italic py-1">
+                          <p className="text-[11px] text-slate-400 italic py-1">
                             No dictionary definition found for &ldquo;{activeWord}&rdquo;.
                           </p>
                         )}
