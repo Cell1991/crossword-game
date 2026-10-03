@@ -39,7 +39,6 @@ import { MobileInfoModal } from '@/components/game/MobileInfoModal';
 import BackgroundMusic from '@/components/audio/BackgroundMusic';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
 import { GrimoireModal } from '@/components/game/GrimoireModal';
-import { ScoreBurstEffect } from '@/components/game/ScoreBurstEffect';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 import ParticleField from '@/components/effects/ParticleField';
 
@@ -143,7 +142,6 @@ export default function GamePage() {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isGrimoireOpen, setIsGrimoireOpen] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
-  const [scoreBurst, setScoreBurst] = useState<{ score: number; isBingo: boolean; key: number } | null>(null);
 
   const seatReturningTile = useCallback((tileId: string, targetSlot: number) => {
     seatReturning(tileId, targetSlot, pendingTileIds);
@@ -287,11 +285,9 @@ export default function GamePage() {
 
     setIsSubmitting(true);
 
-    // 1. INSTANT (0ms) Feedback: Score burst & optimistic state update
+    // 1. INSTANT (0ms) Feedback: Play sound & optimistic state update
     if (moveScore > 0) {
       soundFx.playScoreBurst(moveScore, wasBingo);
-      setScoreBurst({ score: moveScore, isBingo: wasBingo, key: Date.now() });
-      setTimeout(() => setScoreBurst(null), 1400);
     }
     if (wasBingo) {
       toasts.flashInfo('🎉 BINGO! All 7 tiles placed (+50 Bonus Points)!');
@@ -933,9 +929,6 @@ export default function GamePage() {
         cardUseEffects={sync.cardUseEffects}
         pendingDoubleTargetId={gameState.pending_double_target_id}
       />
-
-      {/* Floating Animated Score Burst Popup */}
-      <ScoreBurstEffect burst={scoreBurst} />
 
       {/* Wildcard Blank Tile Letter Picker Modal */}
       <BlankTilePickerModal
