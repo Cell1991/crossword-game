@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, BookMarked, BookOpen, Check, Copy, Eye, Lock, Maximize, Minimize, ScrollText } from 'lucide-react';
+import { ArrowLeft, BookMarked, BookOpen, Check, Copy, Eye, Maximize, Minimize, ScrollText } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { TurnBanner } from './TurnBanner';
 
@@ -245,24 +245,16 @@ export const GameHud: React.FC<GameHudProps> = ({
             <SpectatorBadge count={spectatorCount} />
           </div>
           {debugSlot}
-          {onOpenGrimoire && (
+          {onOpenGrimoire && isGrimoireEnabled && (
             <button
               type="button"
               onClick={onOpenGrimoire}
-              className={`group relative flex h-8 w-8 sm:w-auto sm:h-9 items-center justify-center gap-1 sm:gap-1.5 rounded-xl border px-0 sm:px-2.5 text-xs font-bold transition-all shrink-0 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.15)] active:scale-95 overflow-hidden ${
-                isGrimoireEnabled
-                  ? 'border-amber-400/50 bg-gradient-to-b from-[#251a0c]/90 via-[#181208]/95 to-[#0e0a04]/95 text-amber-200 hover:text-white hover:border-amber-400/80 hover:shadow-[0_0_18px_rgba(245,158,11,0.35)]'
-                  : 'border-slate-700/50 bg-gradient-to-b from-[#161832]/80 to-[#0c0e1e]/90 text-slate-400 hover:text-rose-300 hover:border-rose-400/50'
-              }`}
-              title={isGrimoireEnabled ? 'Grimoire (Word Guide)' : 'Grimoire (Locked)'}
+              className="group relative flex h-8 w-8 sm:w-auto sm:h-9 items-center justify-center gap-1 sm:gap-1.5 rounded-xl border border-amber-400/50 bg-gradient-to-b from-[#251a0c]/90 via-[#181208]/95 to-[#0e0a04]/95 text-amber-200 hover:text-white hover:border-amber-400/80 hover:shadow-[0_0_18px_rgba(245,158,11,0.35)] px-0 sm:px-2.5 text-xs font-bold transition-all shrink-0 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.15)] active:scale-95 overflow-hidden"
+              title="Grimoire (Word Guide)"
               aria-label="Open Word Grimoire"
             >
               <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent pointer-events-none" />
-              {isGrimoireEnabled ? (
-                <BookMarked className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.8)] relative z-10" />
-              ) : (
-                <Lock className="h-3.5 w-3.5 text-rose-400/80 relative z-10" />
-              )}
+              <BookMarked className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.8)] relative z-10" />
               <span className="relative z-10 font-black text-[11px] sm:text-xs hidden sm:inline">
                 Grimoire
               </span>
