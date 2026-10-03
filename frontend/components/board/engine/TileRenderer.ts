@@ -232,70 +232,7 @@ function drawFrostLaceAndIce(
   ctx.restore();
 }
 
-function drawElectricLightningArcs(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  tileW: number,
-  cellSize: number
-) {
-  ctx.save();
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'miter';
 
-  // 1. Diagonal High-Voltage Electric Bolt
-  ctx.beginPath();
-  ctx.moveTo(x + tileW * 0.18, y + tileW * 0.12);
-  ctx.lineTo(x + tileW * 0.40, y + tileW * 0.34);
-  ctx.lineTo(x + tileW * 0.30, y + tileW * 0.46);
-  ctx.lineTo(x + tileW * 0.58, y + tileW * 0.68);
-  ctx.lineTo(x + tileW * 0.48, y + tileW * 0.76);
-  ctx.lineTo(x + tileW * 0.70, y + tileW * 0.92);
-
-  // Outer electric cyan glow
-  ctx.strokeStyle = 'rgba(56, 189, 248, 0.95)';
-  ctx.lineWidth = Math.max(2.4, cellSize * 0.055);
-  ctx.shadowColor = '#38bdf8';
-  ctx.shadowBlur = Math.max(5, cellSize * 0.14);
-  ctx.stroke();
-
-  // Inner white-hot plasma core
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = Math.max(1, cellSize * 0.022);
-  ctx.shadowBlur = 0;
-  ctx.stroke();
-
-  // 2. Secondary electric branch
-  ctx.beginPath();
-  ctx.moveTo(x + tileW * 0.40, y + tileW * 0.34);
-  ctx.lineTo(x + tileW * 0.62, y + tileW * 0.28);
-  ctx.lineTo(x + tileW * 0.78, y + tileW * 0.40);
-
-  ctx.strokeStyle = 'rgba(125, 211, 252, 0.85)';
-  ctx.lineWidth = Math.max(1, cellSize * 0.024);
-  ctx.stroke();
-
-  // 3. Electric sparks / energy spark stars
-  const drawSpark = (sx: number, sy: number, r: number) => {
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.moveTo(sx, sy - r * 1.5);
-    ctx.lineTo(sx + r * 0.3, sy);
-    ctx.lineTo(sx + r * 1.5, sy);
-    ctx.lineTo(sx + r * 0.3, sy);
-    ctx.lineTo(sx, sy + r * 1.5);
-    ctx.lineTo(sx - r * 0.3, sy);
-    ctx.lineTo(sx - r * 1.5, sy);
-    ctx.lineTo(sx - r * 0.3, sy);
-    ctx.closePath();
-    ctx.fill();
-  };
-
-  drawSpark(x + tileW * 0.84, y + tileW * 0.18, Math.max(1.5, cellSize * 0.036));
-  drawSpark(x + tileW * 0.20, y + tileW * 0.82, Math.max(1.2, cellSize * 0.028));
-
-  ctx.restore();
-}
 
 export class TileRenderer {
   public static renderTile(
@@ -494,13 +431,13 @@ export class TileRenderer {
       grad.addColorStop(1, '#881337');
       ctx.fillStyle = grad;
     } else if (isPower) {
-      // High-Voltage Electric Cyan / Plasma Midnight Face Gradient
+      // Lightning Electric Cyan Power Gemstone Face Gradient
       const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
       grad.addColorStop(0, '#38bdf8');
-      grad.addColorStop(0.20, '#0284c7');
-      grad.addColorStop(0.55, '#1e3a8a');
-      grad.addColorStop(0.85, '#0f172a');
-      grad.addColorStop(1, '#020617');
+      grad.addColorStop(0.25, '#0ea5e9');
+      grad.addColorStop(0.60, '#0284c7');
+      grad.addColorStop(0.85, '#0369a1');
+      grad.addColorStop(1, '#082f49');
       ctx.fillStyle = grad;
     } else {
       // Standard Golden Amber Resin Face Gradient
@@ -515,7 +452,7 @@ export class TileRenderer {
     drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
     ctx.fill();
 
-    // 3. Specular Sheen, Chiseled Facets & Holographic Glyphs / Snow & Ice / Lightning
+    // 3. Specular Sheen, Chiseled Facets & Holographic Glyphs / Snow & Ice
     if (isRemote) {
       ctx.save();
       ctx.beginPath();
@@ -582,36 +519,6 @@ export class TileRenderer {
       ctx.stroke();
 
       ctx.restore();
-    } else if (isPower) {
-      ctx.save();
-      ctx.beginPath();
-      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-      ctx.clip();
-
-      // 1. Draw High-Voltage Electric Lightning Arcs and corner sparks
-      drawElectricLightningArcs(ctx, x + pad, y + pad, tileW, cellSize);
-
-      // 2. Top edge crisp electric cyan luster
-      const topEdgeGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + Math.max(2, cellSize * 0.08));
-      topEdgeGrad.addColorStop(0, 'rgba(125, 211, 252, 0.85)');
-      topEdgeGrad.addColorStop(1, 'rgba(125, 211, 252, 0)');
-      ctx.fillStyle = topEdgeGrad;
-      ctx.fillRect(x + pad, y + pad, tileW, Math.max(2, cellSize * 0.08));
-
-      // 3. Bottom deep dark voltage shadow
-      const botShade = ctx.createLinearGradient(0, y + pad + tileW * 0.78, 0, y + pad + tileW);
-      botShade.addColorStop(0, 'rgba(2, 6, 23, 0)');
-      botShade.addColorStop(1, 'rgba(2, 6, 23, 0.8)');
-      ctx.fillStyle = botShade;
-      ctx.fillRect(x + pad, y + pad + tileW * 0.78, tileW, tileW * 0.22);
-
-      // 4. Inner crisp electric rim
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
-      ctx.lineWidth = 1;
-      drawRoundedRect(ctx, x + pad + 0.5, y + pad + 0.5, tileW - 1, tileW - 1, Math.max(1, radius - 0.5));
-      ctx.stroke();
-
-      ctx.restore();
     } else if (!isFrozen && !isRemote) {
       ctx.save();
       ctx.beginPath();
@@ -626,6 +533,9 @@ export class TileRenderer {
       } else if (is3L) {
         topEdgeGrad.addColorStop(0, 'rgba(255, 225, 230, 0.75)');
         topEdgeGrad.addColorStop(1, 'rgba(255, 225, 230, 0)');
+      } else if (isPower) {
+        topEdgeGrad.addColorStop(0, 'rgba(224, 242, 254, 0.8)');
+        topEdgeGrad.addColorStop(1, 'rgba(224, 242, 254, 0)');
       } else {
         topEdgeGrad.addColorStop(0, 'rgba(255, 245, 180, 0.65)');
         topEdgeGrad.addColorStop(1, 'rgba(255, 245, 180, 0)');
@@ -641,6 +551,9 @@ export class TileRenderer {
       } else if (is3L) {
         botShade.addColorStop(0, 'rgba(50, 5, 15, 0)');
         botShade.addColorStop(1, 'rgba(50, 5, 15, 0.65)');
+      } else if (isPower) {
+        botShade.addColorStop(0, 'rgba(3, 20, 45, 0)');
+        botShade.addColorStop(1, 'rgba(3, 20, 45, 0.65)');
       } else {
         botShade.addColorStop(0, 'rgba(60, 20, 0, 0)');
         botShade.addColorStop(1, 'rgba(60, 20, 0, 0.55)');
@@ -653,6 +566,8 @@ export class TileRenderer {
         ctx.strokeStyle = 'rgba(187, 247, 208, 0.45)';
       } else if (is3L) {
         ctx.strokeStyle = 'rgba(254, 205, 211, 0.45)';
+      } else if (isPower) {
+        ctx.strokeStyle = 'rgba(186, 230, 253, 0.45)';
       } else {
         ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
       }
@@ -782,19 +697,10 @@ export class TileRenderer {
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
     } else if (isPower) {
-      ctx.save();
-      ctx.shadowColor = '#0284c7';
-      ctx.shadowBlur = lowPower ? 2 : Math.max(8, cellSize * 0.2);
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = Math.max(1.8, cellSize * 0.042);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.95)';
+      ctx.lineWidth = 1.3;
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.stroke();
-
-      ctx.strokeStyle = '#00f0ff';
-      ctx.lineWidth = 1;
-      drawRoundedRect(ctx, x + pad + 0.5, y + pad + 0.5, tileW - 1, tileW - 1, radius);
-      ctx.stroke();
-      ctx.restore();
     } else if (isLastMove && !isSpecialCellTile && !isFrozen) {
       ctx.save();
 
@@ -846,7 +752,7 @@ export class TileRenderer {
         const cx = x + cellSize / 2;
         const cy = y + cellSize / 2;
         const starSize = Math.max(6, cellSize * 0.28);
-        ctx.shadowColor = isFrozen ? '#bae6fd' : isPower ? '#38bdf8' : tilePalette.blank.glow;
+        ctx.shadowColor = isFrozen ? '#bae6fd' : tilePalette.blank.glow;
         ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.12);
         ctx.fillStyle = tilePalette.blank.color;
         drawStarburst(ctx, cx, cy, starSize, starSize * 0.4);
@@ -887,10 +793,10 @@ export class TileRenderer {
         if (!isRemote) {
           ctx.lineJoin = 'round';
           ctx.lineWidth = Math.max(2.2, fontSize * 0.10);
-          ctx.strokeStyle = isFrozen ? '#032b43' : isPower ? '#020617' : tilePalette.letter.stroke;
+          ctx.strokeStyle = isFrozen ? '#032b43' : tilePalette.letter.stroke;
           ctx.strokeText(letter, 0, 0);
         }
-        ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(224, 242, 254, 0.95)' : isPower ? 'rgba(56, 189, 248, 0.95)' : tilePalette.letter.shadow;
+        ctx.shadowColor = isRemote ? 'transparent' : isFrozen ? 'rgba(224, 242, 254, 0.95)' : tilePalette.letter.shadow;
         ctx.shadowBlur = isRemote ? 0 : isFrozen ? Math.max(4, cellSize * 0.09) : Math.max(2, cellSize * 0.06);
         ctx.shadowOffsetY = isRemote ? 0 : Math.max(1.2, cellSize * 0.04);
         ctx.fillText(letter, 0, 0);
@@ -907,10 +813,10 @@ export class TileRenderer {
         const numY = y + cellSize - pad * 1.5;
 
         ctx.save();
-        ctx.shadowColor = isFrozen ? 'rgba(224, 242, 254, 0.95)' : isPower ? 'rgba(56, 189, 248, 0.95)' : tilePalette.score.glow;
+        ctx.shadowColor = isFrozen ? 'rgba(224, 242, 254, 0.95)' : tilePalette.score.glow;
         ctx.shadowBlur = lowPower ? 2 : Math.max(4, numFontSize * 0.6);
         ctx.lineWidth = Math.max(1.2, numFontSize * 0.12);
-        ctx.strokeStyle = isFrozen ? '#032b43' : isPower ? '#020617' : tilePalette.score.stroke;
+        ctx.strokeStyle = isFrozen ? '#032b43' : tilePalette.score.stroke;
         ctx.strokeText(`${effectiveValue}`, numX, numY);
         ctx.fillStyle = tilePalette.score.color;
         ctx.fillText(`${effectiveValue}`, numX, numY);
