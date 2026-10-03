@@ -104,7 +104,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
 
   return (
     <div
-      className={`relative flex flex-col p-3 rounded-2xl transition-all duration-200 select-none overflow-hidden ${
+      className={`relative flex flex-col p-3 rounded-2xl transition-all duration-200 select-none overflow-visible ${
         isDead || hasLeft
           ? 'bg-slate-950/40 border border-white/[0.04] opacity-40 grayscale-[50%]'
           : isActiveTurn
@@ -115,7 +115,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
       }`}
     >
       {/* Celestial Glass Specular Shimmer */}
-      <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent pointer-events-none rounded-t-2xl" />
 
       {/* Ambient Starlight / Aurora Halo */}
       {isActiveTurn ? (
@@ -248,13 +248,18 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
             {scoreDelta && (
               <motion.div
                 key={`score-gain-${scoreDelta.id}`}
-                initial={{ opacity: 0, y: 6, scale: 0.5, x: 0 }}
-                animate={{ opacity: 1, y: -20, scale: 1.15, x: -6 }}
-                exit={{ opacity: 0, y: -32, scale: 0.8 }}
-                transition={{ duration: 1.8, ease: 'easeOut' }}
-                className="pointer-events-none absolute -top-1.5 right-1 z-30 flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 px-2 py-0.5 text-[11px] sm:text-xs font-black font-maple text-slate-950 shadow-[0_0_16px_rgba(245,158,11,0.9),0_2px_8px_rgba(0,0,0,0.8)] border border-amber-100"
+                initial={{ opacity: 0, y: 4, scale: 0.5, x: 0 }}
+                animate={{
+                  opacity: [0, 1, 1, 0.9, 0],
+                  y: [-2, -18, -28, -36],
+                  scale: [0.5, 1.25, 1.15, 0.95],
+                  x: [0, -6, -12, -16],
+                }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 2.2, times: [0, 0.15, 0.7, 1], ease: 'easeOut' }}
+                className="pointer-events-none absolute -top-2 right-0 z-50 flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 px-2.5 py-0.5 text-xs font-black font-maple text-slate-950 shadow-[0_0_20px_rgba(245,158,11,1),0_4px_12px_rgba(0,0,0,0.9)] border border-amber-100 ring-1 ring-amber-400/60"
               >
-                <Sparkles className="w-3 h-3 text-slate-950 fill-slate-950" />
+                <Sparkles className="w-3.5 h-3.5 text-slate-950 fill-slate-950" />
                 <span>+{scoreDelta.amount}</span>
               </motion.div>
             )}
