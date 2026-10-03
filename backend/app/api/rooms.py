@@ -195,7 +195,7 @@ async def start_game(
                 # The browser animates the bot's move, but the server remains the fallback
                 # driver if that client is closed or its request fails. Keep this fallback
                 # short enough that a match never appears stuck waiting on the browser.
-                BotService.schedule_auto_bot_turn(game.id, first_p.id, game.turn_number, delay_seconds=6.0)
+                BotService.schedule_auto_bot_turn(game.id, first_p.id, game.turn_number, delay_seconds=BotService.FALLBACK_DELAY_SECONDS)
             )
 
     return {"status": "started", "game_id": game.id}

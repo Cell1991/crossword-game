@@ -132,13 +132,14 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       setGameState(prev => {
         if (!prev) return state;
         if (state.turn_number < prev.turn_number) {
+          // A snapshot from before the last commit: a move writes the board and the turn number in
+          // one transaction, so an older turn number means older tiles. Keep what we have.
           return prev;
         }
-        const mergedBoard = { ...prev.board_state, ...state.board_state };
-        return {
-          ...state,
-          board_state: mergedBoard,
-        };
+        // The server board replaces ours outright. Merging kept every tile we had ever drawn, so a
+        // tile the server never committed (a bot preview, a race) or one DESTROY_TILE removed stayed
+        // on screen until the page was reloaded.
+        return state;
       });
       if (state.move_history && Array.isArray(state.move_history)) {
         const formattedHistory: MoveHistoryEntry[] = state.move_history.map(m => {

@@ -79,7 +79,7 @@ async def commit_move(
         next_p = (await db.execute(stmt_next)).scalar_one_or_none()
         if BotService.is_bot_player(next_p):
             asyncio.create_task(
-                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=6.0)
+                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=BotService.FALLBACK_DELAY_SECONDS)
             )
 
     return res

@@ -156,3 +156,41 @@ async def test_bot_only_plays_letters_it_actually_holds(open_table):
     # Every letter still held was either drawn at setup or refilled from the bag, never invented
     # to fit a word: nothing outside the original rack may appear without the bag accounting for it.
     assert sum(rack_letters(after).values()) <= 7
+
+
+@pytest.mark.asyncio
+async def test_bot_plan_is_pinned_for_the_turn(open_table):
+    """
+    The browser animates the plan it fetched, then commits it, while a server-side fallback may fire
+    for the same turn. Both must play the same word in the same place - replanning (easy shuffles its
+    candidates) is what made tiles lift off the board and reappear somewhere else.
+    """
+    table = await open_table("Alice", "SparkBot [Bot]")
+    alice, bot = table.seats
+    await table.update_player(alice, hp=1000, max_hp=1000)
+
+    await table.set_tiles(racks={alice: "CATSEIO"})
+    res = await table.place(alice, Board.CENTER[0], Board.CENTER[1] - 1, "CAT")
+    assert res.status_code == 200, res.text
+
+    def placement(plan):
+        return [(t["row"], t["col"], t["letter"]) for t in plan.get("tiles", [])]
+
+    async with AsyncSessionLocal() as db:
+        first = await BotService.plan_bot_move(db, table.game_id, "easy")
+
+    # A separate session, the way the fallback task runs.
+    async with AsyncSessionLocal() as db:
+        again = await BotService.plan_bot_move(db, table.game_id, "easy")
+
+    assert first["action"] == again["action"]
+    assert placement(first) == placement(again)
+
+    # Once that turn is committed, the next one plans afresh.
+    async with AsyncSessionLocal() as db:
+        await BotService.execute_bot_move_now(db, table.game_id, bot.id)
+
+    state = await table.state()
+    if state["current_player_id"] == bot.id:
+        return  # Alice was skipped (eliminated); nothing more to assert.
+    assert BotService._PLAN_CACHE.get(table.game_id, (None,))[0][1] < state["turn_number"]

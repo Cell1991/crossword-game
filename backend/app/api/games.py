@@ -51,7 +51,7 @@ async def get_game(
             if started:
                 if started.tzinfo is None:
                     started = started.replace(tzinfo=timezone.utc)
-                if (now - started).total_seconds() >= 6.0:
+                if (now - started).total_seconds() >= BotService.FALLBACK_DELAY_SECONDS:
                     await BotService.execute_bot_move_now(db, game_id, curr_p.id)
 
     # Whether racks are revealed comes from the room's own is_debug flag (see get_game_state),
@@ -96,7 +96,7 @@ async def pass_turn(
         next_p = (await db.execute(stmt_next)).scalar_one_or_none()
         if BotService.is_bot_player(next_p):
             asyncio.create_task(
-                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=6.0)
+                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=BotService.FALLBACK_DELAY_SECONDS)
             )
 
     return {
@@ -157,7 +157,7 @@ async def exchange_tiles(
         next_p = (await db.execute(stmt_next)).scalar_one_or_none()
         if BotService.is_bot_player(next_p):
             asyncio.create_task(
-                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=BotService.FALLBACK_DELAY_SECONDS)
             )
 
     return {
@@ -225,7 +225,7 @@ async def resolve_pending_effect(game_id: str, db: AsyncSession = Depends(get_db
         next_p = (await db.execute(stmt_next)).scalar_one_or_none()
         if BotService.is_bot_player(next_p):
             asyncio.create_task(
-                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+                BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=BotService.FALLBACK_DELAY_SECONDS)
             )
     return {"status": "resolved", **payload}
 
@@ -322,7 +322,12 @@ async def execute_bot_move(
     if action == "MOVE":
         tiles_data = req.get("tiles", [])
         placed_tiles = [PlacedTileInput(**t) for t in tiles_data]
-        res, game, player = await MoveService.commit_move(db, game_id, bot_player_id, placed_tiles)
+        try:
+            res, game, player = await MoveService.commit_move(db, game_id, bot_player_id, placed_tiles)
+        except Exception:
+            # A cached plan the board will not accept would otherwise be replayed every retry.
+            BotService.forget_plan(game_id)
+            raise
         await db.commit()
 
         # Broadcast MOVE_COMMITTED
@@ -355,7 +360,7 @@ async def execute_bot_move(
             next_p = (await db.execute(stmt_next)).scalar_one_or_none()
             if BotService.is_bot_player(next_p):
                 asyncio.create_task(
-                    BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=6.0)
+                    BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=BotService.FALLBACK_DELAY_SECONDS)
                 )
 
         return {

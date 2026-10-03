@@ -185,7 +185,9 @@ export default function GamePage() {
       clearRemotePlacements();
       setExchangeTileIds(null);
       cards.clearHints();
-      if (!activeBotTurns.has(`${gameId}:${nextTurnKey}`)) {
+      // Never wipe the preview while this tab is animating a bot turn - the turn key has already
+      // moved on by then, and clearing mid-animation is what made tiles lift off and drop again.
+      if (activeBotTurns.size === 0) {
         startTransition(() => setBotStagedTiles([]));
       }
     }
@@ -436,11 +438,8 @@ export default function GamePage() {
         ]);
 
         console.log('[Bot] Received plan:', plan);
-        let activePlan = plan;
-        if (activePlan.action !== 'MOVE' || !activePlan.tiles || activePlan.tiles.length === 0) {
-          activePlan = await getBotPlan(gameId, botDifficulty);
-        }
-
+        // The server pins one plan per turn, so re-asking returns the same answer.
+        const activePlan = plan;
         const planTiles = activePlan.tiles ?? [];
         if (planTiles.length > 0) {
           // Place tiles step-by-step (one by one) with clear, distinct visual feedback

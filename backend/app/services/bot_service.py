@@ -21,6 +21,28 @@ class BotService:
 
     DIFFICULTIES = ("easy", "medium", "hard")
 
+    # The browser drives the bot turn: it fetches a plan, animates the tiles one by one, then
+    # commits. This fallback only exists for when no browser is driving, so it has to outlast the
+    # slowest animation (~5.5s) plus a throttled mobile tab - firing earlier made the server commit
+    # its own move mid-animation, which is what made tiles lift off and reappear somewhere else.
+    FALLBACK_DELAY_SECONDS = 12.0
+
+    # One plan per turn, keyed by game. Whoever commits - the browser or the fallback - plays the
+    # exact word the preview animated; replanning picked a different word from the same rack.
+    _PLAN_CACHE: dict[str, tuple[tuple[str, int, str], dict[str, Any]]] = {}
+    # Games whose bot turn is being committed right now. Two racing callers (the 5s resync in every
+    # open tab, plus the scheduled task) used to commit two moves for one turn.
+    _TURNS_IN_FLIGHT: set[str] = set()
+
+    @classmethod
+    def forget_plan(cls, game_id: str) -> None:
+        cls._PLAN_CACHE.pop(game_id, None)
+
+    @classmethod
+    def _remember_plan(cls, key: tuple[str, int, str], plan: dict[str, Any]) -> dict[str, Any]:
+        cls._PLAN_CACHE[key[0]] = (key, plan)
+        return plan
+
     @staticmethod
     def is_bot_player(player: GamePlayer | None) -> bool:
         """
@@ -90,6 +112,11 @@ class BotService:
         if difficulty not in cls.DIFFICULTIES:
             difficulty = cls.difficulty_of(current_player)
 
+        cache_key = (game_id, game.turn_number, current_player.id)
+        cached = cls._PLAN_CACHE.get(game_id)
+        if cached and cached[0] == cache_key:
+            return cached[1]
+
         # Load rack and board state
         rack = await player_rack(db, current_player.id)
         board = await board_state(db, game_id)
@@ -97,12 +124,12 @@ class BotService:
 
         rack_letters = [str(t.get("letter", "")).upper() for t in rack if t.get("letter")]
         if not rack_letters:
-            return {
+            return cls._remember_plan(cache_key, {
                 "action": "PASS",
                 "bot_player_id": current_player.id,
                 "bot_name": current_player.display_name,
                 "difficulty": difficulty,
-            }
+            })
 
         # Find all valid placement candidates
         candidates = find_hint_suggestions(
@@ -119,7 +146,7 @@ class BotService:
                 # Match candidate letters to real tile IDs in the bot's rack
                 matched_tiles = cls._match_tiles_to_rack(rack, cand.get("tiles", []))
                 if matched_tiles:
-                    return {
+                    return cls._remember_plan(cache_key, {
                         "action": "MOVE",
                         "bot_player_id": current_player.id,
                         "bot_name": current_player.display_name,
@@ -128,25 +155,25 @@ class BotService:
                         "score": cand.get("score", 0),
                         "direction": cand.get("direction", "across"),
                         "tiles": matched_tiles,
-                    }
+                    })
 
         # Nothing playable from this rack. A bot plays by the same rules as everyone else, so it
         # takes the same way out a human would: swap tiles if the bag allows, otherwise pass.
         bag = await bag_tiles(db, game_id)
         if len(bag) >= settings.MIN_BAG_TILES_TO_EXCHANGE:
-            return {
+            return cls._remember_plan(cache_key, {
                 "action": "EXCHANGE",
                 "bot_player_id": current_player.id,
                 "bot_name": current_player.display_name,
                 "difficulty": difficulty,
                 "tile_ids": [str(t.get("id") or t.get("tile_id")) for t in rack],
-            }
-        return {
+            })
+        return cls._remember_plan(cache_key, {
             "action": "PASS",
             "bot_player_id": current_player.id,
             "bot_name": current_player.display_name,
             "difficulty": difficulty,
-        }
+        })
 
     @classmethod
     def _order_candidates_by_difficulty(
@@ -292,6 +319,26 @@ class BotService:
         from app.schemas.events import WebSocketEvent, EventType
         from app.schemas.move import PlacedTileInput
 
+        if game_id in cls._TURNS_IN_FLIGHT:
+            return None
+        cls._TURNS_IN_FLIGHT.add(game_id)
+        try:
+            return await cls._execute_bot_move_locked(db, game_id, bot_player_id, difficulty)
+        finally:
+            cls._TURNS_IN_FLIGHT.discard(game_id)
+
+    @classmethod
+    async def _execute_bot_move_locked(
+        cls,
+        db: AsyncSession,
+        game_id: str,
+        bot_player_id: str | None,
+        difficulty: str | None,
+    ) -> dict[str, Any] | None:
+        from app.websocket.connection_manager import manager
+        from app.schemas.events import WebSocketEvent, EventType
+        from app.schemas.move import PlacedTileInput
+
         plan = await cls.plan_bot_move(db, game_id, difficulty)
         bot_id = plan.get("bot_player_id") or bot_player_id
         if not bot_id:
@@ -311,12 +358,17 @@ class BotService:
                 next_p = (await db.execute(stmt_next)).scalar_one_or_none()
                 if cls.is_bot_player(next_p):
                     asyncio.create_task(
-                        cls.schedule_auto_bot_turn(game_id, next_p.id, outcome["turn_number"], delay_seconds=6.0)
+                        cls.schedule_auto_bot_turn(game_id, next_p.id, outcome["turn_number"], delay_seconds=cls.FALLBACK_DELAY_SECONDS)
                     )
             return outcome
 
         placed_tiles = [PlacedTileInput(**t) for t in tiles_data]
-        res, game, player = await MoveService.commit_move(db, game_id, bot_id, placed_tiles)
+        try:
+            res, game, player = await MoveService.commit_move(db, game_id, bot_id, placed_tiles)
+        except Exception:
+            # A cached plan the board will not accept would otherwise be replayed every retry.
+            cls._PLAN_CACHE.pop(game_id, None)
+            raise
         await db.commit()
 
         await manager.broadcast(game_id, WebSocketEvent(
@@ -347,7 +399,7 @@ class BotService:
             next_p = (await db.execute(stmt_next)).scalar_one_or_none()
             if cls.is_bot_player(next_p):
                 asyncio.create_task(
-                    cls.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=6.0)
+                    cls.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=cls.FALLBACK_DELAY_SECONDS)
                 )
 
         return {
@@ -364,10 +416,10 @@ class BotService:
         game_id: str,
         bot_player_id: str,
         expected_turn_number: int,
-        delay_seconds: float = 6.0,
+        delay_seconds: float | None = None,
     ) -> None:
         """Execute a bot turn if the browser has not committed it within the fallback window."""
-        await asyncio.sleep(delay_seconds)
+        await asyncio.sleep(cls.FALLBACK_DELAY_SECONDS if delay_seconds is None else delay_seconds)
         from app.database.session import AsyncSessionLocal
         async with AsyncSessionLocal() as db:
             try:

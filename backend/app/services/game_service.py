@@ -54,7 +54,7 @@ async def _auto_resolve_effect_task(game_id: str, delay: float = 1.2) -> None:
                 next_p = (await db.execute(stmt_next)).scalar_one_or_none()
                 if BotService.is_bot_player(next_p):
                     asyncio.create_task(
-                        BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+                        BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=BotService.FALLBACK_DELAY_SECONDS)
                     )
     except asyncio.CancelledError:
         pass
@@ -362,7 +362,7 @@ class GameService:
                     next_p = (await db.execute(stmt_next)).scalar_one_or_none()
                     if BotService.is_bot_player(next_p):
                         asyncio.create_task(
-                            BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=2.8)
+                            BotService.schedule_auto_bot_turn(game_id, next_p.id, game.turn_number, delay_seconds=BotService.FALLBACK_DELAY_SECONDS)
                         )
                 elif validation["game_over"]:
                     await manager.broadcast(game_id, WebSocketEvent(
