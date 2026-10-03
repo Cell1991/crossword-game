@@ -173,7 +173,7 @@ export const SpySwapNotificationOverlay: React.FC<{
               data.isVictim ? 'text-rose-200' : 'text-emerald-200'
             }`}
           >
-            {data.isVictim ? '🚨 TILES STOLEN!' : '🥷 SPY SWAP EXECUTED!'}
+            {data.isVictim ? 'TILES STOLEN!' : 'SPY SWAP EXECUTED!'}
           </h2>
 
           <span
@@ -215,7 +215,7 @@ export const SpySwapNotificationOverlay: React.FC<{
                   : 'border-emerald-400 bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/50'
               }`}
             >
-              {data.isVictim ? 'Accept My Fate 😤' : 'Awesome! 🎉'}
+              {data.isVictim ? 'Acknowledge' : 'Continue'}
             </button>
           </div>
         </motion.div>
