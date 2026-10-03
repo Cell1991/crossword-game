@@ -259,7 +259,16 @@ export const TileRack = memo(function TileRack({
 
         {/* RIGHT / BOTTOM: ACTION CONTROLS */}
         {/* DESKTOP VIEW (>= 1024px): 2 BALANCED ROWS WITH FULL TEXT LABELS */}
-        <div className="game-actions-container hidden lg:flex order-2 w-[320px] shrink-0 flex-col gap-1.5 select-none">
+        <div className="game-actions-container relative hidden lg:flex order-2 w-[320px] shrink-0 flex-col gap-1.5 select-none overflow-visible">
+          {/* Floating Estimated Score Badge (Above Action Controls) */}
+          {isMyTurn && hasTemporaryTiles && placementValid === true && estimatedScore !== undefined && estimatedScore > 0 && (
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-30 pointer-events-none whitespace-nowrap">
+              <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-gradient-to-b from-[#2a1a08]/95 via-[#180f04]/95 to-[#0b0702]/95 border border-amber-300/90 shadow-[0_0_16px_rgba(245,158,11,0.6),0_2px_8px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.45)] text-[#fef08a] font-black text-xs tracking-wider leading-normal drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+                +{estimatedScore} PTS
+              </span>
+            </div>
+          )}
+
           {/* Desktop Row 1: Utility Controls (Recall, Shuffle, Swap) */}
           <div className="grid grid-cols-3 gap-1.5 w-full">
             {isExchanging ? (
@@ -407,28 +416,21 @@ export const TileRack = memo(function TileRack({
                   ) : (
                     <Check className="w-4 h-4 stroke-[2.5] text-slate-400 relative z-10 shrink-0" />
                   )}
-                  <div className="flex items-center gap-2 relative z-10 min-w-0">
-                    <span className={`tracking-wider uppercase font-black truncate ${
-                      isMyTurn && hasTemporaryTiles && placementValid === true
-                        ? 'text-white drop-shadow-[0_1px_0_#000] drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]'
-                        : isMyTurn && hasTemporaryTiles
-                        ? 'text-rose-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]'
-                        : 'text-slate-300'
-                    }`}>
-                      {isSubmitting
-                        ? 'Submitting...'
-                        : isMyTurn && hasTemporaryTiles && placementValid === true
-                        ? 'PLAY'
-                        : isMyTurn && hasTemporaryTiles
-                        ? 'INVALID WORD'
-                        : 'PLAY'}
-                    </span>
-                    {isMyTurn && hasTemporaryTiles && placementValid === true && estimatedScore !== undefined && estimatedScore > 0 && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#090603]/90 border border-amber-300/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9),0_1px_0_rgba(255,255,255,0.2)] text-[#fef08a] font-black text-xs tracking-wider shrink-0 leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                        +{estimatedScore} PTS
-                      </span>
-                    )}
-                  </div>
+                  <span className={`tracking-wider uppercase font-black truncate relative z-10 ${
+                    isMyTurn && hasTemporaryTiles && placementValid === true
+                      ? 'text-white drop-shadow-[0_1px_0_#000] drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]'
+                      : isMyTurn && hasTemporaryTiles
+                      ? 'text-rose-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]'
+                      : 'text-slate-300'
+                  }`}>
+                    {isSubmitting
+                      ? 'Submitting...'
+                      : isMyTurn && hasTemporaryTiles && placementValid === true
+                      ? 'PLAY'
+                      : isMyTurn && hasTemporaryTiles
+                      ? 'INVALID WORD'
+                      : 'PLAY'}
+                  </span>
                 </button>
 
                 {/* Pass Button */}
@@ -455,7 +457,16 @@ export const TileRack = memo(function TileRack({
         </div>
 
         {/* MOBILE VIEW (< 1024px): 1 ULTRA-SLEEK COMPACT ROW */}
-        <div className="game-actions-container flex lg:hidden order-2 w-full max-w-[340px] sm:max-w-[360px] shrink-0 flex-col select-none">
+        <div className="game-actions-container relative flex lg:hidden order-2 w-full max-w-[340px] sm:max-w-[360px] shrink-0 flex-col select-none overflow-visible">
+          {/* Floating Estimated Score Badge (Above Play Button) */}
+          {isMyTurn && hasTemporaryTiles && placementValid === true && estimatedScore !== undefined && estimatedScore > 0 && (
+            <div className="absolute -top-7 right-1 z-30 pointer-events-none whitespace-nowrap">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-b from-[#2a1a08]/95 via-[#180f04]/95 to-[#0b0702]/95 border border-amber-300/90 shadow-[0_0_14px_rgba(245,158,11,0.6),0_2px_8px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.45)] text-[#fef08a] font-black text-[11px] tracking-wider leading-normal drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+                +{estimatedScore} PTS
+              </span>
+            </div>
+          )}
+
           {isExchanging ? (
             <div className="grid grid-cols-[1fr_2fr] gap-1.5 w-full">
               {/* Cancel Exchange */}
@@ -616,21 +627,21 @@ export const TileRack = memo(function TileRack({
                 ) : (
                   <Check className="w-4 h-4 stroke-[2.5] text-slate-400 relative z-10 shrink-0" />
                 )}
-                {isMyTurn && hasTemporaryTiles && placementValid === true && estimatedScore !== undefined && estimatedScore > 0 ? (
-                  <span className="text-[11px] font-black tracking-tight text-[#fef08a] bg-[#090603]/90 px-1.5 py-0.5 rounded border border-amber-300/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9)] relative z-10 leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                    +{estimatedScore}
-                  </span>
-                ) : (
-                  <span className={`text-[10px] font-black uppercase tracking-wider relative z-10 truncate ${
-                    isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? 'text-white drop-shadow-[0_1px_0_#000] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
-                      : isMyTurn && hasTemporaryTiles
-                      ? 'text-rose-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
-                      : 'text-slate-300'
-                  }`}>
-                    {isMyTurn && hasTemporaryTiles ? 'INVALID' : 'PLAY'}
-                  </span>
-                )}
+                <span className={`text-[10px] font-black uppercase tracking-wider relative z-10 truncate ${
+                  isMyTurn && hasTemporaryTiles && placementValid === true
+                    ? 'text-white drop-shadow-[0_1px_0_#000] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
+                    : isMyTurn && hasTemporaryTiles
+                    ? 'text-rose-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
+                    : 'text-slate-300'
+                }`}>
+                  {isSubmitting
+                    ? '...'
+                    : isMyTurn && hasTemporaryTiles && placementValid === true
+                    ? 'PLAY'
+                    : isMyTurn && hasTemporaryTiles
+                    ? 'INVALID'
+                    : 'PLAY'}
+                </span>
               </button>
             </div>
           )}
