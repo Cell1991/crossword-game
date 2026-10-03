@@ -238,7 +238,6 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
           const words = wordList.join(', ');
           const score = event.payload.scoreEarned ?? 0;
           const name = nameOf(event.payload?.playerId, 'Player');
-          flashInfo(`${words} (+${score} pts)`);
           addHistory({ text: `${name}: ${words}`, score, type: 'move', words: wordList });
         } else if (event.type === 'TURN_PASSED') {
           const name = nameOf(event.payload?.playerId, 'Player');

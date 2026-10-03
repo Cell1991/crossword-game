@@ -509,7 +509,6 @@ export default function GamePage() {
             const wordList = execRes.words_formed.map((w: { word: string }) => w.word.toUpperCase());
             const wordsStr = wordList.join(', ');
             const pts = execRes.score_earned ?? 0;
-            toasts.flashInfo(`${currentTurnPlayer.display_name} played ${wordsStr} (+${pts} pts)`);
           }
         } else {
           console.log('[Bot] Executing fallback move on backend');

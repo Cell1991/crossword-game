@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Crown, Medal, Award, Shield, WifiOff, Sparkles, Crosshair, Heart, Star } from 'lucide-react';
 import { Player } from '@/lib/types';
 import { cardIcon } from '../cardIcons';
@@ -38,6 +39,52 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   const isThird = rankIndex === 2 && !isDead;
   const healthPercent = Math.max(0, Math.min(100, (player.hp / playerMaxHp) * 100));
 
+  // Rolling Slot-Machine Counter & Score Gain Delta Animation (Hardware-Accelerated 120 FPS)
+  const [displayScore, setDisplayScore] = useState(player.score);
+  const [scoreDelta, setScoreDelta] = useState<{ amount: number; id: number } | null>(null);
+  const prevScoreRef = useRef(player.score);
+
+  useEffect(() => {
+    const prevScore = prevScoreRef.current;
+    const newScore = player.score;
+    prevScoreRef.current = newScore;
+
+    if (newScore > prevScore) {
+      const delta = newScore - prevScore;
+      setScoreDelta({ amount: delta, id: Date.now() });
+
+      const duration = 850;
+      const startTime = performance.now();
+      let animationFrameId: number;
+
+      const updateScore = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const currentVal = Math.round(prevScore + delta * easeOut);
+        setDisplayScore(currentVal);
+
+        if (progress < 1) {
+          animationFrameId = requestAnimationFrame(updateScore);
+        } else {
+          setDisplayScore(newScore);
+        }
+      };
+
+      animationFrameId = requestAnimationFrame(updateScore);
+      const timer = setTimeout(() => {
+        setScoreDelta(null);
+      }, 2400);
+
+      return () => {
+        cancelAnimationFrame(animationFrameId);
+        clearTimeout(timer);
+      };
+    } else {
+      setDisplayScore(newScore);
+    }
+  }, [player.score]);
+
   // Celestial Vitality Bar Gradients & Glows
   const hpGradient = hasShield
     ? 'from-sky-400 via-indigo-300 to-cyan-400 shadow-[0_0_12px_rgba(56,189,248,0.75)]'
@@ -74,6 +121,19 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
       {isActiveTurn ? (
         <div className="absolute top-0 right-0 w-36 h-36 bg-amber-400/15 rounded-full blur-2xl pointer-events-none" />
       ) : null}
+
+      {/* Golden Starlight Energy Ripple on Score Gain */}
+      <AnimatePresence>
+        {scoreDelta && (
+          <motion.div
+            initial={{ opacity: 0.9, scale: 0.96 }}
+            animate={{ opacity: 0, scale: 1.04 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: 'easeOut' }}
+            className="absolute inset-0 rounded-2xl border-2 border-amber-400/80 shadow-[0_0_24px_rgba(245,158,11,0.5),inset_0_0_14px_rgba(245,158,11,0.3)] pointer-events-none z-20"
+          />
+        )}
+      </AnimatePresence>
 
       {/* Top Row: Rank Crest + Identity + Score */}
       <div className="flex items-center justify-between gap-2 relative z-10">
@@ -181,11 +241,32 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           </div>
         </div>
 
-        {/* Right: Celestial Score Counter */}
-        <div className="flex items-baseline gap-1 shrink-0 pl-2">
-          <span
-            className={`inline-block pr-1.5 text-xl sm:text-2xl font-black font-maple tracking-tight tabular-nums ${
-              isLeader
+        {/* Right: Celestial Score Counter & Floating Gain Badge */}
+        <div className="relative flex items-baseline gap-1 shrink-0 pl-2">
+          {/* Animated Floating Points Gain Badge (+Score) */}
+          <AnimatePresence>
+            {scoreDelta && (
+              <motion.div
+                key={`score-gain-${scoreDelta.id}`}
+                initial={{ opacity: 0, y: 6, scale: 0.5, x: 0 }}
+                animate={{ opacity: 1, y: -20, scale: 1.15, x: -6 }}
+                exit={{ opacity: 0, y: -32, scale: 0.8 }}
+                transition={{ duration: 1.8, ease: 'easeOut' }}
+                className="pointer-events-none absolute -top-1.5 right-1 z-30 flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 px-2 py-0.5 text-[11px] sm:text-xs font-black font-maple text-slate-950 shadow-[0_0_16px_rgba(245,158,11,0.9),0_2px_8px_rgba(0,0,0,0.8)] border border-amber-100"
+              >
+                <Sparkles className="w-3 h-3 text-slate-950 fill-slate-950" />
+                <span>+{scoreDelta.amount}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Rolling Number Display */}
+          <motion.span
+            animate={scoreDelta ? { scale: [1, 1.25, 1], transition: { duration: 0.35 } } : { scale: 1 }}
+            className={`inline-block pr-1.5 text-xl sm:text-2xl font-black font-maple tracking-tight tabular-nums transition-colors ${
+              scoreDelta
+                ? 'bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-400 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(251,191,36,0.95)]'
+                : isLeader
                 ? 'bg-gradient-to-b from-amber-100 via-amber-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(245,158,11,0.7)]'
                 : isActiveTurn
                 ? 'bg-gradient-to-b from-amber-100 via-amber-300 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(251,191,36,0.6)]'
@@ -196,8 +277,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
                 : 'text-slate-100'
             }`}
           >
-            {player.score}
-          </span>
+            {displayScore}
+          </motion.span>
           <span className="text-[10px] font-black text-slate-400 uppercase">
             PTS
           </span>
