@@ -122,9 +122,10 @@ export const SpySwapNotificationOverlay: React.FC<{
   data: SpySwapAlertData | null;
   onDismiss: () => void;
 }> = ({ data, onDismiss }) => {
+  const dataId = data?.id;
   useEffect(() => {
-    if (!data) return;
-    if (data.isVictim) {
+    if (!dataId) return;
+    if (data?.isVictim) {
       soundFx.playCardActivate('DESTROY_TILE'); // Heavy dramatic warning sound
     } else {
       soundFx.playCardActivate('SPY_SWAP');
@@ -132,103 +133,104 @@ export const SpySwapNotificationOverlay: React.FC<{
 
     const timer = setTimeout(() => {
       onDismiss();
-    }, 4200);
+    }, 5000);
     return () => clearTimeout(timer);
-  }, [data, onDismiss]);
-
-  if (!data) return null;
+  }, [dataId, data?.isVictim, onDismiss]);
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[95] flex items-center justify-center p-4 select-none">
+    <div className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center p-4 select-none">
       <AnimatePresence>
-        <motion.div
-          initial={{ scale: 0.6, y: 40, opacity: 0 }}
-          animate={{ scale: 1, y: 0, opacity: 1 }}
-          exit={{ scale: 0.8, y: -30, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-          className={`pointer-events-auto relative max-w-md w-full overflow-hidden rounded-3xl border-2 p-6 text-center shadow-2xl backdrop-blur-xl ${
-            data.isVictim
-              ? 'border-rose-500 bg-gradient-to-b from-[#2a0812]/98 via-[#18050c]/98 to-[#090205]/98 shadow-[0_0_60px_rgba(244,63,94,0.6),inset_0_0_30px_rgba(244,63,94,0.3)]'
-              : 'border-emerald-400 bg-gradient-to-b from-[#062418]/98 via-[#03140e]/98 to-[#020a06]/98 shadow-[0_0_60px_rgba(16,185,129,0.6),inset_0_0_30px_rgba(16,185,129,0.3)]'
-          }`}
-        >
-          {/* Top light sheen */}
-          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
-
-          {/* Close button */}
-          <button
-            type="button"
-            onClick={onDismiss}
-            className="absolute top-3.5 right-3.5 p-1.5 rounded-full border border-white/20 bg-black/40 text-slate-300 hover:text-white hover:border-white/40 active:scale-95 transition-all cursor-pointer z-20"
-          >
-            <X className="w-4 h-4" />
-          </button>
-
-          {/* Icon Badge */}
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl border-2 shadow-xl relative z-10">
-            {data.isVictim ? (
-              <div className="flex h-full w-full items-center justify-center rounded-3xl border-rose-400 bg-rose-500/20 shadow-lg shadow-rose-500/40 animate-pulse">
-                <AlertTriangle className="h-10 w-10 text-rose-300 fill-rose-500/30 drop-shadow-[0_0_12px_#fb7185]" />
-              </div>
-            ) : (
-              <div className="flex h-full w-full items-center justify-center rounded-3xl border-emerald-400 bg-emerald-500/20 shadow-lg shadow-emerald-500/40">
-                <Repeat2 className="h-10 w-10 text-emerald-300 drop-shadow-[0_0_12px_#34d399]" />
-              </div>
-            )}
-          </div>
-
-          {/* Header Title */}
-          <h2
-            className={`text-2xl sm:text-3xl font-black font-maple tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] ${
-              data.isVictim ? 'text-rose-200' : 'text-emerald-200'
+        {data && (
+          <motion.div
+            key={`spy-swap-modal-${data.id}`}
+            initial={{ scale: 0.6, y: 40, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.8, y: -30, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+            className={`pointer-events-auto relative max-w-md w-full overflow-hidden rounded-3xl border-2 p-6 text-center shadow-2xl backdrop-blur-xl ${
+              data.isVictim
+                ? 'border-rose-500 bg-gradient-to-b from-[#2a0812]/98 via-[#18050c]/98 to-[#090205]/98 shadow-[0_0_60px_rgba(244,63,94,0.6),inset_0_0_30px_rgba(244,63,94,0.3)]'
+                : 'border-emerald-400 bg-gradient-to-b from-[#062418]/98 via-[#03140e]/98 to-[#020a06]/98 shadow-[0_0_60px_rgba(16,185,129,0.6),inset_0_0_30px_rgba(16,185,129,0.3)]'
             }`}
           >
-            {data.isVictim ? 'TILES STOLEN!' : 'SPY SWAP EXECUTED!'}
-          </h2>
+            {/* Top light sheen */}
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
 
-          <span
-            className={`mt-1 inline-block text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] ${
-              data.isVictim ? 'text-rose-400' : 'text-emerald-400'
-            }`}
-          >
-            {data.isVictim ? 'YOU GOT PLAYED!' : 'STEALTH HEIST SUCCESS'}
-          </span>
-
-          {/* Detailed Message Box */}
-          <div className="mt-4 rounded-2xl border border-white/15 bg-black/60 p-3.5 sm:p-4 text-center relative z-10 backdrop-blur-md">
-            <p className="text-sm sm:text-base font-bold text-slate-100 leading-snug drop-shadow-sm">
-              {data.isVictim ? (
-                <>
-                  <span className="text-amber-300 font-extrabold">{data.sourcePlayerName}</span> snatched{' '}
-                  <span className="text-rose-300 font-black text-lg">{data.count}</span> tile
-                  {data.count > 1 ? 's' : ''} directly from your rack!
-                </>
-              ) : (
-                <>
-                  You successfully swapped{' '}
-                  <span className="text-emerald-300 font-black text-lg">{data.count}</span> tile
-                  {data.count > 1 ? 's' : ''} with{' '}
-                  <span className="text-amber-300 font-extrabold">{data.targetPlayerName}</span>!
-                </>
-              )}
-            </p>
-          </div>
-
-          {/* Action button */}
-          <div className="mt-5 flex justify-center">
+            {/* Close button */}
             <button
               type="button"
               onClick={onDismiss}
-              className={`px-6 py-2 rounded-full border text-xs sm:text-sm font-black tracking-wider transition-all shadow-lg active:scale-95 cursor-pointer ${
-                data.isVictim
-                  ? 'border-rose-400 bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/50'
-                  : 'border-emerald-400 bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/50'
+              className="absolute top-3.5 right-3.5 p-1.5 rounded-full border border-white/20 bg-black/40 text-slate-300 hover:text-white hover:border-white/40 active:scale-95 transition-all cursor-pointer z-20"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Icon Badge */}
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl border-2 shadow-xl relative z-10">
+              {data.isVictim ? (
+                <div className="flex h-full w-full items-center justify-center rounded-3xl border-rose-400 bg-rose-500/20 shadow-lg shadow-rose-500/40 animate-pulse">
+                  <AlertTriangle className="h-10 w-10 text-rose-300 fill-rose-500/30 drop-shadow-[0_0_12px_#fb7185]" />
+                </div>
+              ) : (
+                <div className="flex h-full w-full items-center justify-center rounded-3xl border-emerald-400 bg-emerald-500/20 shadow-lg shadow-emerald-500/40">
+                  <Repeat2 className="h-10 w-10 text-emerald-300 drop-shadow-[0_0_12px_#34d399]" />
+                </div>
+              )}
+            </div>
+
+            {/* Header Title */}
+            <h2
+              className={`text-2xl sm:text-3xl font-black font-maple tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] ${
+                data.isVictim ? 'text-rose-200' : 'text-emerald-200'
               }`}
             >
-              {data.isVictim ? 'Acknowledge' : 'Continue'}
-            </button>
-          </div>
-        </motion.div>
+              {data.isVictim ? 'TILES STOLEN!' : 'SPY SWAP EXECUTED!'}
+            </h2>
+
+            <span
+              className={`mt-1 inline-block text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] ${
+                data.isVictim ? 'text-rose-400' : 'text-emerald-400'
+              }`}
+            >
+              {data.isVictim ? 'YOU GOT PLAYED!' : 'STEALTH HEIST SUCCESS'}
+            </span>
+
+            {/* Detailed Message Box */}
+            <div className="mt-4 rounded-2xl border border-white/15 bg-black/60 p-3.5 sm:p-4 text-center relative z-10 backdrop-blur-md">
+              <p className="text-sm sm:text-base font-bold text-slate-100 leading-snug drop-shadow-sm">
+                {data.isVictim ? (
+                  <>
+                    <span className="text-amber-300 font-extrabold">{data.sourcePlayerName}</span> snatched{' '}
+                    <span className="text-rose-300 font-black text-lg">{data.count}</span> tile
+                    {data.count > 1 ? 's' : ''} directly from your rack!
+                  </>
+                ) : (
+                  <>
+                    You successfully swapped{' '}
+                    <span className="text-emerald-300 font-black text-lg">{data.count}</span> tile
+                    {data.count > 1 ? 's' : ''} with{' '}
+                    <span className="text-amber-300 font-extrabold">{data.targetPlayerName}</span>!
+                  </>
+                )}
+              </p>
+            </div>
+
+            {/* Action button */}
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={onDismiss}
+                className={`px-6 py-2 rounded-full border text-xs sm:text-sm font-black tracking-wider transition-all shadow-lg active:scale-95 cursor-pointer ${
+                  data.isVictim
+                    ? 'border-rose-400 bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/50'
+                    : 'border-emerald-400 bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/50'
+                }`}
+              >
+                {data.isVictim ? 'Acknowledge' : 'Continue'}
+              </button>
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
@@ -241,85 +243,88 @@ export const TargetLockNotificationOverlay: React.FC<{
   data: TargetLockAlertData | null;
   onDismiss: () => void;
 }> = ({ data, onDismiss }) => {
+  const dataId = data?.id;
   useEffect(() => {
-    if (!data) return;
+    if (!dataId) return;
     soundFx.playCardActivate('DOUBLE_DAMAGE');
     const timer = setTimeout(() => {
       onDismiss();
-    }, 4200);
+    }, 5000);
     return () => clearTimeout(timer);
-  }, [data, onDismiss]);
-
-  if (!data) return null;
+  }, [dataId, onDismiss]);
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[95] flex items-center justify-center p-4 select-none">
+    <div className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center p-4 select-none">
       <AnimatePresence>
-        <motion.div
-          initial={{ scale: 0.6, y: 40, opacity: 0 }}
-          animate={{ scale: 1, y: 0, opacity: 1 }}
-          exit={{ scale: 0.8, y: -30, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-          className={`pointer-events-auto relative max-w-md w-full overflow-hidden rounded-3xl border-2 p-6 text-center shadow-2xl backdrop-blur-xl ${
-            data.isVictim
-              ? 'border-purple-500 bg-gradient-to-b from-[#220738]/98 via-[#150424]/98 to-[#090112]/98 shadow-[0_0_60px_rgba(168,85,247,0.65),inset_0_0_30px_rgba(168,85,247,0.35)]'
-              : 'border-purple-400 bg-gradient-to-b from-[#1c0830]/98 via-[#10031c]/98 to-[#06010a]/98 shadow-[0_0_60px_rgba(168,85,247,0.6),inset_0_0_30px_rgba(168,85,247,0.3)]'
-          }`}
-        >
-          {/* Top light sheen */}
-          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
-
-          {/* Close button */}
-          <button
-            type="button"
-            onClick={onDismiss}
-            className="absolute top-3.5 right-3.5 p-1.5 rounded-full border border-white/20 bg-black/40 text-slate-300 hover:text-white hover:border-white/40 active:scale-95 transition-all cursor-pointer z-20"
+        {data && (
+          <motion.div
+            key={`lock-modal-${data.id}`}
+            initial={{ scale: 0.6, y: 40, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.8, y: -30, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+            className={`pointer-events-auto relative max-w-md w-full overflow-hidden rounded-3xl border-2 p-6 text-center shadow-2xl backdrop-blur-xl ${
+              data.isVictim
+                ? 'border-purple-500 bg-gradient-to-b from-[#220738]/98 via-[#150424]/98 to-[#090112]/98 shadow-[0_0_60px_rgba(168,85,247,0.65),inset_0_0_30px_rgba(168,85,247,0.35)]'
+                : 'border-purple-400 bg-gradient-to-b from-[#1c0830]/98 via-[#10031c]/98 to-[#06010a]/98 shadow-[0_0_60px_rgba(168,85,247,0.6),inset_0_0_30px_rgba(168,85,247,0.3)]'
+            }`}
           >
-            <X className="w-4 h-4" />
-          </button>
+            {/* Top light sheen */}
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
 
-          {/* Icon Badge */}
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl border-2 shadow-xl relative z-10 border-purple-400 bg-purple-500/20 shadow-purple-500/40 animate-pulse">
-            <Swords className="h-10 w-10 text-purple-300 drop-shadow-[0_0_14px_#c084fc]" />
-          </div>
-
-          {/* Header Title */}
-          <h2 className="text-2xl sm:text-3xl font-black font-maple tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] text-purple-200">
-            {data.isVictim ? 'TARGET LOCKED!' : 'DOUBLE DAMAGE READY!'}
-          </h2>
-
-          <span className="mt-1 inline-block text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-purple-400">
-            {data.isVictim ? '2X DAMAGE INCOMING' : 'TARGET LOCKED ON RIVAL'}
-          </span>
-
-          {/* Detailed Message Box */}
-          <div className="mt-4 rounded-2xl border border-white/15 bg-black/60 p-3.5 sm:p-4 text-center relative z-10 backdrop-blur-md">
-            <p className="text-sm sm:text-base font-bold text-slate-100 leading-snug drop-shadow-sm">
-              {data.isVictim ? (
-                <>
-                  <span className="text-amber-300 font-extrabold">{data.sourcePlayerName}</span> has locked onto you! Their next word will deal{' '}
-                  <span className="text-purple-300 font-black text-lg">2× DAMAGE</span> directly to your HP!
-                </>
-              ) : (
-                <>
-                  Locked onto <span className="text-amber-300 font-extrabold">{data.targetPlayerName}</span>! Your next word will deal{' '}
-                  <span className="text-purple-300 font-black text-lg">2× CRITICAL DAMAGE</span>!
-                </>
-              )}
-            </p>
-          </div>
-
-          {/* Action button */}
-          <div className="mt-5 flex justify-center">
+            {/* Close button */}
             <button
               type="button"
               onClick={onDismiss}
-              className="px-6 py-2 rounded-full border text-xs sm:text-sm font-black tracking-wider transition-all shadow-lg active:scale-95 cursor-pointer border-purple-400 bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/50"
+              className="absolute top-3.5 right-3.5 p-1.5 rounded-full border border-white/20 bg-black/40 text-slate-300 hover:text-white hover:border-white/40 active:scale-95 transition-all cursor-pointer z-20"
             >
-              {data.isVictim ? 'Brace for Impact' : 'Continue'}
+              <X className="w-4 h-4" />
             </button>
-          </div>
-        </motion.div>
+
+            {/* Icon Badge */}
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl border-2 shadow-xl relative z-10 border-purple-400 bg-purple-500/20 shadow-purple-500/40 animate-pulse">
+              <Swords className="h-10 w-10 text-purple-300 drop-shadow-[0_0_14px_#c084fc]" />
+              <div className="absolute -inset-2 rounded-full border border-purple-400/50 animate-ping pointer-events-none" />
+            </div>
+
+            {/* Header Title */}
+            <h2 className="text-2xl sm:text-3xl font-black font-maple tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] text-purple-200">
+              {data.isVictim ? 'TARGET LOCKED!' : 'DOUBLE DAMAGE READY!'}
+            </h2>
+
+            <span className="mt-1 inline-block text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-purple-400">
+              {data.isVictim ? '2X DAMAGE INCOMING' : 'TARGET LOCKED ON RIVAL'}
+            </span>
+
+            {/* Detailed Message Box */}
+            <div className="mt-4 rounded-2xl border border-white/15 bg-black/60 p-3.5 sm:p-4 text-center relative z-10 backdrop-blur-md">
+              <p className="text-sm sm:text-base font-bold text-slate-100 leading-snug drop-shadow-sm">
+                {data.isVictim ? (
+                  <>
+                    <span className="text-amber-300 font-extrabold">{data.sourcePlayerName}</span> has locked onto you! Their next word will deal{' '}
+                    <span className="text-purple-300 font-black text-lg">2× DAMAGE</span> directly to your HP!
+                  </>
+                ) : (
+                  <>
+                    Locked onto <span className="text-amber-300 font-extrabold">{data.targetPlayerName}</span>! Your next word will deal{' '}
+                    <span className="text-purple-300 font-black text-lg">2× CRITICAL DAMAGE</span>!
+                  </>
+                )}
+              </p>
+            </div>
+
+            {/* Action button */}
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={onDismiss}
+                className="px-6 py-2 rounded-full border text-xs sm:text-sm font-black tracking-wider transition-all shadow-lg active:scale-95 cursor-pointer border-purple-400 bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/50"
+              >
+                {data.isVictim ? 'Brace for Impact' : 'Continue'}
+              </button>
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
