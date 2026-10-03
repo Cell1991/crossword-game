@@ -132,7 +132,7 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
 
       {/* Content Container */}
       {isOpen && (
-        <div className="flex-1 min-h-0 overflow-y-auto pr-1 mt-1 space-y-2 scrollbar-thin">
+        <div className="flex-1 min-h-0 overflow-y-auto pr-1 mt-1 space-y-1.5 scrollbar-thin">
           {moveHistory.length === 0 ? (
             <div className="py-6 text-center text-xs text-slate-400 italic">
               Star chronicles will appear here...
@@ -176,10 +176,10 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                 return (
                   <div
                     key={entry.id}
-                    className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+                    className={`rounded-xl border transition-all duration-200 overflow-hidden ${
                       isExpanded
-                        ? 'bg-gradient-to-br from-[#201d52]/95 via-[#141238]/98 to-[#0c0a24]/95 border-amber-400/55 shadow-[0_6px_22px_rgba(0,0,0,0.7),0_0_16px_rgba(245,158,11,0.2),inset_0_1px_1px_rgba(255,255,255,0.2)]'
-                        : 'bg-gradient-to-br from-[#16173a]/85 via-[#0f112b]/90 to-[#08091a]/95 hover:from-[#202252]/90 hover:to-[#121438] border-white/12 hover:border-amber-400/40 shadow-[0_4px_12px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)]'
+                        ? 'bg-gradient-to-br from-[#1d1744]/95 via-[#120f2e]/98 to-[#09071c]/95 border-purple-400/50 shadow-[0_4px_16px_rgba(0,0,0,0.7),0_0_12px_rgba(168,85,247,0.2),inset_0_1px_1px_rgba(255,255,255,0.15)]'
+                        : 'bg-gradient-to-br from-[#131430]/85 via-[#0d0e24]/90 to-[#070817]/95 hover:from-[#1b1c40]/90 hover:to-[#0f102c] border-white/10 hover:border-purple-400/40 shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)]'
                     }`}
                   >
                     {/* Row Summary */}
@@ -187,7 +187,7 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                       type="button"
                       onClick={() => hasWords && toggleMoveAccordion(entry)}
                       disabled={!hasWords}
-                      className={`relative flex w-full items-center justify-between gap-2 p-3 text-left text-xs transition-colors overflow-hidden ${
+                      className={`relative flex w-full items-center justify-between gap-2 p-2 sm:p-2.5 text-left text-xs transition-colors overflow-hidden ${
                         hasWords ? 'cursor-pointer hover:bg-white/[0.04]' : 'cursor-default'
                       }`}
                     >
@@ -197,40 +197,40 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                       {/* Left: Identity + Word */}
                       <div className="flex flex-col min-w-0 flex-1 relative z-10">
                         <span
-                          className={`text-xs font-bold truncate ${
+                          className={`text-[10.5px] font-bold truncate ${
                             isMe ? 'text-amber-300 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)] font-black' : 'text-slate-300'
                           }`}
                         >
                           {actorName}
                         </span>
-                        <span className="text-sm sm:text-[15px] font-black font-maple bg-gradient-to-r from-white via-amber-100 to-amber-200 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(251,191,36,0.6)] tracking-wide truncate mt-0.5">
+                        <span className="text-xs sm:text-[13px] font-black font-maple bg-gradient-to-r from-white via-amber-100 to-amber-200 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(251,191,36,0.5)] tracking-wide truncate mt-0.5">
                           {wordLabel}
                         </span>
                       </div>
 
                       {/* Right: Score + Turn indicator */}
-                      <div className="flex items-center gap-2 shrink-0 relative z-10">
+                      <div className="flex items-center gap-1.5 shrink-0 relative z-10">
                         <div className="flex flex-col items-end gap-1">
                           {entry.score !== undefined && entry.score > 0 ? (
-                            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-amber-500/25 via-yellow-400/20 to-amber-500/25 border border-amber-400/60 text-xs font-black text-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.3),inset_0_1px_1px_rgba(255,255,255,0.25)]">
-                              <span className="tracking-tight drop-shadow-sm">+{entry.score}</span>
-                              <span className="text-[9px] font-extrabold text-amber-200/90 tracking-wider">PTS</span>
+                            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-purple-950/90 via-violet-950/80 to-purple-950/90 border border-purple-400/50 text-[11px] font-black text-purple-200 shadow-[0_0_10px_rgba(168,85,247,0.3),inset_0_1px_1px_rgba(255,255,255,0.15)]">
+                              <span className="tracking-tight drop-shadow-[0_0_4px_rgba(192,132,252,0.4)]">+{entry.score}</span>
+                              <span className="text-[8px] font-extrabold text-purple-300/80 tracking-wider">PTS</span>
                             </div>
                           ) : null}
                           {entry.turn_number ? (
-                            <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/10 text-[9.5px] font-mono font-bold text-slate-300 shadow-sm">
-                              <span className="text-[8px] font-sans text-slate-400 font-extrabold tracking-wider">TURN</span>
-                              <span className="text-amber-200/90 font-mono font-black">{entry.turn_number}</span>
+                            <div className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-white/[0.04] border border-white/10 text-[8.5px] font-mono font-bold text-slate-300 shadow-sm">
+                              <span className="text-[7.5px] font-sans text-slate-400 font-extrabold tracking-wider">TURN</span>
+                              <span className="text-purple-200/90 font-mono font-black">{entry.turn_number}</span>
                             </div>
                           ) : null}
                         </div>
 
                         {hasWords && (
-                          <div className="p-1 rounded-lg bg-white/[0.04] border border-white/10 group-hover:border-amber-400/40 text-slate-400 group-hover:text-amber-300 transition-colors">
+                          <div className="p-1 rounded-md bg-white/[0.04] border border-white/10 group-hover:border-purple-400/40 text-slate-400 group-hover:text-purple-300 transition-colors">
                             {isExpanded ? (
-                              <ChevronUp className="w-3.5 h-3.5 text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]" />
+                              <ChevronUp className="w-3 h-3 text-purple-300 drop-shadow-[0_0_6px_rgba(168,85,247,0.8)]" />
                             ) : (
-                              <ChevronDown className="w-3.5 h-3.5" />
+                              <ChevronDown className="w-3 h-3" />
                             )}
                           </div>
                         )}
