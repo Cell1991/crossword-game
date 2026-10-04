@@ -841,31 +841,31 @@ export default function HomePage() {
         )}
 
         {/* ======================================================== */}
-        {/* SUBMENU: JOIN ROOM (COSMIC GLASS IDENTITY) */}
+        {/* SUBMENU: JOIN ROOM (RADIANT ELECTRIC CYAN IDENTITY) */}
         {/* ======================================================== */}
         {mode === 'join' && (
-          <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-white/15 bg-gradient-to-b from-slate-900/90 via-[#0a0f24]/95 to-[#050814]/98 p-5 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.85),0_0_40px_rgba(6,182,212,0.12)] backdrop-blur-2xl ring-1 ring-white/10 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
-            {/* Soft Cyan Accent Line */}
-            <span className="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
+          <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border-2 border-cyan-400/40 bg-gradient-to-b from-slate-900/95 via-[#081229]/98 to-[#040916]/98 p-5 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.85),0_0_60px_rgba(6,182,212,0.25)] backdrop-blur-2xl ring-1 ring-cyan-300/30 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+            {/* Radiant Electric Cyan Top Accent Beam */}
+            <span className="absolute inset-x-8 top-0 h-[2.5px] bg-gradient-to-r from-transparent via-cyan-300 to-transparent shadow-[0_0_18px_rgba(6,182,212,0.9)]" />
 
             {/* Header */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
+            <div className="flex items-center justify-between pb-3.5 border-b border-cyan-400/15">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => { setMode('home'); clearError(); }}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:border-cyan-400/50 hover:bg-cyan-400/15 hover:text-cyan-200 transition-all cursor-pointer active:scale-95 shrink-0 shadow-inner"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10 text-cyan-200 hover:border-cyan-300 hover:bg-cyan-400/25 hover:text-white transition-all cursor-pointer active:scale-95 shrink-0 shadow-[0_0_12px_rgba(6,182,212,0.2)]"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </button>
                 <div>
                   <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
                     <span>Join Match</span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/40 px-2 py-0.5 text-[10px] font-black text-cyan-300 uppercase tracking-wider shadow-sm">
-                      <Radio className="w-3 h-3 text-cyan-300" /> Signal
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-cyan-300 via-teal-300 to-blue-400 text-slate-950 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-[0_0_14px_rgba(6,182,212,0.6)]">
+                      <Radio className="w-3 h-3 text-slate-950 fill-slate-950/30" /> Signal
                     </span>
                   </h2>
-                  <p className="text-[11px] text-slate-400 font-medium">Enter room PIN or select an open room</p>
+                  <p className="text-[11px] text-cyan-200/70 font-medium">Enter room PIN or select an open room</p>
                 </div>
               </div>
 
@@ -873,17 +873,17 @@ export default function HomePage() {
                 type="button"
                 onClick={() => fetchRooms(true)}
                 disabled={loadingRooms}
-                className="p-2 rounded-xl border border-white/10 bg-white/5 hover:border-cyan-400/40 hover:bg-cyan-400/15 text-slate-300 transition-all cursor-pointer active:scale-95 shadow-inner"
+                className="p-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 hover:border-cyan-300 hover:bg-cyan-400/25 text-cyan-200 hover:text-white transition-all cursor-pointer active:scale-95 shadow-[0_0_12px_rgba(6,182,212,0.2)]"
                 title="Refresh Room List"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loadingRooms ? 'animate-spin text-cyan-400' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingRooms ? 'animate-spin text-cyan-300' : ''}`} />
               </button>
             </div>
 
             <div className="mt-4 space-y-3.5">
               {/* Your Name Input */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Your Name</label>
+                <label className="block text-[11px] font-black text-cyan-200/90 uppercase tracking-wider mb-1.5">Your Name</label>
                 <div className="relative">
                   <input
                     ref={nameInputRef}
@@ -892,7 +892,7 @@ export default function HomePage() {
                     onChange={e => setName(e.target.value)}
                     placeholder="Enter your name..."
                     maxLength={24}
-                    className="w-full rounded-xl border border-white/10 bg-slate-900/90 pl-3.5 pr-10 py-2.5 text-sm text-white outline-none focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-400/20 transition-all placeholder:text-slate-500 shadow-inner"
+                    className="w-full rounded-xl border border-cyan-400/30 bg-slate-950/90 pl-3.5 pr-10 py-2.5 text-sm font-bold text-white outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/40 transition-all placeholder:text-slate-500 shadow-inner"
                   />
                   <button
                     type="button"
@@ -902,7 +902,7 @@ export default function HomePage() {
                       clearError();
                     }}
                     title="Random Name"
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400/15 border border-cyan-400/30 text-cyan-300 hover:bg-cyan-400/25 transition-all cursor-pointer"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-r from-cyan-300 to-blue-400 text-slate-950 hover:scale-105 shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all cursor-pointer font-black"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                   </button>
@@ -912,14 +912,14 @@ export default function HomePage() {
               {/* Active Rooms */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <span className="text-[11px] font-black text-cyan-200/90 uppercase tracking-wider">
                     Active Lobbies ({rooms.length})
                   </span>
-                  {loadingRooms && <span className="text-[9px] text-cyan-300 animate-pulse font-semibold">Refreshing...</span>}
+                  {loadingRooms && <span className="text-[10px] text-cyan-300 animate-pulse font-black">Refreshing...</span>}
                 </div>
 
                 {rooms.length > 0 ? (
-                  <div className="max-h-40 overflow-y-auto grid grid-cols-2 gap-2 pr-1 custom-scrollbar">
+                  <div className="max-h-44 overflow-y-auto grid grid-cols-2 gap-2 pr-1 custom-scrollbar">
                     {rooms.map(room => {
                       const isPlaying = room.status === 'PLAYING';
                       const isSelected = pin === room.game_pin;
@@ -928,26 +928,26 @@ export default function HomePage() {
                         <div
                           key={room.id}
                           onClick={() => handleSelectRoom(room)}
-                          className={`flex items-center gap-2.5 p-2.5 rounded-2xl border transition-all cursor-pointer ${
+                          className={`flex items-center gap-2.5 p-3 rounded-2xl border transition-all cursor-pointer ${
                             isSelected
-                              ? 'border-2 border-cyan-400/80 bg-cyan-400/10 shadow-[0_0_15px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/30'
-                              : 'border border-white/10 bg-slate-900/60 hover:border-cyan-400/30 hover:bg-slate-800/60 hover:text-white'
+                              ? 'border-2 border-cyan-300 bg-gradient-to-br from-cyan-500/25 via-cyan-950/50 to-slate-950 text-white shadow-[0_0_25px_rgba(6,182,212,0.45),inset_0_1px_2px_rgba(255,255,255,0.3)] ring-2 ring-cyan-400/40'
+                              : 'border border-cyan-400/25 bg-gradient-to-br from-cyan-950/30 via-slate-900/90 to-slate-950/95 hover:border-cyan-400/60 hover:shadow-[0_0_18px_rgba(6,182,212,0.25)]'
                           }`}
                         >
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-black text-xs shadow-md">
+                          <div className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-300 via-cyan-400 to-blue-500 text-slate-950 font-black text-xs shadow-[0_0_12px_rgba(6,182,212,0.6)]">
                             {(room.host_name || 'H').charAt(0).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                              <span className="font-bold text-xs text-white truncate">{room.host_name}</span>
+                              <span className="font-black text-xs text-white truncate drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]">{room.host_name}</span>
                               {isPlaying ? (
-                                <span className="px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[8px] font-black tracking-wider">LIVE</span>
+                                <span className="px-1.5 py-0.5 rounded-full bg-rose-500/25 border border-rose-400/50 text-rose-200 text-[8px] font-black tracking-wider shadow-[0_0_8px_rgba(244,63,94,0.3)]">LIVE</span>
                               ) : (
-                                <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[8px] font-black tracking-wider">OPEN</span>
+                                <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/25 border border-emerald-400/50 text-emerald-200 text-[8px] font-black tracking-wider shadow-[0_0_8px_rgba(16,185,129,0.3)]">OPEN</span>
                               )}
                             </div>
-                            <div className="flex items-center gap-1.5 text-[9px] text-slate-400 mt-0.5 font-medium">
-                              <span className="font-mono font-bold text-cyan-300">#{room.game_pin}</span>
+                            <div className="flex items-center gap-1.5 text-[10px] text-cyan-200/80 mt-0.5 font-bold">
+                              <span className="font-mono text-cyan-300 drop-shadow-[0_0_6px_rgba(6,182,212,0.5)]">#{room.game_pin}</span>
                               <span>•</span>
                               <span>{room.player_count}P</span>
                             </div>
@@ -957,7 +957,7 @@ export default function HomePage() {
                     })}
                   </div>
                 ) : (
-                  <div className="py-4 text-center rounded-2xl border border-dashed border-white/10 bg-slate-900/40 text-xs text-slate-400 font-medium">
+                  <div className="py-4 text-center rounded-2xl border border-dashed border-cyan-400/30 bg-slate-950/60 text-xs text-cyan-200/70 font-medium">
                     No active rooms found. Host a game to start!
                   </div>
                 )}
@@ -965,7 +965,7 @@ export default function HomePage() {
 
               {/* PIN & Submit */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Game PIN</label>
+                <label className="block text-[11px] font-black text-cyan-200/90 uppercase tracking-wider mb-1.5">Game PIN</label>
                 <div className="relative flex items-center">
                   <input
                     type="text"
@@ -974,16 +974,16 @@ export default function HomePage() {
                     onKeyDown={e => e.key === 'Enter' && (isSelectedRoomPlaying ? handleWatch() : handleJoin())}
                     placeholder="6-digit PIN..."
                     maxLength={6}
-                    className="w-full rounded-xl border border-white/10 bg-slate-900/90 pl-3.5 pr-28 py-3 font-mono text-base tracking-[0.25em] text-cyan-300 outline-none focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-400/20 transition-all placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-sans shadow-inner"
+                    className="w-full rounded-xl border border-cyan-400/40 bg-slate-950/90 pl-3.5 pr-28 py-3 font-mono text-base tracking-[0.25em] text-cyan-200 font-black outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/40 transition-all placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-sans shadow-inner"
                   />
                   <button
                     type="button"
                     onClick={isSelectedRoomPlaying ? handleWatch : handleJoin}
                     disabled={loading || !pin.trim()}
-                    className="absolute right-1.5 top-1.5 bottom-1.5 px-5 rounded-lg bg-gradient-to-r from-cyan-400 via-teal-400 to-blue-500 hover:from-cyan-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.35)] hover:shadow-[0_0_22px_rgba(6,182,212,0.55)] transition-all cursor-pointer disabled:opacity-40"
+                    className="absolute right-1.5 top-1.5 bottom-1.5 px-5 rounded-xl bg-gradient-to-r from-cyan-300 via-teal-300 to-blue-400 hover:from-cyan-200 hover:via-teal-200 hover:to-blue-300 text-slate-950 font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(6,182,212,0.6)] hover:shadow-[0_0_28px_rgba(6,182,212,0.8)] transition-all cursor-pointer disabled:opacity-40 border border-cyan-100/80"
                   >
                     {loading ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-slate-950" />
                     ) : isSelectedRoomPlaying ? (
                       'WATCH'
                     ) : (
@@ -1003,31 +1003,31 @@ export default function HomePage() {
         )}
 
         {/* ======================================================== */}
-        {/* SUBMENU: SOLO VS BOT (COSMIC GLASS IDENTITY) */}
+        {/* SUBMENU: SOLO VS BOT (RADIANT ELECTRIC PURPLE IDENTITY) */}
         {/* ======================================================== */}
         {mode === 'bot' && (
-          <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-white/15 bg-gradient-to-b from-slate-900/90 via-[#0a0f24]/95 to-[#050814]/98 p-5 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.85),0_0_40px_rgba(168,85,247,0.12)] backdrop-blur-2xl ring-1 ring-white/10 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
-            {/* Soft Purple Accent Line */}
-            <span className="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-purple-400/60 to-transparent" />
+          <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border-2 border-purple-400/40 bg-gradient-to-b from-slate-900/95 via-[#130b29]/98 to-[#060414]/98 p-5 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.85),0_0_60px_rgba(168,85,247,0.25)] backdrop-blur-2xl ring-1 ring-purple-300/30 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+            {/* Radiant Electric Purple Top Accent Beam */}
+            <span className="absolute inset-x-8 top-0 h-[2.5px] bg-gradient-to-r from-transparent via-purple-300 to-transparent shadow-[0_0_18px_rgba(168,85,247,0.9)]" />
 
             {/* Header */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
+            <div className="flex items-center justify-between pb-3.5 border-b border-purple-400/15">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => { setMode('home'); clearError(); }}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:border-purple-400/50 hover:bg-purple-400/15 hover:text-purple-200 transition-all cursor-pointer active:scale-95 shrink-0 shadow-inner"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-purple-400/30 bg-purple-400/10 text-purple-200 hover:border-purple-300 hover:bg-purple-400/25 hover:text-white transition-all cursor-pointer active:scale-95 shrink-0 shadow-[0_0_12px_rgba(168,85,247,0.2)]"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </button>
                 <div>
                   <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
                     <span>Solo vs AI Bot</span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-400/20 to-indigo-500/20 border border-purple-400/40 px-2 py-0.5 text-[10px] font-black text-purple-300 uppercase tracking-wider shadow-sm">
-                      <Bot className="w-3 h-3 text-purple-300" /> AI Practice
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-400 text-slate-950 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-[0_0_14px_rgba(168,85,247,0.6)]">
+                      <Bot className="w-3 h-3 text-slate-950 fill-slate-950/30" /> AI Practice
                     </span>
                   </h2>
-                  <p className="text-[11px] text-slate-400 font-medium">Select bot difficulty and battle rules</p>
+                  <p className="text-[11px] text-purple-200/70 font-medium">Select bot difficulty and battle rules</p>
                 </div>
               </div>
             </div>
@@ -1035,7 +1035,7 @@ export default function HomePage() {
             <div className="mt-4 space-y-3.5">
               {/* Bot Difficulty */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Select Opponent</label>
+                <label className="block text-[11px] font-black text-purple-200/90 uppercase tracking-wider mb-1.5">Select Opponent</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(['easy', 'medium', 'hard'] as const).map(diff => {
                     const profile = BOT_PROFILES[diff];
@@ -1045,68 +1045,78 @@ export default function HomePage() {
                         key={diff}
                         type="button"
                         onClick={() => setBotDifficulty(diff)}
-                        className={`flex flex-col items-center p-2.5 rounded-2xl border transition-all cursor-pointer ${
+                        className={`flex flex-col items-center p-3 rounded-2xl border transition-all cursor-pointer ${
                           isSelected
-                            ? 'border-2 border-purple-400/80 bg-purple-400/10 shadow-[0_0_15px_rgba(168,85,247,0.25)] ring-1 ring-purple-400/30'
-                            : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:border-purple-400/30 hover:bg-slate-800/60 hover:text-slate-200'
+                            ? 'border-2 border-purple-300 bg-gradient-to-br from-purple-500/30 via-purple-950/60 to-slate-950 text-white shadow-[0_0_20px_rgba(168,85,247,0.45),inset_0_1px_2px_rgba(255,255,255,0.3)] ring-2 ring-purple-400/40'
+                            : 'border border-purple-400/20 bg-gradient-to-br from-purple-950/20 via-slate-900/90 to-slate-950 text-slate-400 hover:border-purple-400/50 hover:text-slate-200'
                         }`}
                       >
-                        <Bot className={`w-5 h-5 mb-1 ${isSelected ? 'text-purple-300' : 'text-slate-400'}`} />
+                        <Bot className={`w-5 h-5 mb-1 ${isSelected ? 'text-purple-200 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]' : 'text-slate-400'}`} />
                         <span className={`text-xs font-black ${isSelected ? 'text-white' : 'text-slate-300'}`}>
                           {profile.title}
                         </span>
-                        <span className="text-[9px] text-purple-300 font-bold mt-0.5">{profile.name}</span>
+                        <span className={`text-[10px] font-black mt-0.5 ${isSelected ? 'text-purple-300' : 'text-purple-400/80'}`}>{profile.name}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Game Mode - No icons, unified purple palette */}
+              {/* Game Mode */}
               <div className="grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
                   onClick={() => setGameMode('HP')}
-                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                  className={`relative p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                     gameMode === 'HP'
-                      ? 'border-2 border-purple-400/80 bg-purple-400/10 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)] ring-1 ring-purple-400/30'
-                      : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:border-white/20 hover:bg-slate-800/60'
+                      ? 'border-purple-300 bg-gradient-to-b from-purple-500/30 via-purple-950/50 to-slate-950 text-white shadow-[0_0_25px_rgba(168,85,247,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] ring-2 ring-purple-400/40'
+                      : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-purple-400/30 hover:bg-white/[0.07] hover:text-slate-200'
                   }`}
                 >
-                  <span className={`block font-black text-xs sm:text-sm ${gameMode === 'HP' ? 'text-white' : 'text-slate-300'}`}>
-                    HP Battle
-                  </span>
-                  <span className={`text-[10px] font-medium ${gameMode === 'HP' ? 'text-purple-200/80' : 'text-slate-400'}`}>
+                  <div className="flex items-center justify-between">
+                    <span className={`block font-black text-xs sm:text-sm ${gameMode === 'HP' ? 'text-purple-100 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]' : 'text-slate-300'}`}>
+                      HP Battle
+                    </span>
+                    {gameMode === 'HP' && (
+                      <span className="h-2.5 w-2.5 rounded-full bg-purple-300 shadow-[0_0_10px_#d8b4fe,0_0_20px_#a855f7] animate-pulse" />
+                    )}
+                  </div>
+                  <span className={`mt-0.5 block text-[11px] font-semibold ${gameMode === 'HP' ? 'text-purple-200' : 'text-slate-500'}`}>
                     Score deals HP damage
                   </span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setGameMode('TURNS')}
-                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                  className={`relative p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                     gameMode === 'TURNS'
-                      ? 'border-2 border-purple-400/80 bg-purple-400/10 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)] ring-1 ring-purple-400/30'
-                      : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:border-white/20 hover:bg-slate-800/60'
+                      ? 'border-purple-300 bg-gradient-to-b from-purple-500/30 via-purple-950/50 to-slate-950 text-white shadow-[0_0_25px_rgba(168,85,247,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] ring-2 ring-purple-400/40'
+                      : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-purple-400/30 hover:bg-white/[0.07] hover:text-slate-200'
                   }`}
                 >
-                  <span className={`block font-black text-xs sm:text-sm ${gameMode === 'TURNS' ? 'text-white' : 'text-slate-300'}`}>
-                    Round Match
-                  </span>
-                  <span className={`text-[10px] font-medium ${gameMode === 'TURNS' ? 'text-purple-200/80' : 'text-slate-400'}`}>
+                  <div className="flex items-center justify-between">
+                    <span className={`block font-black text-xs sm:text-sm ${gameMode === 'TURNS' ? 'text-purple-100 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]' : 'text-slate-300'}`}>
+                      Round Match
+                    </span>
+                    {gameMode === 'TURNS' && (
+                      <span className="h-2.5 w-2.5 rounded-full bg-purple-300 shadow-[0_0_10px_#d8b4fe,0_0_20px_#a855f7] animate-pulse" />
+                    )}
+                  </div>
+                  <span className={`mt-0.5 block text-[11px] font-semibold ${gameMode === 'TURNS' ? 'text-purple-200' : 'text-slate-500'}`}>
                     Highest total score wins
                   </span>
                 </button>
               </div>
 
               {/* Matchup Summary */}
-              <div className="flex items-center justify-between p-3 rounded-2xl border border-purple-400/25 bg-purple-950/25 shadow-inner">
+              <div className="flex items-center justify-between p-3.5 rounded-2xl border border-purple-400/30 bg-purple-950/30 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
                 <div className="flex items-center gap-2 text-xs sm:text-sm">
                   <span className="text-slate-400 font-semibold">Matchup:</span>
-                  <span className="font-bold text-white">{name.trim() || 'Player'}</span>
-                  <span className="text-purple-400 font-black">VS</span>
-                  <span className="font-bold text-purple-300">{BOT_PROFILES[botDifficulty].name}</span>
+                  <span className="font-black text-white">{name.trim() || 'Player'}</span>
+                  <span className="text-purple-400 font-black drop-shadow-[0_0_6px_rgba(168,85,247,0.8)]">VS</span>
+                  <span className="font-black text-purple-200 drop-shadow-[0_0_6px_rgba(168,85,247,0.5)]">{BOT_PROFILES[botDifficulty].name}</span>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-400/30 text-[9px] font-black text-purple-200 uppercase tracking-wider">
+                <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-400/20 to-indigo-500/20 border border-purple-400/40 text-[9px] font-black text-purple-200 uppercase tracking-wider shadow-sm">
                   1v1 Match
                 </span>
               </div>
@@ -1122,16 +1132,16 @@ export default function HomePage() {
                 type="button"
                 onClick={handleCreateBot}
                 disabled={loading}
-                className="w-full mt-2 py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-black text-sm sm:text-base tracking-wider uppercase shadow-[0_4px_20px_rgba(168,85,247,0.35)] hover:shadow-[0_6px_28px_rgba(168,85,247,0.5)] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 border border-purple-300/40"
+                className="w-full mt-2 py-3.5 rounded-2xl bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-500 hover:from-purple-300 hover:via-fuchsia-300 hover:to-indigo-400 text-slate-950 font-black text-sm sm:text-base tracking-widest uppercase shadow-[0_0_35px_rgba(168,85,247,0.65),0_10px_25px_rgba(0,0,0,0.5)] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2.5 border-2 border-purple-100/80 ring-1 ring-purple-300/60"
               >
                 {loading ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                    <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
                     <span>Starting AI Match...</span>
                   </>
                 ) : (
                   <>
-                    <Bot className="w-4 h-4 text-white" />
+                    <Bot className="w-4 h-4 text-slate-950 fill-slate-950/30 drop-shadow-[0_1px_2px_rgba(255,255,255,0.4)]" />
                     <span>START BOT MATCH</span>
                   </>
                 )}
