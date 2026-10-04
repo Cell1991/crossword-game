@@ -309,6 +309,7 @@ class MoveService:
         words_formed = cls._words_formed(words, breakdown)
 
         # Record Move
+        rack_snapshot = [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in normalized_rack]
         move_id = str(uuid.uuid4())
         move = Move(
             id=move_id,
@@ -318,7 +319,8 @@ class MoveService:
             move_type="PLACE",
             placed_tiles=[pt.model_dump() for pt in placed_tiles],
             words_formed=[wf.model_dump() for wf in words_formed],
-            score_earned=score
+            score_earned=score,
+            rack_before=rack_snapshot,
         )
         db.add(move)
 

@@ -111,6 +111,7 @@ class Move(Base):
     placed_tiles = Column(JSON, default=list, nullable=False)  # [{"row": 31, "col": 31, "letter": "C", "value": 3}]
     words_formed = Column(JSON, default=list, nullable=False)  # [{"word": "CAT", "score": 5}]
     score_earned = Column(Integer, default=0, nullable=False)
+    rack_before = Column(JSON, default=list, nullable=True)  # [{"letter": "C", "value": 3}]
     created_at = Column(DateTime(timezone=True), default=get_utc_now)
 
     game = relationship("Game", back_populates="moves")

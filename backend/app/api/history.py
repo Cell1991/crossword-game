@@ -150,6 +150,7 @@ async def get_match_replay(
             "placed_tiles": m.placed_tiles or [],
             "words_formed": m.words_formed or [],
             "score_earned": m.score_earned,
+            "rack_before": m.rack_before or [],
             "running_scores": dict(running_scores),
             "created_at": m.created_at.isoformat() if m.created_at else None,
         })

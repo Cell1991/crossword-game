@@ -541,6 +541,7 @@ class GameService:
             game.turn_started_at = get_utc_now()
 
         # Record pass move
+        passing_rack = passing_player.rack if (passing_player.rack is not None and isinstance(passing_player.rack, list)) else await player_rack(db, player_id)
         pass_move = Move(
             id=str(uuid.uuid4()),
             game_id=game.id,
@@ -549,7 +550,8 @@ class GameService:
             move_type="PASS",
             placed_tiles=[],
             words_formed=[],
-            score_earned=0
+            score_earned=0,
+            rack_before=[{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in (passing_rack or [])],
         )
         db.add(pass_move)
 
@@ -717,8 +719,9 @@ class GameService:
                 status_code=400,
                 detail=f"Exchanging needs at least {settings.MIN_BAG_TILES_TO_EXCHANGE} tiles in the bag (only {len(bag)} left)"
             )
+        old_rack = await player_rack(db, player.id)
         try:
-            new_rack, new_bag = TileService.exchange_tiles(await player_rack(db, player.id), bag, tile_ids)
+            new_rack, new_bag = TileService.exchange_tiles(old_rack, bag, tile_ids)
         except NotEnoughTilesInBag:
             # Rules §5: asking for more tiles than the bag holds forfeits the turn as a pass.
             game, is_over, reason, winner = await GameService.pass_turn(db, game_id, player_id)
@@ -736,7 +739,8 @@ class GameService:
             move_type="EXCHANGE",
             placed_tiles=[],
             words_formed=[],
-            score_earned=0
+            score_earned=0,
+            rack_before=[{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in (old_rack or [])],
         ))
 
         # Rules §6: an exchange scores nothing, so it counts towards the scoreless turns that end the game.

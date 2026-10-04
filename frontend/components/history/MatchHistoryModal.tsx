@@ -766,10 +766,9 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                               {currentMove.words_formed.map((w, idx) => (
                                 <span
                                   key={idx}
-                                  className="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm"
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold flex items-center shadow-sm"
                                 >
                                   <span>{w.word}</span>
-                                  <span className="text-[10px] text-emerald-400/80 font-normal">({w.score} pts)</span>
                                 </span>
                               ))}
                             </div>
@@ -782,6 +781,62 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                 : 'No words formed'}
                             </p>
                           )}
+
+                          {/* Player's Rack at this turn */}
+                          {(() => {
+                            const rackTiles = currentMove.rack_before && currentMove.rack_before.length > 0
+                              ? currentMove.rack_before
+                              : (currentMove.placed_tiles || []);
+                            if (rackTiles.length === 0) return null;
+
+                            const placedCounts = new Map<string, number>();
+                            if (currentMove.placed_tiles) {
+                              for (const pt of currentMove.placed_tiles) {
+                                const l = pt.letter.toUpperCase();
+                                placedCounts.set(l, (placedCounts.get(l) || 0) + 1);
+                              }
+                            }
+                            const matchedPlaced = new Map<string, number>();
+
+                            return (
+                              <div className="pt-2 border-t border-white/[0.08] space-y-1.5">
+                                <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                                  <span>Rack at Turn Start</span>
+                                  <span className="text-[9px] text-slate-500 font-normal">{rackTiles.length} tiles</span>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  {rackTiles.map((t, idx) => {
+                                    const letterUpper = t.letter.toUpperCase();
+                                    const totalPlaced = placedCounts.get(letterUpper) || 0;
+                                    const alreadyMatched = matchedPlaced.get(letterUpper) || 0;
+                                    const isPlaced = alreadyMatched < totalPlaced;
+                                    if (isPlaced) {
+                                      matchedPlaced.set(letterUpper, alreadyMatched + 1);
+                                    }
+
+                                    return (
+                                      <div
+                                        key={idx}
+                                        className={`tile-face relative flex flex-col items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg font-sans select-none border transition-all ${
+                                          isPlaced
+                                            ? 'border-amber-300 ring-2 ring-cyan-400/80 shadow-[0_0_10px_rgba(34,211,238,0.5)] bg-slate-900 scale-105'
+                                            : 'border-amber-400/30 opacity-70 bg-slate-950'
+                                        }`}
+                                        title={isPlaced ? `Played: ${t.letter} (${t.value} pts)` : `Held: ${t.letter} (${t.value} pts)`}
+                                      >
+                                        <span className="text-xs sm:text-sm font-maple text-white font-bold leading-none">
+                                          {t.letter}
+                                        </span>
+                                        <span className="absolute bottom-0.5 right-0.5 text-[6px] sm:text-[7px] font-mono font-black text-amber-200 leading-none">
+                                          {t.value}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       ) : (
                         <div className="flex items-center justify-center py-2 text-xs text-slate-400 font-medium">
