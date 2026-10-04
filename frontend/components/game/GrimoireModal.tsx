@@ -201,13 +201,13 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.02, duration: 0.15 }}
                     onClick={() => handleCopyWord(word)}
-                    className="group relative flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-indigo-400/25 bg-gradient-to-r from-[#141738]/90 via-[#0e1028]/95 to-[#141738]/90 hover:border-amber-400/60 hover:from-[#202454] hover:to-[#171a40] hover:shadow-[0_4px_16px_rgba(0,0,0,0.6),0_0_15px_rgba(245,158,11,0.2)] active:scale-[0.98] transition-all cursor-pointer overflow-hidden"
+                    className="group relative flex items-center justify-center p-2.5 sm:p-3 rounded-xl border border-indigo-400/25 bg-gradient-to-r from-[#141738]/90 via-[#0e1028]/95 to-[#141738]/90 hover:border-amber-400/60 hover:from-[#202454] hover:to-[#171a40] hover:shadow-[0_4px_16px_rgba(0,0,0,0.6),0_0_15px_rgba(245,158,11,0.2)] active:scale-[0.98] transition-all cursor-pointer overflow-hidden"
                   >
                     {/* Top Specular Rim */}
                     <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
 
                     {/* Word Letter Tiles */}
-                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                    <div className="flex items-center justify-center gap-1 sm:gap-1.5 flex-wrap">
                       {word.split('').map((ch, i) => (
                         <div
                           key={i}
@@ -218,16 +218,6 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
                           </span>
                         </div>
                       ))}
-                    </div>
-
-                    {/* Badge & Copy Action */}
-                    <div className="flex items-center gap-1.5 ml-2 shrink-0">
-                      <span className="rounded-md border border-indigo-400/30 bg-indigo-950/80 px-1.5 py-0.5 text-[10px] font-black text-indigo-200">
-                        {word.length}L
-                      </span>
-                      <div className="h-6 w-6 flex items-center justify-center rounded-md border border-indigo-400/20 bg-indigo-950/40 text-slate-400 group-hover:text-amber-300 group-hover:border-amber-400/40 transition-colors">
-                        <Copy className="h-3 w-3" />
-                      </div>
                     </div>
                   </motion.div>
                 ))}
