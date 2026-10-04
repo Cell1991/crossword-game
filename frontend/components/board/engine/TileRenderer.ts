@@ -558,7 +558,7 @@ export class TileRenderer {
     }
 
     // 2. Tile face fill
-    const isSmall = cellSize < 16;
+    const isSmall = lowPower && cellSize < 16;
     if (isFrozen) {
       // 3D Glacial Ice Block Encasing (matching realistic reference)
       drawGlacialIceBlock(ctx, x + pad, y + pad, tileW, radius, cellSize);
