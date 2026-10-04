@@ -46,13 +46,33 @@ class TileService:
         random.shuffle(bag)
         return bag
 
-    @staticmethod
-    def draw_tiles(bag: list[dict[str, Any]], count: int) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-        """Draw up to `count` tiles from the bag."""
-        actual_count = min(count, len(bag))
-        drawn = bag[:actual_count]
-        remaining = bag[actual_count:]
-        return drawn, remaining
+    @classmethod
+    def draw_tiles(
+        cls,
+        bag: list[dict[str, Any]],
+        count: int,
+        refill_if_empty: bool = False
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        """Draw up to `count` tiles from the bag. If refill_if_empty is True, refills a new tile bag when exhausted."""
+        bag_copy = list(bag)
+        drawn: list[dict[str, Any]] = []
+
+        if refill_if_empty:
+            while len(drawn) < count:
+                if not bag_copy:
+                    bag_copy = cls.create_tile_bag()
+                needed = count - len(drawn)
+                actual_count = min(needed, len(bag_copy))
+                drawn.extend(bag_copy[:actual_count])
+                bag_copy = bag_copy[actual_count:]
+            if len(bag_copy) == 0:
+                bag_copy = cls.create_tile_bag()
+        else:
+            actual_count = min(count, len(bag_copy))
+            drawn = bag_copy[:actual_count]
+            bag_copy = bag_copy[actual_count:]
+
+        return drawn, bag_copy
 
     @staticmethod
     def exchange_tiles(

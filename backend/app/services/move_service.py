@@ -279,10 +279,10 @@ class MoveService:
                         removed = True
                         break
 
-        # Draw replacement tiles from tile bag
+        # Draw replacement tiles from tile bag (auto-replenishes if bag runs out)
         tiles_needed = len(placed_tiles)
         bag = list(game.tile_bag) if (game.tile_bag is not None and isinstance(game.tile_bag, list)) else await bag_tiles(db, game.id)
-        drawn_tiles, remaining_bag = TileService.draw_tiles(bag, tiles_needed)
+        drawn_tiles, remaining_bag = TileService.draw_tiles(bag, tiles_needed, refill_if_empty=True)
         remaining_rack.extend(drawn_tiles)
         player.rack = remaining_rack
         game.tile_bag = remaining_bag
