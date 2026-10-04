@@ -794,24 +794,53 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                     <div className="p-3 rounded-2xl bg-black/40 border border-white/10 shrink-0">
                       <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between">
                         <span>Standings at Step {currentStep}</span>
+                        {currentStep === replayData.moves.length && (
+                          <span className="text-[9px] font-extrabold text-amber-300 flex items-center gap-1">
+                            <Crown className="w-3 h-3 text-amber-300" />
+                            <span>FINAL RESULT</span>
+                          </span>
+                        )}
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         {replayData.players.map((p) => {
                           const score = currentRunningScores[p.id] ?? 0;
+                          const isFinalWinner =
+                            currentStep === replayData.moves.length &&
+                            (replayData.winner_id === p.id ||
+                              p.is_winner ||
+                              p.score === Math.max(...replayData.players.map((pl) => pl.score)));
+
                           return (
                             <div
                               key={p.id}
-                              className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-xs shadow-inner"
+                              className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-xs transition-colors ${
+                                isFinalWinner
+                                  ? 'bg-amber-500/20 border border-amber-400/40 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                                  : 'bg-white/5 border border-white/5 text-slate-300 shadow-inner'
+                              }`}
                             >
                               <div className="flex items-center gap-1.5 min-w-0">
-                                {p.is_bot ? <Bot className="w-3.5 h-3.5 text-amber-300 shrink-0" /> : <User className="w-3.5 h-3.5 text-cyan-300 shrink-0" />}
+                                {isFinalWinner ? (
+                                  <Crown className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                                ) : p.is_bot ? (
+                                  <Bot className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                                ) : (
+                                  <User className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
+                                )}
                                 <span className="truncate text-slate-200 font-medium text-[11px]">
                                   {p.display_name}
                                 </span>
                               </div>
-                              <span className="font-mono font-bold text-amber-300 ml-1.5 text-xs shrink-0">
-                                {score} pts
-                              </span>
+                              <div className="flex items-center gap-1 ml-1.5 shrink-0 font-mono">
+                                <span className="font-bold text-amber-300 text-xs">
+                                  {score} pts
+                                </span>
+                                {isFinalWinner && (
+                                  <span className="text-[8px] font-black px-1 py-0.2 rounded bg-amber-400/30 text-amber-200 border border-amber-400/50 uppercase">
+                                    WIN
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
@@ -847,6 +876,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                         {replayData.moves.map((move, idx) => {
                           const stepNumber = idx + 1;
                           const isActive = currentStep === stepNumber;
+                          const isFinalStep = idx === replayData.moves.length - 1;
                           const wordSummary =
                             move.words_formed && move.words_formed.length > 0
                               ? move.words_formed.map((w) => w.word).join(', ')
@@ -861,6 +891,8 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-all cursor-pointer ${
                                 isActive
                                   ? 'bg-gradient-to-r from-amber-500/25 to-amber-500/10 border border-amber-400/50 text-amber-200 font-bold shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/40'
+                                  : isFinalStep
+                                  ? 'bg-amber-500/10 hover:bg-amber-500/15 border border-amber-400/30 text-amber-200'
                                   : 'bg-white/[0.03] hover:bg-white/[0.08] text-slate-300'
                               }`}
                             >
@@ -871,6 +903,12 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                 <span className="truncate text-[11px] font-medium text-slate-200">
                                   {move.player_name}: <strong className="text-white font-mono font-bold">{wordSummary}</strong>
                                 </span>
+                                {isFinalStep && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-black uppercase tracking-wider shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.3)]">
+                                    <Crown className="w-2.5 h-2.5 text-amber-300 fill-amber-300/30" />
+                                    <span>WINNER</span>
+                                  </span>
+                                )}
                               </div>
                               <span className="font-mono text-[11px] font-bold text-emerald-400 shrink-0 ml-1.5">
                                 +{move.score_earned}
