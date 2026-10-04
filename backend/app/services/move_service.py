@@ -311,6 +311,14 @@ class MoveService:
         # Record Move
         rack_snapshot = [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in normalized_rack]
         move_id = str(uuid.uuid4())
+        card_details = None
+        if freeze_target is not None:
+            card_details = {
+                "card": "FREEZE_TILE",
+                "row": freeze_target.row,
+                "col": freeze_target.col,
+                "description": f"Froze newly placed tile '{freeze_target.letter}' at ({freeze_target.row}, {freeze_target.col})",
+            }
         move = Move(
             id=move_id,
             game_id=game.id,
@@ -321,6 +329,7 @@ class MoveService:
             words_formed=[wf.model_dump() for wf in words_formed],
             score_earned=score,
             rack_before=rack_snapshot,
+            card_details=card_details,
         )
         db.add(move)
 

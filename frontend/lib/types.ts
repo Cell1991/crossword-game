@@ -353,17 +353,32 @@ export interface MatchReplayPlacedTile {
   value: number;
 }
 
+export interface MatchReplayCardDetails {
+  card: string;
+  target_player_id?: string;
+  target_player_name?: string;
+  amount?: number;
+  hp_after?: number;
+  blocked?: boolean;
+  count?: number;
+  row?: number;
+  col?: number;
+  destroyed_letter?: string;
+  description?: string;
+}
+
 export interface MatchReplayMove {
   move_id: string;
   turn_number: number;
   player_id: string;
   player_name: string;
   is_bot: boolean;
-  move_type: 'PLACE' | 'PASS' | 'EXCHANGE' | string;
+  move_type: 'PLACE' | 'PASS' | 'EXCHANGE' | 'CARD_USED' | string;
   placed_tiles: MatchReplayPlacedTile[];
   words_formed: WordFormed[];
   score_earned: number;
   rack_before?: { letter: string; value: number }[];
+  card_details?: MatchReplayCardDetails | null;
   running_scores: Record<string, number>;
   created_at: string | null;
 }

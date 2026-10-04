@@ -419,13 +419,16 @@ class GameService:
                     elif isinstance(w, str):
                         words_list.append(w.upper())
 
-            m_type = "move"
             if m.move_type == "PASS":
                 m_type = "pass"
                 text = f"{p_name} passed turn"
             elif m.move_type == "EXCHANGE":
                 m_type = "exchange"
                 text = f"{p_name} swapped tiles"
+            elif m.move_type == "CARD_USED":
+                m_type = "card"
+                card_info = m.card_details or {}
+                text = card_info.get("description") or f"{p_name} used {card_info.get('card', 'a card')}"
             else:
                 m_type = "move"
                 words_str = ", ".join(words_list)

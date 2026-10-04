@@ -199,6 +199,7 @@ def _upgrade_existing_schema(connection):
         },
         "moves": {
             "rack_before": "JSON",
+            "card_details": "JSON",
         },
     }
 

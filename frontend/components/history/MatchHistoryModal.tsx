@@ -24,6 +24,13 @@ import {
   BookOpen,
   CheckCircle2,
   Info,
+  Zap,
+  Shield,
+  Snowflake,
+  Flame,
+  RefreshCw,
+  Lightbulb,
+  Target,
 } from 'lucide-react';
 import {
   BoardCell,
@@ -57,6 +64,91 @@ interface ReplayBoardCanvasViewProps {
   boardState: Record<string, BoardCell>;
   temporaryTiles: PlacedTile[];
 }
+
+const getCardVisuals = (cardName: string) => {
+  switch (cardName.toUpperCase()) {
+    case 'HEAL':
+      return {
+        label: 'HEAL',
+        Icon: Heart,
+        bg: 'bg-emerald-500/15',
+        border: 'border-emerald-400/30',
+        text: 'text-emerald-300',
+        badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
+        glow: 'shadow-[0_0_12px_rgba(52,211,153,0.3)]',
+      };
+    case 'DOUBLE_DAMAGE':
+      return {
+        label: 'DOUBLE DAMAGE',
+        Icon: Zap,
+        bg: 'bg-amber-500/15',
+        border: 'border-amber-400/30',
+        text: 'text-amber-300',
+        badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
+        glow: 'shadow-[0_0_12px_rgba(245,158,11,0.3)]',
+      };
+    case 'SHIELD':
+      return {
+        label: 'SHIELD',
+        Icon: Shield,
+        bg: 'bg-sky-500/15',
+        border: 'border-sky-400/30',
+        text: 'text-sky-300',
+        badgeBg: 'bg-sky-500/20 text-sky-300 border-sky-400/40',
+        glow: 'shadow-[0_0_12px_rgba(56,189,248,0.3)]',
+      };
+    case 'SPY_SWAP':
+      return {
+        label: 'SPY SWAP',
+        Icon: RefreshCw,
+        bg: 'bg-purple-500/15',
+        border: 'border-purple-400/30',
+        text: 'text-purple-300',
+        badgeBg: 'bg-purple-500/20 text-purple-300 border-purple-400/40',
+        glow: 'shadow-[0_0_12px_rgba(192,132,252,0.3)]',
+      };
+    case 'FREEZE_TILE':
+      return {
+        label: 'FREEZE TILE',
+        Icon: Snowflake,
+        bg: 'bg-cyan-500/15',
+        border: 'border-cyan-400/30',
+        text: 'text-cyan-300',
+        badgeBg: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40',
+        glow: 'shadow-[0_0_12px_rgba(34,211,238,0.3)]',
+      };
+    case 'DESTROY_TILE':
+      return {
+        label: 'DESTROY TILE',
+        Icon: Flame,
+        bg: 'bg-rose-500/15',
+        border: 'border-rose-400/30',
+        text: 'text-rose-300',
+        badgeBg: 'bg-rose-500/20 text-rose-300 border-rose-400/40',
+        glow: 'shadow-[0_0_12px_rgba(244,63,94,0.3)]',
+      };
+    case 'HINT':
+      return {
+        label: 'HINT',
+        Icon: Lightbulb,
+        bg: 'bg-yellow-500/15',
+        border: 'border-yellow-400/30',
+        text: 'text-yellow-300',
+        badgeBg: 'bg-yellow-500/20 text-yellow-300 border-yellow-400/40',
+        glow: 'shadow-[0_0_12px_rgba(250,204,21,0.3)]',
+      };
+    default:
+      return {
+        label: cardName.replace('_', ' '),
+        Icon: Sparkles,
+        bg: 'bg-indigo-500/15',
+        border: 'border-indigo-400/30',
+        text: 'text-indigo-300',
+        badgeBg: 'bg-indigo-500/20 text-indigo-300 border-indigo-400/40',
+        glow: 'shadow-[0_0_12px_rgba(129,140,248,0.3)]',
+      };
+  }
+};
 
 const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
   boardState,
@@ -262,6 +354,14 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
             turn_number: i + 1,
           };
         }
+      }
+      if (
+        move.card_details?.card === 'DESTROY_TILE' &&
+        move.card_details.row !== undefined &&
+        move.card_details.col !== undefined
+      ) {
+        const key = `${move.card_details.row}_${move.card_details.col}`;
+        delete state[key];
       }
     }
     return state;
@@ -760,6 +860,52 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                             </span>
                           </div>
 
+                          {/* Card Effect Event Details if a card was used */}
+                          {currentMove.card_details && (() => {
+                            const cardVis = getCardVisuals(currentMove.card_details.card);
+                            const CardIcon = cardVis.Icon;
+                            return (
+                              <div className={`p-2.5 rounded-xl border ${cardVis.bg} ${cardVis.border} space-y-1.5 shadow-sm`}>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={`flex h-5 w-5 items-center justify-center rounded-lg ${cardVis.badgeBg}`}>
+                                      <CardIcon className="w-3.5 h-3.5" />
+                                    </span>
+                                    <span className={`text-xs font-black uppercase tracking-wider ${cardVis.text}`}>
+                                      {cardVis.label}
+                                    </span>
+                                  </div>
+                                  {currentMove.card_details.amount !== undefined && currentMove.card_details.amount > 0 && (
+                                    <span className="text-[11px] font-mono font-bold text-emerald-300 bg-emerald-500/25 border border-emerald-400/40 px-2 py-0.5 rounded-md shadow-sm">
+                                      +{currentMove.card_details.amount} HP
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-300 pt-0.5">
+                                  {currentMove.card_details.target_player_name && (
+                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 text-slate-200 font-medium">
+                                      <Target className="w-3 h-3 text-amber-400" />
+                                      <span className="text-slate-400">Target:</span>
+                                      <strong className="text-amber-200 font-bold">{currentMove.card_details.target_player_name}</strong>
+                                    </div>
+                                  )}
+                                  {currentMove.card_details.row !== undefined && currentMove.card_details.col !== undefined && (
+                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 text-slate-200 font-mono text-[10px]">
+                                      <span className="text-slate-400 font-sans">Cell:</span>
+                                      <span className="text-cyan-300 font-bold">({currentMove.card_details.row}, {currentMove.card_details.col})</span>
+                                    </div>
+                                  )}
+                                  {currentMove.card_details.description && (
+                                    <p className="text-[11px] text-slate-300 w-full italic">
+                                      {currentMove.card_details.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()}
+
                           {/* Words Formed */}
                           {currentMove.words_formed && currentMove.words_formed.length > 0 ? (
                             <div className="flex flex-wrap gap-1.5 pt-0.5">
@@ -772,7 +918,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                 </span>
                               ))}
                             </div>
-                          ) : (
+                          ) : !currentMove.card_details ? (
                             <p className="text-xs text-slate-400 italic">
                               {currentMove.move_type === 'PASS'
                                 ? 'Turn Passed (Scoreless)'
@@ -780,7 +926,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                 ? 'Exchanged Tiles with Tile Bag'
                                 : 'No words formed'}
                             </p>
-                          )}
+                          ) : null}
 
                           {/* Player's Rack at this turn */}
                           {(() => {
@@ -962,10 +1108,41 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                           const stepNumber = idx + 1;
                           const isActive = currentStep === stepNumber;
                           const isFinalStep = idx === replayData.moves.length - 1;
-                          const wordSummary =
-                            move.words_formed && move.words_formed.length > 0
-                              ? move.words_formed.map((w) => w.word).join(', ')
-                              : move.move_type;
+
+                          let moveSummary: React.ReactNode;
+                          if (move.move_type === 'CARD_USED' && move.card_details) {
+                            const cardVis = getCardVisuals(move.card_details.card);
+                            const CardIcon = cardVis.Icon;
+                            moveSummary = (
+                              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold border ${cardVis.bg} ${cardVis.border} ${cardVis.text}`}>
+                                <CardIcon className="w-3 h-3 shrink-0" />
+                                <span>{cardVis.label}</span>
+                                {move.card_details.target_player_name && (
+                                  <span className="font-normal text-slate-300 opacity-90">➔ {move.card_details.target_player_name}</span>
+                                )}
+                              </span>
+                            );
+                          } else if (move.words_formed && move.words_formed.length > 0) {
+                            moveSummary = (
+                              <div className="inline-flex items-center gap-1.5 flex-wrap">
+                                <strong className="text-white font-mono font-bold">
+                                  {move.words_formed.map((w) => w.word).join(', ')}
+                                </strong>
+                                {move.card_details && (() => {
+                                  const cardVis = getCardVisuals(move.card_details.card);
+                                  const CardIcon = cardVis.Icon;
+                                  return (
+                                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-bold border ${cardVis.bg} ${cardVis.border} ${cardVis.text}`}>
+                                      <CardIcon className="w-2.5 h-2.5" />
+                                      <span>{cardVis.label}</span>
+                                    </span>
+                                  );
+                                })()}
+                              </div>
+                            );
+                          } else {
+                            moveSummary = <span className="italic text-slate-400 font-medium">{move.move_type}</span>;
+                          }
 
                           return (
                             <button
@@ -985,9 +1162,10 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                 <span className="font-mono text-[10px] text-slate-500 shrink-0">
                                   #{stepNumber}
                                 </span>
-                                <span className="truncate text-[11px] font-medium text-slate-200">
-                                  {move.player_name}: <strong className="text-white font-mono font-bold">{wordSummary}</strong>
-                                </span>
+                                <div className="flex items-center gap-1.5 truncate text-[11px] font-medium text-slate-200">
+                                  <span className="shrink-0">{move.player_name}:</span>
+                                  {moveSummary}
+                                </div>
                                 {isFinalStep && (
                                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-black uppercase tracking-wider shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.3)]">
                                     <Crown className="w-2.5 h-2.5 text-amber-300 fill-amber-300/30" />
