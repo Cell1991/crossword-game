@@ -54,17 +54,8 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
     layer.style.transformOrigin = '0 0';
     layer.style.willChange = 'transform';
 
-    const isTouch = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches);
-
     const applyCamera = () => {
       const { scale, offset } = camera.getView();
-      // On mobile: when zoomed OUT (scale < 0.65), hide DOM badges to show pure color blocks; when zoomed in, show full badges
-      if (isTouch && scale < 0.65) {
-        if (layer.style.display !== 'none') layer.style.display = 'none';
-        return;
-      }
-      // On desktop or when zoomed in: show full rich animated badges
-      if (layer.style.display !== 'block') layer.style.display = 'block';
       layer.style.transform = `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${scale})`;
     };
     applyCamera();

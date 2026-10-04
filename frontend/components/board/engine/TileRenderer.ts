@@ -894,12 +894,12 @@ export class TileRenderer {
     const effectiveValue = value * multiplier;
 
     // 5. Letter & Score Rendering
-    if (effectiveShowLetter && cellSize >= 12) {
+    if (effectiveShowLetter && cellSize >= 7) {
       ctx.save();
       if (isBlankLetter(letter)) {
         const cx = x + cellSize / 2;
         const cy = y + cellSize / 2;
-        const starSize = Math.max(6, cellSize * 0.28);
+        const starSize = Math.max(4, cellSize * 0.28);
         ctx.shadowColor = isFrozen ? '#bae6fd' : tilePalette.blank.glow;
         ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.12);
         ctx.fillStyle = tilePalette.blank.color;
@@ -922,7 +922,7 @@ export class TileRenderer {
         } else {
           ctx.fillStyle = letterFill;
         }
-        const fontSize = Math.max(12, Math.round(cellSize * 0.70));
+        const fontSize = Math.max(8, Math.round(cellSize * 0.70));
         ctx.font = `italic 900 ${fontSize}px 'Inter Black Italic', sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -940,7 +940,7 @@ export class TileRenderer {
         
         if (!effectiveIsRemote) {
           ctx.lineJoin = 'round';
-          ctx.lineWidth = Math.max(2.4, fontSize * 0.11);
+          ctx.lineWidth = Math.max(1.8, fontSize * 0.11);
           ctx.strokeStyle = isFrozen ? '#011627' : tilePalette.letter.stroke;
           ctx.strokeText(letter, 0, 0);
         }
@@ -954,8 +954,8 @@ export class TileRenderer {
       }
       ctx.restore();
 
-      if (cellSize >= 20) {
-        const numFontSize = Math.max(9, Math.round(cellSize * 0.28));
+      if (cellSize >= 14) {
+        const numFontSize = Math.max(6, Math.round(cellSize * 0.28));
         ctx.font = `italic 900 ${numFontSize}px 'Inter Black Italic', sans-serif`;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
