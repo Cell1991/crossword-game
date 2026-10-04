@@ -637,7 +637,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                     </div>
 
                     {/* Scrollable / Scalable Board Grid Container */}
-                    <div className="flex-1 overflow-auto rounded-2xl bg-[#060714] border border-indigo-950/80 shadow-[inset_0_2px_12px_rgba(0,0,0,0.95)] p-2 sm:p-3 flex items-center justify-center custom-scrollbar">
+                    <div className="flex-1 overflow-auto rounded-2xl bg-[#03050e] border border-amber-400/20 shadow-[inset_0_2px_16px_rgba(0,0,0,0.95)] p-2 sm:p-3 flex items-center justify-center custom-scrollbar">
                       <div
                         style={{
                           transform: `scale(${zoomLevel})`,
@@ -646,9 +646,9 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                         }}
                         className="inline-block select-none"
                       >
-                        {/* Render 19 rows x 27 cols board grid */}
+                        {/* Render 19 rows x 27 cols board grid (Authentic In-Game Theme) */}
                         <div
-                          className="grid gap-[2px] sm:gap-[3px] bg-[#090a1c] p-2 rounded-xl border border-indigo-900/50 shadow-2xl"
+                          className="grid gap-[2px] bg-[#050716] p-2 rounded-xl border border-amber-400/30 shadow-[0_0_30px_rgba(0,0,0,0.9)]"
                           style={{
                             gridTemplateColumns: `repeat(${BOARD_COLS}, minmax(0, 1fr))`,
                             gridTemplateRows: `repeat(${BOARD_ROWS}, minmax(0, 1fr))`,
@@ -666,52 +666,49 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                               return (
                                 <div
                                   key={key}
-                                  className={`relative flex items-center justify-center w-[22px] h-[22px] sm:w-[26px] sm:h-[26px] md:w-[28px] md:h-[28px] rounded-[5px] text-xs transition-all overflow-hidden ${
-                                    cellData
-                                      ? cellData.isRecent
-                                        ? 'ring-2 ring-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.85)] z-10'
-                                        : 'shadow-sm z-0'
-                                      : isCenter
-                                      ? 'bg-amber-950/40 border border-amber-400/40 text-amber-300'
-                                      : is3L
-                                      ? 'bg-cyan-950/50 border border-cyan-400/35 text-cyan-300'
-                                      : is2L
-                                      ? 'bg-blue-950/50 border border-blue-400/35 text-blue-300'
-                                      : isPower
-                                      ? 'bg-purple-950/50 border border-purple-400/35 text-purple-300'
-                                      : 'bg-[#090b1c]/80 border border-indigo-950/40'
-                                  }`}
+                                  className="relative flex items-center justify-center w-[23px] h-[23px] sm:w-[26px] sm:h-[26px] md:w-[27px] md:h-[27px] text-xs transition-all select-none"
                                   title={`Row ${r}, Col ${c}${cellData ? `: ${cellData.letter} (${cellData.value} pts)` : ''}`}
                                 >
                                   {cellData ? (
-                                    <div className="tile-face relative flex flex-col items-center justify-center w-full h-full rounded-[4px] border border-amber-200/90 font-sans select-none overflow-hidden">
-                                      {/* Top Subtle Highlight */}
+                                    <div
+                                      className={`tile-face relative flex flex-col items-center justify-center w-full h-full rounded-[4px] border border-amber-200/90 font-sans select-none overflow-hidden ${
+                                        cellData.isRecent
+                                          ? 'ring-2 ring-cyan-300 ring-offset-1 ring-offset-[#070b19] border-cyan-200 shadow-[0_0_8px_rgba(34,211,238,0.9)]'
+                                          : 'shadow-sm'
+                                      }`}
+                                    >
+                                      {/* Top Glint */}
                                       <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-100/70 to-transparent pointer-events-none z-10" />
 
-                                      {/* Active Move Glow Marker */}
-                                      {cellData.isRecent && (
-                                        <div className="absolute top-0.5 left-0.5 w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-[0_0_6px_#22d3ee] z-30" />
-                                      )}
-
-                                      {/* Letter */}
-                                      <span className="tile-letter tile-letter-orange relative z-20 text-[14px] sm:text-[16px] md:text-[17px] leading-none font-maple inline-block">
+                                      {/* Letter: Cleanly sized without overlapping strokes */}
+                                      <span className="relative z-20 text-[12px] sm:text-[13px] leading-none font-maple text-white inline-block drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
                                         {cellData.letter}
                                       </span>
 
-                                      {/* Value Subscript */}
-                                      <span className="tile-score-blue absolute bottom-0.5 right-0.5 z-20 text-[7px] sm:text-[8px] font-maple leading-none">
+                                      {/* Value Subscript: Compact & aligned cleanly */}
+                                      <span className="absolute bottom-0.5 right-0.5 z-20 text-[6.5px] sm:text-[7.5px] font-sans font-black text-amber-100/95 leading-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.95)]">
                                         {cellData.value}
                                       </span>
                                     </div>
                                   ) : isCenter ? (
-                                    <span className="text-[10px] sm:text-[11px] font-bold">★</span>
+                                    <div className="flex items-center justify-center w-full h-full bg-[#1e1b4b] rounded-[4px] border border-amber-400/50 text-[#fbbf24] shadow-inner">
+                                      <span className="text-[10px] sm:text-[11px] font-bold leading-none">★</span>
+                                    </div>
                                   ) : is3L ? (
-                                    <span className="text-[7px] sm:text-[8px] font-black tracking-tighter">3L</span>
+                                    <div className="flex items-center justify-center w-full h-full bg-[#7f1d1d] rounded-[4px] border border-[#dc2626]/40 text-[#fca5a5] shadow-inner">
+                                      <span className="text-[7.5px] sm:text-[8px] font-black tracking-tighter leading-none">3L</span>
+                                    </div>
                                   ) : is2L ? (
-                                    <span className="text-[7px] sm:text-[8px] font-black tracking-tighter">2L</span>
+                                    <div className="flex items-center justify-center w-full h-full bg-[#166534] rounded-[4px] border border-[#16a34a]/40 text-[#86efac] shadow-inner">
+                                      <span className="text-[7.5px] sm:text-[8px] font-black tracking-tighter leading-none">2L</span>
+                                    </div>
                                   ) : isPower ? (
-                                    <span className="text-[8px] sm:text-[9px]">⚡</span>
-                                  ) : null}
+                                    <div className="flex items-center justify-center w-full h-full bg-[#0e7490] rounded-[4px] border border-[#06b6d4]/40 text-[#a5f3fc] shadow-inner">
+                                      <span className="text-[8px] sm:text-[9px] leading-none">⚡</span>
+                                    </div>
+                                  ) : (
+                                    <div className="w-full h-full rounded-[4px] bg-[#070b1a]/90 border border-amber-400/[0.18]" />
+                                  )}
                                 </div>
                               );
                             })
@@ -720,22 +717,22 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Board Legend - Clean Compact Chips */}
-                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2.5 text-[10px] sm:text-[11px] text-slate-400 font-medium shrink-0">
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-400/25 text-cyan-300">
-                        <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee]" />
+                    {/* Board Legend - Clean Authentic In-Game Chips */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2.5 text-[10px] sm:text-[11px] font-medium shrink-0 select-none">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/35 text-cyan-300">
+                        <span className="w-2 h-2 rounded-full bg-cyan-300 shadow-[0_0_6px_#22d3ee]" />
                         <span>Active Move</span>
                       </div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/25 text-amber-300">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#1e1b4b] border border-amber-400/40 text-amber-300">
                         <span>★ Center</span>
                       </div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-400/25 text-cyan-300">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#7f1d1d]/80 border border-[#dc2626]/40 text-[#fca5a5]">
                         <span>3L (Triple)</span>
                       </div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-400/25 text-blue-300">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#166534]/80 border border-[#16a34a]/40 text-[#86efac]">
                         <span>2L (Double)</span>
                       </div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-400/25 text-purple-300">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0e7490]/80 border border-[#06b6d4]/40 text-[#a5f3fc]">
                         <span>⚡ Power</span>
                       </div>
                     </div>
