@@ -30,6 +30,9 @@ import {
   Info,
 } from 'lucide-react';
 import {
+  BoardCell,
+  CellPosition,
+  PlacedTile,
   MatchHistoryItem,
   MatchHistoryPlayer,
   MatchReplayResponse,
@@ -42,21 +45,136 @@ import {
   deleteMatchHistory,
   clearAllMatchHistory,
 } from '@/lib/api';
-import {
-  BOARD_ROWS,
-  BOARD_COLS,
-  CENTER_ROW,
-  CENTER_COL,
-  isTripleLetterCell,
-  isDoubleLetterCell,
-  isPowerCell,
-} from '@/lib/board';
+import { BoardCanvas } from '@/components/board/BoardCanvas';
+import { useBoardCamera, useCameraScale, BUTTON_ZOOM_FACTOR } from '@/hooks/useBoardCamera';
+
+const EMPTY_CELL_POSITIONS: CellPosition[] = [];
+const noop = () => {};
 
 interface MatchHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialGameId?: string | null;
 }
+
+interface ReplayBoardCanvasViewProps {
+  boardState: Record<string, BoardCell>;
+  temporaryTiles: PlacedTile[];
+  currentStep: number;
+  totalSteps: number;
+}
+
+const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
+  boardState,
+  temporaryTiles,
+  currentStep,
+  totalSteps,
+}) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const camera = useBoardCamera();
+  const scale = useCameraScale(camera);
+
+  // Auto-center board when first mounted
+  const hasInitializedCameraRef = useRef(false);
+  useEffect(() => {
+    if (!hasInitializedCameraRef.current && containerRef.current) {
+      hasInitializedCameraRef.current = true;
+      camera.resetCamera();
+    }
+  }, [camera]);
+
+  return (
+    <div className="flex-1 flex flex-col bg-slate-950/60 p-2.5 sm:p-4 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 min-h-[380px]">
+      {/* Board Top Toolbar */}
+      <div className="flex items-center justify-between pb-2.5 px-1 text-xs text-slate-300 shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1.5 font-bold text-slate-100">
+            <Layers className="w-4 h-4 text-cyan-400" />
+            Board Reconstruction
+          </span>
+          <span className="text-slate-600">•</span>
+          <span className="text-[11px] font-medium text-slate-400">
+            {currentStep === 0 ? 'Initial Layout' : `Step ${currentStep} of ${totalSteps}`}
+          </span>
+        </div>
+
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-1 bg-slate-900/90 border border-white/10 p-1 rounded-xl shadow-inner">
+          <button
+            type="button"
+            onClick={() => camera.zoomAtCenter(1 / BUTTON_ZOOM_FACTOR)}
+            className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            title="Zoom Out"
+          >
+            <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+          <span className="text-[10px] font-mono w-9 text-center text-cyan-300 font-bold">
+            {Math.round(scale * 100)}%
+          </span>
+          <button
+            type="button"
+            onClick={() => camera.zoomAtCenter(BUTTON_ZOOM_FACTOR)}
+            className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            title="Zoom In"
+          >
+            <ZoomIn className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => camera.resetCamera()}
+            className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer ml-0.5"
+            title="Reset Zoom & Center Board"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* HTML5 Canvas Authentic Board */}
+      <div className="relative flex-1 w-full h-full min-h-[300px] overflow-hidden rounded-2xl bg-[#040612] border border-amber-400/20 shadow-[inset_0_2px_20px_rgba(0,0,0,0.85)]">
+        <BoardCanvas
+          containerRef={containerRef}
+          boardState={boardState}
+          temporaryTiles={temporaryTiles}
+          remotePlacements={EMPTY_CELL_POSITIONS}
+          temporaryTilesValid={true}
+          selectedCell={null}
+          onCellClick={noop}
+          onStartPendingDrag={noop}
+          onFinishPendingDrag={noop}
+          onCollectPendingTile={noop}
+          onPendingDragMove={noop}
+          dragPreviewCell={null}
+          draggingTileId={null}
+          dragPreviewTile={null}
+          dragPreviewIsValid={null}
+          canStageMove={false}
+          camera={camera}
+        />
+      </div>
+
+      {/* Board Legend */}
+      <div className="flex flex-wrap items-center justify-center gap-2 pt-2.5 text-[10px] sm:text-[11px] font-medium shrink-0 select-none">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/35 text-cyan-300">
+          <span className="w-2 h-2 rounded-full bg-cyan-300 shadow-[0_0_6px_#22d3ee]" />
+          <span>Active Turn Placement</span>
+        </div>
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#1e1b4b] border border-amber-400/40 text-amber-300">
+          <span>★ Center Star</span>
+        </div>
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#7f1d1d]/80 border border-[#dc2626]/40 text-[#fca5a5]">
+          <span>3L Triple Letter</span>
+        </div>
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#166534]/80 border border-[#16a34a]/40 text-[#86efac]">
+          <span>2L Double Letter</span>
+        </div>
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0e7490]/80 border border-[#06b6d4]/40 text-[#a5f3fc]">
+          <span>⚡ Power Cell</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
   isOpen,
@@ -76,7 +194,6 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
   // Playback state
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [zoomLevel, setZoomLevel] = useState<number>(1);
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const moveLogScrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -199,30 +316,47 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
     };
   }, [isPlaying, replayData]);
 
-  // Reconstruct Board State up to `currentStep`
-  const reconstructedBoard = useMemo(() => {
-    const board: Record<string, { letter: string; value: number; isRecent?: boolean; moveNum?: number }> = {};
-    if (!replayData || !replayData.moves) return board;
+  // Reconstruct Board State up to `currentStep - 1` (committed moves)
+  const replayBoardState = useMemo<Record<string, BoardCell>>(() => {
+    const state: Record<string, BoardCell> = {};
+    if (!replayData || !replayData.moves) return state;
 
-    for (let i = 0; i < currentStep && i < replayData.moves.length; i++) {
+    const commitCount = Math.max(0, currentStep - 1);
+    for (let i = 0; i < commitCount && i < replayData.moves.length; i++) {
       const move = replayData.moves[i];
-      const isCurrentMove = i === currentStep - 1;
       if (move.placed_tiles && Array.isArray(move.placed_tiles)) {
         for (const tile of move.placed_tiles) {
           const key = `${tile.row}_${tile.col}`;
-          board[key] = {
+          state[key] = {
+            row: tile.row,
+            col: tile.col,
             letter: tile.letter,
             value: tile.value,
-            isRecent: isCurrentMove,
-            moveNum: i + 1,
+            player_id: move.player_id,
+            turn_number: i + 1,
           };
         }
       }
     }
-    return board;
+    return state;
   }, [replayData, currentStep]);
 
-  // Highlighted Tiles for the Current Step
+  // Active Placed Tiles for `currentStep` (rendered with active glow)
+  const replayTemporaryTiles = useMemo<PlacedTile[]>(() => {
+    if (!replayData || currentStep === 0 || currentStep > replayData.moves.length) return [];
+    const move = replayData.moves[currentStep - 1];
+    if (!move || !move.placed_tiles || !Array.isArray(move.placed_tiles)) return [];
+
+    return move.placed_tiles.map((tile, idx) => ({
+      row: tile.row,
+      col: tile.col,
+      letter: tile.letter,
+      value: tile.value,
+      tile_id: `replay_step_${currentStep}_${idx}_${tile.row}_${tile.col}`,
+    }));
+  }, [replayData, currentStep]);
+
+  // Highlighted Tiles / Move details for the Current Step
   const currentMove = useMemo(() => {
     if (!replayData || currentStep === 0 || currentStep > replayData.moves.length) {
       return null;
@@ -462,9 +596,9 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                             {deletingId === match.game_id ? (
                               <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                 <button
-                                  type="button"
-                                  onClick={(e) => handleDeleteMatch(e, match.game_id)}
-                                  className="px-2.5 py-0.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-bold shadow transition-colors"
+                                   type="button"
+                                   onClick={(e) => handleDeleteMatch(e, match.game_id)}
+                                   className="px-2.5 py-0.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-bold shadow transition-colors"
                                 >
                                   Delete
                                 </button>
@@ -588,155 +722,13 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                 </div>
               ) : replayData ? (
                 <>
-                  {/* LEFT: INTERACTIVE REPLAY BOARD & CONTROLS */}
-                  <div className="flex-1 flex flex-col bg-slate-950/60 p-2.5 sm:p-4 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 min-h-[360px]">
-                    {/* Board Toolbar */}
-                    <div className="flex items-center justify-between pb-2.5 px-1 text-xs text-slate-300 shrink-0">
-                      <div className="flex items-center gap-2">
-                        <span className="flex items-center gap-1.5 font-bold text-slate-100">
-                          <Layers className="w-4 h-4 text-cyan-400" />
-                          Board Reconstruction
-                        </span>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-[11px] font-medium text-slate-400">
-                          {currentStep === 0
-                            ? 'Initial Layout'
-                            : `Step ${currentStep} of ${replayData.moves.length}`}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1 bg-slate-900/80 border border-white/10 p-1 rounded-xl shadow-inner">
-                        <button
-                          type="button"
-                          onClick={() => setZoomLevel((z) => Math.max(0.75, z - 0.15))}
-                          className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                          title="Zoom Out"
-                        >
-                          <ZoomOut className="w-3.5 h-3.5" />
-                        </button>
-                        <span className="text-[10px] font-mono w-9 text-center text-cyan-300 font-bold">
-                          {Math.round(zoomLevel * 100)}%
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setZoomLevel((z) => Math.min(1.4, z + 0.15))}
-                          className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                          title="Zoom In"
-                        >
-                          <ZoomIn className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setZoomLevel(1)}
-                          className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer ml-0.5"
-                          title="Reset Zoom (100%)"
-                        >
-                          <Maximize2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Scrollable / Scalable Board Grid Container */}
-                    <div className="flex-1 overflow-auto rounded-2xl bg-[#03050e] border border-amber-400/20 shadow-[inset_0_2px_16px_rgba(0,0,0,0.95)] p-2 sm:p-3 flex items-center justify-center custom-scrollbar">
-                      <div
-                        style={{
-                          transform: `scale(${zoomLevel})`,
-                          transformOrigin: 'center center',
-                          transition: 'transform 0.15s ease-out',
-                        }}
-                        className="inline-block select-none"
-                      >
-                        {/* Render 19 rows x 27 cols board grid (Authentic In-Game Theme) */}
-                        <div
-                          className="grid gap-[2px] bg-[#050716] p-2 rounded-xl border border-amber-400/30 shadow-[0_0_30px_rgba(0,0,0,0.9)]"
-                          style={{
-                            gridTemplateColumns: `repeat(${BOARD_COLS}, minmax(0, 1fr))`,
-                            gridTemplateRows: `repeat(${BOARD_ROWS}, minmax(0, 1fr))`,
-                          }}
-                        >
-                          {Array.from({ length: BOARD_ROWS }).map((_, r) =>
-                            Array.from({ length: BOARD_COLS }).map((__, c) => {
-                              const key = `${r}_${c}`;
-                              const cellData = reconstructedBoard[key];
-                              const isCenter = r === CENTER_ROW && c === CENTER_COL;
-                              const is3L = isTripleLetterCell(r, c);
-                              const is2L = isDoubleLetterCell(r, c);
-                              const isPower = isPowerCell(r, c);
-
-                              return (
-                                <div
-                                  key={key}
-                                  className="relative flex items-center justify-center w-[23px] h-[23px] sm:w-[26px] sm:h-[26px] md:w-[27px] md:h-[27px] text-xs transition-all select-none"
-                                  title={`Row ${r}, Col ${c}${cellData ? `: ${cellData.letter} (${cellData.value} pts)` : ''}`}
-                                >
-                                  {cellData ? (
-                                    <div
-                                      className={`tile-face relative flex flex-col items-center justify-center w-full h-full rounded-[4px] border border-amber-200/90 font-sans select-none overflow-hidden ${
-                                        cellData.isRecent
-                                          ? 'ring-2 ring-cyan-300 ring-offset-1 ring-offset-[#070b19] border-cyan-200 shadow-[0_0_8px_rgba(34,211,238,0.9)]'
-                                          : 'shadow-sm'
-                                      }`}
-                                    >
-                                      {/* Top Glint */}
-                                      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-100/70 to-transparent pointer-events-none z-10" />
-
-                                      {/* Letter: Cleanly sized without overlapping strokes */}
-                                      <span className="relative z-20 text-[12px] sm:text-[13px] leading-none font-maple text-white inline-block drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
-                                        {cellData.letter}
-                                      </span>
-
-                                      {/* Value Subscript: Compact & aligned cleanly */}
-                                      <span className="absolute bottom-0.5 right-0.5 z-20 text-[6.5px] sm:text-[7.5px] font-sans font-black text-amber-100/95 leading-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.95)]">
-                                        {cellData.value}
-                                      </span>
-                                    </div>
-                                  ) : isCenter ? (
-                                    <div className="flex items-center justify-center w-full h-full bg-[#1e1b4b] rounded-[4px] border border-amber-400/50 text-[#fbbf24] shadow-inner">
-                                      <span className="text-[10px] sm:text-[11px] font-bold leading-none">★</span>
-                                    </div>
-                                  ) : is3L ? (
-                                    <div className="flex items-center justify-center w-full h-full bg-[#7f1d1d] rounded-[4px] border border-[#dc2626]/40 text-[#fca5a5] shadow-inner">
-                                      <span className="text-[7.5px] sm:text-[8px] font-black tracking-tighter leading-none">3L</span>
-                                    </div>
-                                  ) : is2L ? (
-                                    <div className="flex items-center justify-center w-full h-full bg-[#166534] rounded-[4px] border border-[#16a34a]/40 text-[#86efac] shadow-inner">
-                                      <span className="text-[7.5px] sm:text-[8px] font-black tracking-tighter leading-none">2L</span>
-                                    </div>
-                                  ) : isPower ? (
-                                    <div className="flex items-center justify-center w-full h-full bg-[#0e7490] rounded-[4px] border border-[#06b6d4]/40 text-[#a5f3fc] shadow-inner">
-                                      <span className="text-[8px] sm:text-[9px] leading-none">⚡</span>
-                                    </div>
-                                  ) : (
-                                    <div className="w-full h-full rounded-[4px] bg-[#070b1a]/90 border border-amber-400/[0.18]" />
-                                  )}
-                                </div>
-                              );
-                            })
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Board Legend - Clean Authentic In-Game Chips */}
-                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2.5 text-[10px] sm:text-[11px] font-medium shrink-0 select-none">
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/35 text-cyan-300">
-                        <span className="w-2 h-2 rounded-full bg-cyan-300 shadow-[0_0_6px_#22d3ee]" />
-                        <span>Active Move</span>
-                      </div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#1e1b4b] border border-amber-400/40 text-amber-300">
-                        <span>★ Center</span>
-                      </div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#7f1d1d]/80 border border-[#dc2626]/40 text-[#fca5a5]">
-                        <span>3L (Triple)</span>
-                      </div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#166534]/80 border border-[#16a34a]/40 text-[#86efac]">
-                        <span>2L (Double)</span>
-                      </div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0e7490]/80 border border-[#06b6d4]/40 text-[#a5f3fc]">
-                        <span>⚡ Power</span>
-                      </div>
-                    </div>
-                  </div>
+                  {/* LEFT: INTERACTIVE REPLAY HTML5 CANVAS BOARD */}
+                  <ReplayBoardCanvasView
+                    boardState={replayBoardState}
+                    temporaryTiles={replayTemporaryTiles}
+                    currentStep={currentStep}
+                    totalSteps={replayData.moves.length}
+                  />
 
                   {/* RIGHT: PLAYBACK SCRUBBER, MOVE BREAKDOWN, RUNNING SCORES & MOVE HISTORY */}
                   <div className="w-full lg:w-96 flex flex-col bg-slate-900/60 p-3 sm:p-4 overflow-hidden shrink-0 space-y-3">
