@@ -160,9 +160,16 @@ const normalizeCardDetails = (
   return [details];
 };
 
+interface ReplayBoardCanvasViewProps {
+  boardState: Record<string, BoardCell>;
+  temporaryTiles: PlacedTile[];
+  className?: string;
+}
+
 const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
   boardState,
   temporaryTiles,
+  className = '',
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const camera = useBoardCamera();
@@ -177,9 +184,9 @@ const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
   }, [camera]);
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-950/60 p-2 sm:p-3 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 min-h-[380px]">
+    <div className={`flex flex-col bg-slate-950/60 p-2 sm:p-3 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 ${className}`}>
       {/* HTML5 Canvas Authentic Board */}
-      <div className="relative flex-1 w-full h-full min-h-[300px] overflow-hidden rounded-2xl bg-[#040612] border border-amber-400/20 shadow-[inset_0_2px_20px_rgba(0,0,0,0.85)]">
+      <div className="relative flex-1 w-full h-full min-h-[220px] sm:min-h-[280px] overflow-hidden rounded-2xl bg-[#040612] border border-amber-400/20 shadow-[inset_0_2px_20px_rgba(0,0,0,0.85)]">
         <BoardCanvas
           containerRef={containerRef}
           boardState={boardState}
@@ -416,12 +423,19 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
     return replayData.moves[currentStep - 1]?.running_scores || {};
   }, [replayData, currentStep]);
 
-  // Auto scroll active move in move list
+  // Auto scroll active move in move list without causing parent page/window shifts
   useEffect(() => {
     if (moveLogScrollRef.current && currentStep > 0) {
-      const activeEl = moveLogScrollRef.current.querySelector(`[data-move-step="${currentStep}"]`);
+      const activeEl = moveLogScrollRef.current.querySelector(`[data-move-step="${currentStep}"]`) as HTMLElement | null;
       if (activeEl) {
-        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const container = moveLogScrollRef.current;
+        const targetTop = activeEl.offsetTop - container.offsetTop;
+        const targetBottom = targetTop + activeEl.offsetHeight;
+        if (targetTop < container.scrollTop) {
+          container.scrollTo({ top: targetTop, behavior: 'smooth' });
+        } else if (targetBottom > container.scrollTop + container.clientHeight) {
+          container.scrollTo({ top: targetBottom - container.clientHeight + 10, behavior: 'smooth' });
+        }
       }
     }
   }, [currentStep]);
@@ -477,12 +491,15 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative flex flex-col w-full max-w-6xl h-[94vh] max-h-[920px] rounded-2xl sm:rounded-3xl border border-white/15 bg-gradient-to-b from-slate-900/95 via-slate-900/90 to-slate-950/95 text-white shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 pt-8 pb-4 sm:p-5 md:p-6 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative flex flex-col w-full max-w-6xl h-[88vh] sm:h-[90vh] max-h-[880px] rounded-2xl sm:rounded-3xl border border-white/15 bg-gradient-to-b from-slate-900/98 via-slate-900/95 to-slate-950/98 text-white shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_35px_rgba(6,182,212,0.15)] overflow-hidden">
         
+        {/* Top Celestial Glow Accent */}
+        <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/80 via-amber-300/60 to-transparent pointer-events-none z-30" />
+
         {/* TOP MODAL HEADER */}
-        <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-white/10 bg-slate-950/60 shrink-0">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between px-3.5 py-2.5 sm:px-6 sm:py-3.5 border-b border-white/10 bg-slate-950/70 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             {activeTab === 'replay' ? (
               <button
                 type="button"
@@ -497,11 +514,11 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                 <span>All Matches</span>
               </button>
             ) : (
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.3)]">
-                  <RotateCcw className="w-5 h-5" />
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.3)]">
+                  <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <h2 className="text-base sm:text-lg font-bold tracking-tight text-white">
+                <h2 className="text-sm sm:text-lg font-bold tracking-tight text-white">
                   Match History & Analysis
                 </h2>
               </div>
@@ -566,7 +583,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
         <div className="relative flex-1 overflow-hidden flex flex-col">
           {/* TAB 1: MATCH HISTORY LIST VIEW */}
           {activeTab === 'list' && (
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-3.5 sm:p-5 md:p-6 custom-scrollbar">
               {loadingHistory ? (
                 <div className="flex flex-col items-center justify-center h-64 gap-3 text-slate-400">
                   <RotateCcw className="w-7 h-7 animate-spin text-cyan-400" />
@@ -735,14 +752,14 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
 
           {/* TAB 2: CHESS-STYLE TURN-BY-TURN REPLAY & ANALYSIS VIEW */}
           {activeTab === 'replay' && (
-            <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+            <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row custom-scrollbar">
               {loadingReplay ? (
-                <div className="flex-1 flex flex-col items-center justify-center gap-3 text-slate-400">
+                <div className="flex-1 flex flex-col items-center justify-center gap-3 text-slate-400 p-8">
                   <RotateCcw className="w-8 h-8 animate-spin text-cyan-400" />
                   <p className="text-sm font-medium">Reconstructing match timeline...</p>
                 </div>
               ) : replayError ? (
-                <div className="flex-1 flex flex-col items-center justify-center gap-3 text-rose-400 text-center px-4">
+                <div className="flex-1 flex flex-col items-center justify-center gap-3 text-rose-400 text-center p-8">
                   <Info className="w-8 h-8 text-rose-400" />
                   <p className="text-sm font-semibold">{replayError}</p>
                   <button
@@ -755,14 +772,15 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                 </div>
               ) : replayData ? (
                 <>
-                  {/* LEFT: INTERACTIVE REPLAY HTML5 CANVAS BOARD */}
+                  {/* LEFT / TOP: INTERACTIVE REPLAY HTML5 CANVAS BOARD */}
                   <ReplayBoardCanvasView
                     boardState={replayBoardState}
                     temporaryTiles={replayTemporaryTiles}
+                    className="w-full h-[280px] sm:h-[340px] lg:h-full lg:flex-1 shrink-0"
                   />
 
-                  {/* RIGHT: PLAYBACK SCRUBBER, MOVE BREAKDOWN, RUNNING SCORES & MOVE HISTORY */}
-                  <div className="w-full lg:w-96 flex flex-col bg-slate-900/60 p-3 sm:p-4 overflow-hidden shrink-0 space-y-3">
+                  {/* RIGHT / BOTTOM: PLAYBACK SCRUBBER, MOVE BREAKDOWN, RUNNING SCORES & MOVE HISTORY */}
+                  <div className="w-full lg:w-[400px] xl:w-[440px] flex flex-col bg-slate-900/80 p-3 sm:p-4 lg:overflow-y-auto custom-scrollbar shrink-0 space-y-3">
                     
                     {/* 1. PLAYBACK CONTROLS (Media / Esports Style) */}
                     <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.5)] shrink-0 space-y-3">
@@ -1140,14 +1158,14 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                     </div>
 
                     {/* 4. SCROLLABLE MOVE HISTORY LOG (CHESS NOTATION STYLE) */}
-                    <div className="flex-1 flex flex-col min-h-0">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center justify-between">
+                    <div className="flex flex-col min-h-0 space-y-1.5 shrink-0">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5 flex items-center justify-between">
                         <span>Turn-by-Turn Notation</span>
                         <span className="text-[9px] text-cyan-400 font-normal">Click step to inspect</span>
                       </div>
                       <div
                         ref={moveLogScrollRef}
-                        className="flex-1 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar"
+                        className="max-h-60 sm:max-h-72 lg:max-h-80 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar"
                       >
                         {/* Turn 0 Item */}
                         <button
