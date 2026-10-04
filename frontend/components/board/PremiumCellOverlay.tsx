@@ -58,12 +58,12 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
 
     const applyCamera = () => {
       const { scale, offset } = camera.getView();
-      // On mobile: bypass DOM overlay to ensure 120 FPS pure canvas performance
-      if (isTouch) {
+      // On mobile: when zoomed OUT (scale < 0.65), hide DOM badges to show pure color blocks; when zoomed in, show full badges
+      if (isTouch && scale < 0.65) {
         if (layer.style.display !== 'none') layer.style.display = 'none';
         return;
       }
-      // On desktop: keep original 100% full behavior at all zoom levels
+      // On desktop or when zoomed in: show full rich animated badges
       if (layer.style.display !== 'block') layer.style.display = 'block';
       layer.style.transform = `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${scale})`;
     };

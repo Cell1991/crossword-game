@@ -83,13 +83,6 @@ export class GridRenderer {
               drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
               ctx.fill();
             }
-            if (lowPower && cellSize >= 14) {
-              ctx.fillStyle = '#fecdd3';
-              ctx.font = `bold ${Math.max(9, Math.round(cellSize * 0.4))}px sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText('3L', x + cellSize / 2, y + cellSize / 2);
-            }
           } else if (cellType === CELL_TYPE_DOUBLE) {
             ctx.fillStyle = '#166534';
             if (isSmall) {
@@ -98,13 +91,6 @@ export class GridRenderer {
               drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
               ctx.fill();
             }
-            if (lowPower && cellSize >= 14) {
-              ctx.fillStyle = '#bbf7d0';
-              ctx.font = `bold ${Math.max(9, Math.round(cellSize * 0.4))}px sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText('2L', x + cellSize / 2, y + cellSize / 2);
-            }
           } else if (cellType === CELL_TYPE_POWER) {
             ctx.fillStyle = '#0e7490';
             if (isSmall) {
@@ -112,13 +98,6 @@ export class GridRenderer {
             } else {
               drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
               ctx.fill();
-            }
-            if (lowPower && cellSize >= 13) {
-              ctx.fillStyle = '#bae6fd';
-              ctx.font = `${Math.max(10, Math.round(cellSize * 0.52))}px sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText('⚡', x + cellSize / 2, y + cellSize / 2);
             }
           } else if (cellType === CELL_TYPE_CENTER) {
             ctx.fillStyle = '#1e1b4b';
