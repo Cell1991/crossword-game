@@ -15,6 +15,7 @@ import {
   Trash2,
   Calendar,
   Clock,
+  Layers,
   Swords,
   Heart,
   Bot,
@@ -569,7 +570,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                     ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
                     : 'bg-cyan-500/15 text-cyan-300 border-cyan-400/30'
                 }`}>
-                  {replayData.game_mode === 'HP' ? 'HP Battle' : 'Turn Match'}
+                  {replayData.game_mode === 'HP' ? 'HP Battle' : 'Round Match'}
                 </span>
               </div>
             )}
@@ -675,8 +676,8 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                 ? 'bg-rose-500/15 text-rose-300 border border-rose-500/30' 
                                 : 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
                             }`}>
-                              {isHp ? <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-500/20" /> : <Clock className="w-3.5 h-3.5 text-cyan-400" />}
-                              {isHp ? 'HP Battle' : 'Turn Match'}
+                              {isHp ? <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-500/20" /> : <Layers className="w-3.5 h-3.5 text-cyan-400" />}
+                              {isHp ? 'HP Battle' : 'Round Match'}
                             </span>
                             <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
                               <Calendar className="w-3 h-3 text-slate-500" />
