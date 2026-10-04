@@ -14,9 +14,9 @@ export interface CameraView {
 }
 
 const BASE_CELL_SIZE = 40;
-// Allows smooth full-board overview zooming on both desktop and mobile
+// Desktop allows deep zoom out, while mobile is capped to a comfortable, lag-free minimum scale
 const MIN_SCALE = 0.28;
-const TOUCH_MIN_SCALE = 0.28;
+const TOUCH_MIN_SCALE = 0.65;
 const MAX_SCALE = 1.8;
 const DEFAULT_SCALE = 1;
 /** Zoom follows how far the wheel/trackpad moved (no fixed steps): a mouse-wheel notch (100px) is about 14%. */
