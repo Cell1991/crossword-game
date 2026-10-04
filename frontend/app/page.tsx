@@ -16,8 +16,6 @@ import {
   Radio,
   RefreshCw,
   Sparkles,
-  Swords,
-  User,
   X,
 } from 'lucide-react';
 import { createRoom, getApiBase, getRoom, getRooms, joinRoom, startGame, sessionStore } from '@/lib/api';
@@ -404,7 +402,7 @@ export default function HomePage() {
       {/* CENTER STAGE (NO SCROLLING) */}
       <main className="relative z-20 flex w-full max-w-[550px] flex-1 flex-col items-center justify-center my-auto">
         
-        {/* HERO BRANDING HEADER (Home Mode Only) */}
+        {/* HERO BRANDING HEADER (ONLY ON HOME MODE) */}
         {mode === 'home' && (
           <div className="flex flex-col items-center text-center mb-5 sm:mb-6">
             {/* Floating 3D WordX Cube Logo */}
@@ -538,12 +536,12 @@ export default function HomePage() {
         {/* ======================================================== */}
         {/* SUBMENU: CREATE ROOM (COMPACT MODAL) */}
         {/* ======================================================== */}
-        {/* SUBMENU: CREATE ROOM (GAMIFIED COSMIC OBSIDIAN DECK) */}
+        {/* SUBMENU: CREATE ROOM (COSMIC GLASS IDENTITY) */}
         {/* ======================================================== */}
         {mode === 'create' && (
-          <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-amber-400/35 bg-gradient-to-b from-[#0e1628]/98 via-[#0a1020]/98 to-[#060a16]/99 p-5 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.9),0_0_40px_rgba(245,158,11,0.15)] backdrop-blur-2xl ring-1 ring-white/10 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+          <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-white/15 bg-gradient-to-b from-slate-900/90 via-[#0a0f24]/95 to-[#050814]/98 p-5 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.85),0_0_40px_rgba(245,158,11,0.12)] backdrop-blur-2xl ring-1 ring-white/10 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
             {/* Soft Warm Champagne Accent Line */}
-            <span className="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/70 to-transparent" />
+            <span className="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
 
             {/* Header */}
             <div className="flex items-center gap-3 pb-3.5 border-b border-white/[0.08]">
@@ -557,120 +555,119 @@ export default function HomePage() {
               <div>
                 <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
                   <span>Create Match Lobby</span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400/20 to-orange-500/20 border border-amber-400/40 px-2.5 py-0.5 text-[10px] font-black text-amber-300 uppercase tracking-wider shadow-sm">
-                    <Crown className="w-3 h-3 text-amber-300" /> Host Arena
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400/20 to-orange-500/20 border border-amber-400/40 px-2 py-0.5 text-[10px] font-black text-amber-300 uppercase tracking-wider shadow-sm">
+                    <Crown className="w-3 h-3 text-amber-300" /> Host
                   </span>
                 </h2>
                 <p className="text-[11px] text-slate-400 font-medium">Configure match rules & lobby settings</p>
               </div>
             </div>
 
-            <div className="mt-4 space-y-4">
-              {/* Game Mode Selector - Chunky Tactical Cards */}
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Game Mode</label>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setGameMode('HP')}
-                    className={`relative p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                      gameMode === 'HP'
-                        ? 'border-2 border-amber-400 bg-gradient-to-b from-amber-500/25 via-amber-950/40 to-slate-900/90 text-white shadow-[0_0_20px_rgba(245,158,11,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] ring-1 ring-amber-400/50'
-                        : 'border border-white/10 bg-black/40 text-slate-400 hover:border-white/20 hover:bg-white/[0.05] hover:text-slate-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Swords className={`w-4 h-4 ${gameMode === 'HP' ? 'text-amber-300' : 'text-slate-400'}`} />
-                        <span className={`block text-xs sm:text-sm font-black ${gameMode === 'HP' ? 'text-white' : 'text-slate-300'}`}>
-                          HP Battle
-                        </span>
-                      </div>
-                      {gameMode === 'HP' && (
-                        <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,1)] animate-pulse" />
-                      )}
-                    </div>
-                    <span className={`mt-1 block text-[10px] font-medium ${gameMode === 'HP' ? 'text-amber-200/90' : 'text-slate-500'}`}>
-                      Score drains enemy HP
+            <div className="mt-4 space-y-3.5">
+              {/* Mode Selector - Luxury Glass Cards without heart/clock icons */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setGameMode('HP')}
+                  className={`relative p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                    gameMode === 'HP'
+                      ? 'border-amber-400/70 bg-gradient-to-b from-amber-500/20 via-amber-950/30 to-slate-900/80 text-white shadow-[0_0_20px_rgba(245,158,11,0.2),inset_0_1px_1px_rgba(255,255,255,0.2)] ring-1 ring-amber-400/40'
+                      : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-white/20 hover:bg-white/[0.07] hover:text-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`block text-xs sm:text-sm font-black ${gameMode === 'HP' ? 'text-white' : 'text-slate-300'}`}>
+                      HP Battle
                     </span>
-                  </button>
+                    {gameMode === 'HP' && (
+                      <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,1)] animate-pulse" />
+                    )}
+                  </div>
+                  <span className={`mt-0.5 block text-[11px] font-medium ${gameMode === 'HP' ? 'text-amber-200/80' : 'text-slate-500'}`}>
+                    Score drains health
+                  </span>
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setGameMode('TURNS')}
-                    className={`relative p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                      gameMode === 'TURNS'
-                        ? 'border-2 border-amber-400 bg-gradient-to-b from-amber-500/25 via-amber-950/40 to-slate-900/90 text-white shadow-[0_0_20px_rgba(245,158,11,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] ring-1 ring-amber-400/50'
-                        : 'border border-white/10 bg-black/40 text-slate-400 hover:border-white/20 hover:bg-white/[0.05] hover:text-slate-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Crown className={`w-4 h-4 ${gameMode === 'TURNS' ? 'text-amber-300' : 'text-slate-400'}`} />
-                        <span className={`block text-xs sm:text-sm font-black ${gameMode === 'TURNS' ? 'text-white' : 'text-slate-300'}`}>
-                          Round Match
-                        </span>
-                      </div>
-                      {gameMode === 'TURNS' && (
-                        <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,1)] animate-pulse" />
-                      )}
-                    </div>
-                    <span className={`mt-1 block text-[10px] font-medium ${gameMode === 'TURNS' ? 'text-amber-200/90' : 'text-slate-500'}`}>
-                      Highest total score wins
+                <button
+                  type="button"
+                  onClick={() => setGameMode('TURNS')}
+                  className={`relative p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                    gameMode === 'TURNS'
+                      ? 'border-amber-400/70 bg-gradient-to-b from-amber-500/20 via-amber-950/30 to-slate-900/80 text-white shadow-[0_0_20px_rgba(245,158,11,0.2),inset_0_1px_1px_rgba(255,255,255,0.2)] ring-1 ring-amber-400/40'
+                      : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-white/20 hover:bg-white/[0.07] hover:text-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`block text-xs sm:text-sm font-black ${gameMode === 'TURNS' ? 'text-white' : 'text-slate-300'}`}>
+                      Round Match
                     </span>
-                  </button>
+                    {gameMode === 'TURNS' && (
+                      <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,1)] animate-pulse" />
+                    )}
+                  </div>
+                  <span className={`mt-0.5 block text-[11px] font-medium ${gameMode === 'TURNS' ? 'text-amber-200/80' : 'text-slate-500'}`}>
+                    Highest score wins
+                  </span>
+                </button>
+              </div>
+
+              {/* 2-Column: HP/Rounds + Timer */}
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                {gameMode === 'HP' ? (
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Starting HP</label>
+                    <CustomSelect
+                      value={hpOption}
+                      onChange={setHpOption}
+                      options={[
+                        { value: '50', label: '50 HP' },
+                        { value: '100', label: '100 HP' },
+                        { value: '150', label: '150 HP' },
+                        { value: '200', label: '200 HP' },
+                        { value: 'custom', label: 'Custom' },
+                      ]}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Round Count</label>
+                    <CustomSelect
+                      value={turnCountOption}
+                      onChange={setTurnCountOption}
+                      options={[
+                        { value: '5', label: '5 Rounds' },
+                        { value: '7', label: '7 Rounds' },
+                        { value: '10', label: '10 Rounds' },
+                        { value: '15', label: '15 Rounds' },
+                        { value: 'custom', label: 'Custom' },
+                      ]}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Turn Timer</label>
+                  <CustomSelect
+                    value={turnTimeLimit === null ? '' : String(turnTimeLimit)}
+                    onChange={val => setTurnTimeLimit(val === '' ? null : Number(val) as TurnTimeLimit)}
+                    options={[
+                      { value: '', label: 'Unlimited' },
+                      { value: '30', label: '30s' },
+                      { value: '60', label: '60s' },
+                      { value: '90', label: '90s' },
+                      { value: '120', label: '120s' },
+                    ]}
+                  />
                 </div>
               </div>
 
-              {/* Gamified Segmented Controls: HP / Rounds */}
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
-                  {gameMode === 'HP' ? 'Starting Health' : 'Total Rounds'}
-                </label>
-                {gameMode === 'HP' ? (
-                  <div className="grid grid-cols-5 gap-1.5 p-1 rounded-2xl bg-black/50 border border-white/10">
-                    {['50', '100', '150', '200', 'custom'].map(hp => (
-                      <button
-                        key={hp}
-                        type="button"
-                        onClick={() => setHpOption(hp)}
-                        className={`py-2 rounded-xl text-xs font-black cursor-pointer transition-all ${
-                          hpOption === hp
-                            ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
-                            : 'text-slate-400 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        {hp === 'custom' ? 'Custom' : `${hp} HP`}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-5 gap-1.5 p-1 rounded-2xl bg-black/50 border border-white/10">
-                    {['5', '7', '10', '15', 'custom'].map(rnd => (
-                      <button
-                        key={rnd}
-                        type="button"
-                        onClick={() => setTurnCountOption(rnd)}
-                        className={`py-2 rounded-xl text-xs font-black cursor-pointer transition-all ${
-                          turnCountOption === rnd
-                            ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
-                            : 'text-slate-400 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        {rnd === 'custom' ? 'Custom' : `${rnd} Rnds`}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Custom Value Stepper (Only if Custom selected) */}
+              {/* Steppers if custom */}
               {gameMode === 'HP' && hpOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-amber-400/50 bg-slate-950/90 p-1.5 shadow-inner animate-in fade-in zoom-in-95 duration-100">
+                <div className="flex items-center rounded-xl border border-white/15 bg-slate-950/80 p-1 shadow-inner focus-within:border-amber-400/80 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all">
                   <button
                     type="button"
                     onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
-                    className="flex h-8 w-9 items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 text-amber-300 hover:text-white cursor-pointer active:scale-95 transition-all"
+                    className="flex h-9 w-10 items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white cursor-pointer active:scale-95 transition-all"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
@@ -680,13 +677,13 @@ export default function HomePage() {
                     max={1000}
                     value={customHp}
                     onChange={e => setCustomHp(e.target.value)}
-                    className="flex-1 bg-transparent text-center font-black text-sm text-white outline-none"
+                    className="flex-1 bg-transparent text-center font-bold text-sm text-white outline-none"
                   />
-                  <span className="text-[11px] font-black text-amber-300 mr-2 uppercase tracking-wider">HP</span>
+                  <span className="text-[11px] font-bold text-amber-300 mr-2.5 uppercase tracking-wider">HP</span>
                   <button
                     type="button"
                     onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
-                    className="flex h-8 w-9 items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 text-amber-300 hover:text-white cursor-pointer active:scale-95 transition-all"
+                    className="flex h-9 w-10 items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white cursor-pointer active:scale-95 transition-all"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -694,11 +691,11 @@ export default function HomePage() {
               )}
 
               {gameMode === 'TURNS' && turnCountOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-amber-400/50 bg-slate-950/90 p-1.5 shadow-inner animate-in fade-in zoom-in-95 duration-100">
+                <div className="flex items-center rounded-xl border border-white/15 bg-slate-950/80 p-1 shadow-inner focus-within:border-amber-400/80 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all">
                   <button
                     type="button"
                     onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 7) - 1)))}
-                    className="flex h-8 w-9 items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 text-amber-300 hover:text-white cursor-pointer active:scale-95 transition-all"
+                    className="flex h-9 w-10 items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white cursor-pointer active:scale-95 transition-all"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
@@ -708,69 +705,42 @@ export default function HomePage() {
                     max={500}
                     value={customTurnCount}
                     onChange={e => setCustomTurnCount(e.target.value)}
-                    className="flex-1 bg-transparent text-center font-black text-sm text-white outline-none"
+                    className="flex-1 bg-transparent text-center font-bold text-sm text-white outline-none"
                   />
-                  <span className="text-[11px] font-black text-amber-300 mr-2 uppercase tracking-wider">Rounds</span>
+                  <span className="text-[11px] font-bold text-amber-300 mr-2.5 uppercase tracking-wider">Rounds</span>
                   <button
                     type="button"
                     onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 7) + 1)))}
-                    className="flex h-8 w-9 items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 text-amber-300 hover:text-white cursor-pointer active:scale-95 transition-all"
+                    className="flex h-9 w-10 items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white cursor-pointer active:scale-95 transition-all"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
               )}
 
-              {/* Turn Timer Gamified Pills */}
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Turn Timer</label>
-                <div className="grid grid-cols-5 gap-1.5 p-1 rounded-2xl bg-black/50 border border-white/10">
-                  {[
-                    { val: null, label: '∞ None' },
-                    { val: 30, label: '30s' },
-                    { val: 60, label: '60s' },
-                    { val: 90, label: '90s' },
-                    { val: 120, label: '120s' },
-                  ].map(t => (
-                    <button
-                      key={String(t.val)}
-                      type="button"
-                      onClick={() => setTurnTimeLimit(t.val as TurnTimeLimit)}
-                      className={`py-2 rounded-xl text-xs font-black cursor-pointer transition-all ${
-                        turnTimeLimit === t.val
-                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
-                          : 'text-slate-400 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Player Limit & Grimoire Deck */}
+              {/* Player Limit & Grimoire */}
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Players</label>
-                  <div className="flex rounded-2xl bg-black/50 border border-white/10 p-1 gap-1">
+                  <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Players</label>
+                  <div className="flex rounded-xl bg-black/40 border border-white/10 p-1 gap-1">
                     <button
                       type="button"
                       onClick={() => setPlayerLimitOption('4')}
-                      className={`flex-1 py-2 rounded-xl text-xs font-black cursor-pointer transition-all ${
+                      className={`flex-1 py-2 rounded-lg text-xs font-black cursor-pointer transition-all ${
                         playerLimitOption === '4'
-                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
-                          : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          ? 'bg-gradient-to-r from-amber-500/30 to-amber-600/30 border border-amber-400/60 text-amber-200 shadow-sm'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                       }`}
                     >
-                      4P Match
+                      4P
                     </button>
                     <button
                       type="button"
                       onClick={() => setPlayerLimitOption('custom')}
-                      className={`flex-1 py-2 rounded-xl text-xs font-black cursor-pointer transition-all ${
+                      className={`flex-1 py-2 rounded-lg text-xs font-black cursor-pointer transition-all ${
                         playerLimitOption === 'custom'
-                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
-                          : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          ? 'bg-gradient-to-r from-amber-500/30 to-amber-600/30 border border-amber-400/60 text-amber-200 shadow-sm'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                       }`}
                     >
                       Custom
@@ -779,29 +749,23 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Grimoire Deck</label>
-                  <div className="h-[42px] flex items-center justify-between px-3 rounded-2xl bg-black/50 border border-white/10">
-                    <span className="text-xs font-bold text-slate-300">Spell Cards</span>
-                    <RockerSwitch checked={enableGrimoire} onChange={setEnableGrimoire} />
-                  </div>
+                  <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Grimoire Deck</label>
+                  <RockerSwitch checked={enableGrimoire} onChange={setEnableGrimoire} />
                 </div>
               </div>
 
-              {/* Host Gamer Tag Input */}
+              {/* Host Name Input */}
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Host GamerTag</label>
+                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Your Name</label>
                 <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-300/60 pointer-events-none">
-                    <User className="w-4 h-4" />
-                  </div>
                   <input
                     type="text"
                     value={name}
                     onChange={e => setName(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleCreate()}
-                    placeholder="Enter your gamer tag..."
+                    placeholder="Enter your name..."
                     maxLength={24}
-                    className="w-full rounded-2xl border border-white/15 bg-black/60 pl-10 pr-12 py-3 text-sm font-bold text-white outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30 transition-all placeholder:text-slate-500 shadow-inner"
+                    className="w-full rounded-xl border border-white/15 bg-slate-950/80 pl-3.5 pr-10 py-2.5 text-sm font-semibold text-white outline-none focus:border-amber-400/80 focus:ring-2 focus:ring-amber-400/20 transition-all placeholder:text-slate-500 shadow-inner"
                   />
                   <button
                     type="button"
@@ -811,35 +775,35 @@ export default function HomePage() {
                       clearError();
                     }}
                     title="Random Name"
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-amber-400/20 to-orange-500/20 border border-amber-400/40 text-amber-300 hover:bg-amber-400/35 transition-all cursor-pointer"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-r from-amber-400/20 to-orange-500/20 border border-amber-400/40 text-amber-300 hover:bg-amber-400/30 transition-all cursor-pointer"
                   >
-                    <Sparkles className="w-4 h-4" />
+                    <Sparkles className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
 
               {visibleError && (
-                <div className="p-3 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-300 font-semibold">
+                <div className="p-2.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-300 font-semibold">
                   {visibleError}
                 </div>
               )}
 
-              {/* Submit CTA - Chunky Gold Game Button */}
+              {/* Submit CTA - Matches Home Screen Celestial Gold Button */}
               <button
                 type="button"
                 onClick={handleCreate}
                 disabled={loading}
-                className="w-full mt-2 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:via-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm sm:text-base tracking-wider uppercase shadow-[0_10px_35px_rgba(245,158,11,0.45)] hover:shadow-[0_14px_45px_rgba(245,158,11,0.6)] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2.5 border-2 border-amber-300/80"
+                className="w-full mt-2 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:via-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm sm:text-base tracking-wider uppercase shadow-[0_10px_35px_rgba(245,158,11,0.4)] hover:shadow-[0_14px_45px_rgba(245,158,11,0.55)] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2.5 border border-amber-300/60"
               >
                 {loading ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
-                    <span>Creating Arena Lobby...</span>
+                    <span>Creating Lobby...</span>
                   </>
                 ) : (
                   <>
-                    <Crown className="w-5 h-5 text-slate-950 fill-slate-950/20" />
-                    <span>CREATE ARENA LOBBY</span>
+                    <Crown className="w-4 h-4 text-slate-950 fill-slate-950/20" />
+                    <span>HOST ROOM</span>
                   </>
                 )}
               </button>
@@ -848,12 +812,12 @@ export default function HomePage() {
         )}
 
         {/* ======================================================== */}
-        {/* SUBMENU: JOIN ROOM (GAMIFIED COSMIC OBSIDIAN DECK) */}
+        {/* SUBMENU: JOIN ROOM (COSMIC GLASS IDENTITY) */}
         {/* ======================================================== */}
         {mode === 'join' && (
-          <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-cyan-400/35 bg-gradient-to-b from-[#0c182a]/98 via-[#081220]/98 to-[#050c16]/99 p-5 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.9),0_0_40px_rgba(6,182,212,0.15)] backdrop-blur-2xl ring-1 ring-white/10 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+          <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-white/15 bg-gradient-to-b from-slate-900/90 via-[#0a0f24]/95 to-[#050814]/98 p-5 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.85),0_0_40px_rgba(6,182,212,0.12)] backdrop-blur-2xl ring-1 ring-white/10 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
             {/* Soft Cyan Accent Line */}
-            <span className="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
+            <span className="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
 
             {/* Header */}
             <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
@@ -868,8 +832,8 @@ export default function HomePage() {
                 <div>
                   <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
                     <span>Join Match</span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/40 px-2.5 py-0.5 text-[10px] font-black text-cyan-300 uppercase tracking-wider shadow-sm">
-                      <Radio className="w-3 h-3 text-cyan-300" /> Live Signal
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/40 px-2 py-0.5 text-[10px] font-black text-cyan-300 uppercase tracking-wider shadow-sm">
+                      <Radio className="w-3 h-3 text-cyan-300" /> Signal
                     </span>
                   </h2>
                   <p className="text-[11px] text-slate-400 font-medium">Enter room PIN or select an open room</p>
@@ -880,29 +844,26 @@ export default function HomePage() {
                 type="button"
                 onClick={() => fetchRooms(true)}
                 disabled={loadingRooms}
-                className="p-2.5 rounded-xl border border-white/10 bg-white/5 hover:border-cyan-400/40 hover:bg-cyan-400/15 text-slate-300 transition-all cursor-pointer active:scale-95 shadow-inner"
+                className="p-2 rounded-xl border border-white/10 bg-white/5 hover:border-cyan-400/40 hover:bg-cyan-400/15 text-slate-300 transition-all cursor-pointer active:scale-95 shadow-inner"
                 title="Refresh Room List"
               >
-                <RefreshCw className={`w-4 h-4 ${loadingRooms ? 'animate-spin text-cyan-400' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingRooms ? 'animate-spin text-cyan-400' : ''}`} />
               </button>
             </div>
 
-            <div className="mt-4 space-y-4">
-              {/* Your Gamer Tag Input */}
+            <div className="mt-4 space-y-3.5">
+              {/* Your Name Input */}
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Your GamerTag</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Your Name</label>
                 <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-cyan-300/60 pointer-events-none">
-                    <User className="w-4 h-4" />
-                  </div>
                   <input
                     ref={nameInputRef}
                     type="text"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    placeholder="Enter your gamer tag..."
+                    placeholder="Enter your name..."
                     maxLength={24}
-                    className="w-full rounded-2xl border border-white/15 bg-black/60 pl-10 pr-12 py-3 text-sm font-bold text-white outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all placeholder:text-slate-500 shadow-inner"
+                    className="w-full rounded-xl border border-white/10 bg-slate-900/90 pl-3.5 pr-10 py-2.5 text-sm text-white outline-none focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-400/20 transition-all placeholder:text-slate-500 shadow-inner"
                   />
                   <button
                     type="button"
@@ -912,9 +873,9 @@ export default function HomePage() {
                       clearError();
                     }}
                     title="Random Name"
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/40 text-cyan-300 hover:bg-cyan-400/35 transition-all cursor-pointer"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400/15 border border-cyan-400/30 text-cyan-300 hover:bg-cyan-400/25 transition-all cursor-pointer"
                   >
-                    <Sparkles className="w-4 h-4" />
+                    <Sparkles className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -922,10 +883,10 @@ export default function HomePage() {
               {/* Active Rooms */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     Active Lobbies ({rooms.length})
                   </span>
-                  {loadingRooms && <span className="text-[9px] text-cyan-300 animate-pulse font-bold">Refreshing...</span>}
+                  {loadingRooms && <span className="text-[9px] text-cyan-300 animate-pulse font-semibold">Refreshing...</span>}
                 </div>
 
                 {rooms.length > 0 ? (
@@ -940,8 +901,8 @@ export default function HomePage() {
                           onClick={() => handleSelectRoom(room)}
                           className={`flex items-center gap-2.5 p-2.5 rounded-2xl border transition-all cursor-pointer ${
                             isSelected
-                              ? 'border-2 border-cyan-400 bg-cyan-400/15 shadow-[0_0_15px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/40'
-                              : 'border border-white/10 bg-black/40 hover:border-cyan-400/40 hover:bg-white/[0.05] hover:text-white'
+                              ? 'border-2 border-cyan-400/80 bg-cyan-400/10 shadow-[0_0_15px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/30'
+                              : 'border border-white/10 bg-slate-900/60 hover:border-cyan-400/30 hover:bg-slate-800/60 hover:text-white'
                           }`}
                         >
                           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-black text-xs shadow-md">
@@ -967,7 +928,7 @@ export default function HomePage() {
                     })}
                   </div>
                 ) : (
-                  <div className="py-5 text-center rounded-2xl border border-dashed border-white/10 bg-black/30 text-xs text-slate-400 font-medium">
+                  <div className="py-4 text-center rounded-2xl border border-dashed border-white/10 bg-slate-900/40 text-xs text-slate-400 font-medium">
                     No active rooms found. Host a game to start!
                   </div>
                 )}
@@ -975,7 +936,7 @@ export default function HomePage() {
 
               {/* PIN & Submit */}
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Game PIN</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Game PIN</label>
                 <div className="relative flex items-center">
                   <input
                     type="text"
@@ -984,27 +945,27 @@ export default function HomePage() {
                     onKeyDown={e => e.key === 'Enter' && (isSelectedRoomPlaying ? handleWatch() : handleJoin())}
                     placeholder="6-digit PIN..."
                     maxLength={6}
-                    className="w-full rounded-2xl border border-white/15 bg-black/60 pl-4 pr-32 py-3.5 font-mono text-lg tracking-[0.25em] text-cyan-300 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-sans shadow-inner font-black"
+                    className="w-full rounded-xl border border-white/10 bg-slate-900/90 pl-3.5 pr-28 py-3 font-mono text-base tracking-[0.25em] text-cyan-300 outline-none focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-400/20 transition-all placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-sans shadow-inner"
                   />
                   <button
                     type="button"
                     onClick={isSelectedRoomPlaying ? handleWatch : handleJoin}
                     disabled={loading || !pin.trim()}
-                    className="absolute right-1.5 top-1.5 bottom-1.5 px-6 rounded-xl bg-gradient-to-r from-cyan-400 via-teal-400 to-blue-500 hover:from-cyan-300 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_22px_rgba(6,182,212,0.6)] transition-all cursor-pointer disabled:opacity-40"
+                    className="absolute right-1.5 top-1.5 bottom-1.5 px-5 rounded-lg bg-gradient-to-r from-cyan-400 via-teal-400 to-blue-500 hover:from-cyan-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.35)] hover:shadow-[0_0_22px_rgba(6,182,212,0.55)] transition-all cursor-pointer disabled:opacity-40"
                   >
                     {loading ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                     ) : isSelectedRoomPlaying ? (
                       'WATCH'
                     ) : (
-                      'JOIN ARENA'
+                      'JOIN'
                     )}
                   </button>
                 </div>
               </div>
 
               {visibleError && (
-                <div className="p-3 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-300 font-semibold">
+                <div className="p-2.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-300 font-semibold">
                   {visibleError}
                 </div>
               )}
@@ -1013,12 +974,12 @@ export default function HomePage() {
         )}
 
         {/* ======================================================== */}
-        {/* SUBMENU: SOLO VS BOT (GAMIFIED COSMIC OBSIDIAN DECK) */}
+        {/* SUBMENU: SOLO VS BOT (COSMIC GLASS IDENTITY) */}
         {/* ======================================================== */}
         {mode === 'bot' && (
-          <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-purple-400/35 bg-gradient-to-b from-[#140e28]/98 via-[#0d0a1c]/98 to-[#070512]/99 p-5 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.9),0_0_40px_rgba(168,85,247,0.15)] backdrop-blur-2xl ring-1 ring-white/10 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+          <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-white/15 bg-gradient-to-b from-slate-900/90 via-[#0a0f24]/95 to-[#050814]/98 p-5 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.85),0_0_40px_rgba(168,85,247,0.12)] backdrop-blur-2xl ring-1 ring-white/10 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
             {/* Soft Purple Accent Line */}
-            <span className="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-purple-400/70 to-transparent" />
+            <span className="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-purple-400/60 to-transparent" />
 
             {/* Header */}
             <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
@@ -1033,8 +994,8 @@ export default function HomePage() {
                 <div>
                   <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
                     <span>Solo vs AI Bot</span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-400/20 to-indigo-500/20 border border-purple-400/40 px-2.5 py-0.5 text-[10px] font-black text-purple-300 uppercase tracking-wider shadow-sm">
-                      <Bot className="w-3 h-3 text-purple-300" /> AI Arena
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-400/20 to-indigo-500/20 border border-purple-400/40 px-2 py-0.5 text-[10px] font-black text-purple-300 uppercase tracking-wider shadow-sm">
+                      <Bot className="w-3 h-3 text-purple-300" /> AI Practice
                     </span>
                   </h2>
                   <p className="text-[11px] text-slate-400 font-medium">Select bot difficulty and battle rules</p>
@@ -1042,10 +1003,10 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="mt-4 space-y-4">
-              {/* Bot Difficulty Selector */}
+            <div className="mt-4 space-y-3.5">
+              {/* Bot Difficulty */}
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Select AI Opponent</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Select Opponent</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(['easy', 'medium', 'hard'] as const).map(diff => {
                     const profile = BOT_PROFILES[diff];
@@ -1055,10 +1016,10 @@ export default function HomePage() {
                         key={diff}
                         type="button"
                         onClick={() => setBotDifficulty(diff)}
-                        className={`flex flex-col items-center p-3 rounded-2xl border transition-all cursor-pointer ${
+                        className={`flex flex-col items-center p-2.5 rounded-2xl border transition-all cursor-pointer ${
                           isSelected
-                            ? 'border-2 border-purple-400 bg-purple-400/20 shadow-[0_0_18px_rgba(168,85,247,0.35)] ring-1 ring-purple-400/50'
-                            : 'border border-white/10 bg-black/40 text-slate-400 hover:border-purple-400/30 hover:bg-white/[0.05] hover:text-slate-200'
+                            ? 'border-2 border-purple-400/80 bg-purple-400/10 shadow-[0_0_15px_rgba(168,85,247,0.25)] ring-1 ring-purple-400/30'
+                            : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:border-purple-400/30 hover:bg-slate-800/60 hover:text-slate-200'
                         }`}
                       >
                         <Bot className={`w-5 h-5 mb-1 ${isSelected ? 'text-purple-300' : 'text-slate-400'}`} />
@@ -1072,66 +1033,57 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Game Mode */}
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Battle Mode</label>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setGameMode('HP')}
-                    className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                      gameMode === 'HP'
-                        ? 'border-2 border-purple-400 bg-purple-400/20 text-white shadow-[0_0_15px_rgba(168,85,247,0.25)] ring-1 ring-purple-400/40'
-                        : 'border border-white/10 bg-black/40 text-slate-400 hover:border-white/20 hover:bg-white/[0.05]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Swords className={`w-4 h-4 ${gameMode === 'HP' ? 'text-purple-300' : 'text-slate-400'}`} />
-                      <span className={`block font-black text-xs sm:text-sm ${gameMode === 'HP' ? 'text-white' : 'text-slate-300'}`}>
-                        HP Battle
-                      </span>
-                    </div>
-                    <span className={`mt-0.5 block text-[10px] font-medium ${gameMode === 'HP' ? 'text-purple-200/90' : 'text-slate-500'}`}>
-                      Score deals HP damage
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setGameMode('TURNS')}
-                    className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                      gameMode === 'TURNS'
-                        ? 'border-2 border-purple-400 bg-purple-400/20 text-white shadow-[0_0_15px_rgba(168,85,247,0.25)] ring-1 ring-purple-400/40'
-                        : 'border border-white/10 bg-black/40 text-slate-400 hover:border-white/20 hover:bg-white/[0.05]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Crown className={`w-4 h-4 ${gameMode === 'TURNS' ? 'text-purple-300' : 'text-slate-400'}`} />
-                      <span className={`block font-black text-xs sm:text-sm ${gameMode === 'TURNS' ? 'text-white' : 'text-slate-300'}`}>
-                        Round Match
-                      </span>
-                    </div>
-                    <span className={`mt-0.5 block text-[10px] font-medium ${gameMode === 'TURNS' ? 'text-purple-200/90' : 'text-slate-500'}`}>
-                      Highest total score wins
-                    </span>
-                  </button>
-                </div>
+              {/* Game Mode - No icons, unified purple palette */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setGameMode('HP')}
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    gameMode === 'HP'
+                      ? 'border-2 border-purple-400/80 bg-purple-400/10 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)] ring-1 ring-purple-400/30'
+                      : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:border-white/20 hover:bg-slate-800/60'
+                  }`}
+                >
+                  <span className={`block font-black text-xs sm:text-sm ${gameMode === 'HP' ? 'text-white' : 'text-slate-300'}`}>
+                    HP Battle
+                  </span>
+                  <span className={`text-[10px] font-medium ${gameMode === 'HP' ? 'text-purple-200/80' : 'text-slate-400'}`}>
+                    Score deals HP damage
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGameMode('TURNS')}
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    gameMode === 'TURNS'
+                      ? 'border-2 border-purple-400/80 bg-purple-400/10 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)] ring-1 ring-purple-400/30'
+                      : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:border-white/20 hover:bg-slate-800/60'
+                  }`}
+                >
+                  <span className={`block font-black text-xs sm:text-sm ${gameMode === 'TURNS' ? 'text-white' : 'text-slate-300'}`}>
+                    Round Match
+                  </span>
+                  <span className={`text-[10px] font-medium ${gameMode === 'TURNS' ? 'text-purple-200/80' : 'text-slate-400'}`}>
+                    Highest total score wins
+                  </span>
+                </button>
               </div>
 
               {/* Matchup Summary */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl border border-purple-400/30 bg-purple-950/30 shadow-inner">
+              <div className="flex items-center justify-between p-3 rounded-2xl border border-purple-400/25 bg-purple-950/25 shadow-inner">
                 <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <span className="text-slate-400 font-semibold">Duel:</span>
+                  <span className="text-slate-400 font-semibold">Matchup:</span>
                   <span className="font-bold text-white">{name.trim() || 'Player'}</span>
                   <span className="text-purple-400 font-black">VS</span>
                   <span className="font-bold text-purple-300">{BOT_PROFILES[botDifficulty].name}</span>
                 </div>
                 <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-400/30 text-[9px] font-black text-purple-200 uppercase tracking-wider">
-                  1v1 Battle
+                  1v1 Match
                 </span>
               </div>
 
               {visibleError && (
-                <div className="p-3 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-300 font-semibold">
+                <div className="p-2.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-300 font-semibold">
                   {visibleError}
                 </div>
               )}
@@ -1141,17 +1093,17 @@ export default function HomePage() {
                 type="button"
                 onClick={handleCreateBot}
                 disabled={loading}
-                className="w-full mt-2 py-4 rounded-2xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-black text-sm sm:text-base tracking-wider uppercase shadow-[0_10px_35px_rgba(168,85,247,0.45)] hover:shadow-[0_14px_45px_rgba(168,85,247,0.6)] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2.5 border-2 border-purple-300/60"
+                className="w-full mt-2 py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-black text-sm sm:text-base tracking-wider uppercase shadow-[0_4px_20px_rgba(168,85,247,0.35)] hover:shadow-[0_6px_28px_rgba(168,85,247,0.5)] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 border border-purple-300/40"
               >
                 {loading ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                    <span>Initiating AI Battle...</span>
+                    <span>Starting AI Match...</span>
                   </>
                 ) : (
                   <>
-                    <Bot className="w-5 h-5 text-white" />
-                    <span>START AI BATTLE</span>
+                    <Bot className="w-4 h-4 text-white" />
+                    <span>START BOT MATCH</span>
                   </>
                 )}
               </button>
@@ -1161,9 +1113,9 @@ export default function HomePage() {
 
       </main>
 
-      {/* BOTTOM ACTION BAR (Home Screen Only) */}
+      {/* BOTTOM ACTION BAR (ONLY ON HOME MODE) */}
       {mode === 'home' && (
-        <footer className="relative z-30 w-full max-w-[550px] flex items-center justify-center gap-2.5 sm:gap-3 shrink-0 pt-2 pb-1 sm:pb-2 animate-in fade-in duration-150">
+        <footer className="relative z-30 w-full max-w-[550px] flex items-center justify-center gap-2.5 sm:gap-3 shrink-0 pt-2 pb-1 sm:pb-2">
           {/* Match Logs Button */}
           <button
             type="button"
