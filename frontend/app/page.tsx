@@ -414,27 +414,27 @@ export default function HomePage() {
       </header>
 
       {/* 2. CENTER STAGE (NO SCROLLING) */}
-      <main className="relative z-20 flex w-full max-w-lg flex-1 flex-col items-center justify-center my-auto">
+      <main className="relative z-20 flex w-full max-w-xl flex-1 flex-col items-center justify-center my-auto">
         
         {/* HERO BRANDING HEADER */}
-        <div className="flex flex-col items-center text-center mb-4 sm:mb-5">
+        <div className="flex flex-col items-center text-center mb-5 sm:mb-6">
           {/* Floating 3D WordX Cube Logo */}
-          <div className="relative mb-1.5 flex items-center justify-center">
+          <div className="relative mb-2 flex items-center justify-center">
             <div className="pointer-events-none absolute -inset-6 rounded-full bg-amber-400/20 blur-2xl" />
             <div className="relative transform hover:scale-105 transition-transform duration-200 cursor-pointer drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)]">
               <Image
                 src="/wordx-icon-256.png?v=20260915"
                 alt="WordX Logo"
-                width={80}
-                height={80}
+                width={90}
+                height={90}
                 priority
-                className="h-14 w-14 sm:h-16 sm:w-16 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.5)]"
+                className="h-16 w-16 sm:h-20 sm:w-20 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.5)]"
               />
             </div>
           </div>
 
           {/* Heading */}
-          <h1 className="relative text-3xl sm:text-4xl font-black tracking-tight leading-none select-none">
+          <h1 className="relative text-4xl sm:text-5xl font-black tracking-tight leading-none select-none">
             <span className="bg-gradient-to-b from-white via-slate-100 to-slate-300 bg-clip-text text-transparent drop-shadow">
               Word
             </span>
@@ -448,7 +448,7 @@ export default function HomePage() {
         {/* MAIN MENU DECK (HOST MATCH TOP, JOIN & BOT BELOW) */}
         {/* ======================================================== */}
         {mode === 'home' && (
-          <div className="w-full max-w-[490px] flex flex-col gap-2.5 sm:gap-3 animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-[550px] flex flex-col gap-3.5 sm:gap-4 animate-in fade-in zoom-in-95 duration-200">
             {/* Dissolved Room Notice / General Error */}
             {visibleError && (
               <div className="p-3 rounded-2xl border border-rose-500/40 bg-rose-500/15 text-xs text-rose-300 font-semibold flex items-center justify-between shadow-md">
@@ -459,75 +459,75 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* 1. TOP FULL-WIDTH HERO: HOST MATCH */}
+            {/* 1. TOP FULL-WIDTH HERO: HOST MATCH (TALL & BOLD) */}
             <div
               onClick={() => { clearError(); setMode('create'); }}
-              className="group relative flex items-center justify-between rounded-3xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-950/60 via-slate-900/90 to-amber-950/40 p-3.5 sm:p-4 shadow-[0_10px_35px_rgba(245,158,11,0.2)] hover:border-amber-400 hover:shadow-[0_14px_45px_rgba(245,158,11,0.35)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
+              className="group relative flex items-center justify-between min-h-[84px] sm:min-h-[96px] rounded-3xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-950/60 via-slate-900/90 to-amber-950/40 p-4 sm:p-5 shadow-[0_12px_40px_rgba(245,158,11,0.25)] hover:border-amber-400 hover:shadow-[0_16px_50px_rgba(245,158,11,0.4)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
             >
-              <div className="flex items-center gap-3 sm:gap-3.5">
-                <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 font-black shadow-[0_0_20px_rgba(245,158,11,0.5)] group-hover:scale-105 transition-transform">
-                  <Crown className="w-5 h-5 sm:w-6 sm:h-6" />
+              <div className="flex items-center gap-3.5 sm:gap-4">
+                <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 font-black shadow-[0_0_22px_rgba(245,158,11,0.55)] group-hover:scale-105 transition-transform">
+                  <Crown className="w-6 h-6 sm:w-7 sm:h-7" />
                 </div>
                 <div>
-                  <h3 className="text-lg sm:text-xl font-black text-white group-hover:text-amber-200 transition-colors">
+                  <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-amber-200 transition-colors tracking-tight">
                     Host Match
                   </h3>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs sm:text-xs tracking-wider shadow-md group-hover:from-amber-300 group-hover:to-amber-400 transition-all shrink-0">
+              <div className="flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs sm:text-sm tracking-wider shadow-md group-hover:from-amber-300 group-hover:to-amber-400 transition-all shrink-0">
                 <span>CREATE ROOM</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 sm:w-4.5 sm:h-4.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
 
             {/* 2. BOTTOM ROW: JOIN MATCH (WIDER 7-COL) & VS BOT (COMPACT 5-COL) */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 sm:gap-3">
-              {/* JOIN MATCH (7 COLS - LONGER) */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-3.5">
+              {/* JOIN MATCH (7 COLS - TALL & WIDER) */}
               <div
                 onClick={handleOpenJoin}
-                className="sm:col-span-7 group relative flex items-center justify-between rounded-3xl border-2 border-cyan-400/40 bg-gradient-to-br from-cyan-950/40 via-slate-900/90 to-slate-950/95 p-3 sm:p-3.5 shadow-[0_8px_30px_rgba(6,182,212,0.15)] hover:border-cyan-400 hover:shadow-[0_12px_35px_rgba(6,182,212,0.3)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
+                className="sm:col-span-7 group relative flex items-center justify-between min-h-[76px] sm:min-h-[84px] rounded-3xl border-2 border-cyan-400/40 bg-gradient-to-br from-cyan-950/40 via-slate-900/90 to-slate-950/95 p-3.5 sm:p-4.5 shadow-[0_8px_30px_rgba(6,182,212,0.18)] hover:border-cyan-400 hover:shadow-[0_14px_40px_rgba(6,182,212,0.35)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
               >
-                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                  <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-black shadow-[0_0_18px_rgba(6,182,212,0.4)] group-hover:scale-105 transition-transform">
-                    <Radio className="w-4.5 h-4.5" />
+                <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-black shadow-[0_0_18px_rgba(6,182,212,0.45)] group-hover:scale-105 transition-transform">
+                    <Radio className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-black text-white group-hover:text-cyan-200 transition-colors truncate">
+                    <h3 className="text-base sm:text-lg font-black text-white group-hover:text-cyan-200 transition-colors truncate">
                       Join Match
                     </h3>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse shrink-0" />
-                      <span className="text-[10px] sm:text-[11px] font-bold text-cyan-300 truncate">
+                      <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
+                      <span className="text-[11px] sm:text-xs font-bold text-cyan-300 truncate">
                         {rooms.length} Active {rooms.length === 1 ? 'Room' : 'Rooms'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 group-hover:bg-cyan-500/30 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5">
-                  <ArrowRight className="w-3.5 h-3.5" />
+                <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 group-hover:bg-cyan-500/30 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5">
+                  <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
 
-              {/* PLAY VS AI BOT (5 COLS - COMPACT) */}
+              {/* PLAY VS AI BOT (5 COLS - TALL & COMPACT) */}
               <div
                 onClick={() => { clearError(); setMode('bot'); }}
-                className="sm:col-span-5 group relative flex items-center justify-between rounded-3xl border-2 border-purple-400/40 bg-gradient-to-br from-purple-950/40 via-slate-900/90 to-slate-950/95 p-3 sm:p-3.5 shadow-[0_8px_30px_rgba(168,85,247,0.15)] hover:border-purple-400 hover:shadow-[0_12px_35px_rgba(168,85,247,0.3)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
+                className="sm:col-span-5 group relative flex items-center justify-between min-h-[76px] sm:min-h-[84px] rounded-3xl border-2 border-purple-400/40 bg-gradient-to-br from-purple-950/40 via-slate-900/90 to-slate-950/95 p-3.5 sm:p-4.5 shadow-[0_8px_30px_rgba(168,85,247,0.18)] hover:border-purple-400 hover:shadow-[0_14px_40px_rgba(168,85,247,0.35)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
               >
-                <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                  <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-400 to-indigo-600 text-slate-950 font-black shadow-[0_0_18px_rgba(168,85,247,0.4)] group-hover:scale-105 transition-transform">
-                    <Bot className="w-4.5 h-4.5" />
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-400 to-indigo-600 text-slate-950 font-black shadow-[0_0_18px_rgba(168,85,247,0.45)] group-hover:scale-105 transition-transform">
+                    <Bot className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-black text-white group-hover:text-purple-200 transition-colors truncate">
+                    <h3 className="text-base sm:text-lg font-black text-white group-hover:text-purple-200 transition-colors truncate">
                       VS Bot
                     </h3>
                   </div>
                 </div>
 
-                <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-purple-500/15 border border-purple-400/30 text-purple-300 group-hover:bg-purple-500/30 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5">
-                  <ArrowRight className="w-3.5 h-3.5" />
+                <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-purple-500/15 border border-purple-400/30 text-purple-300 group-hover:bg-purple-500/30 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5">
+                  <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
             </div>
