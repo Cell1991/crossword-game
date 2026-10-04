@@ -268,7 +268,6 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     prevBoardStateRef.current = boardState || {};
 
     const startAnimLoop = () => {
-      if (lowPower) return;
       if (animFrameRef.current) return;
       const step = (time: number) => {
         draw();

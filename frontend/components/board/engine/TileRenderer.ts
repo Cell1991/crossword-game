@@ -392,7 +392,7 @@ export class TileRenderer {
     let flipPop = 1.0;
     let flipLiftY = 0;
 
-    if (!lowPower && flipStart && animTime) {
+    if (flipStart && animTime) {
       const flipElapsed = animTime - flipStart;
       const flipDuration = 480;
       if (flipElapsed >= 0 && flipElapsed < flipDuration) {
@@ -423,7 +423,7 @@ export class TileRenderer {
     const isPower = isConfirmed && isPowerCell(row, col);
     const isSpecialCellTile = is2L || is3L || isPower;
 
-    if (!lowPower && animStart && animTime && !isFlipping) {
+    if (animStart && animTime && !isFlipping) {
       const elapsed = animTime - animStart;
       if (isSpecialCellTile || isFrozen) {
         if (elapsed >= 0 && elapsed < 650) {
@@ -531,23 +531,23 @@ export class TileRenderer {
       if (!lowPower) ctx.restore();
 
       // Atmospheric outer aura on the board under the tile
-      if (!lowPower && (isPlacedTile || isLastMove)) {
+      if (isPlacedTile || isLastMove) {
         ctx.save();
         if (isCorrectPlacement) {
           ctx.shadowColor = 'rgba(34, 197, 94, 0.9)';
-          ctx.shadowBlur = Math.max(12, cellSize * 0.28);
+          ctx.shadowBlur = lowPower ? 0 : Math.max(12, cellSize * 0.28);
           ctx.fillStyle = 'rgba(34, 197, 94, 0.35)';
         } else if (isInvalidPlacement) {
           ctx.shadowColor = 'rgba(244, 63, 94, 0.9)';
-          ctx.shadowBlur = Math.max(12, cellSize * 0.28);
+          ctx.shadowBlur = lowPower ? 0 : Math.max(12, cellSize * 0.28);
           ctx.fillStyle = 'rgba(244, 63, 94, 0.35)';
         } else if (isPendingPlacement) {
           ctx.shadowColor = 'rgba(14, 165, 233, 0.85)';
-          ctx.shadowBlur = Math.max(10, cellSize * 0.24);
+          ctx.shadowBlur = lowPower ? 0 : Math.max(10, cellSize * 0.24);
           ctx.fillStyle = 'rgba(14, 165, 233, 0.3)';
         } else if (isLastMove) {
           ctx.shadowColor = 'rgba(245, 158, 11, 0.8)';
-          ctx.shadowBlur = Math.max(9, cellSize * 0.22);
+          ctx.shadowBlur = lowPower ? 0 : Math.max(9, cellSize * 0.22);
           ctx.fillStyle = 'rgba(245, 158, 11, 0.22)';
         }
         drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
@@ -1001,7 +1001,7 @@ export class TileRenderer {
     }
 
     // Shimmer wave gleam across temporary placed tiles
-    if (isTemporary && !effectiveIsRemote && animTime && !lowPower) {
+    if (isTemporary && !effectiveIsRemote && animTime) {
       const phase = (animTime / 1400) % 1;
       const gleamX = x + pad + (tileW * 2.2) * phase - tileW * 0.6;
       const gleamGrad = ctx.createLinearGradient(gleamX - 18, y + pad, gleamX + 18, y + pad + tileW);
@@ -1032,13 +1032,15 @@ export class TileRenderer {
     }
 
     // 6. 3D Card Flip Visual FX (Celestial Lens Flare Glint at 50% midpoint & Golden Ripple Wave on settle)
-    if (isFlipping && !lowPower) {
+    if (isFlipping) {
       // Midpoint Lens Flare Sparkle (0.35 <= flipProgress <= 0.65)
       if (flipProgress >= 0.35 && flipProgress <= 0.65) {
         const midT = 1.0 - Math.abs(flipProgress - 0.5) / 0.15; // 0 -> 1 -> 0
         ctx.save();
-        ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = Math.max(12, cellSize * 0.35 * midT);
+        if (!lowPower) {
+          ctx.shadowColor = '#38bdf8';
+          ctx.shadowBlur = Math.max(12, cellSize * 0.35 * midT);
+        }
         
         // Horizontal energy beam
         const beamW = cellSize * (0.8 + midT * 0.6);
@@ -1082,7 +1084,7 @@ export class TileRenderer {
     }
 
     // 7. Gemstone Transformation FX: Shockwave Aura Ring & Specular Beam Sweep
-    if (morphProgress < 1.0 && !lowPower && (isSpecialCellTile || isFrozen)) {
+    if (morphProgress < 1.0 && (isSpecialCellTile || isFrozen)) {
       ctx.save();
       const waveRadius = tileW * (0.4 + morphProgress * 0.75);
       const waveAlpha = (1 - morphProgress) * 0.85;
@@ -1094,8 +1096,10 @@ export class TileRenderer {
       // 7.1 Expanding Shockwave Ring
       ctx.strokeStyle = `${auraColor}${waveAlpha})`;
       ctx.lineWidth = Math.max(1.5, cellSize * 0.045 * (1 - morphProgress));
-      ctx.shadowColor = `${auraColor}1)`;
-      ctx.shadowBlur = Math.max(4, cellSize * 0.18);
+      if (!lowPower) {
+        ctx.shadowColor = `${auraColor}1)`;
+        ctx.shadowBlur = Math.max(4, cellSize * 0.18);
+      }
       ctx.beginPath();
       ctx.arc(cx, cy, waveRadius, 0, Math.PI * 2);
       ctx.stroke();
@@ -1117,7 +1121,7 @@ export class TileRenderer {
     }
 
     // Landing drop shockwave on the board
-    if (animStart && animProgress < 1.0 && !lowPower && !isSpecialCellTile && !isFrozen && !isFlipping) {
+    if (animStart && animProgress < 1.0 && !isSpecialCellTile && !isFrozen && !isFlipping) {
       ctx.save();
       ctx.beginPath();
       const waveRadius = (tileW * 0.48) + (cellSize * 0.38) * animProgress;
