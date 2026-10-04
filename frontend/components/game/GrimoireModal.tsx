@@ -18,20 +18,16 @@ interface GrimoireModalProps {
 
 interface GrimoireWordRowProps {
   word: string;
-  isRightCol: boolean;
 }
 
 const GrimoireWordRow = React.memo(function GrimoireWordRow({
   word,
-  isRightCol,
 }: GrimoireWordRowProps) {
   return (
     <div
-      className={`flex items-center justify-start px-4 sm:px-6 py-2.5 sm:py-3 border-b border-indigo-500/15 ${
-        isRightCol ? '' : 'border-r border-indigo-500/15'
-      } hover:bg-amber-400/[0.04] transition-colors select-text`}
+      className="flex items-center justify-start px-3.5 sm:px-4 py-2 sm:py-2.5 border-b border-r border-indigo-500/15 [&:nth-child(2n)]:border-r-0 md:[&:nth-child(2n)]:border-r md:[&:nth-child(4n)]:border-r-0 hover:bg-amber-400/[0.04] transition-colors select-text"
     >
-      <span className="font-serif font-bold text-base sm:text-[17px] tracking-[0.14em] text-[#fff6e0] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+      <span className="font-serif font-bold text-sm sm:text-base tracking-[0.12em] text-[#fff6e0] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
         {word}
       </span>
     </div>
@@ -122,7 +118,7 @@ export const GrimoireModal = React.memo(function GrimoireModal({
             exit={{ opacity: 0, y: 8, scale: 0.98 }}
             transition={{ duration: 0.14, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
-            className="grimoire-dialog relative z-10 flex flex-col w-full max-w-2xl h-[560px] max-h-[85vh] overflow-hidden rounded-2xl sm:rounded-3xl border border-amber-400/40 bg-gradient-to-b from-[#12142e] via-[#0b0d1e] to-[#060710] shadow-[0_20px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(245,158,11,0.2)]"
+            className="grimoire-dialog relative z-10 flex flex-col w-full max-w-2xl md:max-w-3xl lg:max-w-4xl h-[560px] max-h-[85vh] overflow-hidden rounded-2xl sm:rounded-3xl border border-amber-400/40 bg-gradient-to-b from-[#12142e] via-[#0b0d1e] to-[#060710] shadow-[0_20px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(245,158,11,0.2)]"
           >
             {/* Top Celestial Highlight */}
             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-300/80 via-cyan-300/60 to-transparent pointer-events-none" />
@@ -214,17 +210,13 @@ export const GrimoireModal = React.memo(function GrimoireModal({
                 </div>
               ) : (
                 <div className="rounded-xl sm:rounded-2xl border border-indigo-500/30 bg-[#080a1c] overflow-hidden shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]">
-                  <div className="grid grid-cols-2">
-                    {filteredWords.map((word, index) => {
-                      const isRightCol = index % 2 === 1;
-                      return (
-                        <GrimoireWordRow
-                          key={`${word}-${index}`}
-                          word={word}
-                          isRightCol={isRightCol}
-                        />
-                      );
-                    })}
+                  <div className="grid grid-cols-2 md:grid-cols-4">
+                    {filteredWords.map((word, index) => (
+                      <GrimoireWordRow
+                        key={`${word}-${index}`}
+                        word={word}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
