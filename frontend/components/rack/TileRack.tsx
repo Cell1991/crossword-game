@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo, useRef, useState } from 'react';
+import React, { memo, useRef, useState, useEffect } from 'react';
 import { Tile } from '@/lib/types';
 import { isBlankLetter } from '@/lib/tiles';
 import { moveFixedElement } from '@/lib/dom';
@@ -79,6 +79,34 @@ export const TileRack = memo(function TileRack({
   const [floatingExitScore, setFloatingExitScore] = useState<number | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number; slotIndex: number; tile: Tile } | null>(null);
   const didDragRef = useRef(false);
+
+  // Track previously known tile IDs so only newly drawn tiles trigger the spawn animation
+  const prevTileIdsRef = useRef<Set<string>>(
+    new Set(slots.filter((t): t is Tile => Boolean(t)).map(t => t.id))
+  );
+  const [newlyDrawnTileMap, setNewlyDrawnTileMap] = useState<Map<string, number>>(new Map());
+
+  useEffect(() => {
+    const currentTiles = slots.filter((t): t is Tile => Boolean(t));
+    const newMap = new Map<string, number>();
+    let staggerIdx = 0;
+
+    for (const t of currentTiles) {
+      if (!prevTileIdsRef.current.has(t.id)) {
+        newMap.set(t.id, staggerIdx++);
+      }
+    }
+
+    prevTileIdsRef.current = new Set(currentTiles.map(t => t.id));
+
+    if (newMap.size > 0) {
+      setNewlyDrawnTileMap(newMap);
+      const timer = setTimeout(() => {
+        setNewlyDrawnTileMap(new Map());
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [slots]);
 
   const tileCount = slots.reduce((total, tile) => (tile ? total + 1 : total), 0);
   const isExchanging = exchangeTileIds !== null;
@@ -204,6 +232,10 @@ export const TileRack = memo(function TileRack({
                 const isDesignatedBlank = isBlankLetter(tile.letter) && Boolean(designatedBlankLetters[tile.id]);
                 const isMarkedForExchange = exchangeTileIds?.includes(tile.id) ?? false;
                 const isDragging = draggedSlot === slotIndex || (isExternalDragActive && selectedTileId === tile.id);
+                const isNewlyDrawn = newlyDrawnTileMap.has(tile.id);
+                const staggerIndex = newlyDrawnTileMap.get(tile.id) ?? 0;
+                const staggerDelayMs = staggerIndex * 75;
+
                 return (
                   <div
                     key={`slot-${slotIndex}`}
@@ -222,6 +254,16 @@ export const TileRack = memo(function TileRack({
                       <span className="absolute inset-[6px] rounded-md border border-dashed border-amber-400/20" />
                     </div>
 
+                    {/* Cosmic Draw Glow Ring Pulse */}
+                    {isNewlyDrawn && (
+                      <div
+                        key={`glow-ring-${tile.id}`}
+                        aria-hidden="true"
+                        style={{ animationDelay: `${staggerDelayMs}ms` }}
+                        className="animate-tile-draw-glow-ring absolute -inset-1 z-30 rounded-xl border-2 pointer-events-none"
+                      />
+                    )}
+
                     {/* Tile Button with GPU CSS transforms */}
                     <button
                       key={tile.id}
@@ -232,7 +274,10 @@ export const TileRack = memo(function TileRack({
                       onPointerUp={(event) => handlePointerUp(event, tile)}
                       disabled={!canStageMove}
                       aria-pressed={isExchanging ? isMarkedForExchange : undefined}
+                      style={isNewlyDrawn ? { animationDelay: `${staggerDelayMs}ms` } : undefined}
                       className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-200/90 font-sans select-none touch-none overflow-hidden sm:rounded-xl active:scale-95 transition-all ${
+                        isNewlyDrawn ? 'animate-tile-draw-spawn' : ''
+                      } ${
                         isDragging
                           ? 'z-20 scale-105 -translate-y-2.5 opacity-40 shadow-2xl cursor-grabbing transition-none'
                           : isMarkedForExchange

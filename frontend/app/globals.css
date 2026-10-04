@@ -907,5 +907,60 @@ div[data-nextjs-dialog-backdrop] {
   color: #fecdd3;
 }
 
+/* Newly Drawn Rack Tile Spawn Animation (GPU Accelerated) */
+@keyframes tile-draw-spawn {
+  0% {
+    opacity: 0;
+    transform: translateY(-26px) scale(0.55) rotate(-6deg);
+    filter: brightness(2.2) drop-shadow(0 0 20px rgba(251, 191, 36, 1));
+  }
+  42% {
+    opacity: 1;
+    transform: translateY(4px) scale(1.1) rotate(1.5deg);
+    filter: brightness(1.5) drop-shadow(0 0 16px rgba(245, 158, 11, 0.9));
+  }
+  72% {
+    transform: translateY(-2px) scale(0.97) rotate(0deg);
+    filter: brightness(1.18) drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
+}
+
+@keyframes tile-draw-glow-ring {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.7);
+    border-color: rgba(251, 191, 36, 0.95);
+    box-shadow: 0 0 22px rgba(251, 191, 36, 0.85), inset 0 0 12px rgba(251, 191, 36, 0.5);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.18);
+    border-color: rgba(245, 158, 11, 0.75);
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.6), inset 0 0 8px rgba(245, 158, 11, 0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+    border-color: rgba(245, 158, 11, 0);
+    box-shadow: 0 0 0 transparent, inset 0 0 0 transparent;
+  }
+}
+
+.animate-tile-draw-spawn {
+  animation: tile-draw-spawn 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity, filter;
+}
+
+.animate-tile-draw-glow-ring {
+  animation: tile-draw-glow-ring 680ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
 
 
