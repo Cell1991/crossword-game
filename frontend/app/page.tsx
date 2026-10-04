@@ -378,24 +378,38 @@ export default function HomePage() {
         <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
       </div>
 
-      {/* Layer 1: High-Definition Tactical Golden Crossword Grid */}
+      {/* Layer 1: Sleek Cinematic Tactical Grid (Refined, Subtle & Premium) */}
       <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden">
-        {/* Crisp Golden Crossword Grid Pattern */}
+        {/* Fine Tactical Crossword Matrix */}
         <div
-          className="absolute inset-0 opacity-85"
+          className="absolute inset-0"
           style={{
             backgroundImage: `
-              linear-gradient(to right, rgba(245, 158, 11, 0.32) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(245, 158, 11, 0.32) 1px, transparent 1px),
-              linear-gradient(to right, rgba(251, 191, 36, 0.70) 1.5px, transparent 1.5px),
-              linear-gradient(to bottom, rgba(251, 191, 36, 0.70) 1.5px, transparent 1.5px)
+              radial-gradient(circle, rgba(245, 158, 11, 0.35) 1px, transparent 1px),
+              linear-gradient(to right, rgba(245, 158, 11, 0.07) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(245, 158, 11, 0.07) 1px, transparent 1px)
             `,
-            backgroundSize: '48px 48px, 48px 48px, 192px 192px, 192px 192px',
+            backgroundSize: '36px 36px, 36px 36px, 36px 36px',
             backgroundPosition: 'center center',
+            maskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 40%, transparent 95%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 40%, transparent 95%)',
           }}
         />
-        {/* Vignette mask to gently fade corners while keeping the golden grid clearly visible */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(3,7,18,0.5)_100%)]" />
+
+        {/* Major Tactical Sector Grid */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(251, 191, 36, 0.16) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(251, 191, 36, 0.16) 1px, transparent 1px)
+            `,
+            backgroundSize: '144px 144px, 144px 144px',
+            backgroundPosition: 'center center',
+            maskImage: 'radial-gradient(ellipse 85% 85% at 50% 50%, black 30%, transparent 95%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at 50% 50%, black 30%, transparent 95%)',
+          }}
+        />
       </div>
 
       {/* Layer 2: Subtle Ambient Rising Beams & Particle Matrix */}
