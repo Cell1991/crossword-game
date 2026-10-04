@@ -19,11 +19,7 @@ import {
   Heart,
   Bot,
   User,
-  ZoomIn,
-  ZoomOut,
-  Maximize2,
   Sparkles,
-  Layers,
   ArrowLeft,
   BookOpen,
   CheckCircle2,
@@ -46,7 +42,7 @@ import {
   clearAllMatchHistory,
 } from '@/lib/api';
 import { BoardCanvas } from '@/components/board/BoardCanvas';
-import { useBoardCamera, useCameraScale, BUTTON_ZOOM_FACTOR } from '@/hooks/useBoardCamera';
+import { useBoardCamera } from '@/hooks/useBoardCamera';
 
 const EMPTY_CELL_POSITIONS: CellPosition[] = [];
 const noop = () => {};
@@ -60,19 +56,14 @@ interface MatchHistoryModalProps {
 interface ReplayBoardCanvasViewProps {
   boardState: Record<string, BoardCell>;
   temporaryTiles: PlacedTile[];
-  currentStep: number;
-  totalSteps: number;
 }
 
 const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
   boardState,
   temporaryTiles,
-  currentStep,
-  totalSteps,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const camera = useBoardCamera();
-  const scale = useCameraScale(camera);
 
   // Auto-center board when first mounted
   const hasInitializedCameraRef = useRef(false);
@@ -84,52 +75,7 @@ const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
   }, [camera]);
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-950/60 p-2.5 sm:p-4 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 min-h-[380px]">
-      {/* Board Top Toolbar */}
-      <div className="flex items-center justify-between pb-2.5 px-1 text-xs text-slate-300 shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 font-bold text-slate-100">
-            <Layers className="w-4 h-4 text-cyan-400" />
-            Board Reconstruction
-          </span>
-          <span className="text-slate-600">•</span>
-          <span className="text-[11px] font-medium text-slate-400">
-            {currentStep === 0 ? 'Initial Layout' : `Step ${currentStep} of ${totalSteps}`}
-          </span>
-        </div>
-
-        {/* Zoom Controls */}
-        <div className="flex items-center gap-1 bg-slate-900/90 border border-white/10 p-1 rounded-xl shadow-inner">
-          <button
-            type="button"
-            onClick={() => camera.zoomAtCenter(1 / BUTTON_ZOOM_FACTOR)}
-            className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer"
-            title="Zoom Out"
-          >
-            <ZoomOut className="w-3.5 h-3.5" />
-          </button>
-          <span className="text-[10px] font-mono w-9 text-center text-cyan-300 font-bold">
-            {Math.round(scale * 100)}%
-          </span>
-          <button
-            type="button"
-            onClick={() => camera.zoomAtCenter(BUTTON_ZOOM_FACTOR)}
-            className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer"
-            title="Zoom In"
-          >
-            <ZoomIn className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => camera.resetCamera()}
-            className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer ml-0.5"
-            title="Reset Zoom & Center Board"
-          >
-            <Maximize2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-
+    <div className="flex-1 flex flex-col bg-slate-950/60 p-2 sm:p-3 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 min-h-[380px]">
       {/* HTML5 Canvas Authentic Board */}
       <div className="relative flex-1 w-full h-full min-h-[300px] overflow-hidden rounded-2xl bg-[#040612] border border-amber-400/20 shadow-[inset_0_2px_20px_rgba(0,0,0,0.85)]">
         <BoardCanvas
@@ -706,8 +652,6 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                   <ReplayBoardCanvasView
                     boardState={replayBoardState}
                     temporaryTiles={replayTemporaryTiles}
-                    currentStep={currentStep}
-                    totalSteps={replayData.moves.length}
                   />
 
                   {/* RIGHT: PLAYBACK SCRUBBER, MOVE BREAKDOWN, RUNNING SCORES & MOVE HISTORY */}
