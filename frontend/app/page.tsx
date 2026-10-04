@@ -446,14 +446,9 @@ export default function HomePage() {
                   <Crown className="w-6 h-6 sm:w-7 sm:h-7" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white group-hover:text-amber-200 transition-colors">
-                      Host Match
-                    </h3>
-                    <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-[10px] font-black uppercase tracking-wider text-amber-300">
-                      Multiplayer
-                    </span>
-                  </div>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white group-hover:text-amber-200 transition-colors">
+                    Host Match
+                  </h3>
                 </div>
               </div>
 
