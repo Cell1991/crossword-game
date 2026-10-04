@@ -85,12 +85,23 @@ export const TileRack = memo(function TileRack({
     new Set(slots.filter((t): t is Tile => Boolean(t)).map(t => t.id))
   );
   const [newlyDrawnTileMap, setNewlyDrawnTileMap] = useState<Map<string, number>>(new Map());
-  const [shuffleKey, setShuffleKey] = useState<number>(0);
+  const [isShuffling, setIsShuffling] = useState<boolean>(false);
+  const shuffleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleShuffle = useCallback(() => {
-    setShuffleKey(prev => prev + 1);
+    if (shuffleTimerRef.current) clearTimeout(shuffleTimerRef.current);
+    setIsShuffling(true);
     onShuffleRack();
+    shuffleTimerRef.current = setTimeout(() => {
+      setIsShuffling(false);
+    }, 420);
   }, [onShuffleRack]);
+
+  useEffect(() => {
+    return () => {
+      if (shuffleTimerRef.current) clearTimeout(shuffleTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const currentTiles = slots.filter((t): t is Tile => Boolean(t));
@@ -240,8 +251,7 @@ export const TileRack = memo(function TileRack({
                 const isDragging = draggedSlot === slotIndex || (isExternalDragActive && selectedTileId === tile.id);
                 const isNewlyDrawn = newlyDrawnTileMap.has(tile.id);
                 const staggerIndex = newlyDrawnTileMap.get(tile.id) ?? 0;
-                const isShuffling = shuffleKey > 0;
-                const staggerDelayMs = isNewlyDrawn ? staggerIndex * 75 : isShuffling ? slotIndex * 35 : 0;
+                const staggerDelayMs = isNewlyDrawn ? staggerIndex * 75 : isShuffling ? slotIndex * 24 : 0;
                 const animClass = isNewlyDrawn
                   ? 'animate-tile-draw-spawn'
                   : isShuffling
@@ -278,7 +288,7 @@ export const TileRack = memo(function TileRack({
 
                     {/* Tile Button with GPU CSS transforms */}
                     <button
-                      key={`${tile.id}-shf-${shuffleKey}`}
+                      key={tile.id}
                       data-rack-slot={slotIndex}
                       data-rack-tile-id={tile.id}
                       onPointerDown={(event) => handlePointerDown(event, slotIndex, tile)}
@@ -398,7 +408,7 @@ export const TileRack = memo(function TileRack({
                   title="Shuffle rack tiles"
                 >
                   <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
-                  <Shuffle className={`w-4 h-4 relative z-10 group-hover:scale-110 transition-transform ${tileCount >= 2 && !isSubmitting ? 'text-amber-100 stroke-[3] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]' : 'text-slate-400 stroke-[2.5]'}`} />
+                  <Shuffle className={`w-4 h-4 relative z-10 transition-transform ${isShuffling ? 'animate-shuffle-spin text-amber-100' : 'group-hover:scale-110'} ${tileCount >= 2 && !isSubmitting ? 'text-amber-100 stroke-[3] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]' : 'text-slate-400 stroke-[2.5]'}`} />
                   <span className={`relative z-10 uppercase tracking-wider text-[11px] font-black ${tileCount >= 2 && !isSubmitting ? 'text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]' : 'text-slate-300'}`}>
                     Shuffle
                   </span>
@@ -630,7 +640,7 @@ export const TileRack = memo(function TileRack({
                 aria-label="Shuffle rack tiles"
               >
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
-                <Shuffle className={`w-4 h-4 relative z-10 ${tileCount >= 2 && !isSubmitting ? 'text-amber-100 stroke-[3] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]' : 'text-slate-400 stroke-[2.5]'}`} />
+                <Shuffle className={`w-4 h-4 relative z-10 transition-transform ${isShuffling ? 'animate-shuffle-spin text-amber-100' : ''} ${tileCount >= 2 && !isSubmitting ? 'text-amber-100 stroke-[3] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]' : 'text-slate-400 stroke-[2.5]'}`} />
               </button>
 
               {/* 3. Swap */}
