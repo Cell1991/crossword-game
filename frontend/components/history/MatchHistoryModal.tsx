@@ -49,7 +49,6 @@ import {
   getMatchHistory,
   getMatchReplay,
   deleteMatchHistory,
-  clearAllMatchHistory,
 } from '@/lib/api';
 import { BoardCanvas } from '@/components/board/BoardCanvas';
 import { useBoardCamera } from '@/hooks/useBoardCamera';
@@ -266,7 +265,6 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
 
   // Confirmation state for deleting
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [isClearingAll, setIsClearingAll] = useState(false);
 
   // Fetch History List
   const fetchHistory = useCallback(async () => {
@@ -350,20 +348,6 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
       }
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Failed to delete match');
-    }
-  };
-
-  // Handle clear all history
-  const handleClearAll = async () => {
-    try {
-      await clearAllMatchHistory();
-      setHistoryList([]);
-      setIsClearingAll(false);
-      setReplayData(null);
-      setSelectedGameId(null);
-      setActiveTab('list');
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to clear match history');
     }
   };
 
@@ -577,40 +561,6 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {activeTab === 'list' && historyList.length > 0 && (
-              <>
-                {isClearingAll ? (
-                  <div className="flex items-center gap-1.5 animate-in fade-in duration-150">
-                    <span className="text-xs text-rose-300 font-medium mr-1">Clear all?</span>
-                    <button
-                      type="button"
-                      onClick={handleClearAll}
-                      className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors cursor-pointer"
-                    >
-                      Yes, Clear
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsClearingAll(false)}
-                      className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsClearingAll(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold transition-all cursor-pointer"
-                    title="Clear all saved matches"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Clear History</span>
-                  </button>
-                )}
-              </>
-            )}
-
             <button
               type="button"
               onClick={onClose}
