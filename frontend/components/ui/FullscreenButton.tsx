@@ -5,6 +5,7 @@ import { Maximize, Minimize } from 'lucide-react';
 
 interface FullscreenButtonProps {
   className?: string;
+  showLabel?: boolean;
 }
 
 const subscribeToFullscreenSupport = () => () => {};
@@ -14,7 +15,7 @@ const getFullscreenSupport = () => Boolean(
 );
 const getServerFullscreenSupport = () => true;
 
-export default function FullscreenButton({ className = '' }: FullscreenButtonProps) {
+export default function FullscreenButton({ className = '', showLabel = true }: FullscreenButtonProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const supported = useSyncExternalStore(subscribeToFullscreenSupport, getFullscreenSupport, getServerFullscreenSupport);
 
@@ -72,14 +73,19 @@ export default function FullscreenButton({ className = '' }: FullscreenButtonPro
     <button
       type="button"
       onClick={toggleFullscreen}
-      className={`group flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl border-2 border-slate-600/50 bg-gradient-to-r from-slate-800/40 via-slate-900/60 to-slate-800/40 hover:from-slate-700/50 hover:to-slate-800/50 hover:border-slate-400 text-slate-200 shadow-[0_0_20px_rgba(0,0,0,0.4)] hover:shadow-[0_0_25px_rgba(148,163,184,0.3)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${className}`}
+      className={`group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-purple-400/50 bg-gradient-to-r from-purple-500/20 via-purple-950/50 to-indigo-500/20 hover:from-purple-500/35 hover:to-indigo-500/35 hover:border-purple-300 text-xs sm:text-sm font-black text-purple-200 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${className}`}
       title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
       aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
     >
       {isFullscreen ? (
-        <Minimize className="h-4 w-4 text-cyan-300 transition-transform group-hover:scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" strokeWidth={2.5} />
+        <Minimize className="w-4 h-4 text-purple-300 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(168,85,247,0.9)]" strokeWidth={2.5} />
       ) : (
-        <Maximize className="h-4 w-4 text-slate-300 group-hover:text-cyan-300 transition-transform group-hover:scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" strokeWidth={2.5} />
+        <Maximize className="w-4 h-4 text-purple-300 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(168,85,247,0.9)]" strokeWidth={2.5} />
+      )}
+      {showLabel && (
+        <span className="tracking-wide">
+          {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+        </span>
       )}
     </button>
   );
