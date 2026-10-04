@@ -393,19 +393,15 @@ export default function HomePage() {
       <FloatingGameTiles />
 
       {/* 1. TOP HEADER BAR (ANCHORED ACROSS TOP) */}
-      <header className="relative z-30 w-full max-w-4xl flex items-center justify-between gap-3 shrink-0 pt-2 sm:pt-4 px-2 sm:px-4">
-        {/* Left Game Crest Badge */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl border-2 border-amber-400/40 bg-gradient-to-br from-amber-500/20 via-slate-900/80 to-amber-950/40 shadow-[0_0_15px_rgba(245,158,11,0.25)] backdrop-blur-xl">
-            <Swords className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300" />
-          </div>
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-white/10 bg-slate-900/40 backdrop-blur-md text-[11px] font-black text-slate-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="tracking-wider uppercase text-[10px] text-slate-400">Battle Arena</span>
-          </div>
+      <header className="relative z-30 w-full max-w-4xl flex items-center justify-end sm:justify-between gap-3 shrink-0 pt-2 sm:pt-4 px-2 sm:px-4">
+        {/* Left Game Crest Badge (Desktop Only - Matches Pill Style) */}
+        <div className="hidden sm:flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-emerald-400/50 bg-gradient-to-r from-emerald-500/20 via-emerald-950/50 to-teal-500/20 text-xs sm:text-sm font-black text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,0.3)] backdrop-blur-xl select-none">
+          <Swords className="w-4 h-4 text-emerald-300 drop-shadow-[0_0_8px_rgba(16,185,129,0.9)]" strokeWidth={2.5} />
+          <span className="tracking-wide">Battle Arena</span>
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
         </div>
 
-        {/* Right Tools Button Group */}
+        {/* Right Tools Button Group (Always Visible) */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Prominent Match Logs Button */}
           <button
