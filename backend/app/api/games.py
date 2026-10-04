@@ -480,7 +480,7 @@ async def get_grimoire_words(
         board_cells=board,
         rack_tiles=rack,
         is_first_move=(len(board) == 0),
-        max_words=20,
+        max_words=100,
         min_len=3,
     )
 
