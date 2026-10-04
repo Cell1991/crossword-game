@@ -635,14 +635,36 @@ export default function GamePage() {
 
   return (
     <div
-      className="wordx-game-shell relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden bg-slate-950"
-      style={{
-        ...TILE_THEME_STYLE,
-        background: 'radial-gradient(ellipse at 48% 50%, rgba(8, 145, 178, 0.09), transparent 46%), radial-gradient(ellipse at 88% 8%, rgba(99, 102, 241, 0.11), transparent 34%), linear-gradient(135deg, #020617 0%, #0b1224 58%, #12152f 100%)',
-      }}
+      className="wordx-game-shell relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden bg-[#030712] text-slate-100 select-none selection:bg-cyan-500/30 selection:text-cyan-200"
+      style={TILE_THEME_STYLE}
     >
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 shadow-[inset_0_0_130px_rgba(0,0,0,0.42)]" />
-      <ParticleField className="pointer-events-none fixed inset-0 w-screen h-screen z-0 opacity-40" accent="245, 158, 11" />
+      {/* Layer 0: Dark Cosmic Void & Dynamic Ambient Nebulas */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 h-[400px] w-[700px] rounded-full bg-gradient-to-b from-indigo-600/20 via-amber-500/10 to-transparent blur-[120px]" />
+        <div className="absolute -bottom-40 -left-20 h-[400px] w-[400px] rounded-full bg-cyan-600/10 blur-[120px]" />
+        <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
+      </div>
+
+      {/* Layer 1: Sleek Uniform Small Golden Grid */}
+      <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(245, 158, 11, 0.16) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(245, 158, 11, 0.16) 1px, transparent 1px)
+            `,
+            backgroundSize: '36px 36px',
+            backgroundPosition: 'center center',
+            maskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 45%, transparent 95%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 45%, transparent 95%)',
+          }}
+        />
+      </div>
+
+      {/* Layer 2: Subtle Ambient Rising Beams & Particle Matrix */}
+      <ParticleField className="pointer-events-none fixed inset-0 z-[2] h-full w-full opacity-60" accent="245, 158, 11" />
+
       <GameHud
         isSpectator={isSpectator}
         isEliminated={isEliminated}

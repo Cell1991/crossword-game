@@ -521,7 +521,7 @@ body {
 /* Base gameplay control styles. The reserved game screen frame is defined below. */
 /* Base gameplay control styles. WordX gameplay shell */
 .wordx-game-shell {
-  background: radial-gradient(circle at 50% 45%, #13233f 0%, #0c172a 50%, #050a14 100%);
+  background: #030712;
   height: 100dvh;
   min-height: 100dvh;
   width: 100vw;
