@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { RefreshCw, X, Check, BookMarked, HelpCircle } from 'lucide-react';
+import { RefreshCw, X, BookMarked, HelpCircle } from 'lucide-react';
 import { getGrimoireWords } from '@/lib/api';
 import { GrimoireResponse } from '@/lib/types';
 
@@ -19,26 +19,20 @@ interface GrimoireModalProps {
 interface GrimoireWordRowProps {
   word: string;
   isRightCol: boolean;
-  onCopy: (word: string) => void;
 }
 
 const GrimoireWordRow = React.memo(function GrimoireWordRow({
   word,
   isRightCol,
-  onCopy,
 }: GrimoireWordRowProps) {
   return (
     <div
-      onClick={() => onCopy(word)}
-      className={`group relative flex items-center justify-between px-4 py-2.5 sm:py-3 border-b border-indigo-500/20 ${
-        isRightCol ? '' : 'border-r border-indigo-500/20'
-      } hover:bg-amber-400/[0.08] active:bg-amber-400/[0.14] transition-all cursor-pointer select-none`}
+      className={`flex items-center justify-start px-4 sm:px-6 py-2.5 sm:py-3 border-b border-indigo-500/15 ${
+        isRightCol ? '' : 'border-r border-indigo-500/15'
+      } hover:bg-amber-400/[0.04] transition-colors select-text`}
     >
-      <span className="font-extrabold text-sm sm:text-base tracking-[0.18em] text-amber-300 group-hover:text-amber-200 transition-colors drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+      <span className="font-serif font-bold text-base sm:text-[17px] tracking-[0.14em] text-[#fff6e0] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
         {word}
-      </span>
-      <span className="text-[10px] font-semibold text-slate-500 group-hover:text-amber-400/80 transition-colors opacity-0 group-hover:opacity-100 uppercase tracking-wider">
-        Copy
       </span>
     </div>
   );
@@ -56,9 +50,7 @@ export const GrimoireModal = React.memo(function GrimoireModal({
   const [loading, setLoading] = useState(false);
   const [words, setWords] = useState<string[]>([]);
   const [selectedLengthFilter, setSelectedLengthFilter] = useState<number | 'ALL'>('ALL');
-  const [copiedWord, setCopiedWord] = useState<string | null>(null);
   const wordCacheRef = useRef<Map<number, string[]>>(new Map());
-  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchWords = useCallback(async (force = false) => {
     if (!isGrimoireEnabled) return;
@@ -95,13 +87,6 @@ export const GrimoireModal = React.memo(function GrimoireModal({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
-
-  const handleCopyWord = useCallback((word: string) => {
-    void navigator.clipboard?.writeText(word).catch(() => undefined);
-    setCopiedWord(word);
-    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-    copyTimeoutRef.current = setTimeout(() => setCopiedWord(null), 1800);
-  }, []);
 
   const availableLengths = useMemo(() => {
     const lengths = new Set<number>();
@@ -179,7 +164,7 @@ export const GrimoireModal = React.memo(function GrimoireModal({
             </div>
 
             {/* Filter Pills Toolbar */}
-            <div className="flex items-center justify-between border-b border-indigo-900/40 px-4 py-2 sm:px-6 bg-[#070814] overflow-x-auto hide-scrollbar gap-2">
+            <div className="flex items-center justify-start border-b border-indigo-900/40 px-4 py-2 sm:px-6 bg-[#070814] overflow-x-auto hide-scrollbar gap-2">
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
@@ -207,13 +192,6 @@ export const GrimoireModal = React.memo(function GrimoireModal({
                   </button>
                 ))}
               </div>
-
-              {copiedWord && (
-                <div className="flex items-center gap-1 text-[11px] font-black text-emerald-300 bg-emerald-950/60 border border-emerald-400/40 px-2 py-0.5 rounded-md animate-fade-in shrink-0">
-                  <Check className="h-3 w-3" />
-                  <span>Copied {copiedWord}!</span>
-                </div>
-              )}
             </div>
 
             {/* Words Grid Container with Native Momentum Scroll */}
@@ -244,7 +222,6 @@ export const GrimoireModal = React.memo(function GrimoireModal({
                           key={`${word}-${index}`}
                           word={word}
                           isRightCol={isRightCol}
-                          onCopy={handleCopyWord}
                         />
                       );
                     })}
