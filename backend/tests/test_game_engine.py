@@ -40,13 +40,13 @@ def test_board_special_cells_match_the_rendered_19x27_grid():
         (1, 7), (1, 19),
         (2, 13),
         (3, 4), (3, 22),
-        (5, 7), (5, 19),
+        (5, 7), (5, 11), (5, 15), (5, 19),
         (6, 1), (6, 25),
         (7, 10), (7, 16),
         (9, 4), (9, 22),
         (11, 10), (11, 16),
         (12, 1), (12, 25),
-        (13, 7), (13, 19),
+        (13, 7), (13, 11), (13, 15), (13, 19),
         (15, 4), (15, 22),
         (16, 13),
         (17, 7), (17, 19),
@@ -70,13 +70,13 @@ def test_premium_squares_are_the_classic_layout_spread_over_the_larger_board():
         (1, 7), (1, 19),
         (2, 13),
         (3, 4), (3, 22),
-        (5, 7), (5, 19),
+        (5, 7), (5, 11), (5, 15), (5, 19),
         (6, 1), (6, 25),
         (7, 10), (7, 16),
         (9, 4), (9, 22),
         (11, 10), (11, 16),
         (12, 1), (12, 25),
-        (13, 7), (13, 19),
+        (13, 7), (13, 11), (13, 15), (13, 19),
         (15, 4), (15, 22),
         (16, 13),
         (17, 7), (17, 19),
@@ -84,7 +84,7 @@ def test_premium_squares_are_the_classic_layout_spread_over_the_larger_board():
     }
     assert Board.SECRET_POWER == frozenset(lightning)
     premium = Board.TRIPLE_LETTER | Board.DOUBLE_LETTER | Board.SECRET_POWER
-    assert len(premium) == 12 + 18 + 28 and Board.CENTER not in premium
+    assert len(premium) == 12 + 18 + 32 and Board.CENTER not in premium
     assert premium == {(r, Board.COLS - 1 - c) for r, c in premium}
     assert premium == {(Board.ROWS - 1 - r, c) for r, c in premium}
 
