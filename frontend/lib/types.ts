@@ -313,3 +313,74 @@ export interface WebSocketEvent {
   };
   timestamp: string;
 }
+
+export interface MatchHistoryPlayer {
+  id: string;
+  display_name: string;
+  score: number;
+  hp: number;
+  max_hp: number;
+  is_bot: boolean;
+  bot_difficulty?: 'EASY' | 'MEDIUM' | 'HARD' | null;
+  turn_order?: number;
+  is_winner?: boolean;
+}
+
+export interface MatchHistoryItem {
+  game_id: string;
+  game_pin: string | null;
+  game_mode: 'HP' | 'TURNS' | string;
+  status: string;
+  created_at: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  total_turns: number;
+  total_moves: number;
+  winner: MatchHistoryPlayer | null;
+  players: MatchHistoryPlayer[];
+}
+
+export interface MatchHistoryListResponse {
+  success: boolean;
+  count: number;
+  history: MatchHistoryItem[];
+}
+
+export interface MatchReplayPlacedTile {
+  row: number;
+  col: number;
+  letter: string;
+  value: number;
+}
+
+export interface MatchReplayMove {
+  move_id: string;
+  turn_number: number;
+  player_id: string;
+  player_name: string;
+  is_bot: boolean;
+  move_type: 'PLACE' | 'PASS' | 'EXCHANGE' | string;
+  placed_tiles: MatchReplayPlacedTile[];
+  words_formed: WordFormed[];
+  score_earned: number;
+  running_scores: Record<string, number>;
+  created_at: string | null;
+}
+
+export interface MatchReplayResponse {
+  success: boolean;
+  game_id: string;
+  game_pin: string | null;
+  game_mode: 'HP' | 'TURNS' | string;
+  starting_hp: number | null;
+  max_turns: number | null;
+  winner_id: string | null;
+  created_at: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  players: MatchHistoryPlayer[];
+  moves: MatchReplayMove[];
+  total_moves: number;
+  final_board: Record<string, BoardCell>;
+}
+

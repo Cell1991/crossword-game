@@ -14,6 +14,8 @@ import {
   RematchResponse,
   TurnTimeLimit,
   WordDefinition,
+  MatchHistoryListResponse,
+  MatchReplayResponse,
 } from './types';
 
 function getErrorMessage(error: unknown, fallback: string): string {
@@ -617,6 +619,47 @@ export async function getGrimoireWords(
   }
   return res.json();
 }
+
+export async function getMatchHistory(limit = 10): Promise<MatchHistoryListResponse> {
+  const res = await fetch(`${getApiBase()}/history?limit=${limit}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(getErrorMessage(err, 'Failed to fetch match history'));
+  }
+  return res.json();
+}
+
+export async function getMatchReplay(gameId: string): Promise<MatchReplayResponse> {
+  const res = await fetch(`${getApiBase()}/history/${encodeURIComponent(gameId)}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(getErrorMessage(err, 'Failed to fetch match replay data'));
+  }
+  return res.json();
+}
+
+export async function deleteMatchHistory(gameId: string): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${getApiBase()}/history/${encodeURIComponent(gameId)}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(getErrorMessage(err, 'Failed to delete match from history'));
+  }
+  return res.json();
+}
+
+export async function clearAllMatchHistory(): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${getApiBase()}/history`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(getErrorMessage(err, 'Failed to clear all match history'));
+  }
+  return res.json();
+}
+
 
 
 

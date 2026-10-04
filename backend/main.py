@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.database.session import init_db, AsyncSessionLocal
 from app.services.room_service import RoomService
-from app.api import rooms, games, moves, cards, debug, dictionary
+from app.api import rooms, games, moves, cards, debug, dictionary, history
 from app.websocket import handlers
 
 # Global tracker for 7-day inactivity sleep
@@ -74,6 +74,8 @@ app.include_router(cards.router, prefix=settings.API_V1_STR)
 app.include_router(cards.router)
 app.include_router(dictionary.router, prefix=settings.API_V1_STR)
 app.include_router(dictionary.router)
+app.include_router(history.router, prefix=settings.API_V1_STR)
+app.include_router(history.router)
 app.include_router(debug.router, prefix=settings.API_V1_STR)
 app.include_router(debug.router)
 app.include_router(handlers.router)

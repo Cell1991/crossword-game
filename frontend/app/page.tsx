@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, ArrowRight, BookMarked, BookOpen, Bot, Clock, Eye, LogIn, Minus, Plus, RefreshCw, Sparkles, User, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookMarked, BookOpen, Bot, Clock, Eye, History, LogIn, Minus, Plus, RefreshCw, Sparkles, User, X } from 'lucide-react';
 import { createRoom, getApiBase, getRoom, getRooms, joinRoom, startGame, sessionStore } from '@/lib/api';
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
@@ -11,6 +11,7 @@ import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { RockerSwitch } from '@/components/ui/RockerSwitch';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
+import { MatchHistoryModal } from '@/components/history/MatchHistoryModal';
 import { getRandomPlayerName } from '@/lib/names';
 
 type Mode = 'home' | 'create' | 'join' | 'bot';
@@ -57,6 +58,7 @@ export default function HomePage() {
   const [createTakingLong, setCreateTakingLong] = useState(false);
   const [error, setError] = useState('');
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [turnTimeLimit, setTurnTimeLimit] = useState<TurnTimeLimit>(null);
   const [gameMode, setGameMode] = useState<GameMode>('HP');
   const [turnCountOption, setTurnCountOption] = useState('7');
@@ -508,25 +510,44 @@ export default function HomePage() {
                 </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsGuideOpen(true)}
-                className="tactile-button group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.1] bg-gradient-to-r from-slate-800/40 via-slate-800/25 to-slate-900/40 px-4 py-3 sm:px-5 sm:py-3.5 text-left text-white shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:border-amber-400/30 hover:bg-slate-800/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/50 cursor-pointer"
-              >
-                <span className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300/90 border border-amber-400/20 group-hover:scale-105 transition-transform duration-150">
-                    <BookOpen className="h-4.5 w-4.5" strokeWidth={2} />
+              <div className="flex items-stretch gap-2 sm:gap-2.5 w-full">
+                <button
+                  type="button"
+                  onClick={() => setIsHistoryOpen(true)}
+                  title="Match History & Analysis"
+                  aria-label="Match History"
+                  className="tactile-button group relative flex flex-col items-center justify-center shrink-0 w-20 sm:w-24 rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-2 py-2.5 sm:py-3 text-center text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] hover:border-cyan-400/35 hover:from-cyan-500/10 hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer"
+                >
+                  <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300 border border-cyan-400/20 group-hover:scale-108 group-hover:bg-cyan-400/20 group-hover:text-cyan-200 transition-all shadow-[0_2px_10px_rgba(6,182,212,0.15)]">
+                    <History className="h-4.5 w-4.5" strokeWidth={2.2} />
                   </span>
-                  <span>
-                    <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Rules & Cards</span>
-                    <span className="block text-base sm:text-lg font-bold tracking-tight text-slate-200 group-hover:text-white transition-colors">Game Guide</span>
+                  <span className="mt-1.5 block">
+                    <span className="block text-[0.58rem] sm:text-[0.62rem] font-bold uppercase tracking-[0.16em] text-slate-400 group-hover:text-cyan-300/80 transition-colors leading-none">
+                      Logs
+                    </span>
+                    <span className="mt-0.5 block text-xs sm:text-sm font-bold tracking-tight text-slate-200 group-hover:text-white transition-colors leading-tight">
+                      History
+                    </span>
                   </span>
-                </span>
-                <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 group-hover:text-amber-200 transition-colors">
-                  <span>View Guide</span>
-                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1.5" />
-                </span>
-              </button>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsGuideOpen(true)}
+                  className="tactile-button group flex flex-1 items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.1] bg-gradient-to-r from-slate-800/40 via-slate-800/25 to-slate-900/40 px-3.5 py-3 sm:px-5 sm:py-3.5 text-left text-white shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:border-amber-400/30 hover:bg-slate-800/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/50 min-w-0 cursor-pointer"
+                >
+                  <span className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300/90 border border-amber-400/20 group-hover:scale-105 transition-transform duration-150">
+                      <BookOpen className="h-4.5 w-4.5" strokeWidth={2} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[0.62rem] sm:text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Rules & Cards</span>
+                      <span className="block text-base sm:text-lg font-bold tracking-tight text-slate-200 group-hover:text-white transition-colors truncate">Game Guide</span>
+                    </span>
+                  </span>
+                  <ArrowRight className="h-4 sm:h-5 w-4 sm:w-5 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-1 group-hover:text-amber-200 ml-1" />
+                </button>
+              </div>
             </div>
           )}
 
@@ -1316,6 +1337,11 @@ export default function HomePage() {
         isOpen
         onClose={() => setIsGuideOpen(false)}
       />}
+
+      <MatchHistoryModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
     </div>
   );
 }

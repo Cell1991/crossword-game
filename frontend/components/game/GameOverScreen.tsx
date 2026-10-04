@@ -15,10 +15,12 @@ import {
   Shield,
   Star,
   Award,
+  History,
 } from 'lucide-react';
 import { GameState, Player } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
 import FullscreenButton from '@/components/ui/FullscreenButton';
+import { MatchHistoryModal } from '@/components/history/MatchHistoryModal';
 
 interface GameOverScreenProps {
   gameState: GameState;
@@ -37,6 +39,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState('');
   const [copiedPin, setCopiedPin] = useState(false);
+  const [isReplayOpen, setIsReplayOpen] = useState(false);
 
   // Sorted players by score
   const sorted = [...(gameState.players ?? [])].sort((a, b) => b.score - a.score);
@@ -389,18 +392,18 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
         )}
 
         {/* BOTTOM METALLIC ACTION BUTTONS */}
-        <div className="flex w-full max-w-lg flex-col gap-3.5 sm:flex-row">
+        <div className="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
           {onPlayAgain && (
             <button
               type="button"
               onClick={handlePlayAgain}
               disabled={joining}
-              className="group relative flex flex-1 items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-black text-base shadow-[0_0_35px_rgba(6,182,212,0.5),inset_0_1px_1px_rgba(255,255,255,0.4)] border-2 border-cyan-300 ring-2 ring-cyan-400/40 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all cursor-pointer overflow-hidden"
+              className="group relative flex flex-1 items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-black text-sm sm:text-base shadow-[0_0_35px_rgba(6,182,212,0.5),inset_0_1px_1px_rgba(255,255,255,0.4)] border-2 border-cyan-300 ring-2 ring-cyan-400/40 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all cursor-pointer overflow-hidden"
             >
               {/* Light Shimmering Gleam */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
               
-              <RotateCcw className={`w-5 h-5 ${joining ? 'animate-spin' : ''}`} strokeWidth={2.5} />
+              <RotateCcw className={`w-4 h-4 sm:w-5 sm:h-5 ${joining ? 'animate-spin' : ''}`} strokeWidth={2.5} />
               <span>
                 {joining
                   ? (rematchPin ? 'Joining Arena...' : 'Forging Arena...')
@@ -411,20 +414,32 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
 
           <button
             type="button"
+            onClick={() => setIsReplayOpen(true)}
+            disabled={joining}
+            className="flex flex-1 items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl font-bold text-sm sm:text-base border-2 border-amber-400/40 bg-slate-900/90 hover:bg-slate-800/90 hover:border-amber-400 text-amber-300 hover:text-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.2)] transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
+          >
+            <History className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span>Review Match</span>
+          </button>
+
+          <button
+            type="button"
             onClick={onHome}
             disabled={joining}
-            className={`flex flex-1 items-center justify-center gap-2.5 px-8 py-4 rounded-2xl font-bold text-base border-2 transition-all disabled:opacity-50 active:scale-95 cursor-pointer ${
-              onPlayAgain
-                ? 'border-slate-600/80 bg-slate-900/90 hover:bg-slate-800 hover:border-slate-400 text-slate-200 hover:text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)]'
-                : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_30px_rgba(6,182,212,0.5)]'
-            }`}
+            className="flex flex-1 items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl font-bold text-sm sm:text-base border-2 border-slate-600/80 bg-slate-900/90 hover:bg-slate-800 hover:border-slate-400 text-slate-200 hover:text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
           >
-            <Home className="w-5 h-5" />
+            <Home className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>Back to Home</span>
           </button>
         </div>
 
       </div>
+
+      <MatchHistoryModal
+        isOpen={isReplayOpen}
+        onClose={() => setIsReplayOpen(false)}
+        initialGameId={gameState.game_id}
+      />
     </div>
   );
 };
