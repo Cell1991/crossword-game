@@ -94,7 +94,7 @@ export function useStagedMove({
       sendPreview(result.valid);
     }, VALIDATE_DEBOUNCE_MS);
     return () => { if (validateTimeout.current) clearTimeout(validateTimeout.current); };
-  }, [temporaryTiles, gameId, myPlayerId, isMyTurn, sendMessage, setError]);
+  }, [temporaryTiles, gameId, myPlayerId, isMyTurn, sendMessage, setError, boardState]);
 
   /** Puts a rack tile on a cell, asking for a letter first when it is a blank without one. */
   const stageTile = useCallback((tile: Tile, cell: CellPosition) => {
@@ -217,15 +217,20 @@ export function useStagedMove({
     isCommittingRef.current = false;
     setSelectedTileId(null);
     setSelectedCell(null);
-    setValidationState(null);
-    setValidationReason('');
-    setEstimatedScore(0);
     const boardCells = state.board_state;
     const myRack = state.players.find(player => player.id === myPlayerId)?.rack;
     const rackTileIds = myRack ? new Set(myRack.map(tile => tile.id)) : null;
-    setTemporaryTiles(previous => previous.filter(tile =>
-      !boardCells[cellKey(tile.row, tile.col)] && (!rackTileIds || rackTileIds.has(tile.tile_id))
-    ));
+    setTemporaryTiles(previous => {
+      const remaining = previous.filter(tile =>
+        !boardCells[cellKey(tile.row, tile.col)] && (!rackTileIds || rackTileIds.has(tile.tile_id))
+      );
+      if (remaining.length === 0) {
+        setValidationState(null);
+        setValidationReason('');
+        setEstimatedScore(0);
+      }
+      return remaining;
+    });
   }, [myPlayerId]);
 
   /** Automatically stages a hint suggestion's tiles from rack onto the board. */
