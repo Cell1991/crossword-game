@@ -72,14 +72,14 @@ export default function FullscreenButton({ className = '' }: FullscreenButtonPro
     <button
       type="button"
       onClick={toggleFullscreen}
-      className={`group flex items-center justify-center rounded-xl border border-white/10 bg-slate-900/60 p-2 text-slate-300 shadow-lg backdrop-blur-md transition-all hover:border-white/20 hover:bg-slate-800/80 hover:text-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${className}`}
+      className={`group flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl border-2 border-slate-600/50 bg-gradient-to-r from-slate-800/40 via-slate-900/60 to-slate-800/40 hover:from-slate-700/50 hover:to-slate-800/50 hover:border-slate-400 text-slate-200 shadow-[0_0_20px_rgba(0,0,0,0.4)] hover:shadow-[0_0_25px_rgba(148,163,184,0.3)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${className}`}
       title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
       aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
     >
       {isFullscreen ? (
-        <Minimize className="h-4 w-4 text-cyan-300 transition-transform group-hover:scale-110" />
+        <Minimize className="h-4 w-4 text-cyan-300 transition-transform group-hover:scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" strokeWidth={2.5} />
       ) : (
-        <Maximize className="h-4 w-4 transition-transform group-hover:scale-110" />
+        <Maximize className="h-4 w-4 text-slate-300 group-hover:text-cyan-300 transition-transform group-hover:scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" strokeWidth={2.5} />
       )}
     </button>
   );
