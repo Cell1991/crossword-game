@@ -142,26 +142,26 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedLengthFilter('ALL')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
                   selectedLengthFilter === 'ALL'
                     ? 'bg-amber-400 text-slate-950 shadow-[0_0_12px_rgba(251,191,36,0.6)]'
                     : 'bg-indigo-950/60 text-slate-400 hover:text-slate-200 border border-indigo-800/40'
                 }`}
               >
-                All ({words.length})
+                All
               </button>
               {availableLengths.map(len => (
                 <button
                   key={len}
                   type="button"
                   onClick={() => setSelectedLengthFilter(len)}
-                  className={`px-2 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                  className={`min-w-[32px] px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer text-center ${
                     selectedLengthFilter === len
                       ? 'bg-cyan-400 text-slate-950 shadow-[0_0_12px_rgba(34,211,238,0.6)]'
                       : 'bg-indigo-950/60 text-slate-400 hover:text-slate-200 border border-indigo-800/40'
                   }`}
                 >
-                  {len}L ({words.filter(w => w.length === len).length})
+                  {len}
                 </button>
               ))}
             </div>
