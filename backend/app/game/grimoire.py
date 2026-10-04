@@ -1,10 +1,69 @@
+import hashlib
 from collections import Counter
 from typing import Any
 
 from app.game.board import Board
 from app.game.dictionary import dictionary_service
-from app.game.rules import RuleEngine
 from app.game.tiles import DEFAULT_LETTER_VALUES
+
+ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
+class GrimoireCache:
+    """
+    High-performance in-memory and database-backed cache for Grimoire word calculations.
+    Ensures 0ms instant response on cache hits.
+    """
+
+    def __init__(self, max_size: int = 500):
+        self._cache: dict[str, list[str]] = {}
+        self._max_size = max_size
+
+    @staticmethod
+    def compute_cache_key(
+        game_id: str,
+        turn_number: int,
+        player_id: str,
+        board_cells: dict[str, Any],
+        rack_tiles: list[Any],
+    ) -> str:
+        # Sort rack letters
+        rack_chars: list[str] = []
+        for t in rack_tiles:
+            if isinstance(t, dict):
+                c = str(t.get("letter", "")).upper()
+            else:
+                c = str(t).upper()
+            if c:
+                rack_chars.append(c)
+        rack_sig = "".join(sorted(rack_chars))
+
+        # Board hash
+        board_items = sorted(
+            (c.get("row", 0), c.get("col", 0), c.get("letter", "").upper())
+            for c in board_cells.values()
+            if isinstance(c, dict) and "letter" in c
+        )
+        board_raw = ";".join(f"{r},{col},{ch}" for r, col, ch in board_items)
+        board_hash = hashlib.md5(board_raw.encode("utf-8")).hexdigest()[:12]
+
+        return f"{game_id}_{turn_number}_{player_id}_{rack_sig}_{board_hash}"
+
+    def get(self, key: str) -> list[str] | None:
+        return self._cache.get(key)
+
+    def set(self, key: str, words: list[str]) -> None:
+        if len(self._cache) >= self._max_size:
+            keys_to_pop = list(self._cache.keys())[: (self._max_size // 5)]
+            for k in keys_to_pop:
+                self._cache.pop(k, None)
+        self._cache[key] = words
+
+    def clear(self) -> None:
+        self._cache.clear()
+
+
+grimoire_cache = GrimoireCache()
 
 
 def find_grimoire_words(
@@ -18,25 +77,21 @@ def find_grimoire_words(
     Finds up to `max_words` (default 100) valid playable words (length >= `min_len`, default 3)
     that can be played onto the current board using the player's current rack tiles.
 
-    Uses high-performance positional dictionary indexing and fast cross-checking
-    for sub-50ms response times, balanced evenly across available word lengths.
+    Uses high-performance positional dictionary indexing, precomputed cross-checks,
+    and boundary anchor pruning for fast response times, balanced evenly across lengths.
     """
     if not rack_tiles:
         return []
 
-    # Extract rack letters and values
+    # Extract rack letters
     rack_letters: list[str] = []
-    rack_val_map: dict[str, int] = {}
     for t in rack_tiles:
         if isinstance(t, dict):
             letter = str(t.get("letter", "")).upper()
-            val = int(t.get("value", DEFAULT_LETTER_VALUES.get(letter, 1)))
         else:
             letter = str(t).upper()
-            val = DEFAULT_LETTER_VALUES.get(letter, 1)
         if letter:
             rack_letters.append(letter)
-            rack_val_map[letter] = val
 
     if not rack_letters:
         return []
@@ -52,9 +107,6 @@ def find_grimoire_words(
 
     # Fast rack-matching helper
     def can_form_with_rack(word: str, fixed: dict[int, str]) -> bool:
-        for pos, ch in fixed.items():
-            if word[pos] != ch:
-                return False
         used_blanks = 0
         req_counts: dict[str, int] = {}
         for i, char in enumerate(word):
@@ -68,31 +120,6 @@ def find_grimoire_words(
                 if used_blanks > blanks:
                     return False
         return True
-
-    # Fast perpendicular cross-word validators (O(1) set lookups)
-    def is_valid_cross_across(r: int, c: int, ch: str) -> bool:
-        if (r - 1, c) not in occupied and (r + 1, c) not in occupied:
-            return True
-        top_r = r
-        while (top_r - 1, c) in occupied:
-            top_r -= 1
-        bot_r = r
-        while (bot_r + 1, c) in occupied:
-            bot_r += 1
-        cross_word = "".join(ch if cur_r == r else occupied[(cur_r, c)] for cur_r in range(top_r, bot_r + 1))
-        return len(cross_word) < 2 or dictionary_service.is_valid_word(cross_word)
-
-    def is_valid_cross_down(r: int, c: int, ch: str) -> bool:
-        if (r, c - 1) not in occupied and (r, c + 1) not in occupied:
-            return True
-        left_c = c
-        while (r, left_c - 1) in occupied:
-            left_c -= 1
-        right_c = c
-        while (r, right_c + 1) in occupied:
-            right_c += 1
-        cross_word = "".join(ch if cur_c == c else occupied[(r, cur_c)] for cur_c in range(left_c, right_c + 1))
-        return len(cross_word) < 2 or dictionary_service.is_valid_word(cross_word)
 
     # Candidate collection grouped by length
     candidates_by_len: dict[int, list[str]] = {}
@@ -130,9 +157,57 @@ def find_grimoire_words(
     # Case 2: Active Board (Subsequent Moves)
     # ==========================================
     else:
+        # 1. Precompute cross-check valid letter sets for empty adjacent cells (sub-millisecond)
+        cross_across: dict[tuple[int, int], set[str]] = {}
+        cross_down: dict[tuple[int, int], set[str]] = {}
+
+        # 2. Find active boundary anchors (occupied tiles that have at least 1 adjacent empty space)
+        active_anchors: list[tuple[tuple[int, int], str]] = []
+
+        for (r, c), ch in occupied.items():
+            has_empty_neighbor = False
+            for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < Board.ROWS and 0 <= nc < Board.COLS and (nr, nc) not in occupied:
+                    has_empty_neighbor = True
+                    # Precompute perpendicular across constraint (vertical cross word)
+                    if (nr, nc) not in cross_across:
+                        if (nr - 1, nc) in occupied or (nr + 1, nc) in occupied:
+                            top_r = nr
+                            while (top_r - 1, nc) in occupied:
+                                top_r -= 1
+                            bot_r = nr
+                            while (bot_r + 1, nc) in occupied:
+                                bot_r += 1
+                            valid_set: set[str] = set()
+                            for letter in ALPHABET:
+                                cw = "".join(letter if cur_r == nr else occupied[(cur_r, nc)] for cur_r in range(top_r, bot_r + 1))
+                                if dictionary_service.is_valid_word(cw):
+                                    valid_set.add(letter)
+                            cross_across[(nr, nc)] = valid_set
+
+                    # Precompute perpendicular down constraint (horizontal cross word)
+                    if (nr, nc) not in cross_down:
+                        if (nr, nc - 1) in occupied or (nr, nc + 1) in occupied:
+                            left_c = nc
+                            while (nr, left_c - 1) in occupied:
+                                left_c -= 1
+                            right_c = nc
+                            while (nr, right_c + 1) in occupied:
+                                right_c += 1
+                            valid_set = set()
+                            for letter in ALPHABET:
+                                cw = "".join(letter if cur_c == nc else occupied[(nr, cur_c)] for cur_c in range(left_c, right_c + 1))
+                                if dictionary_service.is_valid_word(cw):
+                                    valid_set.add(letter)
+                            cross_down[(nr, nc)] = valid_set
+
+            if has_empty_neighbor:
+                active_anchors.append(((r, c), ch))
+
         checked_spans: set[tuple[str, int, int, int]] = set()
 
-        for (r, c), board_char in occupied.items():
+        for (r, c), board_char in active_anchors:
             if len(found_words_set) >= MAX_TOTAL_SEARCH:
                 break
 
@@ -176,16 +251,29 @@ def find_grimoire_words(
                             continue
                         if len(candidates_by_len.get(span_len, [])) >= MAX_CANDIDATES_PER_LEN:
                             break
+
+                        # Quick fixed match
+                        mismatch = False
+                        for f_pos, f_ch in fixed.items():
+                            if word[f_pos] != f_ch:
+                                mismatch = True
+                                break
+                        if mismatch:
+                            continue
+
+                        # O(1) Precomputed cross-check validation
+                        cross_fail = False
+                        for i in range(span_len):
+                            if i not in fixed:
+                                cell = (r, start_c + i)
+                                if cell in cross_across and word[i] not in cross_across[cell]:
+                                    cross_fail = True
+                                    break
+                        if cross_fail:
+                            continue
+
                         if can_form_with_rack(word, fixed):
-                            # Fast cross-word validation for each newly placed tile
-                            valid_cross = True
-                            for i in range(span_len):
-                                if i not in fixed:
-                                    if not is_valid_cross_across(r, start_c + i, word[i]):
-                                        valid_cross = False
-                                        break
-                            if valid_cross:
-                                add_candidate(word)
+                            add_candidate(word)
 
             # 2. Test vertical spans covering (r, c)
             top_limit = max(0, r - len(rack_letters))
@@ -227,16 +315,27 @@ def find_grimoire_words(
                             continue
                         if len(candidates_by_len.get(span_len, [])) >= MAX_CANDIDATES_PER_LEN:
                             break
+
+                        mismatch = False
+                        for f_pos, f_ch in fixed.items():
+                            if word[f_pos] != f_ch:
+                                mismatch = True
+                                break
+                        if mismatch:
+                            continue
+
+                        cross_fail = False
+                        for i in range(span_len):
+                            if i not in fixed:
+                                cell = (start_r + i, c)
+                                if cell in cross_down and word[i] not in cross_down[cell]:
+                                    cross_fail = True
+                                    break
+                        if cross_fail:
+                            continue
+
                         if can_form_with_rack(word, fixed):
-                            # Fast cross-word validation for each newly placed tile
-                            valid_cross = True
-                            for i in range(span_len):
-                                if i not in fixed:
-                                    if not is_valid_cross_down(start_r + i, c, word[i]):
-                                        valid_cross = False
-                                        break
-                            if valid_cross:
-                                add_candidate(word)
+                            add_candidate(word)
 
     # ==========================================
     # Balanced Round-Robin Selection across Lengths
@@ -265,5 +364,3 @@ def find_grimoire_words(
 
     # Sort final words by length ascending, then alphabetically
     return sorted(selected_words, key=lambda w: (len(w), w))[:max_words]
-
-

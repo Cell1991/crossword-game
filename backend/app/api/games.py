@@ -473,10 +473,33 @@ async def get_grimoire_words(
             "message": "Player not found.",
         }
 
+    import asyncio
+    from app.game.grimoire import grimoire_cache, find_grimoire_words
+
     rack = await player_rack(db, player.id)
     board = await board_state(db, game_id)
 
-    words = find_grimoire_words(
+    # Check state cache (0ms instant response)
+    cache_key = grimoire_cache.compute_cache_key(
+        game_id=game_id,
+        turn_number=game.turn_number,
+        player_id=player.id,
+        board_cells=board,
+        rack_tiles=rack,
+    )
+    cached_words = grimoire_cache.get(cache_key)
+    if cached_words is not None:
+        return {
+            "enabled": True,
+            "words": cached_words,
+            "count": len(cached_words),
+            "turn_number": game.turn_number,
+            "cached": True,
+        }
+
+    # Offload solver to background worker thread to keep asyncio event loop responsive
+    words = await asyncio.to_thread(
+        find_grimoire_words,
         board_cells=board,
         rack_tiles=rack,
         is_first_move=(len(board) == 0),
@@ -484,11 +507,14 @@ async def get_grimoire_words(
         min_len=3,
     )
 
+    grimoire_cache.set(cache_key, words)
+
     return {
         "enabled": True,
         "words": words,
         "count": len(words),
         "turn_number": game.turn_number,
+        "cached": False,
     }
 
 

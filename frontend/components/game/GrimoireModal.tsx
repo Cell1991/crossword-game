@@ -94,7 +94,6 @@ export const GrimoireModal = React.memo(function GrimoireModal({
 
   const filteredWords = useMemo(() => {
     if (selectedLengthFilter === 'ALL') return words;
-    if (selectedLengthFilter === 6) return words.filter(w => w.length >= 6);
     return words.filter(w => w.length === selectedLengthFilter);
   }, [words, selectedLengthFilter]);
 
