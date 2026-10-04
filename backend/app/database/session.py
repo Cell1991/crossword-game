@@ -197,6 +197,9 @@ def _upgrade_existing_schema(connection):
             "is_bot": "BOOLEAN DEFAULT FALSE NOT NULL",
             "bot_difficulty": "VARCHAR(16)",
         },
+        "moves": {
+            "rack_before": "JSON",
+        },
     }
 
     for table_name, columns in upgrades.items():

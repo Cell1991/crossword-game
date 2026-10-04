@@ -1,6 +1,6 @@
 from typing import Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, delete, desc
+from sqlalchemy import select, delete, desc, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -22,13 +22,13 @@ async def get_match_history(
     # Fetch recent games (query more than limit so we have enough after filtering out solo/debug games)
     stmt = (
         select(Game)
-        .join(Game.room)
+        .outerjoin(GameRoom, Game.id == GameRoom.id)
         .options(
             selectinload(Game.room),
             selectinload(Game.players),
             selectinload(Game.moves),
         )
-        .where(GameRoom.is_debug.is_(False))
+        .where(or_(GameRoom.is_debug.is_(False), GameRoom.is_debug.is_(None)))
         .order_by(desc(Game.created_at))
         .limit(max(limit * 5, 250))
     )
