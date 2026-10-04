@@ -193,34 +193,38 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                {filteredWords.map((word, index) => (
-                  <motion.div
-                    key={`${word}-${index}`}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.02, duration: 0.15 }}
-                    onClick={() => handleCopyWord(word)}
-                    className="group relative flex items-center justify-center p-2.5 sm:p-3 rounded-xl border border-indigo-400/25 bg-gradient-to-r from-[#141738]/90 via-[#0e1028]/95 to-[#141738]/90 hover:border-amber-400/60 hover:from-[#202454] hover:to-[#171a40] hover:shadow-[0_4px_16px_rgba(0,0,0,0.6),0_0_15px_rgba(245,158,11,0.2)] active:scale-[0.98] transition-all cursor-pointer overflow-hidden"
-                  >
-                    {/* Top Specular Rim */}
-                    <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
-
-                    {/* Word Letter Tiles */}
-                    <div className="flex items-center justify-center gap-1 sm:gap-1.5 flex-wrap">
-                      {word.split('').map((ch, i) => (
-                        <div
-                          key={i}
-                          className="tile-face flex h-7 w-6 sm:h-8 sm:w-7 items-center justify-center rounded-md sm:rounded-lg border border-amber-100/90 shadow-sm"
-                        >
-                          <span className="tile-letter tile-letter-orange text-sm sm:text-base font-maple leading-none">
-                            {ch}
-                          </span>
+              <div className="rounded-xl sm:rounded-2xl border border-indigo-500/30 bg-[#080a1c]/70 overflow-hidden shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]">
+                <div className="grid grid-cols-1 sm:grid-cols-2">
+                  {filteredWords.map((word, index) => {
+                    const isRightCol = index % 2 === 1;
+                    return (
+                      <motion.div
+                        key={`${word}-${index}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: index * 0.015, duration: 0.12 }}
+                        onClick={() => handleCopyWord(word)}
+                        className={`group relative flex items-center justify-center p-2.5 sm:p-3.5 border-b border-indigo-500/20 ${
+                          isRightCol ? '' : 'sm:border-r sm:border-indigo-500/20'
+                        } hover:bg-indigo-950/50 active:bg-indigo-900/60 transition-colors cursor-pointer select-none`}
+                      >
+                        {/* Word Letter Tiles */}
+                        <div className="flex items-center justify-center gap-1 sm:gap-1.5 flex-wrap">
+                          {word.split('').map((ch, i) => (
+                            <div
+                              key={i}
+                              className="tile-face flex h-7 w-6 sm:h-8 sm:w-7 items-center justify-center rounded-md sm:rounded-lg border border-amber-100/90 shadow-sm"
+                            >
+                              <span className="tile-letter tile-letter-orange text-sm sm:text-base font-maple leading-none">
+                                {ch}
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                ))}
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
