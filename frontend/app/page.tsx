@@ -388,8 +388,8 @@ export default function HomePage() {
       {/* Subtle Background Particle Matrix */}
       <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" accent="245, 158, 11" />
 
-      {/* 1. TOP HEADER BAR */}
-      <header className="relative z-30 w-full max-w-2xl flex items-center justify-end gap-2.5 sm:gap-3 shrink-0 pt-2 sm:pt-4">
+      {/* 1. TOP HEADER BAR (SYMMETRICALLY ALIGNED WITH MENU DECK) */}
+      <header className="relative z-30 w-full max-w-[550px] flex items-center justify-end gap-2.5 sm:gap-3 shrink-0 pt-2 sm:pt-4">
         {/* Prominent Match Logs Button */}
         <button
           type="button"
@@ -414,7 +414,7 @@ export default function HomePage() {
       </header>
 
       {/* 2. CENTER STAGE (NO SCROLLING) */}
-      <main className="relative z-20 flex w-full max-w-xl flex-1 flex-col items-center justify-center my-auto">
+      <main className="relative z-20 flex w-full max-w-[550px] flex-1 flex-col items-center justify-center my-auto">
         
         {/* HERO BRANDING HEADER */}
         <div className="flex flex-col items-center text-center mb-5 sm:mb-6">
