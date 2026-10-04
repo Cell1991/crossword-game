@@ -398,32 +398,7 @@ export default function HomePage() {
       {/* Layer 2: Subtle Ambient Rising Beams & Particle Matrix */}
       <ParticleField className="pointer-events-none fixed inset-0 z-[2] h-full w-full" accent="245, 158, 11" />
 
-      {/* 1. TOP HEADER BAR */}
-      <header className="relative z-30 w-full max-w-[550px] flex items-center justify-end gap-2.5 sm:gap-3 shrink-0 pt-2 sm:pt-4">
-        {/* Prominent Match Logs Button */}
-        <button
-          type="button"
-          onClick={() => setIsHistoryOpen(true)}
-          className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-cyan-400/50 bg-gradient-to-r from-cyan-500/20 via-cyan-950/50 to-blue-500/20 hover:from-cyan-500/35 hover:to-blue-500/35 hover:border-cyan-300 text-xs sm:text-sm font-black text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
-        >
-          <History className="w-4 h-4 text-cyan-300 group-hover:rotate-[-20deg] transition-transform drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]" strokeWidth={2.5} />
-          <span className="tracking-wide">Match Logs</span>
-        </button>
-
-        {/* Prominent Rules & Guide Button */}
-        <button
-          type="button"
-          onClick={() => setIsGuideOpen(true)}
-          className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-500/20 via-amber-950/50 to-orange-500/20 hover:from-amber-500/35 hover:to-orange-500/35 hover:border-amber-300 text-xs sm:text-sm font-black text-amber-200 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
-        >
-          <BookOpen className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]" strokeWidth={2.5} />
-          <span className="tracking-wide">Rules & Guide</span>
-        </button>
-
-        <FullscreenButton className="static z-10" />
-      </header>
-
-      {/* 2. CENTER STAGE (NO SCROLLING) */}
+      {/* CENTER STAGE (NO SCROLLING) */}
       <main className="relative z-20 flex w-full max-w-[550px] flex-1 flex-col items-center justify-center my-auto">
         
         {/* HERO BRANDING HEADER */}
@@ -1133,6 +1108,31 @@ export default function HomePage() {
         )}
 
       </main>
+
+      {/* BOTTOM ACTION BAR */}
+      <footer className="relative z-30 w-full max-w-[550px] flex items-center justify-center gap-2.5 sm:gap-3 shrink-0 pt-2 pb-1 sm:pb-2">
+        {/* Match Logs Button */}
+        <button
+          type="button"
+          onClick={() => setIsHistoryOpen(true)}
+          className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-cyan-400/50 bg-gradient-to-r from-cyan-500/20 via-cyan-950/50 to-blue-500/20 hover:from-cyan-500/35 hover:to-blue-500/35 hover:border-cyan-300 text-xs sm:text-sm font-black text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
+        >
+          <History className="w-4 h-4 text-cyan-300 group-hover:rotate-[-20deg] transition-transform drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]" strokeWidth={2.5} />
+          <span className="tracking-wide">Match Logs</span>
+        </button>
+
+        {/* Rules & Guide Button */}
+        <button
+          type="button"
+          onClick={() => setIsGuideOpen(true)}
+          className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-500/20 via-amber-950/50 to-orange-500/20 hover:from-amber-500/35 hover:to-orange-500/35 hover:border-amber-300 text-xs sm:text-sm font-black text-amber-200 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
+        >
+          <BookOpen className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]" strokeWidth={2.5} />
+          <span className="tracking-wide">Rules & Guide</span>
+        </button>
+
+        <FullscreenButton className="static z-10" />
+      </footer>
 
       {/* Global Modals */}
       {isGuideOpen && (
