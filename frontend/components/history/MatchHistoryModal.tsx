@@ -557,8 +557,12 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
 
             {activeTab === 'replay' && replayData && (
               <div className="hidden md:flex items-center gap-2 pl-3 border-l border-white/10 text-xs text-slate-300">
-                <span className="px-2.5 py-0.5 rounded-md bg-white/10 text-slate-300 font-semibold text-[11px]">
-                  {replayData.game_mode} Mode
+                <span className={`px-2.5 py-0.5 rounded-lg font-semibold text-[11px] border ${
+                  replayData.game_mode === 'HP'
+                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                    : 'bg-cyan-500/15 text-cyan-300 border-cyan-400/30'
+                }`}>
+                  {replayData.game_mode === 'HP' ? 'HP Battle' : 'Turn Match'}
                 </span>
               </div>
             )}
@@ -661,10 +665,10 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                           <div className="flex items-center gap-2">
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${
                               isHp 
-                                ? 'bg-rose-500/15 text-rose-300 border border-rose-500/25' 
-                                : 'bg-amber-500/15 text-amber-300 border border-amber-500/25'
+                                ? 'bg-rose-500/15 text-rose-300 border border-rose-500/30' 
+                                : 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
                             }`}>
-                              {isHp ? <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-500/20" /> : <Clock className="w-3.5 h-3.5 text-amber-400" />}
+                              {isHp ? <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-500/20" /> : <Clock className="w-3.5 h-3.5 text-cyan-400" />}
                               {isHp ? 'HP Battle' : 'Turn Match'}
                             </span>
                             <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
