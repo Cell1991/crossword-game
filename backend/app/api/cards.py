@@ -60,9 +60,31 @@ async def use_card(
     if card == "HINT":
         if game.current_player_id != player.id:
             raise HTTPException(status_code=400, detail="You can only use this on your turn")
+        import asyncio
+        from app.game.hint import hint_cache
+
         board = await board_state(db, game.id)
         rack = await player_rack(db, player.id)
-        suggestions = find_hint_suggestions(board, rack, is_first_move=len(board) == 0, max_suggestions=3)
+
+        cache_key = hint_cache.compute_cache_key(
+            game_id=game.id,
+            turn_number=game.turn_number,
+            player_id=player.id,
+            board_cells=board,
+            rack_tiles=rack,
+            max_suggestions=3,
+        )
+        suggestions = hint_cache.get(cache_key)
+        if suggestions is None:
+            suggestions = await asyncio.to_thread(
+                find_hint_suggestions,
+                board_cells=board,
+                rack_tiles=rack,
+                is_first_move=(len(board) == 0),
+                max_suggestions=3,
+            )
+            hint_cache.set(cache_key, suggestions)
+
         if not suggestions:
             return {"success": True, "found": False, "suggestions": []}
         cards.remove(card)
