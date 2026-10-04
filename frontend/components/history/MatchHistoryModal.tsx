@@ -825,20 +825,65 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                         </span>
                       </div>
 
-                      {/* Scrubber Range Slider */}
-                      <div className="relative flex items-center w-full py-1">
-                        <input
-                          type="range"
-                          min={0}
-                          max={replayData.moves.length}
-                          value={currentStep}
-                          onChange={(e) => {
-                            setCurrentStep(Number(e.target.value));
-                            setIsPlaying(false);
-                          }}
-                          className="w-full h-2 rounded-lg bg-slate-800 appearance-none cursor-pointer accent-cyan-400 focus:outline-none"
-                        />
-                      </div>
+                      {/* Scrubber Range Slider (Cyber Celestial Progress Track & Thumb) */}
+                      {(() => {
+                        const totalMoves = replayData.moves.length;
+                        const progressPct = totalMoves > 0 ? (currentStep / totalMoves) * 100 : 0;
+
+                        return (
+                          <div className="relative flex items-center w-full py-2 select-none group/scrubber">
+                            {/* Track Base */}
+                            <div className="relative h-2.5 sm:h-3 w-full rounded-full bg-slate-950/90 border border-white/15 shadow-[inset_0_2px_4px_rgba(0,0,0,0.85)] overflow-hidden">
+                              {/* Notch / Tick grid texture overlay */}
+                              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:16px_100%] pointer-events-none" />
+
+                              {/* Active Glowing Progress Fill */}
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-sky-400 to-amber-300 relative shadow-[0_0_12px_rgba(6,182,212,0.85)]"
+                                style={{ width: `${progressPct}%` }}
+                              >
+                                {/* Top Specular Highlight */}
+                                <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-white/40 via-white/80 to-transparent pointer-events-none" />
+                              </div>
+                            </div>
+
+                            {/* Floating / Custom Knob Handle */}
+                            <div
+                              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none z-20 transition-transform group-hover/scrubber:scale-110"
+                              style={{ left: `${progressPct}%` }}
+                            >
+                              {/* Step Tooltip on Hover / Scrubbing */}
+                              <div className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/scrubber:opacity-100 transition-all duration-150 pointer-events-none scale-90 group-hover/scrubber:scale-100">
+                                <div className="px-2 py-0.5 rounded-md bg-slate-950 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.6)] text-[10px] font-mono font-black text-cyan-300 whitespace-nowrap">
+                                  Step {currentStep}
+                                </div>
+                              </div>
+
+                              {/* Glowing Jewel Knob */}
+                              <div className="relative flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-b from-white via-cyan-300 to-sky-600 border-2 border-white shadow-[0_0_16px_rgba(34,211,238,1),0_2px_6px_rgba(0,0,0,0.9),inset_0_1.5px_2px_rgba(255,255,255,0.95)]">
+                                {/* Inner Core */}
+                                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-slate-950 border border-cyan-200/90 flex items-center justify-center shadow-inner">
+                                  <div className="w-1 h-1 rounded-full bg-cyan-300 shadow-[0_0_4px_#22d3ee]" />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Invisible Interactive Native Input */}
+                            <input
+                              type="range"
+                              min={0}
+                              max={totalMoves}
+                              value={currentStep}
+                              onChange={(e) => {
+                                setCurrentStep(Number(e.target.value));
+                                setIsPlaying(false);
+                              }}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
+                              aria-label="Move timeline scrubber"
+                            />
+                          </div>
+                        );
+                      })()}
 
                       {/* Button Bar: First, Prev, Play/Pause, Next, Last */}
                       <div className="flex items-center justify-between gap-1.5">
