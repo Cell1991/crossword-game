@@ -13,6 +13,7 @@ import {
   Eye,
   Heart,
   History,
+  Layers,
   Minus,
   Plus,
   Radio,
@@ -385,28 +386,7 @@ export default function HomePage() {
         <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
       </div>
 
-      {/* Sleek Golden Tactical Grid (Crisp High-Visibility SVG) */}
-      <div className="pointer-events-none fixed inset-0 z-0 select-none">
-        <svg className="h-full w-full opacity-75" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="golden-grid" width="44" height="44" patternUnits="userSpaceOnUse">
-              <path d="M 44 0 L 0 0 0 44" fill="none" stroke="rgba(245, 158, 11, 0.45)" strokeWidth="1.2" />
-              <circle cx="0" cy="0" r="1.5" fill="rgba(251, 191, 36, 0.85)" />
-            </pattern>
-            <radialGradient id="grid-fade" cx="50%" cy="50%" r="75%">
-              <stop offset="0%" stopColor="white" stopOpacity="1" />
-              <stop offset="55%" stopColor="white" stopOpacity="0.75" />
-              <stop offset="100%" stopColor="white" stopOpacity="0.15" />
-            </radialGradient>
-            <mask id="grid-mask">
-              <rect width="100%" height="100%" fill="url(#grid-fade)" />
-            </mask>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#golden-grid)" mask="url(#grid-mask)" />
-        </svg>
-      </div>
-
-      {/* Subtle Background Particle Matrix */}
+      {/* Subtle Background Particle Matrix & Golden Tactical Grid */}
       <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" accent="245, 158, 11" />
 
       {/* 1. TOP HEADER BAR */}
@@ -565,64 +545,72 @@ export default function HomePage() {
         {/* ======================================================== */}
         {/* SUBMENU: CREATE ROOM (COMPACT MODAL) */}
         {/* ======================================================== */}
+        {/* ======================================================== */}
+        {/* SUBMENU: CREATE ROOM (COMPACT MODAL) */}
+        {/* ======================================================== */}
         {mode === 'create' && (
-          <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-slate-900/95 p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.7)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="w-full max-w-lg rounded-3xl border-2 border-amber-400/50 bg-gradient-to-br from-amber-950/40 via-slate-900/95 to-slate-950/98 p-5 sm:p-6 shadow-[0_20px_70px_rgba(0,0,0,0.85),0_0_35px_rgba(245,158,11,0.22)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150 ring-1 ring-amber-400/20">
             {/* Header */}
-            <div className="flex items-center gap-3 pb-3 border-b border-white/[0.08]">
+            <div className="flex items-center gap-3 pb-3.5 border-b border-white/[0.08]">
               <button
                 type="button"
                 onClick={() => { setMode('home'); clearError(); }}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/15 hover:text-white transition-all cursor-pointer active:scale-95 shrink-0"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:border-amber-400/50 hover:bg-amber-400/15 hover:text-amber-200 transition-all cursor-pointer active:scale-95 shrink-0 shadow-inner"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-white">Create Match Lobby</h2>
-                <p className="text-[11px] text-slate-400">Configure game rules & host settings</p>
+                <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                  <span>Create Match Lobby</span>
+                  <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-amber-400/15 border border-amber-400/30 px-2 py-0.5 text-[10px] font-bold text-amber-300 uppercase tracking-wider">
+                    <Crown className="w-3 h-3 text-amber-300" /> Host
+                  </span>
+                </h2>
+                <p className="text-[11px] text-slate-400 font-medium">Configure match rules & lobby settings</p>
               </div>
             </div>
 
-            <div className="mt-3 space-y-3">
+            <div className="mt-4 space-y-3.5">
               {/* Mode Selector */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
                   onClick={() => setGameMode('HP')}
-                  className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                     gameMode === 'HP'
-                      ? 'border-rose-500 bg-rose-500/15 shadow-[0_0_12px_rgba(244,63,94,0.2)]'
-                      : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70'
+                      ? 'border-2 border-rose-400/90 bg-gradient-to-r from-rose-950/60 to-rose-900/40 text-white shadow-[0_0_18px_rgba(244,63,94,0.3)] ring-1 ring-rose-400/30'
+                      : 'border border-white/10 bg-slate-800/40 text-slate-400 hover:border-white/20 hover:bg-slate-800/70 hover:text-slate-200'
                   }`}
                 >
                   <div>
-                    <span className={`block text-xs font-bold ${gameMode === 'HP' ? 'text-rose-200' : 'text-white'}`}>HP Battle</span>
-                    <span className="text-[10px] text-slate-400">Drains opponent health</span>
+                    <span className={`block text-xs sm:text-sm font-black ${gameMode === 'HP' ? 'text-rose-200' : 'text-white'}`}>HP Battle</span>
+                    <span className="text-[10px] text-slate-400 font-medium">Score drains health</span>
                   </div>
-                  <Heart className={`w-4 h-4 ${gameMode === 'HP' ? 'text-rose-400 fill-rose-500/30' : 'text-slate-500'}`} />
+                  <Heart className={`w-4 h-4 shrink-0 ${gameMode === 'HP' ? 'text-rose-400 fill-rose-500/30 drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]' : 'text-slate-500'}`} />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setGameMode('TURNS')}
-                  className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                     gameMode === 'TURNS'
-                      ? 'border-cyan-500 bg-cyan-500/15 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
-                      : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70'
+                      ? 'border-2 border-cyan-400/90 bg-gradient-to-r from-cyan-950/60 to-cyan-900/40 text-white shadow-[0_0_18px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/30'
+                      : 'border border-white/10 bg-slate-800/40 text-slate-400 hover:border-white/20 hover:bg-slate-800/70 hover:text-slate-200'
                   }`}
                 >
                   <div>
-                    <span className={`block text-xs font-bold ${gameMode === 'TURNS' ? 'text-cyan-200' : 'text-white'}`}>Round Match</span>
-                    <span className="text-[10px] text-slate-400">Highest score wins</span>
+                    <span className={`block text-xs sm:text-sm font-black ${gameMode === 'TURNS' ? 'text-cyan-200' : 'text-white'}`}>Round Match</span>
+                    <span className="text-[10px] text-slate-400 font-medium">Highest score wins</span>
                   </div>
-                  <Clock className={`w-4 h-4 ${gameMode === 'TURNS' ? 'text-cyan-400' : 'text-slate-500'}`} />
+                  <Layers className={`w-4 h-4 shrink-0 ${gameMode === 'TURNS' ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]' : 'text-slate-500'}`} />
                 </button>
               </div>
 
               {/* 2-Column: HP/Rounds + Timer */}
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 {gameMode === 'HP' ? (
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">Starting HP</label>
+                    <label className="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Starting HP</label>
                     <CustomSelect
                       value={hpOption}
                       onChange={setHpOption}
@@ -637,7 +625,7 @@ export default function HomePage() {
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">Round Count</label>
+                    <label className="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Round Count</label>
                     <CustomSelect
                       value={turnCountOption}
                       onChange={setTurnCountOption}
@@ -653,7 +641,7 @@ export default function HomePage() {
                 )}
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">Turn Timer</label>
+                  <label className="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Turn Timer</label>
                   <CustomSelect
                     value={turnTimeLimit === null ? '' : String(turnTimeLimit)}
                     onChange={val => setTurnTimeLimit(val === '' ? null : Number(val) as TurnTimeLimit)}
@@ -670,11 +658,11 @@ export default function HomePage() {
 
               {/* Steppers if custom */}
               {gameMode === 'HP' && hpOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 p-1">
+                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 p-1 shadow-inner focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/30">
                   <button
                     type="button"
                     onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
-                    className="flex h-8 w-10 items-center justify-center rounded-lg bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer"
+                    className="flex h-8 w-10 items-center justify-center rounded-lg bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer active:scale-95 transition-all"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
@@ -686,11 +674,11 @@ export default function HomePage() {
                     onChange={e => setCustomHp(e.target.value)}
                     className="flex-1 bg-transparent text-center font-bold text-sm text-white outline-none"
                   />
-                  <span className="text-[10px] font-bold text-rose-400 mr-2">HP</span>
+                  <span className="text-[10px] font-bold text-rose-400 mr-2 uppercase">HP</span>
                   <button
                     type="button"
                     onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
-                    className="flex h-8 w-10 items-center justify-center rounded-lg bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer"
+                    className="flex h-8 w-10 items-center justify-center rounded-lg bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer active:scale-95 transition-all"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -698,11 +686,11 @@ export default function HomePage() {
               )}
 
               {gameMode === 'TURNS' && turnCountOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 p-1">
+                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 p-1 shadow-inner focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/30">
                   <button
                     type="button"
                     onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 7) - 1)))}
-                    className="flex h-8 w-10 items-center justify-center rounded-lg bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer"
+                    className="flex h-8 w-10 items-center justify-center rounded-lg bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer active:scale-95 transition-all"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
@@ -714,11 +702,11 @@ export default function HomePage() {
                     onChange={e => setCustomTurnCount(e.target.value)}
                     className="flex-1 bg-transparent text-center font-bold text-sm text-white outline-none"
                   />
-                  <span className="text-[10px] font-bold text-cyan-400 mr-2">Rounds</span>
+                  <span className="text-[10px] font-bold text-cyan-400 mr-2 uppercase">Rounds</span>
                   <button
                     type="button"
                     onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 7) + 1)))}
-                    className="flex h-8 w-10 items-center justify-center rounded-lg bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer"
+                    className="flex h-8 w-10 items-center justify-center rounded-lg bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer active:scale-95 transition-all"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -726,17 +714,17 @@ export default function HomePage() {
               )}
 
               {/* Player Limit & Grimoire */}
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">Players</label>
+                  <label className="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Players</label>
                   <div className="grid grid-cols-2 gap-1.5">
                     <button
                       type="button"
                       onClick={() => setPlayerLimitOption('4')}
                       className={`py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
                         playerLimitOption === '4'
-                          ? 'border-amber-400 bg-amber-400/20 text-amber-200'
-                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70'
+                          ? 'border-2 border-amber-400 bg-amber-400/20 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.2)]'
+                          : 'border border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70 hover:text-slate-200'
                       }`}
                     >
                       4P
@@ -746,8 +734,8 @@ export default function HomePage() {
                       onClick={() => setPlayerLimitOption('custom')}
                       className={`py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
                         playerLimitOption === 'custom'
-                          ? 'border-amber-400 bg-amber-400/20 text-amber-200'
-                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70'
+                          ? 'border-2 border-amber-400 bg-amber-400/20 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.2)]'
+                          : 'border border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70 hover:text-slate-200'
                       }`}
                     >
                       Custom
@@ -756,14 +744,14 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">Grimoire Deck</label>
+                  <label className="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Grimoire Deck</label>
                   <RockerSwitch checked={enableGrimoire} onChange={setEnableGrimoire} />
                 </div>
               </div>
 
               {/* Host Name Input */}
               <div>
-                <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">Your Name</label>
+                <label className="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Your Name</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -772,7 +760,7 @@ export default function HomePage() {
                     onKeyDown={e => e.key === 'Enter' && handleCreate()}
                     placeholder="Enter your name..."
                     maxLength={24}
-                    className="w-full rounded-xl border border-white/10 bg-slate-800/90 pl-3.5 pr-10 py-2.5 text-sm text-white outline-none focus:border-amber-400 transition-all placeholder:text-slate-500"
+                    className="w-full rounded-xl border border-white/15 bg-slate-800/90 pl-3.5 pr-10 py-2.5 text-sm text-white outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all placeholder:text-slate-500 shadow-inner"
                   />
                   <button
                     type="button"
@@ -800,16 +788,16 @@ export default function HomePage() {
                 type="button"
                 onClick={handleCreate}
                 disabled={loading}
-                className="w-full mt-1 py-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 text-slate-950 font-black text-sm shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full mt-2 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 text-slate-950 font-black text-sm sm:text-base tracking-wider uppercase shadow-[0_8px_30px_rgba(245,158,11,0.45)] hover:shadow-[0_12px_40px_rgba(245,158,11,0.6)] hover:scale-[1.01] active:scale-98 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 border border-amber-300/50"
               >
                 {loading ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
                     <span>Creating Lobby...</span>
                   </>
                 ) : (
                   <>
-                    <Crown className="w-4 h-4" />
+                    <Crown className="w-4 h-4 text-slate-950 fill-slate-950/20" />
                     <span>HOST ROOM</span>
                   </>
                 )}
@@ -822,20 +810,25 @@ export default function HomePage() {
         {/* SUBMENU: JOIN ROOM (COMPACT MODAL) */}
         {/* ======================================================== */}
         {mode === 'join' && (
-          <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-slate-900/95 p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.7)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="w-full max-w-lg rounded-3xl border-2 border-cyan-400/50 bg-gradient-to-br from-cyan-950/40 via-slate-900/95 to-slate-950/98 p-5 sm:p-6 shadow-[0_20px_70px_rgba(0,0,0,0.85),0_0_35px_rgba(6,182,212,0.22)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150 ring-1 ring-cyan-400/20">
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+            <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => { setMode('home'); clearError(); }}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/15 hover:text-white transition-all cursor-pointer active:scale-95 shrink-0"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:border-cyan-400/50 hover:bg-cyan-400/15 hover:text-cyan-200 transition-all cursor-pointer active:scale-95 shrink-0 shadow-inner"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </button>
                 <div>
-                  <h2 className="text-lg sm:text-xl font-black text-white">Join Match</h2>
-                  <p className="text-[11px] text-slate-400">Enter room PIN or select an open room</p>
+                  <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                    <span>Join Match</span>
+                    <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-cyan-400/15 border border-cyan-400/30 px-2 py-0.5 text-[10px] font-bold text-cyan-300 uppercase tracking-wider">
+                      <Radio className="w-3 h-3 text-cyan-300" /> Signal
+                    </span>
+                  </h2>
+                  <p className="text-[11px] text-slate-400 font-medium">Enter room PIN or select an open room</p>
                 </div>
               </div>
 
@@ -843,17 +836,17 @@ export default function HomePage() {
                 type="button"
                 onClick={() => fetchRooms(true)}
                 disabled={loadingRooms}
-                className="p-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 transition-all cursor-pointer"
+                className="p-2 rounded-xl border border-white/10 bg-white/5 hover:border-cyan-400/40 hover:bg-cyan-400/10 text-slate-300 transition-all cursor-pointer active:scale-95 shadow-inner"
                 title="Refresh Room List"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loadingRooms ? 'animate-spin text-amber-400' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingRooms ? 'animate-spin text-cyan-400' : ''}`} />
               </button>
             </div>
 
-            <div className="mt-3 space-y-3">
+            <div className="mt-4 space-y-3.5">
               {/* Your Name Input */}
               <div>
-                <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">Your Name</label>
+                <label className="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Your Name</label>
                 <div className="relative">
                   <input
                     ref={nameInputRef}
@@ -862,7 +855,7 @@ export default function HomePage() {
                     onChange={e => setName(e.target.value)}
                     placeholder="Enter your name..."
                     maxLength={24}
-                    className="w-full rounded-xl border border-white/10 bg-slate-800/90 pl-3.5 pr-10 py-2.5 text-sm text-white outline-none focus:border-cyan-400 transition-all placeholder:text-slate-500"
+                    className="w-full rounded-xl border border-white/15 bg-slate-800/90 pl-3.5 pr-10 py-2.5 text-sm text-white outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all placeholder:text-slate-500 shadow-inner"
                   />
                   <button
                     type="button"
@@ -881,15 +874,15 @@ export default function HomePage() {
 
               {/* Active Rooms */}
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold text-slate-300 uppercase">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">
                     Active Lobbies ({rooms.length})
                   </span>
-                  {loadingRooms && <span className="text-[9px] text-cyan-300 animate-pulse">Refreshing...</span>}
+                  {loadingRooms && <span className="text-[9px] text-cyan-300 animate-pulse font-semibold">Refreshing...</span>}
                 </div>
 
                 {rooms.length > 0 ? (
-                  <div className="max-h-40 overflow-y-auto grid grid-cols-2 gap-1.5 pr-1 custom-scrollbar">
+                  <div className="max-h-40 overflow-y-auto grid grid-cols-2 gap-2 pr-1 custom-scrollbar">
                     {rooms.map(room => {
                       const isPlaying = room.status === 'PLAYING';
                       const isSelected = pin === room.game_pin;
@@ -898,25 +891,25 @@ export default function HomePage() {
                         <div
                           key={room.id}
                           onClick={() => handleSelectRoom(room)}
-                          className={`flex items-center gap-2 p-2 rounded-xl border transition-all cursor-pointer ${
+                          className={`flex items-center gap-2.5 p-2.5 rounded-2xl border transition-all cursor-pointer ${
                             isSelected
-                              ? 'border-cyan-400 bg-cyan-950/40 shadow-sm'
-                              : 'border-white/10 bg-slate-800/50 hover:bg-slate-800/80'
+                              ? 'border-2 border-cyan-400 bg-cyan-950/60 shadow-[0_0_15px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/30'
+                              : 'border border-white/10 bg-slate-800/50 hover:border-cyan-400/40 hover:bg-slate-800/80 hover:text-white'
                           }`}
                         >
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-black text-xs">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-black text-xs shadow-md">
                             {(room.host_name || 'H').charAt(0).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
                               <span className="font-bold text-xs text-white truncate">{room.host_name}</span>
                               {isPlaying ? (
-                                <span className="px-1 py-0.2 rounded bg-rose-500/20 text-rose-400 text-[8px] font-bold">LIVE</span>
+                                <span className="px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[8px] font-black tracking-wider">LIVE</span>
                               ) : (
-                                <span className="px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[8px] font-bold">OPEN</span>
+                                <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[8px] font-black tracking-wider">OPEN</span>
                               )}
                             </div>
-                            <div className="flex items-center gap-1 text-[9px] text-slate-400">
+                            <div className="flex items-center gap-1.5 text-[9px] text-slate-400 mt-0.5 font-medium">
                               <span className="font-mono font-bold text-cyan-300">#{room.game_pin}</span>
                               <span>•</span>
                               <span>{room.player_count}P</span>
@@ -927,7 +920,7 @@ export default function HomePage() {
                     })}
                   </div>
                 ) : (
-                  <div className="py-4 text-center rounded-xl border border-dashed border-white/10 bg-slate-800/30 text-xs text-slate-400">
+                  <div className="py-4 text-center rounded-2xl border border-dashed border-white/15 bg-slate-800/30 text-xs text-slate-400 font-medium">
                     No active rooms found. Host a game to start!
                   </div>
                 )}
@@ -935,7 +928,7 @@ export default function HomePage() {
 
               {/* PIN & Submit */}
               <div>
-                <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">Game PIN</label>
+                <label className="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Game PIN</label>
                 <div className="relative flex items-center">
                   <input
                     type="text"
@@ -944,13 +937,13 @@ export default function HomePage() {
                     onKeyDown={e => e.key === 'Enter' && (isSelectedRoomPlaying ? handleWatch() : handleJoin())}
                     placeholder="6-digit PIN..."
                     maxLength={6}
-                    className="w-full rounded-xl border border-white/10 bg-slate-800/90 pl-3.5 pr-24 py-2.5 font-mono text-sm tracking-[0.2em] text-cyan-300 outline-none focus:border-cyan-400 transition-all placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-sans"
+                    className="w-full rounded-xl border border-white/15 bg-slate-800/90 pl-3.5 pr-28 py-3 font-mono text-base tracking-[0.25em] text-cyan-300 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-sans shadow-inner"
                   />
                   <button
                     type="button"
                     onClick={isSelectedRoomPlaying ? handleWatch : handleJoin}
                     disabled={loading || !pin.trim()}
-                    className="absolute right-1 top-1 bottom-1 px-4 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-black text-xs shadow transition-all cursor-pointer disabled:opacity-40"
+                    className="absolute right-1.5 top-1.5 bottom-1.5 px-5 rounded-lg bg-gradient-to-r from-cyan-400 via-teal-400 to-blue-500 hover:from-cyan-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-[0_0_18px_rgba(6,182,212,0.4)] hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] transition-all cursor-pointer disabled:opacity-40"
                   >
                     {loading ? (
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -976,28 +969,33 @@ export default function HomePage() {
         {/* SUBMENU: SOLO VS BOT (COMPACT MODAL) */}
         {/* ======================================================== */}
         {mode === 'bot' && (
-          <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-slate-900/95 p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.7)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="w-full max-w-lg rounded-3xl border-2 border-purple-400/50 bg-gradient-to-br from-purple-950/40 via-slate-900/95 to-slate-950/98 p-5 sm:p-6 shadow-[0_20px_70px_rgba(0,0,0,0.85),0_0_35px_rgba(168,85,247,0.22)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150 ring-1 ring-purple-400/20">
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+            <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => { setMode('home'); clearError(); }}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/15 hover:text-white transition-all cursor-pointer active:scale-95 shrink-0"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:border-purple-400/50 hover:bg-purple-400/15 hover:text-purple-200 transition-all cursor-pointer active:scale-95 shrink-0 shadow-inner"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </button>
                 <div>
-                  <h2 className="text-lg sm:text-xl font-black text-white">Solo vs AI Bot</h2>
-                  <p className="text-[11px] text-slate-400">Select bot difficulty and battle rules</p>
+                  <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                    <span>Solo vs AI Bot</span>
+                    <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-purple-400/15 border border-purple-400/30 px-2 py-0.5 text-[10px] font-bold text-purple-300 uppercase tracking-wider">
+                      <Bot className="w-3 h-3 text-purple-300" /> AI Practice
+                    </span>
+                  </h2>
+                  <p className="text-[11px] text-slate-400 font-medium">Select bot difficulty and battle rules</p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-3 space-y-3">
+            <div className="mt-4 space-y-3.5">
               {/* Bot Difficulty */}
               <div>
-                <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">Select Opponent</label>
+                <label className="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Select Opponent</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(['easy', 'medium', 'hard'] as const).map(diff => {
                     const profile = BOT_PROFILES[diff];
@@ -1007,17 +1005,17 @@ export default function HomePage() {
                         key={diff}
                         type="button"
                         onClick={() => setBotDifficulty(diff)}
-                        className={`flex flex-col items-center p-2 rounded-xl border transition-all cursor-pointer ${
+                        className={`flex flex-col items-center p-2.5 rounded-2xl border transition-all cursor-pointer ${
                           isSelected
-                            ? 'border-purple-400 bg-purple-500/20 shadow-sm'
-                            : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70'
+                            ? 'border-2 border-purple-400 bg-gradient-to-b from-purple-500/25 to-indigo-900/40 shadow-[0_0_18px_rgba(168,85,247,0.35)] ring-1 ring-purple-400/30'
+                            : 'border border-white/10 bg-slate-800/40 text-slate-400 hover:border-purple-400/30 hover:bg-slate-800/70 hover:text-slate-200'
                         }`}
                       >
-                        <Bot className="w-4 h-4 mb-0.5" />
-                        <span className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                        <Bot className={`w-5 h-5 mb-1 ${isSelected ? 'text-purple-300' : 'text-slate-400'}`} />
+                        <span className={`text-xs font-black ${isSelected ? 'text-white' : 'text-slate-300'}`}>
                           {profile.title}
                         </span>
-                        <span className="text-[9px] text-purple-300 font-semibold">{profile.name}</span>
+                        <span className="text-[9px] text-purple-300 font-bold mt-0.5">{profile.name}</span>
                       </button>
                     );
                   })}
@@ -1025,43 +1023,43 @@ export default function HomePage() {
               </div>
 
               {/* Game Mode */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
                   onClick={() => setGameMode('HP')}
-                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                     gameMode === 'HP'
-                      ? 'border-rose-500 bg-rose-500/15'
-                      : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70'
+                      ? 'border-2 border-rose-400/90 bg-gradient-to-r from-rose-950/60 to-rose-900/40 text-white shadow-[0_0_18px_rgba(244,63,94,0.3)] ring-1 ring-rose-400/30'
+                      : 'border border-white/10 bg-slate-800/40 text-slate-400 hover:border-white/20 hover:bg-slate-800/70'
                   }`}
                 >
-                  <span className={`block font-bold text-xs ${gameMode === 'HP' ? 'text-rose-200' : 'text-white'}`}>HP Battle</span>
-                  <span className="text-[9px] text-slate-400">Score deals direct HP damage</span>
+                  <span className={`block font-black text-xs sm:text-sm ${gameMode === 'HP' ? 'text-rose-200' : 'text-white'}`}>HP Battle</span>
+                  <span className="text-[10px] text-slate-400 font-medium">Score deals HP damage</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setGameMode('TURNS')}
-                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                     gameMode === 'TURNS'
-                      ? 'border-cyan-500 bg-cyan-500/15'
-                      : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70'
+                      ? 'border-2 border-cyan-400/90 bg-gradient-to-r from-cyan-950/60 to-cyan-900/40 text-white shadow-[0_0_18px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/30'
+                      : 'border border-white/10 bg-slate-800/40 text-slate-400 hover:border-white/20 hover:bg-slate-800/70'
                   }`}
                 >
-                  <span className={`block font-bold text-xs ${gameMode === 'TURNS' ? 'text-cyan-200' : 'text-white'}`}>Round Match</span>
-                  <span className="text-[9px] text-slate-400">Highest total score wins</span>
+                  <span className={`block font-black text-xs sm:text-sm ${gameMode === 'TURNS' ? 'text-cyan-200' : 'text-white'}`}>Round Match</span>
+                  <span className="text-[10px] text-slate-400 font-medium">Highest total score wins</span>
                 </button>
               </div>
 
               {/* Matchup Summary */}
-              <div className="flex items-center justify-between p-2.5 rounded-xl border border-purple-500/30 bg-purple-950/30">
-                <div className="flex items-center gap-1.5 text-xs">
-                  <span className="text-slate-400">Matchup:</span>
+              <div className="flex items-center justify-between p-3 rounded-2xl border border-purple-400/35 bg-purple-950/35 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <span className="text-slate-400 font-semibold">Matchup:</span>
                   <span className="font-bold text-white">{name.trim() || 'Player'}</span>
                   <span className="text-purple-400 font-black">VS</span>
                   <span className="font-bold text-purple-300">{BOT_PROFILES[botDifficulty].name}</span>
                 </div>
-                <span className="px-2 py-0.5 rounded bg-purple-500/20 text-[9px] font-bold text-purple-300 uppercase">
-                  Solo
+                <span className="px-2.5 py-0.5 rounded-full bg-purple-500/25 border border-purple-400/30 text-[9px] font-black text-purple-200 uppercase tracking-wider">
+                  1v1 Match
                 </span>
               </div>
 
@@ -1076,16 +1074,16 @@ export default function HomePage() {
                 type="button"
                 onClick={handleCreateBot}
                 disabled={loading}
-                className="w-full mt-1 py-3 rounded-xl bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-600 hover:from-purple-400 hover:to-indigo-500 text-white font-black text-sm shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full mt-2 py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-indigo-500 hover:from-purple-400 hover:via-fuchsia-400 hover:to-indigo-400 text-white font-black text-sm sm:text-base tracking-wider uppercase shadow-[0_8px_30px_rgba(168,85,247,0.45)] hover:shadow-[0_12px_40px_rgba(168,85,247,0.6)] hover:scale-[1.01] active:scale-98 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 border border-purple-300/40"
               >
                 {loading ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <RefreshCw className="w-4 h-4 animate-spin text-white" />
                     <span>Starting AI Match...</span>
                   </>
                 ) : (
                   <>
-                    <Bot className="w-4 h-4" />
+                    <Bot className="w-4 h-4 text-white" />
                     <span>START BOT MATCH</span>
                   </>
                 )}
