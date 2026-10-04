@@ -1,6 +1,6 @@
 from typing import Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, delete, desc, or_
+from sqlalchemy import select, delete, desc, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -19,14 +19,16 @@ async def get_match_history(
     Returns the last `limit` (default 50) completed or played games with full player summaries.
     Excludes debug mode games and solo practice games (1 human player without bot opponents).
     """
-    # Fetch recent games (query more than limit so we have enough after filtering out solo/debug games)
+    # Fetch recent games (query more than limit so we have enough after filtering out solo/debug games).
+    # Moves are intentionally NOT eager-loaded here -- each Move row carries sizeable JSON payloads
+    # (placed_tiles/words_formed/card_details) and this list only needs a per-game move *count*,
+    # fetched separately below for just the games that make it into the final page.
     stmt = (
         select(Game)
         .outerjoin(GameRoom, Game.id == GameRoom.id)
         .options(
             selectinload(Game.room),
             selectinload(Game.players),
-            selectinload(Game.moves),
         )
         .where(or_(GameRoom.is_debug.is_(False), GameRoom.is_debug.is_(None)))
         .order_by(desc(Game.created_at))
@@ -36,11 +38,11 @@ async def get_match_history(
     games = result.scalars().all()
 
     history_items: list[dict[str, Any]] = []
+    kept_games: list[Game] = []
 
     for game in games:
         room = game.room
         players = list(game.players)
-        moves = list(game.moves)
 
         # Skip debug mode rooms
         if room and room.is_debug:
@@ -73,6 +75,7 @@ async def get_match_history(
             if is_win:
                 winner_info = p_data
 
+        kept_games.append(game)
         history_items.append({
             "game_id": game.id,
             "game_pin": room.game_pin if room else None,
@@ -82,13 +85,24 @@ async def get_match_history(
             "started_at": room.started_at.isoformat() if room and room.started_at else (game.created_at.isoformat() if game.created_at else None),
             "finished_at": room.finished_at.isoformat() if room and room.finished_at else (game.updated_at.isoformat() if game.updated_at else None),
             "total_turns": game.turn_number,
-            "total_moves": len(moves),
+            "total_moves": 0,
             "winner": winner_info,
             "players": player_list,
         })
 
         if len(history_items) >= limit:
             break
+
+    # Fill in move counts with one cheap aggregate query, scoped to just the games in this page.
+    if kept_games:
+        move_counts_stmt = (
+            select(Move.game_id, func.count(Move.id))
+            .where(Move.game_id.in_([g.id for g in kept_games]))
+            .group_by(Move.game_id)
+        )
+        move_counts = dict((await db.execute(move_counts_stmt)).all())
+        for item in history_items:
+            item["total_moves"] = move_counts.get(item["game_id"], 0)
 
     return {
         "success": True,

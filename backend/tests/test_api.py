@@ -172,6 +172,37 @@ async def test_custom_starting_hp():
             assert p["hp"] == 50
             assert p["max_hp"] == 50
 
+
+@pytest.mark.asyncio
+async def test_grimoire_endpoint_returns_words_for_current_player():
+    """Regression check for the grimoire query-reduction fix: the endpoint must still return
+    the enabled word list by reusing the already-loaded game/player rows instead of re-querying."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.post("/api/rooms", json={"host_name": "Alice", "enable_grimoire": True})
+        assert res.status_code == 200
+        created = res.json()
+
+        await client.post(f"/api/rooms/{created['game_pin']}/join", json={
+            "game_pin": created["game_pin"], "player_name": "Bob"
+        })
+
+        start_res = await client.post(
+            f"/api/rooms/{created['game_pin']}/start",
+            headers={"X-Player-ID": created["host_player_id"]},
+        )
+        assert start_res.status_code == 200
+
+        res = await client.get(
+            f"/api/games/{created['game_id']}/grimoire",
+            headers={"X-Player-ID": created["host_player_id"]},
+        )
+        assert res.status_code == 200
+        data = res.json()
+        assert data["enabled"] is True
+        assert isinstance(data["words"], list)
+        assert data["count"] == len(data["words"])
+
 @pytest.mark.asyncio
 async def test_list_rooms():
     transport = ASGITransport(app=app)

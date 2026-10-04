@@ -439,10 +439,13 @@ async def get_grimoire_words(
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
 
-    stmt_room = select(GameRoom).where(GameRoom.id == game_id)
-    room = (await db.execute(stmt_room)).scalar_one_or_none()
-
-    is_enabled = bool(getattr(game, "enable_grimoire", False) or (room and getattr(room, "enable_grimoire", False)))
+    # game.enable_grimoire is copied from the room at game start, so it's already authoritative
+    # in the common case -- skip the extra round-trip to fetch the room unless it's unset there.
+    is_enabled = bool(getattr(game, "enable_grimoire", False))
+    if not is_enabled:
+        stmt_room = select(GameRoom).where(GameRoom.id == game_id)
+        room = (await db.execute(stmt_room)).scalar_one_or_none()
+        is_enabled = bool(room and getattr(room, "enable_grimoire", False))
     if not is_enabled:
         return {
             "enabled": False,
@@ -476,8 +479,11 @@ async def get_grimoire_words(
     import asyncio
     from app.game.grimoire import grimoire_cache, find_grimoire_words
 
-    rack = await player_rack(db, player.id)
-    board = await board_state(db, game_id)
+    # player and game were already fetched above with their rack/board_state columns loaded --
+    # reuse them instead of re-querying the same rows (the helpers only hit the DB again for
+    # legacy rows predating the JSON columns).
+    rack = player.rack if isinstance(player.rack, list) else await player_rack(db, player.id)
+    board = game.board_state if isinstance(game.board_state, dict) else await board_state(db, game_id)
 
     # Check state cache (0ms instant response)
     cache_key = grimoire_cache.compute_cache_key(

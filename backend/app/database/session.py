@@ -212,12 +212,15 @@ def _upgrade_existing_schema(connection):
                     f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_definition}"
                 ))
 
-    # Expand letter column widths to support BLANK / multi-character values
+    # Expand letter column widths to support BLANK / multi-character values, and add the
+    # created_at index backing the match-history listing's ORDER BY (metadata.create_all only
+    # creates indexes for brand-new tables, not columns added to a table that already exists).
     for stmt in [
         "ALTER TABLE game_tiles ALTER COLUMN letter TYPE VARCHAR(10)",
         "ALTER TABLE board_cells ALTER COLUMN letter TYPE VARCHAR(10)",
         "ALTER TABLE games ALTER COLUMN banned_letter TYPE VARCHAR(10)",
         "ALTER TABLE game_players ALTER COLUMN banned_letter TYPE VARCHAR(10)",
+        "CREATE INDEX IF NOT EXISTS ix_games_created_at ON games (created_at)",
     ]:
         try:
             connection.execute(text(stmt))

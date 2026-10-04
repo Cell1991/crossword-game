@@ -66,7 +66,7 @@ class Game(Base):
     pending_double_target_id = Column(String(36), nullable=True)
     pending_card_events = Column(JSON, default=list, nullable=True)  # [{"card": "...", "player_id": "...", ...}]
     winner_id = Column(String(36), nullable=True)
-    created_at = Column(DateTime(timezone=True), default=get_utc_now)
+    created_at = Column(DateTime(timezone=True), default=get_utc_now, index=True)
     updated_at = Column(DateTime(timezone=True), default=get_utc_now, onupdate=get_utc_now)
     turn_started_at = Column(DateTime(timezone=True), nullable=True)
 
