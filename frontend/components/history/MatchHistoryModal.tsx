@@ -784,117 +784,85 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
 
                           {/* Player's Rack at this turn */}
                           {(() => {
-                            const rawRack = currentMove.rack_before && currentMove.rack_before.length > 0
+                            const rackTiles = currentMove.rack_before && currentMove.rack_before.length > 0
                               ? currentMove.rack_before
-                              : null;
+                              : (currentMove.placed_tiles || []);
 
-                            // If we have recorded 7-tile rack, use it. Otherwise, place known tiles and pad to 7.
-                            let displayTiles: Array<{ letter: string; value: number; isPlaced: boolean; isUnknown?: boolean }> = [];
-                            
-                            if (rawRack && rawRack.length > 0) {
-                              const placedCounts = new Map<string, number>();
-                              if (currentMove.placed_tiles) {
-                                for (const pt of currentMove.placed_tiles) {
-                                  const l = pt.letter.toUpperCase();
-                                  placedCounts.set(l, (placedCounts.get(l) || 0) + 1);
-                                }
-                              }
-                              const matchedPlaced = new Map<string, number>();
+                            if (rackTiles.length === 0) return null;
 
-                              displayTiles = rawRack.map((t) => {
-                                const lUpper = t.letter.toUpperCase();
-                                const totalPlaced = placedCounts.get(lUpper) || 0;
-                                const alreadyMatched = matchedPlaced.get(lUpper) || 0;
-                                const isPlaced = alreadyMatched < totalPlaced;
-                                if (isPlaced) {
-                                  matchedPlaced.set(lUpper, alreadyMatched + 1);
-                                }
-                                return { letter: t.letter, value: t.value, isPlaced };
-                              });
-                            } else if (currentMove.placed_tiles && currentMove.placed_tiles.length > 0) {
-                              // Legacy matches fallback: show placed tiles + placeholders up to 7
-                              displayTiles = currentMove.placed_tiles.map(pt => ({
-                                letter: pt.letter,
-                                value: pt.value,
-                                isPlaced: true,
-                              }));
-                              const missingCount = Math.max(0, 7 - displayTiles.length);
-                              for (let k = 0; k < missingCount; k++) {
-                                displayTiles.push({ letter: '?', value: 0, isPlaced: false, isUnknown: true });
+                            // Track which tiles were played in this move
+                            const placedCounts = new Map<string, number>();
+                            if (currentMove.placed_tiles) {
+                              for (const pt of currentMove.placed_tiles) {
+                                const l = pt.letter.toUpperCase();
+                                placedCounts.set(l, (placedCounts.get(l) || 0) + 1);
                               }
                             }
-
-                            if (displayTiles.length === 0) return null;
+                            const matchedPlaced = new Map<string, number>();
 
                             return (
-                              <div className="pt-2.5 border-t border-white/[0.08] space-y-1.5">
+                              <div className="pt-2.5 border-t border-white/[0.08] space-y-2">
                                 <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                                  <span className="flex items-center gap-1.5 text-slate-300">
+                                  <span className="text-slate-300 flex items-center gap-1.5">
                                     <span>Player Hand Rack</span>
-                                    <span className="text-[9px] text-amber-400/80 font-normal">
-                                      {rawRack ? '(Full 7 Tiles)' : '(Archived Move)'}
-                                    </span>
+                                    <span className="text-amber-400/80 font-normal">({rackTiles.length} Tiles)</span>
                                   </span>
-                                  <span className="text-[9px] text-cyan-400 font-medium">
-                                    {displayTiles.filter(t => t.isPlaced && !t.isUnknown).length} Played
+                                  <span className="text-[9px] text-cyan-400 font-semibold">
+                                    {currentMove.placed_tiles?.length || 0} Played
                                   </span>
                                 </div>
 
-                                <div className="grid grid-cols-7 gap-1 sm:gap-1.5 pt-0.5">
-                                  {displayTiles.map((t, idx) => (
-                                    <div
-                                      key={idx}
-                                      className={`tile-face relative flex flex-col items-center justify-center h-8 sm:h-9 rounded-lg font-sans select-none overflow-hidden transition-all ${
-                                        t.isUnknown
-                                          ? 'border border-dashed border-white/20 bg-slate-950/40 opacity-40'
-                                          : t.isPlaced
-                                          ? 'border border-cyan-300 ring-2 ring-cyan-400/80 shadow-[0_0_12px_rgba(34,211,238,0.6)] scale-[1.03] z-10'
-                                          : 'border border-amber-300/60 opacity-90 shadow-sm'
-                                      }`}
-                                      title={
-                                        t.isUnknown
-                                          ? 'Unrecorded tile from earlier match archive'
-                                          : t.isPlaced
-                                          ? `Placed in this turn: ${t.letter} (${t.value} pts)`
-                                          : `Held in rack: ${t.letter} (${t.value} pts)`
-                                      }
-                                    >
-                                      {/* Top Glint */}
-                                      {!t.isUnknown && (
-                                        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-100/70 to-transparent pointer-events-none z-10" />
-                                      )}
+                                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                                  {rackTiles.map((t, idx) => {
+                                    const lUpper = t.letter.toUpperCase();
+                                    const totalPlaced = placedCounts.get(lUpper) || 0;
+                                    const alreadyMatched = matchedPlaced.get(lUpper) || 0;
+                                    const isPlaced = alreadyMatched < totalPlaced;
+                                    if (isPlaced) {
+                                      matchedPlaced.set(lUpper, alreadyMatched + 1);
+                                    }
 
-                                      {/* Letter with crisp black text stroke */}
-                                      <span
-                                        className={`tile-letter tile-letter-orange relative z-20 text-[13px] sm:text-[15px] font-maple font-black leading-none inline-block ${
-                                          t.isUnknown ? 'text-slate-500 font-sans' : 'text-white'
+                                    return (
+                                      <div
+                                        key={idx}
+                                        className={`tile-face relative flex flex-col items-center justify-center w-8 h-9 sm:w-9 sm:h-10 rounded-[9px] border font-sans select-none overflow-hidden transition-all duration-150 ${
+                                          isPlaced
+                                            ? 'border-cyan-300 ring-2 ring-cyan-400/80 shadow-[0_0_12px_rgba(34,211,238,0.7),inset_0_1px_1px_rgba(255,255,255,0.7)] scale-105 z-10'
+                                            : 'border-amber-200/80 opacity-80 hover:opacity-100 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'
                                         }`}
-                                        style={
-                                          !t.isUnknown
-                                            ? {
-                                                WebkitTextStroke: '0.85px #000000',
-                                                textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 1px 2px #000',
-                                              }
-                                            : undefined
+                                        title={
+                                          isPlaced
+                                            ? `Played in this move: ${t.letter} (${t.value} pts)`
+                                            : `Held in rack: ${t.letter} (${t.value} pts)`
                                         }
                                       >
-                                        {t.letter}
-                                      </span>
+                                        {/* Top Highlight Glint */}
+                                        <div
+                                          className={`absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent ${
+                                            isPlaced ? 'via-cyan-100/90' : 'via-amber-100/70'
+                                          } to-transparent pointer-events-none z-10`}
+                                        />
 
-                                      {/* Value subscript */}
-                                      {!t.isUnknown && (
+                                        {/* Authentic Letter (Solid Maple font without interior stroke lines) */}
                                         <span
-                                          className="absolute bottom-0.5 right-0.5 z-20 text-[6.5px] sm:text-[7.5px] font-mono font-black text-amber-200 leading-none"
-                                          style={{
-                                            WebkitTextStroke: '0.4px #000000',
-                                            textShadow: '0 1px 1px #000',
-                                          }}
+                                          className={`tile-letter tile-letter-orange relative z-20 text-[19px] sm:text-[21px] leading-none font-maple inline-block ${
+                                            t.letter.toUpperCase() === 'W'
+                                              ? 'scale-x-90 -translate-x-[0.5px]'
+                                              : t.letter.toUpperCase() === 'M'
+                                              ? 'scale-x-95'
+                                              : ''
+                                          }`}
                                         >
+                                          {t.letter}
+                                        </span>
+
+                                        {/* Authentic Score Subscript */}
+                                        <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[8.5px] sm:text-[9.5px] font-maple leading-none">
                                           {t.value}
                                         </span>
-                                      )}
-                                    </div>
-                                  ))}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             );
