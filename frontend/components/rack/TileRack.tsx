@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo, useRef, useState, useEffect } from 'react';
+import React, { memo, useRef, useState, useEffect, useCallback } from 'react';
 import { Tile } from '@/lib/types';
 import { isBlankLetter } from '@/lib/tiles';
 import { moveFixedElement } from '@/lib/dom';
@@ -85,6 +85,12 @@ export const TileRack = memo(function TileRack({
     new Set(slots.filter((t): t is Tile => Boolean(t)).map(t => t.id))
   );
   const [newlyDrawnTileMap, setNewlyDrawnTileMap] = useState<Map<string, number>>(new Map());
+  const [shuffleKey, setShuffleKey] = useState<number>(0);
+
+  const handleShuffle = useCallback(() => {
+    setShuffleKey(prev => prev + 1);
+    onShuffleRack();
+  }, [onShuffleRack]);
 
   useEffect(() => {
     const currentTiles = slots.filter((t): t is Tile => Boolean(t));
@@ -234,7 +240,13 @@ export const TileRack = memo(function TileRack({
                 const isDragging = draggedSlot === slotIndex || (isExternalDragActive && selectedTileId === tile.id);
                 const isNewlyDrawn = newlyDrawnTileMap.has(tile.id);
                 const staggerIndex = newlyDrawnTileMap.get(tile.id) ?? 0;
-                const staggerDelayMs = staggerIndex * 75;
+                const isShuffling = shuffleKey > 0;
+                const staggerDelayMs = isNewlyDrawn ? staggerIndex * 75 : isShuffling ? slotIndex * 35 : 0;
+                const animClass = isNewlyDrawn
+                  ? 'animate-tile-draw-spawn'
+                  : isShuffling
+                  ? 'animate-tile-shuffle-flip'
+                  : '';
 
                 return (
                   <div
@@ -266,7 +278,7 @@ export const TileRack = memo(function TileRack({
 
                     {/* Tile Button with GPU CSS transforms */}
                     <button
-                      key={tile.id}
+                      key={`${tile.id}-shf-${shuffleKey}`}
                       data-rack-slot={slotIndex}
                       data-rack-tile-id={tile.id}
                       onPointerDown={(event) => handlePointerDown(event, slotIndex, tile)}
@@ -274,10 +286,8 @@ export const TileRack = memo(function TileRack({
                       onPointerUp={(event) => handlePointerUp(event, tile)}
                       disabled={!canStageMove}
                       aria-pressed={isExchanging ? isMarkedForExchange : undefined}
-                      style={isNewlyDrawn ? { animationDelay: `${staggerDelayMs}ms` } : undefined}
-                      className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-200/90 font-sans select-none touch-none overflow-hidden sm:rounded-xl active:scale-95 transition-all ${
-                        isNewlyDrawn ? 'animate-tile-draw-spawn' : ''
-                      } ${
+                      style={animClass ? { animationDelay: `${staggerDelayMs}ms` } : undefined}
+                      className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-200/90 font-sans select-none touch-none overflow-hidden sm:rounded-xl active:scale-95 transition-all ${animClass} ${
                         isDragging
                           ? 'z-20 scale-105 -translate-y-2.5 opacity-40 shadow-2xl cursor-grabbing transition-none'
                           : isMarkedForExchange
@@ -378,11 +388,11 @@ export const TileRack = memo(function TileRack({
                 {/* Shuffle */}
                 <button
                   type="button"
-                  onClick={onShuffleRack}
+                  onClick={handleShuffle}
                   disabled={tileCount < 2 || isSubmitting}
                   className={`game-btn-base group flex h-[36px] sm:h-[38px] items-center justify-center gap-1.5 rounded-xl font-black text-xs ${
                     tileCount >= 2 && !isSubmitting
-                      ? 'game-btn-shuffle cursor-pointer'
+                      ? 'game-btn-shuffle cursor-pointer active:scale-95'
                       : 'game-btn-dormant cursor-not-allowed opacity-70'
                   }`}
                   title="Shuffle rack tiles"
@@ -609,11 +619,11 @@ export const TileRack = memo(function TileRack({
               {/* 2. Shuffle */}
               <button
                 type="button"
-                onClick={onShuffleRack}
+                onClick={handleShuffle}
                 disabled={tileCount < 2 || isSubmitting}
                 className={`game-btn-base group flex h-[38px] items-center justify-center rounded-xl ${
                   tileCount >= 2 && !isSubmitting
-                    ? 'game-btn-shuffle cursor-pointer'
+                    ? 'game-btn-shuffle cursor-pointer active:scale-95'
                     : 'game-btn-dormant cursor-not-allowed opacity-70'
                 }`}
                 title="Shuffle rack tiles"
