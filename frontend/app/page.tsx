@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, ArrowRight, BookMarked, BookOpen, Bot, Clock, Eye, LogIn, Minus, Plus, RefreshCw, User, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookMarked, BookOpen, Bot, Clock, Eye, LogIn, Minus, Plus, RefreshCw, Sparkles, User, X } from 'lucide-react';
 import { createRoom, getApiBase, getRoom, getRooms, joinRoom, startGame, sessionStore } from '@/lib/api';
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
@@ -11,6 +11,20 @@ import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { RockerSwitch } from '@/components/ui/RockerSwitch';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
+
+const RANDOM_PLAYER_NAMES = [
+  'Aether', 'Astra', 'Blaze', 'Cosmo', 'Cipher', 'Draco', 'Ember', 'Echo',
+  'Falcon', 'Frost', 'Glint', 'Helix', 'Hyper', 'Ignis', 'Jinx', 'Kairo',
+  'Lumen', 'Lyric', 'Mystic', 'Nexus', 'Nova', 'Orion', 'Pixel', 'Phoenix',
+  'Quantum', 'Rift', 'Rune', 'Solar', 'Specter', 'Titan', 'Vanguard', 'Vortex',
+  'Zephyr', 'Zenith', 'Shadow', 'Starlight', 'Eclipse', 'Comet', 'Valiant', 'Apex'
+];
+
+const getRandomPlayerName = () => {
+  const name = RANDOM_PLAYER_NAMES[Math.floor(Math.random() * RANDOM_PLAYER_NAMES.length)];
+  const num = Math.floor(Math.random() * 90 + 10);
+  return `${name}${num}`;
+};
 
 type Mode = 'home' | 'create' | 'join' | 'bot';
 type BotDifficulty = 'easy' | 'medium' | 'hard';
@@ -776,15 +790,30 @@ export default function HomePage() {
               {/* Your Name */}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-slate-300">Your Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleCreate()}
-                  placeholder="Enter your name..."
-                  maxLength={24}
-                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleCreate()}
+                    placeholder="Enter your name..."
+                    maxLength={24}
+                    className="w-full rounded-xl border border-white/10 bg-slate-800/80 pl-3.5 pr-11 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const rand = getRandomPlayerName();
+                      setName(rand);
+                      clearError();
+                    }}
+                    title="Generate Random Name"
+                    aria-label="Generate Random Name"
+                    className="group absolute right-2 top-1/2 -translate-y-1/2 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20 active:scale-95 transition-all cursor-pointer shadow-sm"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 group-hover:rotate-12 transition-transform drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
+                  </button>
+                </div>
               </div>
 
               {visibleError && <p className="text-red-400 text-xs sm:text-sm">{visibleError}</p>}
@@ -851,15 +880,30 @@ export default function HomePage() {
                     <span className="text-[10px] font-semibold text-emerald-400">Ready</span>
                   )}
                 </label>
-                <input
-                  ref={nameInputRef}
-                  type="text"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="Enter your name..."
-                  maxLength={24}
-                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-all placeholder:text-slate-500 hover:border-white/20 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                />
+                <div className="relative">
+                  <input
+                    ref={nameInputRef}
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="Enter your name..."
+                    maxLength={24}
+                    className="w-full rounded-xl border border-white/10 bg-slate-800/80 pl-3.5 pr-11 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-all placeholder:text-slate-500 hover:border-white/20 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const rand = getRandomPlayerName();
+                      setName(rand);
+                      clearError();
+                    }}
+                    title="Generate Random Name"
+                    aria-label="Generate Random Name"
+                    className="group absolute right-2 top-1/2 -translate-y-1/2 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20 active:scale-95 transition-all cursor-pointer shadow-sm"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 group-hover:rotate-12 transition-transform drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
+                  </button>
+                </div>
               </div>
 
               {/* Active Rooms */}
