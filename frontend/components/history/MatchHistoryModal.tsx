@@ -173,7 +173,7 @@ const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
   className = '',
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const camera = useBoardCamera();
+  const camera = useBoardCamera(0.28, 0.28);
 
   // Auto-fit & center board when first mounted
   const hasInitializedCameraRef = useRef(false);

@@ -58,10 +58,12 @@ function clampOffset(
  * themselves, and nothing else re-renders. Components that show the zoom level read it with
  * `useCameraScale`, which only updates them when the scale actually changes.
  */
-export function useBoardCamera() {
+export function useBoardCamera(customTouchMinScale?: number, customMinScale?: number) {
+  const touchMin = customTouchMinScale ?? TOUCH_MIN_SCALE;
+  const desktopMin = customMinScale ?? MIN_SCALE;
   const viewRef = useRef<CameraView>({ scale: DEFAULT_SCALE, offset: { x: 0, y: 0 } });
   const viewportRef = useRef({ width: 1200, height: 800 });
-  const minScaleRef = useRef(MIN_SCALE);
+  const minScaleRef = useRef(desktopMin);
   const listenersRef = useRef(new Set<() => void>());
 
   return useMemo(() => {
@@ -83,7 +85,7 @@ export function useBoardCamera() {
       if (width > 0 && height > 0) {
         viewportRef.current = { width, height };
         const touchViewport = width < 768 || window.matchMedia('(pointer: coarse)').matches;
-        minScaleRef.current = touchViewport ? TOUCH_MIN_SCALE : MIN_SCALE;
+        minScaleRef.current = touchViewport ? touchMin : desktopMin;
         const previous = viewRef.current;
         if (previous.scale < minScaleRef.current) {
           setView({

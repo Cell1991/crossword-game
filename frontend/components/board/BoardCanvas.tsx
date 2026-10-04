@@ -15,11 +15,9 @@ function detectLowPowerDevice() {
   return (device.hardwareConcurrency ?? 8) <= 8 || (device.deviceMemory ?? 8) <= 8;
 }
 
-function canvasPixelRatio(lowPower: boolean) {
+function canvasPixelRatio(_lowPower: boolean) {
   if (typeof window === 'undefined') return 1;
-  const isTouch = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
-  if (isTouch) return 1;
-  return Math.min(window.devicePixelRatio || 1, lowPower ? 1.25 : 2);
+  return Math.min(window.devicePixelRatio || 1, 2);
 }
 
 /** What the board shows, apart from the camera and the canvas size. */
