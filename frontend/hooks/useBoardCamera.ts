@@ -14,9 +14,9 @@ export interface CameraView {
 }
 
 const BASE_CELL_SIZE = 40;
-// Balanced zoom limit to prevent zooming out too far away
-const MIN_SCALE = 0.52;
-const TOUCH_MIN_SCALE = 0.65;
+// Allows smooth full-board overview zooming on both desktop and mobile
+const MIN_SCALE = 0.28;
+const TOUCH_MIN_SCALE = 0.28;
 const MAX_SCALE = 1.8;
 const DEFAULT_SCALE = 1;
 /** Zoom follows how far the wheel/trackpad moved (no fixed steps): a mouse-wheel notch (100px) is about 14%. */

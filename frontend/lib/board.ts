@@ -26,14 +26,18 @@ export const TRIPLE_LETTER = cellKeys([
   [9, 10], [9, 16],
 ]);
 
-// Lightning tiles replace word multipliers in this build and stay symmetric around the center star.
 export const SECRET_POWER = cellKeys([
+  [1, 7], [1, 19],
+  [2, 13],
   [3, 4], [3, 22],
   [5, 7], [5, 19],
   [7, 10], [7, 16],
+  [9, 4], [9, 22],
   [11, 10], [11, 16],
   [13, 7], [13, 19],
   [15, 4], [15, 22],
+  [16, 13],
+  [17, 7], [17, 19],
 ]);
 
 export function mirrorRow(r: number): number {

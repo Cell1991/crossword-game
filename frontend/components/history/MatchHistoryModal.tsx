@@ -31,6 +31,9 @@ import {
   RefreshCw,
   Lightbulb,
   Target,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
 } from 'lucide-react';
 import {
   BoardCell,
@@ -50,7 +53,7 @@ import {
   clearAllMatchHistory,
 } from '@/lib/api';
 import { BoardCanvas } from '@/components/board/BoardCanvas';
-import { useBoardCamera } from '@/hooks/useBoardCamera';
+import { useBoardCamera, BUTTON_ZOOM_FACTOR } from '@/hooks/useBoardCamera';
 import { isBlankLetter } from '@/lib/tiles';
 
 const EMPTY_CELL_POSITIONS: CellPosition[] = [];
@@ -174,17 +177,38 @@ const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const camera = useBoardCamera();
 
-  // Auto-center board when first mounted
+  // Auto-fit & center board when first mounted
   const hasInitializedCameraRef = useRef(false);
   useEffect(() => {
     if (!hasInitializedCameraRef.current && containerRef.current) {
       hasInitializedCameraRef.current = true;
-      camera.resetCamera();
+      const rect = containerRef.current.getBoundingClientRect();
+      if (rect.width < 768) {
+        // Automatically fit full map overview on mobile screens
+        camera.setViewport(rect.width, rect.height);
+        const autoScale = Math.max(0.28, Math.min(0.65, (rect.width - 24) / (27 * 40)));
+        camera.zoomToScale(autoScale, rect.width / 2, rect.height / 2);
+        camera.centerBoard(rect.width, rect.height);
+      } else {
+        camera.resetCamera();
+      }
     }
   }, [camera]);
 
+  const handleZoomIn = () => camera.zoomAtCenter(BUTTON_ZOOM_FACTOR);
+  const handleZoomOut = () => camera.zoomAtCenter(1 / BUTTON_ZOOM_FACTOR);
+  const handleFitOverview = () => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const scale = Math.max(0.28, Math.min(1.0, (rect.width - 20) / (27 * 40)));
+      camera.setViewport(rect.width, rect.height);
+      camera.zoomToScale(scale, rect.width / 2, rect.height / 2);
+      camera.centerBoard(rect.width, rect.height);
+    }
+  };
+
   return (
-    <div className={`flex flex-col bg-slate-950/60 p-2 sm:p-3 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 ${className}`}>
+    <div className={`relative flex flex-col bg-slate-950/60 p-2 sm:p-3 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 ${className}`}>
       {/* HTML5 Canvas Authentic Board */}
       <div className="relative flex-1 w-full h-full min-h-[220px] sm:min-h-[280px] overflow-hidden rounded-2xl bg-[#040612] border border-amber-400/20 shadow-[inset_0_2px_20px_rgba(0,0,0,0.85)]">
         <BoardCanvas
@@ -206,6 +230,37 @@ const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
           canStageMove={false}
           camera={camera}
         />
+
+        {/* Floating Quick Camera Controls (Zoom In, Zoom Out, Fit Overview) */}
+        <div className="absolute top-2.5 right-2.5 z-30 flex items-center gap-1 bg-slate-950/80 backdrop-blur-md p-1 rounded-xl border border-white/15 shadow-lg">
+          <button
+            type="button"
+            onClick={handleZoomIn}
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 active:scale-95 text-slate-300 hover:text-white transition-all cursor-pointer"
+            title="Zoom In"
+            aria-label="Zoom In"
+          >
+            <ZoomIn className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleZoomOut}
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 active:scale-95 text-slate-300 hover:text-white transition-all cursor-pointer"
+            title="Zoom Out (Overview)"
+            aria-label="Zoom Out"
+          >
+            <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleFitOverview}
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 active:scale-95 text-cyan-300 hover:text-cyan-200 border border-cyan-400/30 transition-all cursor-pointer"
+            title="Fit Full Map Overview"
+            aria-label="Fit Full Map Overview"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   );
