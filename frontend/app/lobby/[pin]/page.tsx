@@ -262,7 +262,7 @@ export default function LobbyPage() {
             <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-800/40 border border-white/5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mode</span>
               <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300 truncate max-w-full">
-                {gameMode === 'HP' ? `HP Battle (${startingHp ?? 100})` : `${maxTurns} Turns`}
+                {gameMode === 'HP' ? `HP Battle (${startingHp ?? 100})` : `${maxTurns} Rounds`}
               </span>
             </div>
 

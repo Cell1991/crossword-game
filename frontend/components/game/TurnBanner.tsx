@@ -14,6 +14,7 @@ interface TurnBannerProps {
   nextPlayer?: Player | undefined;
   turnNumber: number;
   maxTurns: number | null;
+  totalPlayers?: number;
   mobile?: boolean;
   isBotPlacing?: boolean;
 }
@@ -27,12 +28,16 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
   nextPlayer,
   turnNumber,
   maxTurns,
+  totalPlayers = 1,
   mobile = false,
   isBotPlacing = false,
 }) => {
   const isBot = Boolean(currentPlayer && /bot|\[ai\]/i.test(currentPlayer.display_name));
   const spectating = isSpectator || isEliminated;
-  const turnLabel = `T${turnNumber}${maxTurns ? `/${maxTurns}` : ''}`;
+  const totalPlayersCount = Math.max(1, totalPlayers || 1);
+  const totalRounds = maxTurns ? Math.max(1, Math.round(maxTurns / totalPlayersCount)) : null;
+  const currentRound = totalRounds ? Math.min(totalRounds, Math.floor((turnNumber - 1) / totalPlayersCount) + 1) : null;
+  const turnLabel = totalRounds ? `R${currentRound}/${totalRounds}` : `T${turnNumber}`;
 
   useEffect(() => {
     if (isMyTurn && isConnected && typeof navigator !== 'undefined' && 'vibrate' in navigator) {

@@ -449,7 +449,7 @@ export function GameGuideModal({
                   </div>
                 </div>
 
-                {/* Turn Count */}
+                {/* Round Count */}
                 <div className="rounded-2xl border border-indigo-500/25 bg-gradient-to-b from-indigo-500/[0.08] to-transparent p-4 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-2.5">
@@ -457,7 +457,7 @@ export function GameGuideModal({
                         <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300">
                           <Layers className="h-4 w-4" />
                         </span>
-                        <span className="text-sm sm:text-base font-bold text-white">Turn Count</span>
+                        <span className="text-sm sm:text-base font-bold text-white">Round Count</span>
                       </div>
                       <span className="rounded-full bg-indigo-500/15 border border-indigo-500/25 px-2.5 py-0.5 text-[10px] font-bold text-indigo-300 uppercase tracking-wider">
                         Classic
@@ -470,7 +470,7 @@ export function GameGuideModal({
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-slate-400 w-16 shrink-0">Rounds</span>
-                        <span className="text-indigo-200">Fixed turns (no player damage)</span>
+                        <span className="text-indigo-200">Equal turns per player (no damage)</span>
                       </div>
                     </div>
                   </div>

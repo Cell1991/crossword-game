@@ -473,11 +473,14 @@ async def test_turn_count_mode_uses_selected_limit_and_ignores_scoreless_end(ope
     room = (await table.client.get(f"/api/rooms/{table.pin}")).json()
 
     assert (room["game_mode"], room["max_turns"]) == ("TURNS", 7)
-    assert (await table.state())["max_turns"] == 7
+    assert (await table.state())["max_turns"] == 14
 
-    for seat in (alice, bob, alice, bob, alice, bob):
-        assert (await table.act(seat, "pass")).json()["game_over"] is False
-    result = await table.act(alice, "pass")
+    # 7 full rounds: Alice and Bob each play 7 turns (total 14 turns)
+    for _ in range(6):
+        assert (await table.act(alice, "pass")).json()["game_over"] is False
+        assert (await table.act(bob, "pass")).json()["game_over"] is False
+    assert (await table.act(alice, "pass")).json()["game_over"] is False
+    result = await table.act(bob, "pass")
 
     assert result.json()["game_over"] is True
     assert (await table.state())["status"] == "FINISHED"

@@ -49,7 +49,7 @@ export default function BotRoomCreationPage() {
   const handleCreateBot = async () => {
     const maxTurns = turnCountOption === 'custom' ? Number(customTurnCount) : Number(turnCountOption);
     if (gameMode === 'TURNS' && (!Number.isInteger(maxTurns) || maxTurns < 1 || maxTurns > 500)) {
-      setError('Turn count must be between 1 and 500');
+      setError('Round count must be between 1 and 500');
       return;
     }
     const startingHp = hpOption === 'custom' ? Number(customHp) : Number(hpOption);
@@ -211,7 +211,7 @@ export default function BotRoomCreationPage() {
               <div className="grid grid-cols-2 gap-2">
                 {([
                   ['HP', 'HP Battle', 'Score drains health'],
-                  ['TURNS', 'Turn Count', 'Highest score wins'],
+                  ['TURNS', 'Round Count', 'Highest score wins'],
                 ] as const).map(([value, title, description]) => (
                   <button
                     key={value}
@@ -235,7 +235,7 @@ export default function BotRoomCreationPage() {
               </div>
             </fieldset>
 
-            {/* Settings 2-Column: (Starting HP / Turn Count) + Turn Time */}
+            {/* Settings 2-Column: (Starting HP / Round Count) + Turn Time */}
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               {gameMode === 'HP' ? (
                 <div>
@@ -261,9 +261,10 @@ export default function BotRoomCreationPage() {
                     value={turnCountOption}
                     onChange={setTurnCountOption}
                     options={[
-                      { value: '7', label: '7 Turns' },
-                      { value: '14', label: '14 Turns' },
-                      { value: '21', label: '21 Turns' },
+                      { value: '5', label: '5 Rounds' },
+                      { value: '7', label: '7 Rounds' },
+                      { value: '10', label: '10 Rounds' },
+                      { value: '15', label: '15 Rounds' },
                       { value: 'custom', label: 'Custom' },
                     ]}
                   />
@@ -287,7 +288,7 @@ export default function BotRoomCreationPage() {
               </div>
             </div>
 
-            {/* Custom HP / Turn Stepper if selected */}
+            {/* Custom HP / Round Stepper if selected */}
             {gameMode === 'HP' && hpOption === 'custom' && (
               <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
                   <button
@@ -326,9 +327,9 @@ export default function BotRoomCreationPage() {
                 <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
                   <button
                     type="button"
-                    onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 28) - 1)))}
+                    onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 7) - 1)))}
                     className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Decrease turns"
+                    aria-label="Decrease rounds"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -339,17 +340,17 @@ export default function BotRoomCreationPage() {
                       max={500}
                       value={customTurnCount}
                       onChange={event => setCustomTurnCount(event.target.value)}
-                      aria-label="Custom turn count"
-                      placeholder="28"
+                      aria-label="Custom round count"
+                      placeholder="7"
                       className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Turns</span>
+                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Rounds</span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 28) + 1)))}
+                    onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 7) + 1)))}
                     className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Increase turns"
+                    aria-label="Increase rounds"
                   >
                     <Plus className="w-4 h-4" />
                   </button>

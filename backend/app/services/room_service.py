@@ -309,7 +309,8 @@ class RoomService:
         game.tile_bag = bag
         game.status = "PLAYING"
         game.current_player_id = players[0].id if players else None
-        game.max_turns = room.max_turns if room.game_mode == "TURNS" else None
+        num_players = len(players) if players else 1
+        game.max_turns = (room.max_turns * num_players) if (room.game_mode == "TURNS" and room.max_turns) else None
         game.starting_hp = starting_hp
         room.status = "PLAYING"
         room.started_at = get_utc_now()

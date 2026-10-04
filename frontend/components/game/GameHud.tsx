@@ -33,6 +33,7 @@ interface GameHudProps {
   nextPlayer?: Player | undefined;
   turnNumber: number;
   maxTurns: number | null;
+  totalPlayers?: number;
   onExit: () => void;
   onOpenInfo: () => void;
   onOpenGuide?: () => void;
@@ -59,6 +60,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   nextPlayer,
   turnNumber,
   maxTurns,
+  totalPlayers = 1,
   onExit,
   onOpenInfo,
   onOpenGuide,
@@ -220,6 +222,7 @@ export const GameHud: React.FC<GameHudProps> = ({
               nextPlayer={nextPlayer}
               turnNumber={turnNumber}
               maxTurns={maxTurns}
+              totalPlayers={totalPlayers}
             />
           </div>
         </div>
@@ -304,6 +307,7 @@ export const GameHud: React.FC<GameHudProps> = ({
               nextPlayer={nextPlayer}
               turnNumber={turnNumber}
               maxTurns={maxTurns}
+              totalPlayers={totalPlayers}
             />
           </div>
           {timer && <div className="shrink-0 flex items-stretch">{timer}</div>}

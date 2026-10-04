@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 from httpx._transports.asgi import ASGITransport
+from sqlalchemy import select
 from main import app
 from app.database.models import Base, Game, GamePlayer, GameRoom, Move
 from app.database.session import AsyncSessionLocal, engine, init_db
@@ -38,6 +39,16 @@ async def test_match_history_endpoints_and_filtering():
         })
         assert join_bot_res.status_code == 200
 
+        # Give player in bot room some points
+        bot_game_id = bot_room_res.json()["game_id"]
+        async with AsyncSessionLocal() as session:
+            player = (await session.execute(
+                select(GamePlayer).where(GamePlayer.game_id == bot_game_id, GamePlayer.is_bot.is_(False))
+            )).scalars().first()
+            if player:
+                player.score = 25
+                await session.commit()
+
         # 2.5 Create a debug room with bot (is_debug=True)
         debug_room_res = await client.post("/api/rooms", json={
             "host_name": "DebugTester",
@@ -56,6 +67,19 @@ async def test_match_history_endpoints_and_filtering():
             "bot_difficulty": "easy",
         })
 
+        # 2.7 Create a 0-score match with bot (both scores = 0)
+        zero_score_res = await client.post("/api/rooms", json={
+            "host_name": "ZeroHero",
+            "game_mode": "HP",
+        })
+        zero_pin = zero_score_res.json()["game_pin"]
+        await client.post(f"/api/rooms/{zero_pin}/join", json={
+            "game_pin": zero_pin,
+            "player_name": "ZeroBot",
+            "is_bot": True,
+            "bot_difficulty": "easy",
+        })
+
         # 3. Fetch match history list (default limit=50)
         hist_res = await client.get("/api/history")
         assert hist_res.status_code == 200
@@ -63,9 +87,10 @@ async def test_match_history_endpoints_and_filtering():
         assert data["success"] is True
         history = data["history"]
 
-        # Assert only normal bot match is present; solo match and debug match are excluded
+        # Assert only scored bot match is present; solo match, debug match, and 0-score match are excluded
         pins_in_history = [h["game_pin"] for h in history]
         assert bot_pin in pins_in_history
+        assert zero_pin not in pins_in_history
         assert solo_pin not in pins_in_history
         assert debug_pin not in pins_in_history
 

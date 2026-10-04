@@ -47,7 +47,7 @@ export default function DebugSetupPage() {
     const trimmedName = hostName.trim() || 'Debug Player 1';
     const maxTurns = turnCountOption === 'custom' ? Number(customTurnCount) : Number(turnCountOption);
     if (gameMode === 'TURNS' && (!Number.isInteger(maxTurns) || maxTurns < 1 || maxTurns > 500)) {
-      setError('Turn count must be between 1 and 500');
+      setError('Round count must be between 1 and 500');
       return;
     }
     const startingHp = hpOption === 'custom' ? Number(customHp) : Number(hpOption);
@@ -190,7 +190,7 @@ export default function DebugSetupPage() {
                 <div className="grid grid-cols-2 gap-2">
                   {([
                     ['HP', 'HP Battle', 'Score drains health'],
-                    ['TURNS', 'Turn Count', 'Highest score wins'],
+                    ['TURNS', 'Round Count', 'Highest score wins'],
                   ] as const).map(([value, title, description]) => (
                     <button
                       key={value}
@@ -268,9 +268,10 @@ export default function DebugSetupPage() {
                     value={turnCountOption}
                     onChange={setTurnCountOption}
                     options={[
-                      { value: '7', label: '7 Turns' },
-                      { value: '14', label: '14 Turns' },
-                      { value: '21', label: '21 Turns' },
+                      { value: '5', label: '5 Rounds' },
+                      { value: '7', label: '7 Rounds' },
+                      { value: '10', label: '10 Rounds' },
+                      { value: '15', label: '15 Rounds' },
                       { value: 'custom', label: 'Custom' },
                     ]}
                   />
@@ -278,9 +279,9 @@ export default function DebugSetupPage() {
                     <div className="mt-2 flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner overflow-hidden">
                       <button
                         type="button"
-                        onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 28) - 1)))}
+                        onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 7) - 1)))}
                         className="flex items-center justify-center w-11 h-11 text-slate-400 hover:text-rose-300 active:scale-95 transition-all"
-                        aria-label="Decrease turns"
+                        aria-label="Decrease rounds"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
@@ -291,16 +292,16 @@ export default function DebugSetupPage() {
                           max={500}
                           value={customTurnCount}
                           onChange={event => setCustomTurnCount(event.target.value)}
-                          aria-label="Custom turn count"
+                          aria-label="Custom round count"
                           className="w-full text-center font-mono font-bold text-white text-base bg-transparent outline-none"
                         />
-                        <span className="text-xs font-bold text-rose-400/80 uppercase tracking-wider select-none">Turns</span>
+                        <span className="text-xs font-bold text-rose-400/80 uppercase tracking-wider select-none">Rounds</span>
                       </div>
                       <button
                         type="button"
-                        onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 28) + 1)))}
+                        onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 7) + 1)))}
                         className="flex items-center justify-center w-11 h-11 text-slate-400 hover:text-rose-300 active:scale-95 transition-all"
-                        aria-label="Increase turns"
+                        aria-label="Increase rounds"
                       >
                         <Plus className="w-4 h-4" />
                       </button>

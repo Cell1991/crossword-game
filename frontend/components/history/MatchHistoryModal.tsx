@@ -274,7 +274,14 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
     try {
       const res = await getMatchHistory(50);
       if (res.success) {
-        setHistoryList(res.history);
+        const nonZeroHistory = (res.history || []).filter(item => {
+          const maxScore = Math.max(
+            ...(item.players || []).map(p => p.score || 0),
+            item.winner?.score || 0
+          );
+          return maxScore > 0;
+        });
+        setHistoryList(nonZeroHistory);
       }
     } catch (err: unknown) {
       setHistoryError(err instanceof Error ? err.message : 'Failed to load match history');

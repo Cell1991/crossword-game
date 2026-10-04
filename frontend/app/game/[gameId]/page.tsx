@@ -656,6 +656,7 @@ export default function GamePage() {
         nextPlayer={nextPlayer}
         turnNumber={gameState.turn_number ?? 1}
         maxTurns={gameState.max_turns}
+        totalPlayers={gameState.players.length}
         onExit={handleExit}
         onOpenInfo={() => setIsMobileInfoOpen(true)}
         onOpenGuide={() => setIsGuideOpen(true)}

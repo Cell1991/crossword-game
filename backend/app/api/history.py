@@ -53,6 +53,10 @@ async def get_match_history(
         if len(players) <= 1 and not has_bot:
             continue
 
+        # Skip matches where no points were scored (all players have 0 or <= 0 score)
+        if not players or all((p.score or 0) <= 0 for p in players):
+            continue
+
         sorted_players = sorted(players, key=lambda p: p.score, reverse=True)
         winner_id = game.winner_id or (sorted_players[0].id if sorted_players else None)
 
