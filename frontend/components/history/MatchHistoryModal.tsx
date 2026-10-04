@@ -152,26 +152,6 @@ const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
           camera={camera}
         />
       </div>
-
-      {/* Board Legend */}
-      <div className="flex flex-wrap items-center justify-center gap-2 pt-2.5 text-[10px] sm:text-[11px] font-medium shrink-0 select-none">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/35 text-cyan-300">
-          <span className="w-2 h-2 rounded-full bg-cyan-300 shadow-[0_0_6px_#22d3ee]" />
-          <span>Active Turn Placement</span>
-        </div>
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#1e1b4b] border border-amber-400/40 text-amber-300">
-          <span>★ Center Star</span>
-        </div>
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#7f1d1d]/80 border border-[#dc2626]/40 text-[#fca5a5]">
-          <span>3L Triple Letter</span>
-        </div>
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#166534]/80 border border-[#16a34a]/40 text-[#86efac]">
-          <span>2L Double Letter</span>
-        </div>
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0e7490]/80 border border-[#06b6d4]/40 text-[#a5f3fc]">
-          <span>⚡ Power Cell</span>
-        </div>
-      </div>
     </div>
   );
 };
