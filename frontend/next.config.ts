@@ -8,8 +8,7 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     localPatterns: [
-      { pathname: "/wordx-icon-256.png", search: "?v=20260915" },
-      { pathname: "/wordx-icon.png", search: "?v=20260915" },
+      { pathname: "/**" },
     ],
   },
   allowedDevOrigins: [
