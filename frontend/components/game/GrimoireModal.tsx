@@ -27,22 +27,20 @@ const GrimoireWordRow = React.memo(function GrimoireWordRow({
   isRightCol,
   onCopy,
 }: GrimoireWordRowProps) {
-  const letters = useMemo(() => word.split(''), [word]);
-
   return (
     <div
       onClick={() => onCopy(word)}
-      className={`grimoire-word-item group relative flex items-center justify-start px-3.5 sm:px-4 py-2 sm:py-2.5 border-b border-indigo-500/20 ${
+      className={`group relative flex items-center justify-start px-3.5 sm:px-4 py-2 sm:py-2.5 border-b border-indigo-500/20 ${
         isRightCol ? '' : 'sm:border-r sm:border-indigo-500/20'
       } hover:bg-indigo-950/50 active:bg-indigo-900/60 transition-colors cursor-pointer select-none`}
     >
       <div className="flex items-center justify-start gap-1 flex-wrap">
-        {letters.map((ch, i) => (
+        {word.split('').map((ch, i) => (
           <div
             key={i}
-            className="tile-face flex h-[26px] w-[21px] sm:h-[28px] sm:w-[23px] items-center justify-center rounded-[5px] sm:rounded-md border border-amber-100/90 shadow-sm shrink-0"
+            className="grimoire-tile flex h-[26px] w-[21px] sm:h-[28px] sm:w-[23px] items-center justify-center rounded-[5px] sm:rounded-md shrink-0"
           >
-            <span className="tile-letter tile-letter-orange text-xs sm:text-[13px] font-maple leading-none select-none">
+            <span className="grimoire-tile-letter text-xs sm:text-[13px] leading-none select-none">
               {ch}
             </span>
           </div>
@@ -224,8 +222,8 @@ export const GrimoireModal = React.memo(function GrimoireModal({
               )}
             </div>
 
-            {/* Words Grid Container */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+            {/* Words Grid Container with Native Momentum Scroll */}
+            <div className="grimoire-scroll-container flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-3 text-slate-400">
                   <RefreshCw className="h-8 w-8 animate-spin text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
