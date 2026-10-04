@@ -101,23 +101,15 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-300/80 via-cyan-300/60 to-transparent pointer-events-none" />
 
           {/* Modal Header */}
-          <div className="flex items-center justify-between border-b border-indigo-500/20 px-4 py-3.5 sm:px-6 sm:py-4 bg-[#090b1c]/80 backdrop-blur-md">
+          <div className="flex items-center justify-between border-b border-indigo-500/20 px-4 py-3 sm:px-6 bg-[#090b1c]/80 backdrop-blur-md">
             <div className="flex items-center gap-2.5 sm:gap-3">
               <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-amber-400/50 bg-gradient-to-b from-amber-500/20 to-indigo-900/40 text-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.35)]">
                 <BookMarked className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base sm:text-lg font-black tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                    Word Grimoire
-                  </h3>
-                  <span className="rounded-md border border-amber-400/40 bg-amber-400/10 px-1.5 py-0.5 text-[10px] font-black text-amber-300 tracking-wider uppercase">
-                    GRIMOIRE
-                  </span>
-                </div>
-                <p className="text-[11px] sm:text-xs text-slate-300">
-                  Playable words on board (3+ letters • up to 20 suggestions)
-                </p>
+                <h3 className="text-base sm:text-lg font-black tracking-wider text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  Grimoire
+                </h3>
               </div>
             </div>
 
@@ -147,7 +139,6 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
           {/* Filter Pills Toolbar */}
           <div className="flex items-center justify-between border-b border-indigo-900/40 px-4 py-2 sm:px-6 bg-[#070814]/70 overflow-x-auto hide-scrollbar gap-2">
             <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-[11px] font-bold text-slate-400 mr-1">Length:</span>
               <button
                 type="button"
                 onClick={() => setSelectedLengthFilter('ALL')}
@@ -189,7 +180,7 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
               <div className="flex flex-col items-center justify-center h-48 gap-3 text-slate-400">
                 <RefreshCw className="h-8 w-8 animate-spin text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
                 <span className="text-xs sm:text-sm font-bold tracking-wide text-slate-300">
-                  Calculating playable words from board and rack...
+                  Calculating playable words...
                 </span>
               </div>
             ) : filteredWords.length === 0 ? (
@@ -198,10 +189,7 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
                   <HelpCircle className="h-6 w-6" />
                 </div>
                 <p className="text-sm sm:text-base font-bold text-slate-200">
-                  No valid 3+ letter words found at this moment
-                </p>
-                <p className="mt-1 text-xs text-slate-400 max-w-sm">
-                  Try using Shuffle to rearrange your letters or Exchange tiles with the bag to uncover new word possibilities.
+                  No playable words found
                 </p>
               </div>
             ) : (
@@ -247,14 +235,8 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
             )}
           </div>
 
-          {/* Footer */}
-          <div className="border-t border-indigo-500/20 px-4 py-3 sm:px-6 bg-[#080a18]/90 flex items-center justify-between text-xs text-slate-400">
-            <span className="hidden sm:inline">
-              💡 Click any word to copy it to clipboard
-            </span>
-            <span className="sm:hidden">
-              💡 {words.length} playable words
-            </span>
+          {/* Clean Footer */}
+          <div className="border-t border-indigo-500/20 px-4 py-2.5 sm:px-6 bg-[#080a18]/90 flex items-center justify-end">
             <button
               type="button"
               onClick={onClose}

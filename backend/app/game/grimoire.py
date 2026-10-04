@@ -82,7 +82,20 @@ def find_grimoire_words(
                     return False
         return True
 
-    found_words: set[str] = set()
+    # Collect candidates grouped by word length
+    candidates_by_len: dict[int, list[str]] = {}
+    found_words_set: set[str] = set()
+    MAX_CANDIDATES_PER_LEN = 15
+    MAX_TOTAL_SEARCH = 120
+
+    def add_candidate(word: str) -> None:
+        if word in found_words_set:
+            return
+        w_len = len(word)
+        found_words_set.add(word)
+        if w_len not in candidates_by_len:
+            candidates_by_len[w_len] = []
+        candidates_by_len[w_len].append(word)
 
     # ==========================================
     # Case 1: First Move (Empty Board)
@@ -91,12 +104,17 @@ def find_grimoire_words(
         center_r, center_c = Board.CENTER[0], Board.CENTER[1]
         rack_len = len(rack_letters)
         for w_len in range(max(min_len, 2), rack_len + 1):
+            if len(found_words_set) >= MAX_TOTAL_SEARCH:
+                break
             words_for_len = viable_words_by_len.get(w_len, [])
             for word in words_for_len:
-                if len(word) < min_len or word in found_words:
+                if len(word) < min_len or word in found_words_set:
                     continue
+                if len(candidates_by_len.get(w_len, [])) >= MAX_CANDIDATES_PER_LEN:
+                    break
 
                 # Try across covering center
+                placed_across = False
                 for offset in range(w_len):
                     start_c = center_c - offset
                     placed = [
@@ -105,14 +123,12 @@ def find_grimoire_words(
                     ]
                     valid, _, _, _, _ = RuleEngine.validate_move(board_cells, placed, is_first_move=True)
                     if valid:
-                        found_words.add(word)
+                        add_candidate(word)
+                        placed_across = True
                         break
 
-                if len(found_words) >= max_words:
-                    break
-
                 # Try down covering center
-                if word not in found_words:
+                if not placed_across:
                     for offset in range(w_len):
                         start_r = center_r - offset
                         placed = [
@@ -121,13 +137,8 @@ def find_grimoire_words(
                         ]
                         valid, _, _, _, _ = RuleEngine.validate_move(board_cells, placed, is_first_move=True)
                         if valid:
-                            found_words.add(word)
+                            add_candidate(word)
                             break
-
-                if len(found_words) >= max_words:
-                    break
-            if len(found_words) >= max_words:
-                break
 
     # ==========================================
     # Case 2: Active Board (Subsequent Moves)
@@ -136,19 +147,21 @@ def find_grimoire_words(
         checked_spans: set[tuple[str, int, int, int]] = set()
 
         for (r, c), board_char in occupied.items():
-            if len(found_words) >= max_words:
+            if len(found_words_set) >= MAX_TOTAL_SEARCH:
                 break
 
             # Test horizontal spans passing through (r, c)
-            left_limit = c - len(rack_letters)
-            right_limit = c + len(rack_letters) + 1
+            left_limit = max(0, c - len(rack_letters))
+            right_limit = min(Board.SIZE, c + len(rack_letters) + 1)
 
             for start_c in range(left_limit, c + 1):
-                if len(found_words) >= max_words:
+                if len(found_words_set) >= MAX_TOTAL_SEARCH:
                     break
                 for end_c in range(c + 1, right_limit + 1):
                     span_len = end_c - start_c
                     if span_len < min_len:
+                        continue
+                    if len(candidates_by_len.get(span_len, [])) >= MAX_CANDIDATES_PER_LEN:
                         continue
 
                     # Word boundary checks
@@ -175,8 +188,10 @@ def find_grimoire_words(
 
                     words_for_len = viable_words_by_len.get(span_len, [])
                     for word in words_for_len:
-                        if len(word) < min_len or word in found_words:
+                        if len(word) < min_len or word in found_words_set:
                             continue
+                        if len(candidates_by_len.get(span_len, [])) >= MAX_CANDIDATES_PER_LEN:
+                            break
                         if match_word_to_pattern(word, fixed_letters):
                             placed = [
                                 {"row": r, "col": start_c + i, "letter": word[i], "value": get_tile_val(word[i])}
@@ -185,22 +200,20 @@ def find_grimoire_words(
                             ]
                             valid, _, _, _, _ = RuleEngine.validate_move(board_cells, placed, is_first_move=False)
                             if valid:
-                                found_words.add(word)
-                                if len(found_words) >= max_words:
-                                    break
-                    if len(found_words) >= max_words:
-                        break
+                                add_candidate(word)
 
             # Test vertical spans passing through (r, c)
-            top_limit = r - len(rack_letters)
-            bottom_limit = r + len(rack_letters) + 1
+            top_limit = max(0, r - len(rack_letters))
+            bottom_limit = min(Board.SIZE, r + len(rack_letters) + 1)
 
             for start_r in range(top_limit, r + 1):
-                if len(found_words) >= max_words:
+                if len(found_words_set) >= MAX_TOTAL_SEARCH:
                     break
                 for end_r in range(r + 1, bottom_limit + 1):
                     span_len = end_r - start_r
                     if span_len < min_len:
+                        continue
+                    if len(candidates_by_len.get(span_len, [])) >= MAX_CANDIDATES_PER_LEN:
                         continue
 
                     # Word boundary checks
@@ -227,8 +240,10 @@ def find_grimoire_words(
 
                     words_for_len = viable_words_by_len.get(span_len, [])
                     for word in words_for_len:
-                        if len(word) < min_len or word in found_words:
+                        if len(word) < min_len or word in found_words_set:
                             continue
+                        if len(candidates_by_len.get(span_len, [])) >= MAX_CANDIDATES_PER_LEN:
+                            break
                         if match_word_to_pattern(word, fixed_letters):
                             placed = [
                                 {"row": start_r + i, "col": c, "letter": word[i], "value": get_tile_val(word[i])}
@@ -237,12 +252,33 @@ def find_grimoire_words(
                             ]
                             valid, _, _, _, _ = RuleEngine.validate_move(board_cells, placed, is_first_move=False)
                             if valid:
-                                found_words.add(word)
-                                if len(found_words) >= max_words:
-                                    break
-                    if len(found_words) >= max_words:
-                        break
+                                add_candidate(word)
 
-    # Sort words by length descending, then alphabetically for clean presentation
-    sorted_words = sorted(list(found_words), key=lambda w: (-len(w), w))
-    return sorted_words[:max_words]
+    # ==========================================
+    # Balanced Round-Robin Selection across Lengths
+    # ==========================================
+    available_lens = sorted(candidates_by_len.keys())
+    if not available_lens:
+        return []
+
+    selected_words: list[str] = []
+    selected_set: set[str] = set()
+    pools = {l: list(candidates_by_len[l]) for l in available_lens}
+
+    while len(selected_words) < max_words:
+        added_in_round = False
+        for l in available_lens:
+            if len(selected_words) >= max_words:
+                break
+            if pools[l]:
+                w = pools[l].pop(0)
+                if w not in selected_set:
+                    selected_set.add(w)
+                    selected_words.append(w)
+                    added_in_round = True
+        if not added_in_round:
+            break
+
+    # Sort final words by length ascending, then alphabetically
+    return sorted(selected_words, key=lambda w: (len(w), w))[:max_words]
+
