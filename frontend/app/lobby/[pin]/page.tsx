@@ -2,14 +2,13 @@
 
 import React, { startTransition, useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import Image from 'next/image';
 import { getRoom, leaveRoom, startGame, sessionStore } from '@/lib/api';
 import { PinDisplay } from '@/components/lobby/PinDisplay';
 import { PlayerList } from '@/components/lobby/PlayerList';
 import ParticleField from '@/components/effects/ParticleField';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import { GameMode, Player } from '@/lib/types';
-import { Clock } from 'lucide-react';
+import { Clock, Play, LogOut, Swords, Users, Timer, Sparkles, ShieldAlert } from 'lucide-react';
 
 /** Matches MIN_PLAYERS on the backend: a host may start alone and play solo. */
 const MIN_PLAYERS = 1;
@@ -214,166 +213,180 @@ export default function LobbyPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4 gap-6 overflow-hidden">
-      <ParticleField className="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-80" />
+    <div className="relative flex h-[100dvh] max-h-[100dvh] w-full flex-col items-center justify-between overflow-hidden bg-[#030712] p-3 sm:p-5 text-slate-100 select-none selection:bg-cyan-500/30 selection:text-cyan-200">
+      
+      {/* Layer 0: Dark Cosmic Void & Dynamic Ambient Nebulas */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 h-[400px] w-[700px] rounded-full bg-gradient-to-b from-indigo-600/20 via-amber-500/10 to-transparent blur-[120px]" />
+        <div className="absolute -bottom-40 -left-20 h-[400px] w-[400px] rounded-full bg-cyan-600/10 blur-[120px]" />
+        <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
+      </div>
+
+      {/* Layer 1: Sleek Uniform Small Golden Grid */}
+      <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(245, 158, 11, 0.16) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(245, 158, 11, 0.16) 1px, transparent 1px)
+            `,
+            backgroundSize: '36px 36px',
+            backgroundPosition: 'center center',
+            maskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 45%, transparent 95%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 45%, transparent 95%)',
+          }}
+        />
+      </div>
+
+      {/* Layer 2: Subtle Ambient Rising Beams & Particle Matrix */}
+      <ParticleField className="pointer-events-none fixed inset-0 z-[2] h-full w-full" accent="245, 158, 11" />
       <FullscreenButton className="fixed top-3.5 right-3.5 z-40" />
-      {/* Background grid */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none"
-        style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }}
-      />
 
-      <div className="relative z-10 w-full max-w-lg flex flex-col items-center gap-6">
-        {/* Header */}
-        <div className="relative text-center flex flex-col items-center">
-          {/* 3D Cube Logo with glowing halo */}
-          <div className="relative mb-2 flex items-center justify-center">
-            <div className="pointer-events-none absolute -inset-3 rounded-full bg-gradient-to-tr from-indigo-500/30 via-amber-400/20 to-amber-500/35 blur-xl hero-glow-breathe" />
-            <div className="relative hero-logo-float transition-transform duration-300 hover:scale-105">
-              <Image
-                src="/wordx-icon-256.png"
-                alt="WordX logo"
-                width={76}
-                height={76}
-                priority
-                unoptimized
-                className="h-[72px] w-[72px] object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.55)] drop-shadow-[0_0_20px_rgba(245,158,11,0.35)]"
-              />
-            </div>
-          </div>
-          <h1 className="relative text-3xl sm:text-4xl font-black tracking-[-0.03em] leading-none drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]">
-            <span className="bg-gradient-to-b from-white via-slate-100 to-slate-300 bg-clip-text text-transparent [text-shadow:0_2px_12px_rgba(255,255,255,0.25)]">
-              Word
-            </span>
-            <span className="relative inline-block bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_22px_rgba(245,158,11,0.85)] ml-0.5">
-              X
-            </span>
-          </h1>
-        </div>
-
-        {/* PIN Display */}
+      {/* CENTER STAGE (Zero Scroll 100dvh) */}
+      <main className="relative z-20 flex w-full max-w-[550px] flex-1 flex-col items-center justify-center my-auto gap-3.5 sm:gap-4">
+        
+        {/* Game PIN Display Box */}
         <PinDisplay pin={pin} />
 
-        <div className={`w-full rounded-3xl border p-2.5 sm:p-3 shadow-2xl backdrop-blur-xl transition-all duration-300 ${
+        {/* Match Rules & Room Status Bar */}
+        <div className={`w-full rounded-2xl border p-2.5 sm:p-3 shadow-2xl backdrop-blur-2xl transition-all duration-300 ${
           timeLeft <= 120
-            ? 'bg-rose-950/40 border-rose-500/40 shadow-[0_0_20px_rgba(244,63,94,0.2)]'
-            : 'bg-gradient-to-br from-[#13153c]/90 via-slate-900/95 to-slate-950/98 border-indigo-400/30 shadow-[0_12px_40px_rgba(0,0,0,0.7),inset_0_1px_1px_rgba(255,255,255,0.12)]'
+            ? 'bg-rose-950/40 border-rose-500/50 shadow-[0_0_25px_rgba(244,63,94,0.25)]'
+            : 'bg-gradient-to-b from-slate-900/90 via-slate-950/95 to-slate-950 border-amber-400/30 shadow-[0_12px_40px_rgba(0,0,0,0.7),0_0_25px_rgba(251,191,36,0.12)] ring-1 ring-amber-400/20'
         }`}>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 text-center">
             {/* Mode */}
-            <div className="flex flex-col items-center justify-center py-2.5 px-1.5 rounded-2xl bg-slate-800/40 border border-white/5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mode</span>
-              <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300 truncate max-w-full">
+            <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-900/80 border border-amber-400/15">
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-200/70 flex items-center gap-1">
+                <Swords className="w-3 h-3 text-amber-400" /> Mode
+              </span>
+              <span className="mt-0.5 text-xs sm:text-sm font-black text-amber-300 truncate max-w-full drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">
                 {gameMode === 'HP' ? `HP Battle (${startingHp ?? 100})` : `${maxTurns} Rounds`}
               </span>
             </div>
 
             {/* Players */}
-            <div className="flex flex-col items-center justify-center py-2.5 px-1.5 rounded-2xl bg-slate-800/40 border border-white/5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Players</span>
-              <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300">
-                {maxPlayers ? `${maxPlayers} Players` : '4 Players'}
+            <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-900/80 border border-amber-400/15">
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-200/70 flex items-center gap-1">
+                <Users className="w-3 h-3 text-amber-400" /> Capacity
+              </span>
+              <span className="mt-0.5 text-xs sm:text-sm font-black text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">
+                {players.length}/{maxPlayers ? `${maxPlayers}P` : '4P'}
               </span>
             </div>
 
             {/* Turn Time */}
-            <div className="flex flex-col items-center justify-center py-2.5 px-1.5 rounded-2xl bg-slate-800/40 border border-white/5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Turn Time</span>
-              <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300">
+            <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-900/80 border border-amber-400/15">
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-200/70 flex items-center gap-1">
+                <Timer className="w-3 h-3 text-amber-400" /> Turn Time
+              </span>
+              <span className="mt-0.5 text-xs sm:text-sm font-black text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">
                 {turnTimeLimit === null ? 'Unlimited' : `${turnTimeLimit}s`}
               </span>
             </div>
 
             {/* Auto-close */}
-            <div className={`flex flex-col items-center justify-center py-2.5 px-1.5 rounded-2xl border ${
+            <div className={`flex flex-col items-center justify-center py-2 px-1.5 rounded-xl border ${
               timeLeft <= 120
-                ? 'bg-rose-900/30 border-rose-500/40'
-                : 'bg-slate-800/40 border-white/5'
+                ? 'bg-rose-900/30 border-rose-500/50'
+                : 'bg-slate-900/80 border-amber-400/15'
             }`}>
-              <span className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${
-                timeLeft <= 120 ? 'text-rose-300' : 'text-slate-400'
+              <span className={`text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${
+                timeLeft <= 120 ? 'text-rose-300' : 'text-amber-200/70'
               }`}>
                 <Clock className={`w-3 h-3 ${timeLeft <= 120 ? 'text-rose-400 animate-pulse' : 'text-amber-400'}`} />
                 {timeLeft <= 120 ? 'Closing' : 'Auto-close'}
               </span>
-              <span className={`mt-0.5 font-mono text-xs sm:text-sm font-bold ${
-                timeLeft <= 120 ? 'text-rose-400 animate-pulse' : 'text-amber-300'
+              <span className={`mt-0.5 font-mono text-xs sm:text-sm font-black ${
+                timeLeft <= 120 ? 'text-rose-400 animate-pulse' : 'text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]'
               }`}>
                 {formatCountdown(timeLeft)}
               </span>
             </div>
           </div>
           {isDebugRoom && (
-            <div className="mt-2 text-center text-xs font-semibold text-rose-300">
-              🐞 Debug room
+            <div className="mt-2 text-center text-xs font-bold text-rose-300 flex items-center justify-center gap-1">
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+              <span>Debug room enabled</span>
             </div>
           )}
         </div>
 
-        {/* Player List */}
-        <div className="w-full rounded-3xl border border-indigo-400/25 bg-gradient-to-b from-[#111335]/90 via-[#0c0e29]/95 to-slate-950/98 p-5 sm:p-6 shadow-[0_16px_50px_rgba(0,0,0,0.75),inset_0_1px_1px_rgba(255,255,255,0.12)] backdrop-blur-xl">
+        {/* Player List Roster Card */}
+        <div className="w-full rounded-3xl border border-amber-400/30 bg-gradient-to-b from-slate-900/90 via-slate-950/95 to-slate-950 p-4 sm:p-5 shadow-[0_16px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(251,191,36,0.12)] ring-1 ring-amber-400/20 backdrop-blur-2xl relative overflow-hidden">
+          {/* Top Gold Accent Line */}
+          <span className="absolute inset-x-8 top-0 h-[2px] bg-gradient-to-r from-transparent via-yellow-300 to-transparent shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
+
           <PlayerList players={players} myPlayerId={myPlayerId} maxPlayers={maxPlayers} />
 
           {isHost && players.length < 2 && (
-            <div className="flex items-center justify-center gap-2 mt-4 select-none">
-              <span className="text-amber-300 text-xs sm:text-sm slow-twinkle">✨</span>
-              <p className="text-center font-bold text-xs sm:text-sm tracking-wide gold-shimmer-text">
+            <div className="flex items-center justify-center gap-2 mt-3.5 select-none bg-amber-400/5 py-1.5 px-3 rounded-xl border border-amber-400/15">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300 slow-twinkle" />
+              <p className="text-center font-black text-[11px] sm:text-xs tracking-wide gold-shimmer-text">
                 Waiting for other players to join...
               </p>
-              <span className="text-amber-300 text-xs sm:text-sm slow-twinkle-delayed">✨</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-300 slow-twinkle-delayed" />
             </div>
           )}
         </div>
 
-        {/* Error */}
+        {/* Error Alert */}
         {error && (
-          <p className="text-red-400 text-sm bg-red-950/30 border border-red-800/40 rounded-xl px-4 py-2">
+          <div className="w-full text-center text-rose-300 text-xs font-bold bg-rose-950/50 border border-rose-500/40 rounded-xl px-4 py-2 shadow-[0_0_15px_rgba(244,63,94,0.3)]">
             {error}
-          </p>
-        )}
-
-        {/* Start Button (host only) */}
-        {isHost && (
-          <button
-            onClick={handleStart}
-            disabled={starting || leaving || players.length < MIN_PLAYERS}
-            className="tactile-button group relative w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 hover:from-emerald-300 hover:via-teal-300 hover:to-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-lg sm:text-xl uppercase tracking-wider shadow-[0_10px_35px_rgba(16,185,129,0.4)] hover:shadow-[0_14px_45px_rgba(16,185,129,0.55)] cursor-pointer flex items-center justify-center gap-2.5 border border-emerald-300/50 transition-all hover:scale-[1.01] active:scale-98"
-          >
-            {starting ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-5 w-5 text-slate-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Launching match...</span>
-              </span>
-            ) : (
-              <>
-                <span className="group-hover:scale-110 transition-transform duration-150">▶</span>
-                <span>Start Game</span>
-              </>
-            )}
-          </button>
-        )}
-
-        {!isHost && (
-          <div className="flex items-center justify-center gap-2 py-2 select-none">
-            <span className="text-amber-300 text-xs sm:text-sm slow-twinkle">✨</span>
-            <p className="text-center font-bold text-xs sm:text-sm tracking-wide gold-shimmer-text">
-              {isSpectator ? '👁 Watching: the board opens when the host starts' : 'Waiting for host to start...'}
-            </p>
-            <span className="text-amber-300 text-xs sm:text-sm slow-twinkle-delayed">✨</span>
           </div>
         )}
 
-        {/* Back to home */}
-        <button
-          onClick={handleLeave}
-          disabled={leaving || starting}
-          className="tactile-button py-2 px-4 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-white/5 text-xs sm:text-sm transition-all disabled:opacity-40 cursor-pointer font-medium"
-        >
-          {leaving ? 'Leaving...' : isSpectator ? '← Stop watching' : '← Leave lobby'}
-        </button>
-      </div>
+        {/* Action Controls */}
+        <div className="w-full flex flex-col items-center gap-2.5">
+          {/* Start Button (host only) */}
+          {isHost && (
+            <button
+              onClick={handleStart}
+              disabled={starting || leaving || players.length < MIN_PLAYERS}
+              className="tactile-button group relative w-full py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 hover:from-amber-200 hover:via-yellow-300 hover:to-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-base sm:text-lg uppercase tracking-wider shadow-[0_0_30px_rgba(251,191,36,0.5),0_10px_25px_rgba(0,0,0,0.6)] hover:shadow-[0_0_40px_rgba(251,191,36,0.7),0_12px_30px_rgba(0,0,0,0.7)] cursor-pointer flex items-center justify-center gap-2.5 border-2 border-yellow-200/80 transition-all hover:scale-[1.01] active:scale-98"
+            >
+              {starting ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-5 w-5 text-slate-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Launching match...</span>
+                </span>
+              ) : (
+                <>
+                  <Play className="w-5 h-5 fill-slate-950 text-slate-950 group-hover:scale-110 transition-transform" />
+                  <span>START MATCH</span>
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Guest / Spectator Waiting Badge */}
+          {!isHost && (
+            <div className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-slate-900/80 border border-amber-400/30 shadow-[0_0_20px_rgba(251,191,36,0.15)] select-none">
+              <Sparkles className="w-4 h-4 text-amber-300 slow-twinkle" />
+              <p className="text-center font-black text-xs sm:text-sm tracking-wide gold-shimmer-text">
+                {isSpectator ? '👁 Spectator Mode: Match starts when host begins' : 'Waiting for host to start match...'}
+              </p>
+              <Sparkles className="w-4 h-4 text-amber-300 slow-twinkle-delayed" />
+            </div>
+          )}
+
+          {/* Leave / Exit Lobby Pill */}
+          <button
+            onClick={handleLeave}
+            disabled={leaving || starting}
+            className="tactile-button py-2 px-5 rounded-xl text-amber-200/70 hover:text-white bg-slate-900/60 hover:bg-amber-400/10 border border-amber-400/20 hover:border-amber-400/40 text-xs sm:text-sm transition-all disabled:opacity-40 cursor-pointer font-bold flex items-center gap-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>{leaving ? 'Leaving...' : isSpectator ? 'Stop Watching' : 'Leave Lobby'}</span>
+          </button>
+        </div>
+      </main>
     </div>
   );
 }
+
