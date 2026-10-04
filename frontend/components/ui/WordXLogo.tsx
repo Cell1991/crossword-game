@@ -5,147 +5,230 @@ import React from 'react';
 interface WordXLogoProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  showText?: boolean;
 }
 
-export default function WordXLogo({ size = 'md', className = '' }: WordXLogoProps) {
+export default function WordXLogo({ size = 'md', className = '', showText = true }: WordXLogoProps) {
   const isLarge = size === 'lg';
   const isSmall = size === 'sm';
 
-  const iconDim = isLarge ? 72 : isSmall ? 40 : 56;
+  const iconDim = isLarge ? 84 : isSmall ? 44 : 64;
   const titleClasses = isLarge
-    ? 'text-5xl sm:text-6xl'
+    ? 'text-4xl sm:text-5xl md:text-6xl'
     : isSmall
-    ? 'text-2xl sm:text-3xl'
-    : 'text-4xl sm:text-5xl';
+    ? 'text-xl sm:text-2xl'
+    : 'text-3xl sm:text-4xl';
 
   return (
     <div className={`relative flex flex-col items-center justify-center select-none ${className}`}>
-      {/* Ambient Glow */}
-      <div className="pointer-events-none absolute -inset-4 sm:-inset-6 rounded-full bg-gradient-to-r from-amber-500/25 via-cyan-500/20 to-orange-500/25 blur-3xl" />
+      {/* Ambient RGB Cyber Glow */}
+      <div className="pointer-events-none absolute -inset-6 sm:-inset-8 rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-cyan-500/20 blur-3xl opacity-75" />
 
       {/* Main Logo Composition */}
-      <div className="relative flex items-center gap-3 sm:gap-4.5 cursor-pointer group">
+      <div className="relative flex items-center gap-3.5 sm:gap-5 cursor-pointer group">
         
-        {/* Emblem Crest */}
-        <div className="relative flex items-center justify-center transform group-hover:scale-105 group-hover:rotate-1 transition-all duration-300">
+        {/* 3D Mechanical Keycap Icon */}
+        <div className="relative flex items-center justify-center transform group-hover:scale-105 group-hover:-translate-y-1 transition-all duration-300">
           <svg
             width={iconDim}
             height={iconDim}
-            viewBox="0 0 100 100"
+            viewBox="0 0 120 120"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="drop-shadow-[0_0_20px_rgba(245,158,11,0.6)]"
+            className="drop-shadow-[0_12px_24px_rgba(0,0,0,0.8)]"
           >
             <defs>
-              {/* Outer Golden Border Gradient */}
-              <linearGradient id="goldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FDE68A" />
-                <stop offset="40%" stopColor="#F59E0B" />
-                <stop offset="70%" stopColor="#D97706" />
-                <stop offset="100%" stopColor="#78350F" />
+              {/* Top Face Keycap Gradient */}
+              <linearGradient id="keycapTop" x1="20%" y1="0%" x2="80%" y2="100%">
+                <stop offset="0%" stopColor="#334155" />
+                <stop offset="40%" stopColor="#1E293B" />
+                <stop offset="100%" stopColor="#0F172A" />
               </linearGradient>
 
-              {/* Inner Shield Gradient */}
-              <linearGradient id="shieldBg" x1="0%" y1="0%" x2="0%" y2="100%">
+              {/* Front Face Keycap Gradient */}
+              <linearGradient id="keycapFront" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stopColor="#1E293B" />
-                <stop offset="60%" stopColor="#0F172A" />
-                <stop offset="100%" stopColor="#030712" />
+                <stop offset="50%" stopColor="#0F172A" />
+                <stop offset="100%" stopColor="#020617" />
               </linearGradient>
 
-              {/* Blazing X Core Gradient */}
-              <linearGradient id="xFire" x1="0%" y1="0%" x2="100%" y2="100%">
+              {/* Right Face Keycap Gradient (Shaded) */}
+              <linearGradient id="keycapRight" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#0F172A" />
+                <stop offset="100%" stopColor="#020617" />
+              </linearGradient>
+
+              {/* Glowing Bevel Stroke */}
+              <linearGradient id="keycapBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FDE68A" />
+                <stop offset="35%" stopColor="#F59E0B" />
+                <stop offset="70%" stopColor="#38BDF8" />
+                <stop offset="100%" stopColor="#0284C7" />
+              </linearGradient>
+
+              {/* Top Rim Specular Highlight */}
+              <linearGradient id="topRim" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#94A3B8" stopOpacity="0.8" />
+                <stop offset="50%" stopColor="#CBD5E1" stopOpacity="0.9" />
+                <stop offset="100%" stopColor="#64748B" stopOpacity="0.4" />
+              </linearGradient>
+
+              {/* Blazing X Core Fire Gradient */}
+              <linearGradient id="xGlow" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#FFFBEB" />
-                <stop offset="25%" stopColor="#FDE047" />
-                <stop offset="65%" stopColor="#F59E0B" />
+                <stop offset="30%" stopColor="#FDE047" />
+                <stop offset="70%" stopColor="#F59E0B" />
                 <stop offset="100%" stopColor="#EA580C" />
               </linearGradient>
 
-              {/* Cyan Accent Gradient */}
-              <linearGradient id="cyanGlow" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#06B6D4" />
-                <stop offset="100%" stopColor="#38BDF8" />
+              {/* Word Legend Gradient */}
+              <linearGradient id="wordLegend" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#E2E8F0" />
+                <stop offset="50%" stopColor="#CBD5E1" />
+                <stop offset="100%" stopColor="#94A3B8" />
               </linearGradient>
 
-              {/* Drop Shadow Filter for Inset Depth */}
-              <filter id="glowFilter" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
+              {/* Underglow RGB Filter */}
+              <filter id="rgbGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="4" result="blur" />
                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
             </defs>
 
-            {/* Shield Background Hexagon / Rounded Diamond */}
+            {/* RGB Mechanical Switch Underglow Base */}
             <path
-              d="M50 4 L92 26 L92 74 L50 96 L8 74 L8 26 Z"
-              fill="url(#shieldBg)"
-              stroke="url(#goldBorder)"
-              strokeWidth="4.5"
-              strokeLinejoin="round"
+              d="M16 80 L60 106 L104 80"
+              stroke="#F59E0B"
+              strokeWidth="4"
+              strokeLinecap="round"
+              opacity="0.6"
+              filter="url(#rgbGlow)"
+            />
+            <path
+              d="M16 80 L60 106 L104 80"
+              stroke="#38BDF8"
+              strokeWidth="2"
+              strokeLinecap="round"
+              opacity="0.8"
             />
 
-            {/* Inner Cyber Rune Lines */}
+            {/* 1. KEYCAP RIGHT SIDE WALL */}
             <path
-              d="M50 14 L82 31 L82 69 L50 86 L18 69 L18 31 Z"
-              fill="none"
-              stroke="url(#cyanGlow)"
+              d="M60 62 L100 38 L104 78 L60 104 Z"
+              fill="url(#keycapRight)"
+              stroke="#1E293B"
               strokeWidth="1.5"
-              strokeOpacity="0.45"
-              strokeDasharray="4 3"
               strokeLinejoin="round"
             />
 
-            {/* Corner Power Nodes */}
-            <circle cx="50" cy="14" r="2.5" fill="#38BDF8" />
-            <circle cx="82" cy="50" r="2.5" fill="#F59E0B" />
-            <circle cx="18" cy="50" r="2.5" fill="#F59E0B" />
-            <circle cx="50" cy="86" r="2.5" fill="#38BDF8" />
+            {/* 2. KEYCAP FRONT SIDE WALL */}
+            <path
+              d="M20 38 L60 62 L60 104 L16 78 Z"
+              fill="url(#keycapFront)"
+              stroke="#334155"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
 
-            {/* Stylized 3D Sharp Tactical "X" */}
-            <g filter="url(#glowFilter)">
-              {/* Arm 1 (Top-Left to Bottom-Right) */}
+            {/* "WORD" Text Engraved on Front Keycap Wall (Isometric Skew) */}
+            <g transform="translate(18, 54) skewY(28) scale(0.9, 0.85)">
+              <text
+                x="6"
+                y="18"
+                fill="url(#wordLegend)"
+                fontSize="15"
+                fontWeight="900"
+                fontFamily="system-ui, -apple-system, sans-serif"
+                letterSpacing="2.5"
+                opacity="0.95"
+                filter="drop-shadow(0 1px 2px rgba(0,0,0,0.9))"
+              >
+                WORD
+              </text>
+            </g>
+
+            {/* 3. KEYCAP TOP SURFACE DISH */}
+            <path
+              d="M60 14 L98 37 L60 60 L22 37 Z"
+              fill="url(#keycapTop)"
+              stroke="url(#topRim)"
+              strokeWidth="2"
+              strokeLinejoin="round"
+            />
+
+            {/* Inner Chamfer Bevel on Top Surface */}
+            <path
+              d="M60 19 L92 37 L60 55 L28 37 Z"
+              fill="#0F172A"
+              fillOpacity="0.4"
+              stroke="url(#keycapBorder)"
+              strokeWidth="1"
+              strokeOpacity="0.6"
+              strokeLinejoin="round"
+            />
+
+            {/* 4. BOLD GLOWING "X" ON TOP SURFACE (ISOMETRIC PROJECTED) */}
+            <g transform="translate(60, 37) rotate(0)">
+              {/* Isometric X Arms */}
+              {/* Arm 1: Top-Left to Bottom-Right */}
               <polygon
-                points="30,28 39,24 72,72 63,76"
-                fill="url(#xFire)"
+                points="-14,-10 -7,-14 14,10 7,14"
+                fill="url(#xGlow)"
+                filter="url(#rgbGlow)"
               />
               <polygon
-                points="30,28 35,32 67,80 63,76"
-                fill="#B45309"
-                opacity="0.8"
+                points="-14,-10 -7,-14 14,10 7,14"
+                fill="url(#xGlow)"
               />
 
-              {/* Arm 2 (Top-Right to Bottom-Left) */}
+              {/* Arm 2: Top-Right to Bottom-Left */}
               <polygon
-                points="70,28 61,24 28,72 37,76"
-                fill="url(#xFire)"
+                points="14,-10 7,-14 -14,10 -7,14"
+                fill="url(#xGlow)"
+                filter="url(#rgbGlow)"
               />
               <polygon
-                points="70,28 65,32 33,80 37,76"
-                fill="#B45309"
-                opacity="0.8"
+                points="14,-10 7,-14 -14,10 -7,14"
+                fill="url(#xGlow)"
               />
 
-              {/* Center Diamond Core Jewel */}
-              <polygon
-                points="50,42 58,50 50,58 42,50"
-                fill="#FFF"
+              {/* Specular Core Jewel on X Center */}
+              <circle
+                cx="0"
+                cy="0"
+                r="3"
+                fill="#FFFFFF"
                 className="animate-pulse"
+                opacity="0.9"
               />
             </g>
+
+            {/* Top-Left Crisp Edge Highlight Reflection */}
+            <path
+              d="M60 14 L22 37 L16 78"
+              stroke="#94A3B8"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeOpacity="0.5"
+            />
           </svg>
         </div>
 
-        {/* Text Title */}
-        <div className="flex items-baseline">
-          <span
-            className={`font-black tracking-wider uppercase bg-gradient-to-b from-white via-slate-100 to-slate-300 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] ${titleClasses}`}
-          >
-            Word
-          </span>
-          <span
-            className={`font-black tracking-tight bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500 bg-clip-text text-transparent ml-1 drop-shadow-[0_0_30px_rgba(245,158,11,0.9)] ${titleClasses}`}
-          >
-            X
-          </span>
-        </div>
+        {/* Text Title Beside Logo */}
+        {showText && (
+          <div className="flex items-baseline">
+            <span
+              className={`font-black tracking-wider uppercase bg-gradient-to-b from-white via-slate-100 to-slate-300 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] ${titleClasses}`}
+            >
+              Word
+            </span>
+            <span
+              className={`font-black tracking-tight bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500 bg-clip-text text-transparent ml-1 drop-shadow-[0_0_30px_rgba(245,158,11,0.9)] ${titleClasses}`}
+            >
+              X
+            </span>
+          </div>
+        )}
 
       </div>
     </div>
