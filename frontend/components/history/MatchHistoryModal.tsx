@@ -825,48 +825,20 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                         </span>
                       </div>
 
-                      {/* Scrubber Range Slider (Clean Minimalist Precision Timeline) */}
-                      {(() => {
-                        const totalMoves = replayData.moves.length;
-                        const progressPct = totalMoves > 0 ? (currentStep / totalMoves) * 100 : 0;
-
-                        return (
-                          <div className="relative flex items-center w-full py-2 select-none touch-none">
-                            {/* Track Base */}
-                            <div className="relative h-1.5 sm:h-2 w-full rounded-full bg-white/10 border border-white/5 shadow-inner overflow-hidden pointer-events-none">
-                              {/* Progress Fill */}
-                              <div
-                                className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-sky-400 shadow-[0_0_8px_rgba(34,211,238,0.7)] will-change-[width]"
-                                style={{ width: `${progressPct}%` }}
-                              />
-                            </div>
-
-                            {/* Precision Capsule Cursor (Non-circular sleek vertical thumb) */}
-                            <div
-                              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none z-20 will-change-transform"
-                              style={{ left: `${progressPct}%` }}
-                            >
-                              <div className="flex items-center justify-center w-2.5 sm:w-3 h-5 sm:h-6 rounded-full bg-white border border-cyan-200 shadow-[0_0_10px_rgba(6,182,212,0.8),0_2px_6px_rgba(0,0,0,0.8)]">
-                                <div className="w-[1.5px] h-2.5 bg-cyan-600 rounded-full" />
-                              </div>
-                            </div>
-
-                            {/* Transparent Interactive Native Input */}
-                            <input
-                              type="range"
-                              min={0}
-                              max={totalMoves}
-                              value={currentStep}
-                              onChange={(e) => {
-                                setCurrentStep(Number(e.target.value));
-                                setIsPlaying(false);
-                              }}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
-                              aria-label="Move timeline scrubber"
-                            />
-                          </div>
-                        );
-                      })()}
+                      {/* Scrubber Range Slider */}
+                      <div className="relative flex items-center w-full py-1">
+                        <input
+                          type="range"
+                          min={0}
+                          max={replayData.moves.length}
+                          value={currentStep}
+                          onChange={(e) => {
+                            setCurrentStep(Number(e.target.value));
+                            setIsPlaying(false);
+                          }}
+                          className="w-full h-2 rounded-lg bg-slate-800 appearance-none cursor-pointer accent-cyan-400 focus:outline-none"
+                        />
+                      </div>
 
                       {/* Button Bar: First, Prev, Play/Pause, Next, Last */}
                       <div className="flex items-center justify-between gap-1.5">
