@@ -11,20 +11,7 @@ import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { RockerSwitch } from '@/components/ui/RockerSwitch';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
-
-const RANDOM_PLAYER_NAMES = [
-  'Aether', 'Astra', 'Blaze', 'Cosmo', 'Cipher', 'Draco', 'Ember', 'Echo',
-  'Falcon', 'Frost', 'Glint', 'Helix', 'Hyper', 'Ignis', 'Jinx', 'Kairo',
-  'Lumen', 'Lyric', 'Mystic', 'Nexus', 'Nova', 'Orion', 'Pixel', 'Phoenix',
-  'Quantum', 'Rift', 'Rune', 'Solar', 'Specter', 'Titan', 'Vanguard', 'Vortex',
-  'Zephyr', 'Zenith', 'Shadow', 'Starlight', 'Eclipse', 'Comet', 'Valiant', 'Apex'
-];
-
-const getRandomPlayerName = () => {
-  const name = RANDOM_PLAYER_NAMES[Math.floor(Math.random() * RANDOM_PLAYER_NAMES.length)];
-  const num = Math.floor(Math.random() * 90 + 10);
-  return `${name}${num}`;
-};
+import { getRandomPlayerName } from '@/lib/names';
 
 type Mode = 'home' | 'create' | 'join' | 'bot';
 type BotDifficulty = 'easy' | 'medium' | 'hard';
