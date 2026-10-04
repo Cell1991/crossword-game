@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import select, func
 from fastapi import HTTPException
 
@@ -545,6 +546,10 @@ class GameService:
 
         # Record pass move
         passing_rack = passing_player.rack if (passing_player.rack is not None and isinstance(passing_player.rack, list)) else await player_rack(db, player_id)
+        cards_used: list[dict[str, Any]] = list(game.pending_card_events or [])
+        game.pending_card_events = []
+        flag_modified(game, "pending_card_events")
+
         pass_move = Move(
             id=str(uuid.uuid4()),
             game_id=game.id,
@@ -555,6 +560,7 @@ class GameService:
             words_formed=[],
             score_earned=0,
             rack_before=[{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in (passing_rack or [])],
+            card_details=cards_used if cards_used else None,
         )
         db.add(pass_move)
 
@@ -734,6 +740,10 @@ class GameService:
         player.rack = new_rack
         game.tile_bag = new_bag
 
+        cards_used: list[dict[str, Any]] = list(game.pending_card_events or [])
+        game.pending_card_events = []
+        flag_modified(game, "pending_card_events")
+
         db.add(Move(
             id=str(uuid.uuid4()),
             game_id=game.id,
@@ -744,6 +754,7 @@ class GameService:
             words_formed=[],
             score_earned=0,
             rack_before=[{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in (old_rack or [])],
+            card_details=cards_used if cards_used else None,
         ))
 
         # Rules §6: an exchange scores nothing, so it counts towards the scoreless turns that end the game.

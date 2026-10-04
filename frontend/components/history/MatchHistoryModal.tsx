@@ -41,6 +41,7 @@ import {
   MatchReplayResponse,
   MatchReplayMove,
   MatchReplayPlacedTile,
+  MatchReplayCardDetails,
 } from '@/lib/types';
 import {
   getMatchHistory,
@@ -149,6 +150,14 @@ const getCardVisuals = (cardName: string) => {
         glow: 'shadow-[0_0_12px_rgba(129,140,248,0.3)]',
       };
   }
+};
+
+const normalizeCardDetails = (
+  details?: MatchReplayCardDetails[] | MatchReplayCardDetails | null
+): MatchReplayCardDetails[] => {
+  if (!details) return [];
+  if (Array.isArray(details)) return details;
+  return [details];
 };
 
 const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
@@ -356,13 +365,16 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
           };
         }
       }
-      if (
-        move.card_details?.card === 'DESTROY_TILE' &&
-        move.card_details.row !== undefined &&
-        move.card_details.col !== undefined
-      ) {
-        const key = `${move.card_details.row}_${move.card_details.col}`;
-        delete state[key];
+      const cardList = normalizeCardDetails(move.card_details);
+      for (const c of cardList) {
+        if (
+          c.card === 'DESTROY_TILE' &&
+          c.row !== undefined &&
+          c.col !== undefined
+        ) {
+          const key = `${c.row}_${c.col}`;
+          delete state[key];
+        }
       }
     }
     return state;
@@ -861,48 +873,67 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                             </span>
                           </div>
 
-                          {/* Card Effect Event Details if a card was used */}
-                          {currentMove.card_details && (() => {
-                            const cardVis = getCardVisuals(currentMove.card_details.card);
-                            const CardIcon = cardVis.Icon;
-                            return (
-                              <div className={`p-2.5 rounded-xl border ${cardVis.bg} ${cardVis.border} space-y-1.5 shadow-sm`}>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className={`flex h-5 w-5 items-center justify-center rounded-lg ${cardVis.badgeBg}`}>
-                                      <CardIcon className="w-3.5 h-3.5" />
-                                    </span>
-                                    <span className={`text-xs font-black uppercase tracking-wider ${cardVis.text}`}>
-                                      {cardVis.label}
-                                    </span>
-                                  </div>
-                                  {currentMove.card_details.amount !== undefined && currentMove.card_details.amount > 0 && (
-                                    <span className="text-[11px] font-mono font-bold text-emerald-300 bg-emerald-500/25 border border-emerald-400/40 px-2 py-0.5 rounded-md shadow-sm">
-                                      +{currentMove.card_details.amount} HP
-                                    </span>
-                                  )}
-                                </div>
+                          {/* Card Effect Event Details if card(s) were used */}
+                          {(() => {
+                            const cardList = normalizeCardDetails(currentMove.card_details);
+                            if (cardList.length === 0) return null;
 
-                                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-300 pt-0.5">
-                                  {currentMove.card_details.target_player_name && (
-                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 text-slate-200 font-medium">
-                                      <Target className="w-3 h-3 text-amber-400" />
-                                      <span className="text-slate-400">Target:</span>
-                                      <strong className="text-amber-200 font-bold">{currentMove.card_details.target_player_name}</strong>
+                            return (
+                              <div className="space-y-1.5">
+                                {cardList.map((cardEvent, cIdx) => {
+                                  const cardVis = getCardVisuals(cardEvent.card);
+                                  const CardIcon = cardVis.Icon;
+                                  const cardUpper = cardEvent.card.toUpperCase();
+                                  const isPlayerTargetCard = cardUpper === 'DOUBLE_DAMAGE' || cardUpper === 'SPY_SWAP';
+                                  const isTileTargetCard = cardUpper === 'FREEZE_TILE' || cardUpper === 'DESTROY_TILE';
+
+                                  return (
+                                    <div
+                                      key={cIdx}
+                                      className={`p-2.5 rounded-xl border ${cardVis.bg} ${cardVis.border} space-y-1.5 shadow-sm`}
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1.5">
+                                          <span className={`flex h-5 w-5 items-center justify-center rounded-lg ${cardVis.badgeBg}`}>
+                                            <CardIcon className="w-3.5 h-3.5" />
+                                          </span>
+                                          <span className={`text-xs font-black uppercase tracking-wider ${cardVis.text}`}>
+                                            {cardVis.label}
+                                          </span>
+                                        </div>
+                                        {cardEvent.amount !== undefined && cardEvent.amount > 0 && (
+                                          <span className="text-[11px] font-mono font-bold text-emerald-300 bg-emerald-500/25 border border-emerald-400/40 px-2 py-0.5 rounded-md shadow-sm">
+                                            +{cardEvent.amount} HP
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-300 pt-0.5">
+                                        {isPlayerTargetCard && cardEvent.target_player_name && (
+                                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 text-slate-200 font-medium">
+                                            <Target className="w-3 h-3 text-amber-400" />
+                                            <span className="text-slate-400">Target:</span>
+                                            <strong className="text-amber-200 font-bold">{cardEvent.target_player_name}</strong>
+                                          </div>
+                                        )}
+                                        {isTileTargetCard && cardEvent.row !== undefined && cardEvent.col !== undefined && (
+                                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 text-slate-200 font-mono text-[10px]">
+                                            <span className="text-slate-400 font-sans">Cell:</span>
+                                            <span className="text-cyan-300 font-bold">({cardEvent.row}, {cardEvent.col})</span>
+                                            {cardEvent.destroyed_letter && (
+                                              <span className="text-rose-300 font-bold ml-1">[{cardEvent.destroyed_letter}]</span>
+                                            )}
+                                          </div>
+                                        )}
+                                        {cardEvent.description && (
+                                          <p className="text-[11px] text-slate-300 w-full italic">
+                                            {cardEvent.description}
+                                          </p>
+                                        )}
+                                      </div>
                                     </div>
-                                  )}
-                                  {currentMove.card_details.row !== undefined && currentMove.card_details.col !== undefined && (
-                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 text-slate-200 font-mono text-[10px]">
-                                      <span className="text-slate-400 font-sans">Cell:</span>
-                                      <span className="text-cyan-300 font-bold">({currentMove.card_details.row}, {currentMove.card_details.col})</span>
-                                    </div>
-                                  )}
-                                  {currentMove.card_details.description && (
-                                    <p className="text-[11px] text-slate-300 w-full italic">
-                                      {currentMove.card_details.description}
-                                    </p>
-                                  )}
-                                </div>
+                                  );
+                                })}
                               </div>
                             );
                           })()}
@@ -919,7 +950,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                 </span>
                               ))}
                             </div>
-                          ) : !currentMove.card_details ? (
+                          ) : !currentMove.card_details || (Array.isArray(currentMove.card_details) && currentMove.card_details.length === 0) ? (
                             <p className="text-xs text-slate-400 italic">
                               {currentMove.move_type === 'PASS'
                                 ? 'Turn Passed (Scoreless)'
@@ -1140,39 +1171,83 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                           const isActive = currentStep === stepNumber;
                           const isFinalStep = idx === replayData.moves.length - 1;
 
+                          const moveCards = normalizeCardDetails(move.card_details);
+
                           let moveSummary: React.ReactNode;
-                          if (move.move_type === 'CARD_USED' && move.card_details) {
-                            const cardVis = getCardVisuals(move.card_details.card);
-                            const CardIcon = cardVis.Icon;
-                            moveSummary = (
-                              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold border ${cardVis.bg} ${cardVis.border} ${cardVis.text}`}>
-                                <CardIcon className="w-3 h-3 shrink-0" />
-                                <span>{cardVis.label}</span>
-                                {move.card_details.target_player_name && (
-                                  <span className="font-normal text-slate-300 opacity-90">➔ {move.card_details.target_player_name}</span>
-                                )}
-                              </span>
-                            );
-                          } else if (move.words_formed && move.words_formed.length > 0) {
+                          if (move.words_formed && move.words_formed.length > 0) {
                             moveSummary = (
                               <div className="inline-flex items-center gap-1.5 flex-wrap">
                                 <strong className="text-white font-mono font-bold">
                                   {move.words_formed.map((w) => w.word).join(', ')}
                                 </strong>
-                                {move.card_details && (() => {
-                                  const cardVis = getCardVisuals(move.card_details.card);
+                                {moveCards.map((cEvent, cIdx) => {
+                                  const cardVis = getCardVisuals(cEvent.card);
                                   const CardIcon = cardVis.Icon;
+                                  const cardUpper = cEvent.card.toUpperCase();
+                                  const isPlayerTarget = cardUpper === 'DOUBLE_DAMAGE' || cardUpper === 'SPY_SWAP';
+                                  const isTileTarget = cardUpper === 'FREEZE_TILE' || cardUpper === 'DESTROY_TILE';
+
                                   return (
-                                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-bold border ${cardVis.bg} ${cardVis.border} ${cardVis.text}`}>
+                                    <span
+                                      key={cIdx}
+                                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border ${cardVis.bg} ${cardVis.border} ${cardVis.text}`}
+                                    >
                                       <CardIcon className="w-2.5 h-2.5" />
                                       <span>{cardVis.label}</span>
+                                      {isPlayerTarget && cEvent.target_player_name && (
+                                        <span className="font-normal text-slate-300 opacity-90">➔ {cEvent.target_player_name}</span>
+                                      )}
+                                      {isTileTarget && cEvent.row !== undefined && cEvent.col !== undefined && (
+                                        <span className="font-mono text-cyan-300 opacity-90">({cEvent.row},{cEvent.col})</span>
+                                      )}
+                                      {cardUpper === 'HEAL' && cEvent.amount !== undefined && cEvent.amount > 0 && (
+                                        <span className="font-mono text-emerald-300">+{cEvent.amount}</span>
+                                      )}
                                     </span>
                                   );
-                                })()}
+                                })}
+                              </div>
+                            );
+                          } else if (moveCards.length > 0) {
+                            moveSummary = (
+                              <div className="inline-flex items-center gap-1.5 flex-wrap">
+                                <span className="italic text-slate-400 font-medium">
+                                  {move.move_type === 'PASS' ? 'Pass' : move.move_type === 'EXCHANGE' ? 'Exchange' : move.move_type}
+                                </span>
+                                {moveCards.map((cEvent, cIdx) => {
+                                  const cardVis = getCardVisuals(cEvent.card);
+                                  const CardIcon = cardVis.Icon;
+                                  const cardUpper = cEvent.card.toUpperCase();
+                                  const isPlayerTarget = cardUpper === 'DOUBLE_DAMAGE' || cardUpper === 'SPY_SWAP';
+                                  const isTileTarget = cardUpper === 'FREEZE_TILE' || cardUpper === 'DESTROY_TILE';
+
+                                  return (
+                                    <span
+                                      key={cIdx}
+                                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border ${cardVis.bg} ${cardVis.border} ${cardVis.text}`}
+                                    >
+                                      <CardIcon className="w-2.5 h-2.5" />
+                                      <span>{cardVis.label}</span>
+                                      {isPlayerTarget && cEvent.target_player_name && (
+                                        <span className="font-normal text-slate-300 opacity-90">➔ {cEvent.target_player_name}</span>
+                                      )}
+                                      {isTileTarget && cEvent.row !== undefined && cEvent.col !== undefined && (
+                                        <span className="font-mono text-cyan-300 opacity-90">({cEvent.row},{cEvent.col})</span>
+                                      )}
+                                      {cardUpper === 'HEAL' && cEvent.amount !== undefined && cEvent.amount > 0 && (
+                                        <span className="font-mono text-emerald-300">+{cEvent.amount}</span>
+                                      )}
+                                    </span>
+                                  );
+                                })}
                               </div>
                             );
                           } else {
-                            moveSummary = <span className="italic text-slate-400 font-medium">{move.move_type}</span>;
+                            moveSummary = (
+                              <span className="italic text-slate-400 font-medium">
+                                {move.move_type === 'PASS' ? 'Pass' : move.move_type === 'EXCHANGE' ? 'Exchange' : move.move_type}
+                              </span>
+                            );
                           }
 
                           return (

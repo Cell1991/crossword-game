@@ -378,7 +378,7 @@ export interface MatchReplayMove {
   words_formed: WordFormed[];
   score_earned: number;
   rack_before?: { letter: string; value: number }[];
-  card_details?: MatchReplayCardDetails | null;
+  card_details?: MatchReplayCardDetails[] | MatchReplayCardDetails | null;
   running_scores: Record<string, number>;
   created_at: string | null;
 }

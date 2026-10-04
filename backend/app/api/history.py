@@ -136,9 +136,17 @@ async def get_match_replay(
     running_scores: dict[str, int] = {p.id: 0 for p in players}
 
     for m in raw_moves:
+        if m.move_type == "CARD_USED":
+            continue
         p_obj = player_map.get(m.player_id)
         p_name = p_obj.display_name if p_obj else "Unknown Player"
         running_scores[m.player_id] = running_scores.get(m.player_id, 0) + m.score_earned
+
+        c_details = m.card_details
+        if c_details and isinstance(c_details, dict):
+            c_details = [c_details]
+        elif not isinstance(c_details, list):
+            c_details = None
 
         replay_moves.append({
             "move_id": m.id,
@@ -151,7 +159,7 @@ async def get_match_replay(
             "words_formed": m.words_formed or [],
             "score_earned": m.score_earned,
             "rack_before": m.rack_before or [],
-            "card_details": m.card_details or None,
+            "card_details": c_details,
             "running_scores": dict(running_scores),
             "created_at": m.created_at.isoformat() if m.created_at else None,
         })

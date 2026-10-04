@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.database.models import Game, GamePlayer, Move
 from app.database.session import get_db
@@ -92,23 +93,18 @@ async def use_card(
         player.cards = cards
         await replace_player_cards(db, player.id, cards)
 
-        # Record Move
-        rack_snapshot = [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in (rack or [])]
-        db.add(Move(
-            id=str(uuid.uuid4()),
-            game_id=game.id,
-            player_id=player.id,
-            turn_number=game.turn_number,
-            move_type="CARD_USED",
-            placed_tiles=[],
-            words_formed=[],
-            score_earned=0,
-            rack_before=rack_snapshot,
-            card_details={
-                "card": "HINT",
-                "description": "Used Hint card to find word suggestions",
-            },
-        ))
+        # Record card event for current turn
+        card_event = {
+            "card": "HINT",
+            "player_id": player.id,
+            "player_name": player.display_name,
+            "turn_number": game.turn_number,
+            "description": "Used Hint card to find word suggestions",
+        }
+        pending = list(game.pending_card_events or [])
+        pending.append(card_event)
+        game.pending_card_events = pending
+        flag_modified(game, "pending_card_events")
         await db.commit()
 
         await manager.broadcast(game_id, WebSocketEvent(
@@ -142,8 +138,18 @@ async def use_card(
             or (effect["type"] in ("SWAP", "SPY_SWAP") and player.id == effect.get("target_player_id"))
         )
 
-        curr_rack = await player_rack(db, player.id)
-        rack_snapshot = [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in (curr_rack or [])]
+        card_event = {
+            "card": "SHIELD",
+            "player_id": player.id,
+            "player_name": player.display_name,
+            "turn_number": game.turn_number,
+            "blocked": bool(targets_me),
+            "description": "Activated Shield (Blocked incoming effect!)" if targets_me else "Activated Shield protection",
+        }
+        pending = list(game.pending_card_events or [])
+        pending.append(card_event)
+        game.pending_card_events = pending
+        flag_modified(game, "pending_card_events")
 
         if targets_me:
             player.has_shield = False
@@ -153,24 +159,6 @@ async def use_card(
             else:
                 game.pending_effect = None
 
-            db.add(Move(
-                id=str(uuid.uuid4()),
-                game_id=game.id,
-                player_id=player.id,
-                turn_number=game.turn_number,
-                move_type="CARD_USED",
-                placed_tiles=[],
-                words_formed=[],
-                score_earned=0,
-                rack_before=rack_snapshot,
-                card_details={
-                    "card": "SHIELD",
-                    "blocked": True,
-                    "target_player_id": player.id,
-                    "target_player_name": player.display_name,
-                    "description": "Activated Shield (Blocked incoming effect!)",
-                },
-            ))
             await db.commit()
             await manager.broadcast(game_id, WebSocketEvent(
                 type=EventType.CARD_USED,
@@ -182,24 +170,6 @@ async def use_card(
             ).model_dump())
             return {"success": True, "blocked": True, "has_shield": False}
 
-        db.add(Move(
-            id=str(uuid.uuid4()),
-            game_id=game.id,
-            player_id=player.id,
-            turn_number=game.turn_number,
-            move_type="CARD_USED",
-            placed_tiles=[],
-            words_formed=[],
-            score_earned=0,
-            rack_before=rack_snapshot,
-            card_details={
-                "card": "SHIELD",
-                "blocked": False,
-                "target_player_id": player.id,
-                "target_player_name": player.display_name,
-                "description": "Activated Shield protection",
-            },
-        ))
         await db.commit()
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.CARD_USED,
@@ -220,26 +190,21 @@ async def use_card(
         player.cards = cards
         await replace_player_cards(db, player.id, cards)
 
-        curr_rack = await player_rack(db, player.id)
-        rack_snapshot = [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in (curr_rack or [])]
-        db.add(Move(
-            id=str(uuid.uuid4()),
-            game_id=game.id,
-            player_id=player.id,
-            turn_number=game.turn_number,
-            move_type="CARD_USED",
-            placed_tiles=[],
-            words_formed=[],
-            score_earned=0,
-            rack_before=rack_snapshot,
-            card_details={
-                "card": "DOUBLE_DAMAGE",
-                "target_player_id": target.id,
-                "target_player_name": target.display_name,
-                "description": f"Targeted {target.display_name} with Double Damage",
-            },
-        ))
+        card_event = {
+            "card": "DOUBLE_DAMAGE",
+            "player_id": player.id,
+            "player_name": player.display_name,
+            "target_player_id": target.id,
+            "target_player_name": target.display_name,
+            "turn_number": game.turn_number,
+            "description": f"Targeted {target.display_name} with Double Damage",
+        }
+        pending = list(game.pending_card_events or [])
+        pending.append(card_event)
+        game.pending_card_events = pending
+        flag_modified(game, "pending_card_events")
         await db.commit()
+
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.CARD_USED,
             payload={
@@ -263,27 +228,21 @@ async def use_card(
         player.hp = min(max_cap, player.hp + heal_amt)
         actual_heal = player.hp - old_hp
 
-        rack_snapshot = [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in (curr_rack or [])]
-        db.add(Move(
-            id=str(uuid.uuid4()),
-            game_id=game.id,
-            player_id=player.id,
-            turn_number=game.turn_number,
-            move_type="CARD_USED",
-            placed_tiles=[],
-            words_formed=[],
-            score_earned=0,
-            rack_before=rack_snapshot,
-            card_details={
-                "card": "HEAL",
-                "target_player_id": player.id,
-                "target_player_name": player.display_name,
-                "amount": actual_heal,
-                "hp_after": player.hp,
-                "description": f"Healed self for +{actual_heal} HP (Current HP: {player.hp})",
-            },
-        ))
+        card_event = {
+            "card": "HEAL",
+            "player_id": player.id,
+            "player_name": player.display_name,
+            "amount": actual_heal,
+            "hp_after": player.hp,
+            "turn_number": game.turn_number,
+            "description": f"Healed self for +{actual_heal} HP (Current HP: {player.hp})",
+        }
+        pending = list(game.pending_card_events or [])
+        pending.append(card_event)
+        game.pending_card_events = pending
+        flag_modified(game, "pending_card_events")
         await db.commit()
+
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.CARD_USED,
             payload={
@@ -324,26 +283,22 @@ async def use_card(
             players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
             await replace_game_tiles(db, game.id, await bag_tiles(db, game.id), players)
 
-            rack_snapshot = [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in player_rack_items]
-            db.add(Move(
-                id=str(uuid.uuid4()),
-                game_id=game.id,
-                player_id=player.id,
-                turn_number=game.turn_number,
-                move_type="CARD_USED",
-                placed_tiles=[],
-                words_formed=[],
-                score_earned=0,
-                rack_before=rack_snapshot,
-                card_details={
-                    "card": "SPY_SWAP",
-                    "target_player_id": target.id,
-                    "target_player_name": target.display_name,
-                    "count": len(own_tile_ids),
-                    "description": f"Swapped {len(own_tile_ids)} tile{'s' if len(own_tile_ids) > 1 else ''} with {target.display_name}",
-                },
-            ))
+            card_event = {
+                "card": "SPY_SWAP",
+                "player_id": player.id,
+                "player_name": player.display_name,
+                "target_player_id": target.id,
+                "target_player_name": target.display_name,
+                "count": len(own_tile_ids),
+                "turn_number": game.turn_number,
+                "description": f"Swapped {len(own_tile_ids)} tile{'s' if len(own_tile_ids) > 1 else ''} with {target.display_name}",
+            }
+            pending = list(game.pending_card_events or [])
+            pending.append(card_event)
+            game.pending_card_events = pending
+            flag_modified(game, "pending_card_events")
             await db.commit()
+
             await manager.broadcast(game_id, WebSocketEvent(
                 type=EventType.EFFECT_RESOLVED,
                 payload={
@@ -365,26 +320,22 @@ async def use_card(
             db, game, type="SWAP", source_player_id=player.id, target_player_id=target.id,
             own_tile=own, target_tile=other,
         )
-        rack_snapshot = [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in player_rack_items]
-        db.add(Move(
-            id=str(uuid.uuid4()),
-            game_id=game.id,
-            player_id=player.id,
-            turn_number=game.turn_number,
-            move_type="CARD_USED",
-            placed_tiles=[],
-            words_formed=[],
-            score_earned=0,
-            rack_before=rack_snapshot,
-            card_details={
-                "card": "SPY_SWAP",
-                "target_player_id": target.id,
-                "target_player_name": target.display_name,
-                "count": 1,
-                "description": f"Initiated tile swap with {target.display_name}",
-            },
-        ))
+        card_event = {
+            "card": "SPY_SWAP",
+            "player_id": player.id,
+            "player_name": player.display_name,
+            "target_player_id": target.id,
+            "target_player_name": target.display_name,
+            "count": 1,
+            "turn_number": game.turn_number,
+            "description": f"Initiated tile swap with {target.display_name}",
+        }
+        pending = list(game.pending_card_events or [])
+        pending.append(card_event)
+        game.pending_card_events = pending
+        flag_modified(game, "pending_card_events")
         await db.commit()
+
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.EFFECT_PENDING,
             payload={
@@ -412,26 +363,21 @@ async def use_card(
             "row": request.row, "col": request.col,
             "set_by": player.id, "expires_turn": game.turn_number + turns_to_block,
         }
-        curr_rack = await player_rack(db, player.id)
-        rack_snapshot = [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in (curr_rack or [])]
-        db.add(Move(
-            id=str(uuid.uuid4()),
-            game_id=game.id,
-            player_id=player.id,
-            turn_number=game.turn_number,
-            move_type="CARD_USED",
-            placed_tiles=[],
-            words_formed=[],
-            score_earned=0,
-            rack_before=rack_snapshot,
-            card_details={
-                "card": "FREEZE_TILE",
-                "row": request.row,
-                "col": request.col,
-                "description": f"Froze board tile at ({request.row}, {request.col})",
-            },
-        ))
+        card_event = {
+            "card": "FREEZE_TILE",
+            "player_id": player.id,
+            "player_name": player.display_name,
+            "row": request.row,
+            "col": request.col,
+            "turn_number": game.turn_number,
+            "description": f"Froze board tile at ({request.row}, {request.col})",
+        }
+        pending = list(game.pending_card_events or [])
+        pending.append(card_event)
+        game.pending_card_events = pending
+        flag_modified(game, "pending_card_events")
         await db.commit()
+
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.CARD_USED,
             payload={
@@ -458,27 +404,22 @@ async def use_card(
         game.board_state = board
         await replace_board_state(db, game.id, board)
 
-        curr_rack = await player_rack(db, player.id)
-        rack_snapshot = [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in (curr_rack or [])]
-        db.add(Move(
-            id=str(uuid.uuid4()),
-            game_id=game.id,
-            player_id=player.id,
-            turn_number=game.turn_number,
-            move_type="CARD_USED",
-            placed_tiles=[],
-            words_formed=[],
-            score_earned=0,
-            rack_before=rack_snapshot,
-            card_details={
-                "card": "DESTROY_TILE",
-                "row": request.row,
-                "col": request.col,
-                "destroyed_letter": destroyed_letter,
-                "description": f"Destroyed board tile '{destroyed_letter}' at ({request.row}, {request.col})",
-            },
-        ))
+        card_event = {
+            "card": "DESTROY_TILE",
+            "player_id": player.id,
+            "player_name": player.display_name,
+            "row": request.row,
+            "col": request.col,
+            "destroyed_letter": destroyed_letter,
+            "turn_number": game.turn_number,
+            "description": f"Destroyed board tile '{destroyed_letter}' at ({request.row}, {request.col})",
+        }
+        pending = list(game.pending_card_events or [])
+        pending.append(card_event)
+        game.pending_card_events = pending
+        flag_modified(game, "pending_card_events")
         await db.commit()
+
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.CARD_USED,
             payload={
@@ -489,8 +430,6 @@ async def use_card(
             },
         ).model_dump())
         return {"success": True}
-
-    raise HTTPException(status_code=400, detail="Unknown card")
 
     raise HTTPException(status_code=400, detail="Unknown card")
 
