@@ -12,11 +12,11 @@ router = APIRouter(prefix="/history", tags=["history"])
 
 @router.get("")
 async def get_match_history(
-    limit: int = Query(default=10, ge=1, le=50),
+    limit: int = Query(default=50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     """
-    Returns the last `limit` (default 10) completed or played games with full player summaries.
+    Returns the last `limit` (default 50) completed or played games with full player summaries.
     Excludes solo practice games (1 human player without bot opponents).
     """
     # Fetch recent games (query more than limit so we have enough after filtering out solo games)
@@ -28,7 +28,7 @@ async def get_match_history(
             selectinload(Game.moves),
         )
         .order_by(desc(Game.created_at))
-        .limit(max(limit * 5, 50))
+        .limit(max(limit * 5, 250))
     )
     result = await db.execute(stmt)
     games = result.scalars().all()

@@ -37,8 +37,8 @@ async def test_match_history_endpoints_and_filtering():
         })
         assert join_bot_res.status_code == 200
 
-        # 3. Fetch match history list
-        hist_res = await client.get("/api/history?limit=10")
+        # 3. Fetch match history list (default limit=50)
+        hist_res = await client.get("/api/history")
         assert hist_res.status_code == 200
         data = hist_res.json()
         assert data["success"] is True

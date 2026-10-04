@@ -620,7 +620,7 @@ export async function getGrimoireWords(
   return res.json();
 }
 
-export async function getMatchHistory(limit = 10): Promise<MatchHistoryListResponse> {
+export async function getMatchHistory(limit = 50): Promise<MatchHistoryListResponse> {
   const res = await fetch(`${getApiBase()}/history?limit=${limit}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

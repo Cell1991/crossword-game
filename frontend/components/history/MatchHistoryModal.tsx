@@ -89,7 +89,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
     setLoadingHistory(true);
     setHistoryError(null);
     try {
-      const res = await getMatchHistory(10);
+      const res = await getMatchHistory(50);
       if (res.success) {
         setHistoryList(res.history);
       }
@@ -332,7 +332,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                   <h2 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
                     Match History & Analysis
                     <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
-                      Last 10 Games
+                      Last 50 Games
                     </span>
                   </h2>
                   <p className="text-[11px] sm:text-xs text-slate-400">
