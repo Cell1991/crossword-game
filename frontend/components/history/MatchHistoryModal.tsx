@@ -588,39 +588,39 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                 </div>
               ) : replayData ? (
                 <>
-                  {/* LEFT: 15x15 / 19x27 INTERACTIVE REPLAY BOARD */}
-                  <div className="flex-1 flex flex-col bg-slate-950/40 p-2 sm:p-4 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 min-h-[340px]">
+                  {/* LEFT: INTERACTIVE REPLAY BOARD & CONTROLS */}
+                  <div className="flex-1 flex flex-col bg-slate-950/60 p-2.5 sm:p-4 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 min-h-[360px]">
                     {/* Board Toolbar */}
-                    <div className="flex items-center justify-between pb-2 px-1 text-xs text-slate-300 shrink-0">
+                    <div className="flex items-center justify-between pb-2.5 px-1 text-xs text-slate-300 shrink-0">
                       <div className="flex items-center gap-2">
-                        <span className="flex items-center gap-1 font-semibold text-slate-200">
-                          <Layers className="w-3.5 h-3.5 text-cyan-400" />
-                          Board View
+                        <span className="flex items-center gap-1.5 font-bold text-slate-100">
+                          <Layers className="w-4 h-4 text-cyan-400" />
+                          Board Reconstruction
                         </span>
-                        <span className="text-slate-500">•</span>
-                        <span className="text-[11px] text-slate-400">
+                        <span className="text-slate-600">•</span>
+                        <span className="text-[11px] font-medium text-slate-400">
                           {currentStep === 0
-                            ? 'Starting Board'
+                            ? 'Initial Layout'
                             : `Step ${currentStep} of ${replayData.moves.length}`}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 bg-slate-900/80 border border-white/10 p-1 rounded-xl shadow-inner">
                         <button
                           type="button"
                           onClick={() => setZoomLevel((z) => Math.max(0.75, z - 0.15))}
-                          className="p-1 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300"
+                          className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer"
                           title="Zoom Out"
                         >
                           <ZoomOut className="w-3.5 h-3.5" />
                         </button>
-                        <span className="text-[10px] font-mono w-9 text-center text-slate-400">
+                        <span className="text-[10px] font-mono w-9 text-center text-cyan-300 font-bold">
                           {Math.round(zoomLevel * 100)}%
                         </span>
                         <button
                           type="button"
                           onClick={() => setZoomLevel((z) => Math.min(1.4, z + 0.15))}
-                          className="p-1 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300"
+                          className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer"
                           title="Zoom In"
                         >
                           <ZoomIn className="w-3.5 h-3.5" />
@@ -628,8 +628,8 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setZoomLevel(1)}
-                          className="p-1 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 ml-1"
-                          title="Reset Zoom"
+                          className="p-1 rounded-lg hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer ml-0.5"
+                          title="Reset Zoom (100%)"
                         >
                           <Maximize2 className="w-3.5 h-3.5" />
                         </button>
@@ -637,7 +637,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                     </div>
 
                     {/* Scrollable / Scalable Board Grid Container */}
-                    <div className="flex-1 overflow-auto rounded-xl bg-slate-900/60 border border-white/10 p-2 flex items-center justify-center custom-scrollbar">
+                    <div className="flex-1 overflow-auto rounded-2xl bg-[#060714] border border-indigo-950/80 shadow-[inset_0_2px_12px_rgba(0,0,0,0.95)] p-2 sm:p-3 flex items-center justify-center custom-scrollbar">
                       <div
                         style={{
                           transform: `scale(${zoomLevel})`,
@@ -648,7 +648,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                       >
                         {/* Render 19 rows x 27 cols board grid */}
                         <div
-                          className="grid gap-[2px] bg-slate-950/80 p-1.5 rounded-xl border border-white/15 shadow-2xl"
+                          className="grid gap-[2px] sm:gap-[3px] bg-[#090a1c] p-2 rounded-xl border border-indigo-900/50 shadow-2xl"
                           style={{
                             gridTemplateColumns: `repeat(${BOARD_COLS}, minmax(0, 1fr))`,
                             gridTemplateRows: `repeat(${BOARD_ROWS}, minmax(0, 1fr))`,
@@ -666,38 +666,49 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                               return (
                                 <div
                                   key={key}
-                                  className={`relative flex items-center justify-center w-[22px] h-[22px] sm:w-[26px] sm:h-[26px] md:w-[28px] md:h-[28px] rounded-[4px] text-xs font-bold transition-all ${
+                                  className={`relative flex items-center justify-center w-[22px] h-[22px] sm:w-[26px] sm:h-[26px] md:w-[28px] md:h-[28px] rounded-[5px] text-xs transition-all overflow-hidden ${
                                     cellData
                                       ? cellData.isRecent
-                                        ? 'bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 text-slate-950 font-black shadow-[0_0_10px_rgba(245,158,11,0.7)] ring-2 ring-amber-300 z-10 scale-105'
-                                        : 'bg-gradient-to-br from-amber-100 to-amber-200 text-slate-900 font-extrabold shadow-sm'
+                                        ? 'ring-2 ring-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.85)] z-10'
+                                        : 'shadow-sm z-0'
                                       : isCenter
-                                      ? 'bg-amber-500/20 border border-amber-400/40 text-amber-300'
+                                      ? 'bg-amber-950/40 border border-amber-400/40 text-amber-300'
                                       : is3L
-                                      ? 'bg-cyan-500/20 border border-cyan-400/30 text-cyan-300'
+                                      ? 'bg-cyan-950/50 border border-cyan-400/35 text-cyan-300'
                                       : is2L
-                                      ? 'bg-blue-500/20 border border-blue-400/30 text-blue-300'
+                                      ? 'bg-blue-950/50 border border-blue-400/35 text-blue-300'
                                       : isPower
-                                      ? 'bg-purple-500/20 border border-purple-400/30 text-purple-300'
-                                      : 'bg-slate-800/40 border border-white/[0.04] text-slate-600'
+                                      ? 'bg-purple-950/50 border border-purple-400/35 text-purple-300'
+                                      : 'bg-[#090b1c]/80 border border-indigo-950/40'
                                   }`}
                                   title={`Row ${r}, Col ${c}${cellData ? `: ${cellData.letter} (${cellData.value} pts)` : ''}`}
                                 >
                                   {cellData ? (
-                                    <>
-                                      <span className="text-[11px] sm:text-xs leading-none">
+                                    <div className="tile-face relative flex flex-col items-center justify-center w-full h-full rounded-[4px] border border-amber-200/90 font-sans select-none overflow-hidden">
+                                      {/* Top Subtle Highlight */}
+                                      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-100/70 to-transparent pointer-events-none z-10" />
+
+                                      {/* Active Move Glow Marker */}
+                                      {cellData.isRecent && (
+                                        <div className="absolute top-0.5 left-0.5 w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-[0_0_6px_#22d3ee] z-30" />
+                                      )}
+
+                                      {/* Letter */}
+                                      <span className="tile-letter tile-letter-orange relative z-20 text-[14px] sm:text-[16px] md:text-[17px] leading-none font-maple inline-block">
                                         {cellData.letter}
                                       </span>
-                                      <span className="absolute bottom-[1px] right-[2px] text-[7px] font-mono leading-none opacity-80">
+
+                                      {/* Value Subscript */}
+                                      <span className="tile-score-blue absolute bottom-0.5 right-0.5 z-20 text-[7px] sm:text-[8px] font-maple leading-none">
                                         {cellData.value}
                                       </span>
-                                    </>
+                                    </div>
                                   ) : isCenter ? (
-                                    <span className="text-[9px] sm:text-[10px]">★</span>
+                                    <span className="text-[10px] sm:text-[11px] font-bold">★</span>
                                   ) : is3L ? (
-                                    <span className="text-[7px] sm:text-[8px] font-bold tracking-tighter">3L</span>
+                                    <span className="text-[7px] sm:text-[8px] font-black tracking-tighter">3L</span>
                                   ) : is2L ? (
-                                    <span className="text-[7px] sm:text-[8px] font-bold tracking-tighter">2L</span>
+                                    <span className="text-[7px] sm:text-[8px] font-black tracking-tighter">2L</span>
                                   ) : isPower ? (
                                     <span className="text-[8px] sm:text-[9px]">⚡</span>
                                   ) : null}
@@ -709,48 +720,44 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Board Legend */}
-                    <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-[10px] text-slate-400 shrink-0">
-                      <div className="flex items-center gap-1">
-                        <span className="w-2.5 h-2.5 rounded bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
-                        <span className="text-amber-300 font-semibold">Active Turn Placements</span>
+                    {/* Board Legend - Clean Compact Chips */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2.5 text-[10px] sm:text-[11px] text-slate-400 font-medium shrink-0">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-400/25 text-cyan-300">
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee]" />
+                        <span>Active Move</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span className="w-2.5 h-2.5 rounded bg-amber-100" />
-                        <span>Placed Tiles</span>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/25 text-amber-300">
+                        <span>★ Center</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span className="w-2.5 h-2.5 rounded bg-cyan-500/30 border border-cyan-400/40" />
-                        <span>3L (Triple Letter)</span>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-400/25 text-cyan-300">
+                        <span>3L (Triple)</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span className="w-2.5 h-2.5 rounded bg-blue-500/30 border border-blue-400/40" />
-                        <span>2L (Double Letter)</span>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-400/25 text-blue-300">
+                        <span>2L (Double)</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span className="w-2.5 h-2.5 rounded bg-purple-500/30 border border-purple-400/40" />
-                        <span>⚡ Power Cell</span>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-400/25 text-purple-300">
+                        <span>⚡ Power</span>
                       </div>
                     </div>
                   </div>
 
                   {/* RIGHT: PLAYBACK SCRUBBER, MOVE BREAKDOWN, RUNNING SCORES & MOVE HISTORY */}
-                  <div className="w-full lg:w-96 flex flex-col bg-slate-900/50 p-3 sm:p-4 overflow-hidden shrink-0">
+                  <div className="w-full lg:w-96 flex flex-col bg-slate-900/60 p-3 sm:p-4 overflow-hidden shrink-0 space-y-3">
                     
-                    {/* 1. PLAYBACK CONTROLS (Chess.com / Lichess Style) */}
-                    <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/10 shadow-lg shrink-0 space-y-2.5">
+                    {/* 1. PLAYBACK CONTROLS (Media / Esports Style) */}
+                    <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.5)] shrink-0 space-y-3">
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-white flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                          <Clock className="w-4 h-4 text-cyan-400" />
                           Move Navigation
                         </span>
-                        <span className="font-mono text-xs font-bold text-cyan-300">
-                          {currentStep} / {replayData.moves.length}
+                        <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300">
+                          Step {currentStep} / {replayData.moves.length}
                         </span>
                       </div>
 
                       {/* Scrubber Range Slider */}
-                      <div className="relative flex items-center w-full">
+                      <div className="relative flex items-center w-full py-1">
                         <input
                           type="range"
                           min={0}
@@ -765,12 +772,12 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                       </div>
 
                       {/* Button Bar: First, Prev, Play/Pause, Next, Last */}
-                      <div className="flex items-center justify-center gap-1.5">
+                      <div className="flex items-center justify-between gap-1.5">
                         <button
                           type="button"
                           onClick={() => { setCurrentStep(0); setIsPlaying(false); }}
                           disabled={currentStep === 0}
-                          className="p-2 rounded-xl bg-white/5 hover:bg-white/15 disabled:opacity-30 disabled:cursor-not-allowed text-slate-200 transition-colors"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 hover:bg-white/15 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-slate-200 transition-all cursor-pointer border border-white/5"
                           title="Jump to Start (Home)"
                         >
                           <ChevronsLeft className="w-4 h-4" />
@@ -779,7 +786,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                           type="button"
                           onClick={() => { setCurrentStep((s) => Math.max(0, s - 1)); setIsPlaying(false); }}
                           disabled={currentStep === 0}
-                          className="p-2 rounded-xl bg-white/5 hover:bg-white/15 disabled:opacity-30 disabled:cursor-not-allowed text-slate-200 transition-colors"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 hover:bg-white/15 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-slate-200 transition-all cursor-pointer border border-white/5"
                           title="Previous Move (Left Arrow)"
                         >
                           <ChevronLeft className="w-4 h-4" />
@@ -793,7 +800,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                             }
                             setIsPlaying((p) => !p);
                           }}
-                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-1.5 transition-all cursor-pointer"
+                          className="flex-1 h-9 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:brightness-110 active:scale-95 text-white font-black text-xs tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.4),inset_0_1px_1px_rgba(255,255,255,0.4)] flex items-center justify-center gap-2 transition-all cursor-pointer border border-cyan-300/40 uppercase"
                           title="Play / Pause (Spacebar)"
                         >
                           {isPlaying ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white" />}
@@ -804,7 +811,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                           type="button"
                           onClick={() => { setCurrentStep((s) => Math.min(replayData.moves.length, s + 1)); setIsPlaying(false); }}
                           disabled={currentStep >= replayData.moves.length}
-                          className="p-2 rounded-xl bg-white/5 hover:bg-white/15 disabled:opacity-30 disabled:cursor-not-allowed text-slate-200 transition-colors"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 hover:bg-white/15 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-slate-200 transition-all cursor-pointer border border-white/5"
                           title="Next Move (Right Arrow)"
                         >
                           <ChevronRight className="w-4 h-4" />
@@ -813,7 +820,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                           type="button"
                           onClick={() => { setCurrentStep(replayData.moves.length); setIsPlaying(false); }}
                           disabled={currentStep >= replayData.moves.length}
-                          className="p-2 rounded-xl bg-white/5 hover:bg-white/15 disabled:opacity-30 disabled:cursor-not-allowed text-slate-200 transition-colors"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 hover:bg-white/15 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-slate-200 transition-all cursor-pointer border border-white/5"
                           title="Jump to End (End)"
                         >
                           <ChevronsRight className="w-4 h-4" />
@@ -822,71 +829,75 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                     </div>
 
                     {/* 2. CURRENT TURN CARD BREAKDOWN */}
-                    <div className="my-2.5 p-3 rounded-2xl bg-white/[0.04] border border-white/10 shrink-0">
+                    <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/10 shadow-md shrink-0">
                       {currentMove ? (
-                        <div className="space-y-2">
+                        <div className="space-y-2.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <span className="flex h-5 px-1.5 items-center justify-center rounded bg-cyan-400/20 text-cyan-300 text-[10px] font-mono font-bold">
+                              <span className="flex h-5 px-2 items-center justify-center rounded-md bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 text-[11px] font-mono font-bold">
                                 Move #{currentStep}
                               </span>
-                              <span className="text-xs font-bold text-white flex items-center gap-1">
-                                {currentMove.is_bot ? <Bot className="w-3.5 h-3.5 text-amber-300" /> : <User className="w-3.5 h-3.5 text-cyan-300" />}
+                              <span className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+                                {currentMove.is_bot ? <Bot className="w-4 h-4 text-amber-300" /> : <User className="w-4 h-4 text-cyan-300" />}
                                 {currentMove.player_name}
                               </span>
                             </div>
-                            <span className="text-xs font-black font-mono text-emerald-400">
+                            <span className="text-xs sm:text-sm font-black font-mono text-emerald-400 bg-emerald-500/15 border border-emerald-400/30 px-2.5 py-0.5 rounded-lg shadow-[0_0_10px_rgba(52,211,153,0.2)]">
                               +{currentMove.score_earned} pts
                             </span>
                           </div>
 
                           {/* Words Formed */}
                           {currentMove.words_formed && currentMove.words_formed.length > 0 ? (
-                            <div className="flex flex-wrap gap-1.5 pt-1">
+                            <div className="flex flex-wrap gap-1.5 pt-0.5">
                               {currentMove.words_formed.map((w, idx) => (
                                 <span
                                   key={idx}
-                                  className="px-2 py-0.5 rounded-lg bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold"
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm"
                                 >
-                                  {w.word}
+                                  <span>{w.word}</span>
+                                  <span className="text-[10px] text-emerald-400/80 font-normal">({w.score} pts)</span>
                                 </span>
                               ))}
                             </div>
                           ) : (
                             <p className="text-xs text-slate-400 italic">
                               {currentMove.move_type === 'PASS'
-                                ? 'Turn Passed'
+                                ? 'Turn Passed (Scoreless)'
                                 : currentMove.move_type === 'EXCHANGE'
-                                ? 'Exchanged Tiles with Bag'
+                                ? 'Exchanged Tiles with Tile Bag'
                                 : 'No words formed'}
                             </p>
                           )}
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center py-2 text-xs text-slate-400">
-                          <span>Start of Match (Turn 0)</span>
+                        <div className="flex items-center justify-center py-2 text-xs text-slate-400 font-medium">
+                          <span>Initial Empty Board (Turn 0)</span>
                         </div>
                       )}
                     </div>
 
                     {/* 3. RUNNING SCOREBOARD */}
-                    <div className="p-2.5 rounded-2xl bg-black/30 border border-white/5 shrink-0 mb-2.5">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                        Scores at Step {currentStep}
+                    <div className="p-3 rounded-2xl bg-black/40 border border-white/10 shrink-0">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between">
+                        <span>Standings at Step {currentStep}</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-1.5">
+                      <div className="grid grid-cols-2 gap-2">
                         {replayData.players.map((p) => {
                           const score = currentRunningScores[p.id] ?? 0;
                           return (
                             <div
                               key={p.id}
-                              className="flex items-center justify-between px-2 py-1 rounded-lg bg-white/5 border border-white/5 text-xs"
+                              className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-xs shadow-inner"
                             >
-                              <span className="truncate text-slate-200 font-medium text-[11px]">
-                                {p.display_name}
-                              </span>
-                              <span className="font-mono font-bold text-amber-300 ml-1 text-xs">
-                                {score}
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                {p.is_bot ? <Bot className="w-3.5 h-3.5 text-amber-300 shrink-0" /> : <User className="w-3.5 h-3.5 text-cyan-300 shrink-0" />}
+                                <span className="truncate text-slate-200 font-medium text-[11px]">
+                                  {p.display_name}
+                                </span>
+                              </div>
+                              <span className="font-mono font-bold text-amber-300 ml-1.5 text-xs shrink-0">
+                                {score} pts
                               </span>
                             </div>
                           );
@@ -894,30 +905,30 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                       </div>
                     </div>
 
-                    {/* 4. SCROLLABLE MOVE HISTORY LOG (CLICK TO JUMP) */}
+                    {/* 4. SCROLLABLE MOVE HISTORY LOG (CHESS NOTATION STYLE) */}
                     <div className="flex-1 flex flex-col min-h-0">
                       <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center justify-between">
-                        <span>Turn-by-Turn Moves</span>
-                        <span className="text-[9px] text-slate-500">Click to inspect</span>
+                        <span>Turn-by-Turn Notation</span>
+                        <span className="text-[9px] text-cyan-400 font-normal">Click step to inspect</span>
                       </div>
                       <div
                         ref={moveLogScrollRef}
-                        className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar"
+                        className="flex-1 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar"
                       >
                         {/* Turn 0 Item */}
                         <button
                           type="button"
                           onClick={() => { setCurrentStep(0); setIsPlaying(false); }}
                           data-move-step={0}
-                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left text-xs transition-all cursor-pointer ${
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-all cursor-pointer ${
                             currentStep === 0
-                              ? 'bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 font-bold shadow-[0_0_10px_rgba(6,182,212,0.2)]'
-                              : 'bg-white/[0.02] hover:bg-white/[0.08] text-slate-400'
+                              ? 'bg-cyan-500/20 border border-cyan-400/50 text-cyan-200 font-bold shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                              : 'bg-white/[0.03] hover:bg-white/[0.08] text-slate-400'
                           }`}
                         >
-                          <span className="font-mono text-[10px]">#0 Start</span>
-                          <span className="text-[11px]">Initial Empty Board</span>
-                          <span className="font-mono text-[10px]">0 pts</span>
+                          <span className="font-mono text-[10px] text-slate-500">#0</span>
+                          <span className="text-[11px] font-medium">Initial Board State</span>
+                          <span className="font-mono text-[10px] text-slate-500">0 pts</span>
                         </button>
 
                         {replayData.moves.map((move, idx) => {
@@ -934,21 +945,21 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                               type="button"
                               onClick={() => { setCurrentStep(stepNumber); setIsPlaying(false); }}
                               data-move-step={stepNumber}
-                              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left text-xs transition-all cursor-pointer ${
+                              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-all cursor-pointer ${
                                 isActive
-                                  ? 'bg-amber-400/20 border border-amber-400/40 text-amber-200 font-bold shadow-[0_0_12px_rgba(245,158,11,0.25)]'
-                                  : 'bg-white/[0.02] hover:bg-white/[0.08] text-slate-300'
+                                  ? 'bg-gradient-to-r from-amber-500/25 to-amber-500/10 border border-amber-400/50 text-amber-200 font-bold shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/40'
+                                  : 'bg-white/[0.03] hover:bg-white/[0.08] text-slate-300'
                               }`}
                             >
                               <div className="flex items-center gap-2 min-w-0">
-                                <span className="font-mono text-[10px] text-slate-400 shrink-0">
+                                <span className="font-mono text-[10px] text-slate-500 shrink-0">
                                   #{stepNumber}
                                 </span>
                                 <span className="truncate text-[11px] font-medium text-slate-200">
-                                  {move.player_name}: <strong className="text-white font-mono">{wordSummary}</strong>
+                                  {move.player_name}: <strong className="text-white font-mono font-bold">{wordSummary}</strong>
                                 </span>
                               </div>
-                              <span className="font-mono text-[11px] font-bold text-emerald-400 shrink-0 ml-1">
+                              <span className="font-mono text-[11px] font-bold text-emerald-400 shrink-0 ml-1.5">
                                 +{move.score_earned}
                               </span>
                             </button>
