@@ -30,22 +30,16 @@ const GrimoireWordRow = React.memo(function GrimoireWordRow({
   return (
     <div
       onClick={() => onCopy(word)}
-      className={`group relative flex items-center justify-start px-3.5 sm:px-4 py-2 sm:py-2.5 border-b border-indigo-500/20 ${
-        isRightCol ? '' : 'sm:border-r sm:border-indigo-500/20'
-      } hover:bg-indigo-950/50 active:bg-indigo-900/60 transition-colors cursor-pointer select-none`}
+      className={`group relative flex items-center justify-between px-4 py-2.5 sm:py-3 border-b border-indigo-500/20 ${
+        isRightCol ? '' : 'border-r border-indigo-500/20'
+      } hover:bg-amber-400/[0.08] active:bg-amber-400/[0.14] transition-all cursor-pointer select-none`}
     >
-      <div className="flex items-center justify-start gap-1 flex-wrap">
-        {word.split('').map((ch, i) => (
-          <div
-            key={i}
-            className="grimoire-tile flex h-[26px] w-[21px] sm:h-[28px] sm:w-[23px] items-center justify-center rounded-[5px] sm:rounded-md shrink-0"
-          >
-            <span className="grimoire-tile-letter text-xs sm:text-[13px] leading-none select-none">
-              {ch}
-            </span>
-          </div>
-        ))}
-      </div>
+      <span className="font-extrabold text-sm sm:text-base tracking-[0.18em] text-amber-300 group-hover:text-amber-200 transition-colors drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+        {word}
+      </span>
+      <span className="text-[10px] font-semibold text-slate-500 group-hover:text-amber-400/80 transition-colors opacity-0 group-hover:opacity-100 uppercase tracking-wider">
+        Copy
+      </span>
     </div>
   );
 });
@@ -242,7 +236,7 @@ export const GrimoireModal = React.memo(function GrimoireModal({
                 </div>
               ) : (
                 <div className="rounded-xl sm:rounded-2xl border border-indigo-500/30 bg-[#080a1c] overflow-hidden shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]">
-                  <div className="grid grid-cols-1 sm:grid-cols-2">
+                  <div className="grid grid-cols-2">
                     {filteredWords.map((word, index) => {
                       const isRightCol = index % 2 === 1;
                       return (
