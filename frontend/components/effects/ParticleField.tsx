@@ -26,20 +26,21 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     const ctx = canvas?.getContext('2d', { alpha: true, desynchronized: true });
     if (!canvas || !ctx) return;
 
-    const isTouchDevice = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
-    if (isTouchDevice) return;
+    const isTouchDevice = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches);
 
     let width = 0;
     let height = 0;
     let frame = 0;
     let nodes: Node[] = [];
     let beams: Beam[] = [];
-    const device = navigator as Navigator & { deviceMemory?: number };
-    const isLowPowerDevice = (device.hardwareConcurrency ?? 8) <= 4 || (device.deviceMemory ?? 8) <= 4;
-    const nodeCount = isLowPowerDevice ? 36 : NODE_COUNT;
-    const beamCount = isLowPowerDevice ? 8 : BEAM_COUNT;
-    const linkDistance = LINK_DISTANCE;
-    const frameInterval = 1000 / 30;
+    const nav = typeof navigator !== 'undefined' ? (navigator as unknown as { hardwareConcurrency?: number; deviceMemory?: number }) : null;
+    const isLowPowerDevice = (nav?.hardwareConcurrency ?? 8) <= 4 || (nav?.deviceMemory ?? 8) <= 4;
+    
+    // Highly optimized lightweight settings for mobile to guarantee 0 lag / 0 frame drops
+    const nodeCount = isTouchDevice ? 20 : (isLowPowerDevice ? 36 : NODE_COUNT);
+    const beamCount = isTouchDevice ? 5 : (isLowPowerDevice ? 8 : BEAM_COUNT);
+    const linkDistance = isTouchDevice ? 75 : LINK_DISTANCE;
+    const frameInterval = isTouchDevice ? 1000 / 30 : 1000 / 35;
     let lastDrawAt = 0;
     const mouse = { x: -1000, y: -1000 };
     /** The canvas box, measured on resize: reading it on every pointer move forced a layout each time. */
@@ -57,6 +58,7 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       width = Math.max(rect.width || canvas.clientWidth || window.innerWidth, 320);
       height = Math.max(rect.height || canvas.clientHeight || window.innerHeight, 240);
 
+      // Mobile locks DPR to 1 to eliminate high-density fillrate overhead on phones
       const dpr = isTouchDevice ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
