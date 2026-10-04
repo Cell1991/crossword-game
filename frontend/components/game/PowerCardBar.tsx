@@ -683,7 +683,7 @@ export const PowerCardBar = memo(function PowerCardBar({
                 onUseSimple(card as SimpleCard);
               }
             }}
-            className={`group relative flex h-7 sm:h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border px-2 py-0.5 text-xs font-bold transition-all duration-200 cursor-pointer select-none active:scale-[0.97] focus-visible:outline-none overflow-hidden ${
+            className={`group relative flex h-7 sm:h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border px-2 py-0.5 text-xs font-bold transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer select-none active:scale-[0.93] will-change-transform transform-gpu focus-visible:outline-none overflow-hidden ${
               disabled
                 ? 'border-slate-700/60 bg-slate-900/60 text-slate-500 cursor-not-allowed opacity-60'
                 : `bg-gradient-to-r ${meta.bgGradient} ${meta.borderColor} ${meta.hoverBorder} ${meta.textColor} ${meta.glowClass} hover:-translate-y-0.5 hover:brightness-110`

@@ -297,15 +297,15 @@ export const TileRack = memo(function TileRack({
                       disabled={!canStageMove}
                       aria-pressed={isExchanging ? isMarkedForExchange : undefined}
                       style={animClass ? { animationDelay: `${staggerDelayMs}ms` } : undefined}
-                      className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-200/90 font-sans select-none touch-none overflow-hidden sm:rounded-xl active:scale-95 transition-all ${animClass} ${
+                      className={`tile-face group absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[10px] border border-amber-200/90 font-sans select-none touch-none overflow-hidden sm:rounded-xl active:scale-[0.92] transition-transform transition-shadow duration-250 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] ${animClass} ${
                         isDragging
                           ? 'z-20 scale-105 -translate-y-2.5 opacity-40 shadow-2xl cursor-grabbing transition-none'
                           : isMarkedForExchange
-                          ? '-translate-y-2.5 border-2 border-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.7),inset_0_2px_1px_rgba(255,255,255,0.9)] ring-4 ring-amber-300/70 cursor-pointer duration-100'
+                          ? '-translate-y-2.5 border-2 border-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.7),inset_0_2px_1px_rgba(255,255,255,0.9)] ring-4 ring-amber-300/70 cursor-pointer scale-[1.02]'
                           : isSelected
-                          ? '-translate-y-2.5 border-2 border-cyan-300 shadow-[0_0_24px_rgba(56,189,248,0.9),inset_0_2px_1px_rgba(255,255,255,0.9)] ring-4 ring-sky-400/80 duration-100'
+                          ? '-translate-y-2.5 border-2 border-cyan-300 shadow-[0_0_24px_rgba(56,189,248,0.9),inset_0_2px_1px_rgba(255,255,255,0.9)] ring-4 ring-sky-400/80 scale-[1.03]'
                           : canStageMove
-                          ? 'hover:-translate-y-1 hover:brightness-110 cursor-pointer duration-100'
+                          ? 'hover:-translate-y-1 hover:brightness-110 cursor-pointer'
                           : 'opacity-65 cursor-not-allowed shadow-md transition-none'
                       }`}
                     >
