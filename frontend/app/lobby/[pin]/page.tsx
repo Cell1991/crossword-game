@@ -252,14 +252,14 @@ export default function LobbyPage() {
         {/* PIN Display */}
         <PinDisplay pin={pin} />
 
-        <div className={`w-full rounded-2xl border p-2 sm:p-2.5 shadow-lg backdrop-blur-md transition-all duration-300 ${
+        <div className={`w-full rounded-3xl border p-2.5 sm:p-3 shadow-2xl backdrop-blur-xl transition-all duration-300 ${
           timeLeft <= 120
-            ? 'bg-rose-950/30 border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.1)]'
-            : 'bg-slate-900/80 border-slate-700/50'
+            ? 'bg-rose-950/40 border-rose-500/40 shadow-[0_0_20px_rgba(244,63,94,0.2)]'
+            : 'bg-gradient-to-br from-[#13153c]/90 via-slate-900/95 to-slate-950/98 border-indigo-400/30 shadow-[0_12px_40px_rgba(0,0,0,0.7),inset_0_1px_1px_rgba(255,255,255,0.12)]'
         }`}>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 text-center">
             {/* Mode */}
-            <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-800/40 border border-white/5">
+            <div className="flex flex-col items-center justify-center py-2.5 px-1.5 rounded-2xl bg-slate-800/40 border border-white/5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mode</span>
               <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300 truncate max-w-full">
                 {gameMode === 'HP' ? `HP Battle (${startingHp ?? 100})` : `${maxTurns} Rounds`}
@@ -267,7 +267,7 @@ export default function LobbyPage() {
             </div>
 
             {/* Players */}
-            <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-800/40 border border-white/5">
+            <div className="flex flex-col items-center justify-center py-2.5 px-1.5 rounded-2xl bg-slate-800/40 border border-white/5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Players</span>
               <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300">
                 {maxPlayers ? `${maxPlayers} Players` : '4 Players'}
@@ -275,7 +275,7 @@ export default function LobbyPage() {
             </div>
 
             {/* Turn Time */}
-            <div className="flex flex-col items-center justify-center py-2 px-1.5 rounded-xl bg-slate-800/40 border border-white/5">
+            <div className="flex flex-col items-center justify-center py-2.5 px-1.5 rounded-2xl bg-slate-800/40 border border-white/5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Turn Time</span>
               <span className="mt-0.5 text-xs sm:text-sm font-bold text-amber-300">
                 {turnTimeLimit === null ? 'Unlimited' : `${turnTimeLimit}s`}
@@ -283,7 +283,7 @@ export default function LobbyPage() {
             </div>
 
             {/* Auto-close */}
-            <div className={`flex flex-col items-center justify-center py-2 px-1.5 rounded-xl border ${
+            <div className={`flex flex-col items-center justify-center py-2.5 px-1.5 rounded-2xl border ${
               timeLeft <= 120
                 ? 'bg-rose-900/30 border-rose-500/40'
                 : 'bg-slate-800/40 border-white/5'
@@ -302,14 +302,14 @@ export default function LobbyPage() {
             </div>
           </div>
           {isDebugRoom && (
-            <div className="mt-1.5 text-center text-xs font-semibold text-rose-300">
+            <div className="mt-2 text-center text-xs font-semibold text-rose-300">
               🐞 Debug room
             </div>
           )}
         </div>
 
         {/* Player List */}
-        <div className="w-full bg-slate-900/80 border border-slate-700/50 rounded-3xl p-6 shadow-2xl backdrop-blur-sm">
+        <div className="w-full rounded-3xl border border-indigo-400/25 bg-gradient-to-b from-[#111335]/90 via-[#0c0e29]/95 to-slate-950/98 p-5 sm:p-6 shadow-[0_16px_50px_rgba(0,0,0,0.75),inset_0_1px_1px_rgba(255,255,255,0.12)] backdrop-blur-xl">
           <PlayerList players={players} myPlayerId={myPlayerId} maxPlayers={maxPlayers} />
 
           {isHost && players.length < 2 && (
@@ -335,7 +335,7 @@ export default function LobbyPage() {
           <button
             onClick={handleStart}
             disabled={starting || leaving || players.length < MIN_PLAYERS}
-            className="tactile-button group relative w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 hover:from-emerald-400 hover:via-emerald-300 hover:to-teal-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-xl shadow-[0_10px_30px_rgba(16,185,129,0.3)] hover:shadow-[0_14px_38px_rgba(16,185,129,0.45)] cursor-pointer flex items-center justify-center gap-2 border border-emerald-300/40"
+            className="tactile-button group relative w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 hover:from-emerald-300 hover:via-teal-300 hover:to-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-lg sm:text-xl uppercase tracking-wider shadow-[0_10px_35px_rgba(16,185,129,0.4)] hover:shadow-[0_14px_45px_rgba(16,185,129,0.55)] cursor-pointer flex items-center justify-center gap-2.5 border border-emerald-300/50 transition-all hover:scale-[1.01] active:scale-98"
           >
             {starting ? (
               <span className="flex items-center gap-2">
@@ -368,7 +368,7 @@ export default function LobbyPage() {
         <button
           onClick={handleLeave}
           disabled={leaving || starting}
-          className="tactile-button py-1.5 px-3 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-white/5 text-sm transition-all disabled:opacity-40 cursor-pointer"
+          className="tactile-button py-2 px-4 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-white/5 text-xs sm:text-sm transition-all disabled:opacity-40 cursor-pointer font-medium"
         >
           {leaving ? 'Leaving...' : isSpectator ? '← Stop watching' : '← Leave lobby'}
         </button>

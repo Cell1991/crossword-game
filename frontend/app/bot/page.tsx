@@ -106,8 +106,8 @@ export default function BotRoomCreationPage() {
   };
 
   return (
-    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-x-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(99,102,241,0.16),transparent_30%),linear-gradient(135deg,#020617_0%,#0f172a_58%,#171942_100%)] px-4 py-6 sm:py-12">
-      <ParticleField className="pointer-events-none fixed inset-0 h-full w-full" />
+    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-x-hidden bg-[#070913] px-4 py-6 sm:py-12">
+      <ParticleField className="pointer-events-none fixed inset-0 h-full w-full opacity-80" />
       <FullscreenButton className="fixed top-3.5 right-3.5 z-40" />
 
       <div className="relative z-10 my-auto flex w-full max-w-[28rem] flex-col items-center gap-6 sm:gap-8">
@@ -145,24 +145,24 @@ export default function BotRoomCreationPage() {
         </div>
 
         {/* Card */}
-        <div className="w-full rounded-2xl sm:rounded-[1.75rem] border border-white/[0.1] bg-slate-900/90 sm:bg-slate-900/65 sm:backdrop-blur-md p-4 sm:p-5 shadow-[0_28px_90px_rgba(2,6,23,0.38)]">
+        <div className="w-full rounded-3xl border-2 border-purple-400/50 bg-gradient-to-br from-purple-950/40 via-slate-900/95 to-slate-950/98 p-5 sm:p-6 shadow-[0_20px_70px_rgba(0,0,0,0.85),0_0_35px_rgba(168,85,247,0.22)] backdrop-blur-2xl ring-1 ring-purple-400/20">
           <div className="flex flex-col gap-3.5 sm:gap-4">
             {/* Header */}
-            <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => router.push('/')}
-                  className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:border-purple-400/50 hover:bg-purple-400/15 hover:text-purple-200 transition-all cursor-pointer active:scale-95 shrink-0 shadow-inner"
                   aria-label="Back to home"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </button>
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                    <span>Play vs Bot</span>
-                    <span className="flex items-center gap-1 rounded-full bg-amber-400/15 border border-amber-400/30 px-2 py-0.5 text-[10px] font-bold text-amber-300 uppercase tracking-wider">
-                      <Bot className="w-3 h-3" /> Solo Match
+                  <h2 className="text-lg sm:text-xl font-black tracking-tight text-white flex items-center gap-2">
+                    <span>Solo vs AI Bot</span>
+                    <span className="flex items-center gap-1 rounded-full bg-purple-400/15 border border-purple-400/30 px-2 py-0.5 text-[10px] font-bold text-purple-300 uppercase tracking-wider">
+                      <Bot className="w-3 h-3 text-purple-300" /> AI Practice
                     </span>
                   </h2>
                 </div>
@@ -171,7 +171,7 @@ export default function BotRoomCreationPage() {
 
             {/* Bot Difficulty Selection */}
             <fieldset>
-              <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Bot Difficulty</legend>
+              <legend className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-300">Bot Difficulty</legend>
               <div className="grid grid-cols-3 gap-2">
                 {([
                   ['easy', 'Easy', 'SparkBot', 'Novice'],
@@ -183,20 +183,20 @@ export default function BotRoomCreationPage() {
                     type="button"
                     aria-pressed={botDifficulty === val}
                     onClick={() => setBotDifficulty(val)}
-                    className={`rounded-xl border p-2 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                    className={`rounded-2xl border p-2.5 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 cursor-pointer ${
                       botDifficulty === val
-                        ? 'border-amber-400/80 bg-amber-400/15 text-white shadow-[0_0_15px_rgba(251,191,36,0.12)]'
-                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                        ? 'border-2 border-purple-400 bg-gradient-to-b from-purple-500/25 to-indigo-900/40 text-white shadow-[0_0_18px_rgba(168,85,247,0.35)] ring-1 ring-purple-400/30'
+                        : 'border border-white/10 bg-slate-800/40 text-slate-400 hover:border-purple-400/30 hover:bg-slate-800/70 hover:text-slate-200'
                     }`}
                   >
-                    <span className={`block text-xs sm:text-sm font-bold ${botDifficulty === val ? 'text-amber-200' : 'text-slate-200'}`}>
+                    <span className={`block text-xs sm:text-sm font-black ${botDifficulty === val ? 'text-white' : 'text-slate-200'}`}>
                       {title}
                     </span>
-                    <span className={`mt-0.5 block text-[0.65rem] truncate font-medium ${botDifficulty === val ? 'text-amber-300/90' : 'text-slate-400'}`}>
+                    <span className={`mt-0.5 block text-[0.65rem] truncate font-bold ${botDifficulty === val ? 'text-purple-300' : 'text-slate-400'}`}>
                       {botName}
                     </span>
-                    <span className={`mt-1 inline-block text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${
-                      botDifficulty === val ? 'bg-amber-400/25 text-amber-200' : 'bg-slate-700/50 text-slate-400'
+                    <span className={`mt-1 inline-block text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider ${
+                      botDifficulty === val ? 'bg-purple-400/30 text-purple-200 border border-purple-400/40' : 'bg-slate-700/50 text-slate-400'
                     }`}>
                       {level}
                     </span>
@@ -207,27 +207,29 @@ export default function BotRoomCreationPage() {
 
             {/* Game Mode */}
             <fieldset>
-              <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Game Mode</legend>
-              <div className="grid grid-cols-2 gap-2">
+              <legend className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-300">Game Mode</legend>
+              <div className="grid grid-cols-2 gap-2.5">
                 {([
                   ['HP', 'HP Battle', 'Score drains health'],
-                  ['TURNS', 'Round Count', 'Highest score wins'],
+                  ['TURNS', 'Round Match', 'Highest score wins'],
                 ] as const).map(([value, title, description]) => (
                   <button
                     key={value}
                     type="button"
                     aria-pressed={gameMode === value}
                     onClick={() => setGameMode(value)}
-                    className={`rounded-xl border p-2.5 sm:p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                    className={`rounded-2xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 cursor-pointer ${
                       gameMode === value
-                        ? 'border-amber-400/80 bg-amber-400/15 text-white shadow-[0_0_15px_rgba(251,191,36,0.12)]'
-                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                        ? value === 'HP'
+                          ? 'border-2 border-rose-400/90 bg-gradient-to-r from-rose-950/60 to-rose-900/40 text-white shadow-[0_0_18px_rgba(244,63,94,0.3)] ring-1 ring-rose-400/30'
+                          : 'border-2 border-cyan-400/90 bg-gradient-to-r from-cyan-950/60 to-cyan-900/40 text-white shadow-[0_0_18px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/30'
+                        : 'border border-white/10 bg-slate-800/40 text-slate-400 hover:border-white/20 hover:bg-slate-800/70 hover:text-slate-200'
                     }`}
                   >
-                    <span className={`block text-xs sm:text-sm font-bold ${gameMode === value ? 'text-amber-200' : 'text-slate-200'}`}>
+                    <span className={`block text-xs sm:text-sm font-black ${gameMode === value ? (value === 'HP' ? 'text-rose-200' : 'text-cyan-200') : 'text-slate-200'}`}>
                       {title}
                     </span>
-                    <span className={`mt-0.5 block text-[0.68rem] leading-snug ${gameMode === value ? 'text-amber-300/80' : 'text-slate-400'}`}>
+                    <span className="mt-0.5 block text-[0.68rem] leading-snug text-slate-400 font-medium">
                       {description}
                     </span>
                   </button>
@@ -239,7 +241,7 @@ export default function BotRoomCreationPage() {
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               {gameMode === 'HP' ? (
                 <div>
-                  <label htmlFor="bot-page-starting-hp" className="mb-1.5 block text-xs font-semibold text-slate-300">Starting HP</label>
+                  <label htmlFor="bot-page-starting-hp" className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-300">Starting HP</label>
                   <CustomSelect
                     id="bot-page-starting-hp"
                     value={hpOption}
@@ -255,7 +257,7 @@ export default function BotRoomCreationPage() {
                 </div>
               ) : (
                 <div>
-                  <label htmlFor="bot-page-max-turns" className="mb-1.5 block text-xs font-semibold text-slate-300">Game Length</label>
+                  <label htmlFor="bot-page-max-turns" className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-300">Game Length</label>
                   <CustomSelect
                     id="bot-page-max-turns"
                     value={turnCountOption}
@@ -272,7 +274,7 @@ export default function BotRoomCreationPage() {
               )}
 
               <div>
-                <label htmlFor="bot-page-turn-time" className="mb-1.5 block text-xs font-semibold text-slate-300">Turn Time</label>
+                <label htmlFor="bot-page-turn-time" className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-300">Turn Time</label>
                 <CustomSelect
                   id="bot-page-turn-time"
                   value={turnTimeLimit === null ? '' : String(turnTimeLimit)}
@@ -290,11 +292,11 @@ export default function BotRoomCreationPage() {
 
             {/* Custom HP / Round Stepper if selected */}
             {gameMode === 'HP' && hpOption === 'custom' && (
-              <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
+              <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner p-1 focus-within:border-purple-300 focus-within:ring-2 focus-within:ring-purple-300/20 transition-all overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-purple-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
                     aria-label="Decrease HP"
                   >
                     <Minus className="w-4 h-4" />
@@ -310,12 +312,12 @@ export default function BotRoomCreationPage() {
                       placeholder="100"
                       className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">HP</span>
+                    <span className="text-xs font-bold text-rose-400 uppercase tracking-wider select-none shrink-0">HP</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-purple-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
                     aria-label="Increase HP"
                   >
                     <Plus className="w-4 h-4" />
@@ -324,11 +326,11 @@ export default function BotRoomCreationPage() {
               )}
 
               {gameMode === 'TURNS' && turnCountOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
+                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner p-1 focus-within:border-purple-300 focus-within:ring-2 focus-within:ring-purple-300/20 transition-all overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 7) - 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-purple-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
                     aria-label="Decrease rounds"
                   >
                     <Minus className="w-4 h-4" />
@@ -344,12 +346,12 @@ export default function BotRoomCreationPage() {
                       placeholder="7"
                       className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Rounds</span>
+                    <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider select-none shrink-0">Rounds</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 7) + 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-purple-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
                     aria-label="Increase rounds"
                   >
                     <Plus className="w-4 h-4" />
@@ -358,29 +360,29 @@ export default function BotRoomCreationPage() {
               )}
 
               {/* Opponent Preview Banner */}
-              <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-800/60 px-4 py-3 shadow-[0_4px_16px_rgba(0,0,0,0.18)]">
+              <div className="flex items-center justify-between p-3 rounded-2xl border border-purple-400/35 bg-purple-950/35 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
                 <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <span className="text-slate-400 font-medium">Matchup:</span>
+                  <span className="text-slate-400 font-semibold">Matchup:</span>
                   <span className="font-bold text-white">You</span>
-                  <span className="text-amber-400 font-bold">vs</span>
-                  <span className="font-bold text-amber-300">{BOT_PROFILES[botDifficulty].name}</span>
+                  <span className="text-purple-400 font-black">VS</span>
+                  <span className="font-bold text-purple-300">{BOT_PROFILES[botDifficulty].name}</span>
                 </div>
-                <span className="text-[10px] font-bold text-amber-300/90 uppercase tracking-wider bg-amber-400/15 border border-amber-400/30 px-2 py-0.5 rounded-full">
+                <span className="px-2.5 py-0.5 rounded-full bg-purple-500/25 border border-purple-400/30 text-[9px] font-black text-purple-200 uppercase tracking-wider">
                   1v1 Match
                 </span>
               </div>
 
-              {error && <p className="text-red-400 text-xs sm:text-sm">{error}</p>}
+              {error && <p className="text-red-400 text-xs sm:text-sm font-semibold p-2.5 rounded-xl bg-red-950/30 border border-red-500/30">{error}</p>}
 
               {/* Action Button */}
               <button
                 onClick={handleCreateBot}
                 disabled={loading}
-                className="w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-gradient-to-r from-amber-400 to-amber-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_10px_25px_rgba(245,158,11,0.2)] transition-all hover:from-amber-300 hover:to-amber-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:translate-y-px cursor-pointer flex items-center justify-center gap-2"
+                className="w-full mt-2 py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-indigo-500 hover:from-purple-400 hover:via-fuchsia-400 hover:to-indigo-400 text-white font-black text-base uppercase tracking-wider shadow-[0_8px_30px_rgba(168,85,247,0.45)] hover:shadow-[0_12px_40px_rgba(168,85,247,0.6)] hover:scale-[1.01] active:scale-98 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 border border-purple-300/40"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5 text-slate-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -388,8 +390,8 @@ export default function BotRoomCreationPage() {
                   </span>
                 ) : (
                   <>
-                    <Bot className="h-5 w-5" strokeWidth={2.2} />
-                    <span>Start Bot Match</span>
+                    <Bot className="h-5 w-5 text-white" strokeWidth={2.2} />
+                    <span>START BOT MATCH</span>
                   </>
                 )}
               </button>

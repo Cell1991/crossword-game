@@ -159,24 +159,24 @@ export default function DebugSetupPage() {
   };
 
   return (
-    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-x-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(244,63,94,0.16),transparent_30%),linear-gradient(135deg,#020617_0%,#111827_58%,#1f1424_100%)] px-4 py-6 sm:py-12">
+    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-x-hidden bg-[#070913] px-4 py-6 sm:py-12">
       <ParticleField className="pointer-events-none fixed inset-0 h-full w-full" />
 
       <div className="relative z-10 my-auto flex w-full max-w-[30rem] flex-col items-center gap-6">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto mb-2.5 flex h-14 w-14 items-center justify-center rounded-2xl border border-rose-500/40 bg-rose-500/20 text-rose-300 shadow-[0_0_30px_rgba(244,63,94,0.3)]">
+          <div className="mx-auto mb-2.5 flex h-14 w-14 items-center justify-center rounded-2xl border border-rose-500/50 bg-rose-500/20 text-rose-300 shadow-[0_0_35px_rgba(244,63,94,0.35)]">
             <Bug className="h-7 w-7" />
           </div>
           <p className="text-[0.68rem] font-bold uppercase tracking-[0.25em] text-rose-400">Developer Testing Sandbox</p>
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">Debug Mode</h1>
-          <p className="mt-1.5 text-xs sm:text-sm text-slate-400 max-w-sm">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">Debug Mode</h1>
+          <p className="mt-1.5 text-xs sm:text-sm text-slate-300 max-w-sm">
             Solo testing with god-mode powers: add clone players you control in 1 tab, inspect all racks, edit HP & tiles, and grant cards.
           </p>
         </div>
 
         {/* Card */}
-        <div className="w-full rounded-2xl sm:rounded-[1.75rem] border border-rose-500/30 bg-slate-900/90 sm:bg-slate-900/75 sm:backdrop-blur-md p-5 sm:p-6 shadow-[0_28px_90px_rgba(2,6,23,0.4)] flex flex-col gap-5">
+        <div className="w-full rounded-2xl sm:rounded-[1.75rem] border-2 border-rose-400/40 bg-gradient-to-br from-[#1c0d1b]/95 via-[#131124]/95 to-[#0b0c16]/98 p-5 sm:p-6 shadow-[0_0_40px_rgba(244,63,94,0.18),0_20px_50px_rgba(0,0,0,0.85)] flex flex-col gap-5">
           {error && (
             <div className="rounded-xl border border-red-500/40 bg-red-950/40 px-3.5 py-2.5 text-xs sm:text-sm text-red-300">
               {error}
@@ -197,10 +197,10 @@ export default function DebugSetupPage() {
                       type="button"
                       aria-pressed={gameMode === value}
                       onClick={() => setGameMode(value)}
-                      className={`rounded-xl border p-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 ${
+                      className={`rounded-xl border p-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 ${
                         gameMode === value
-                          ? 'border-rose-400/80 bg-rose-500/15 text-white shadow-sm'
-                          : 'border-white/10 bg-slate-800/50 text-slate-300 hover:border-white/25'
+                          ? 'border-rose-400/80 bg-rose-500/20 text-white shadow-[0_0_15px_rgba(244,63,94,0.25)] ring-1 ring-rose-400/50'
+                          : 'border-white/10 bg-slate-800/40 text-slate-300 hover:border-white/25 hover:bg-slate-800/70'
                       }`}
                     >
                       <span className="block text-xs sm:text-sm font-bold">{title}</span>
@@ -335,14 +335,14 @@ export default function DebugSetupPage() {
                   onKeyDown={e => e.key === 'Enter' && handleCreateRoom()}
                   placeholder="Debug Player 1"
                   maxLength={24}
-                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-3.5 py-2.5 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-3.5 py-2.5 text-sm sm:text-base text-white outline-none transition-all placeholder:text-slate-500 hover:border-white/20 focus:border-rose-400 focus:bg-slate-950/80 focus:ring-2 focus:ring-rose-400/20"
                 />
               </div>
 
               <button
                 onClick={handleCreateRoom}
                 disabled={busy}
-                className="w-full rounded-xl sm:rounded-2xl border border-rose-400/40 bg-gradient-to-r from-rose-500 to-rose-600 py-3.5 text-base sm:text-lg font-bold text-white shadow-[0_12px_30px_rgba(244,63,94,0.25)] transition-all hover:from-rose-400 hover:to-rose-500 disabled:opacity-50 disabled:cursor-not-allowed active:translate-y-px"
+                className="w-full rounded-xl sm:rounded-2xl border-2 border-rose-300/40 bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 py-3.5 text-base sm:text-lg font-black text-white shadow-[0_0_25px_rgba(244,63,94,0.35)] transition-all hover:brightness-110 hover:shadow-[0_0_35px_rgba(244,63,94,0.5)] disabled:opacity-50 disabled:cursor-not-allowed active:translate-y-0.5 cursor-pointer"
               >
                 {busy ? (
                   <span className="flex items-center justify-center gap-2">
