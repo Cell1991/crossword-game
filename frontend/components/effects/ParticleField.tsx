@@ -138,33 +138,6 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       lastDrawAt = now;
       ctx.clearRect(0, 0, width, height);
 
-      // 0. Draw Tactical Golden Crossword Grid (100% Reliable Canvas)
-      const gridSize = 48;
-      ctx.save();
-      ctx.strokeStyle = `rgba(${accent}, 0.18)`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      const startX = (width % gridSize) / 2;
-      for (let x = startX; x <= width; x += gridSize) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-      }
-      const startY = (height % gridSize) / 2;
-      for (let y = startY; y <= height; y += gridSize) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-      }
-      ctx.stroke();
-
-      // Subtle Golden Intersection Crosshairs
-      ctx.fillStyle = `rgba(${accent}, 0.4)`;
-      for (let x = startX; x <= width; x += gridSize * 2) {
-        for (let y = startY; y <= height; y += gridSize * 2) {
-          ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
-        }
-      }
-      ctx.restore();
-
       // 1. Draw Beams
       ctx.lineWidth = 1.5;
       for (const beam of beams) {

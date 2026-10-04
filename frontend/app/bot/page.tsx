@@ -145,7 +145,10 @@ export default function BotRoomCreationPage() {
         </div>
 
         {/* Card */}
-        <div className="w-full rounded-3xl border-2 border-purple-400/50 bg-gradient-to-br from-purple-950/40 via-slate-900/95 to-slate-950/98 p-5 sm:p-6 shadow-[0_20px_70px_rgba(0,0,0,0.85),0_0_35px_rgba(168,85,247,0.22)] backdrop-blur-2xl ring-1 ring-purple-400/20">
+        <div className="relative w-full rounded-3xl border border-white/10 bg-[#0c101d]/95 backdrop-blur-2xl p-5 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.85)] ring-1 ring-white/5 overflow-hidden">
+          {/* Soft Purple Accent Line */}
+          <span className="absolute inset-x-12 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-purple-400/40 to-transparent" />
+
           <div className="flex flex-col gap-3.5 sm:gap-4">
             {/* Header */}
             <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
@@ -153,7 +156,7 @@ export default function BotRoomCreationPage() {
                 <button
                   type="button"
                   onClick={() => router.push('/')}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:border-purple-400/50 hover:bg-purple-400/15 hover:text-purple-200 transition-all cursor-pointer active:scale-95 shrink-0 shadow-inner"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:border-purple-400/50 hover:bg-purple-400/10 hover:text-purple-200 transition-all cursor-pointer active:scale-95 shrink-0 shadow-inner"
                   aria-label="Back to home"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -171,7 +174,7 @@ export default function BotRoomCreationPage() {
 
             {/* Bot Difficulty Selection */}
             <fieldset>
-              <legend className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-300">Bot Difficulty</legend>
+              <legend className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Bot Difficulty</legend>
               <div className="grid grid-cols-3 gap-2">
                 {([
                   ['easy', 'Easy', 'SparkBot', 'Novice'],
@@ -185,8 +188,8 @@ export default function BotRoomCreationPage() {
                     onClick={() => setBotDifficulty(val)}
                     className={`rounded-2xl border p-2.5 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 cursor-pointer ${
                       botDifficulty === val
-                        ? 'border-2 border-purple-400 bg-gradient-to-b from-purple-500/25 to-indigo-900/40 text-white shadow-[0_0_18px_rgba(168,85,247,0.35)] ring-1 ring-purple-400/30'
-                        : 'border border-white/10 bg-slate-800/40 text-slate-400 hover:border-purple-400/30 hover:bg-slate-800/70 hover:text-slate-200'
+                        ? 'border-2 border-purple-400/80 bg-purple-400/10 text-white shadow-[0_0_15px_rgba(168,85,247,0.25)] ring-1 ring-purple-400/30'
+                        : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:border-purple-400/30 hover:bg-slate-800/60 hover:text-slate-200'
                     }`}
                   >
                     <span className={`block text-xs sm:text-sm font-black ${botDifficulty === val ? 'text-white' : 'text-slate-200'}`}>
@@ -196,7 +199,7 @@ export default function BotRoomCreationPage() {
                       {botName}
                     </span>
                     <span className={`mt-1 inline-block text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider ${
-                      botDifficulty === val ? 'bg-purple-400/30 text-purple-200 border border-purple-400/40' : 'bg-slate-700/50 text-slate-400'
+                      botDifficulty === val ? 'bg-purple-400/20 text-purple-200 border border-purple-400/30' : 'bg-white/5 text-slate-400'
                     }`}>
                       {level}
                     </span>
@@ -207,7 +210,7 @@ export default function BotRoomCreationPage() {
 
             {/* Game Mode */}
             <fieldset>
-              <legend className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-300">Game Mode</legend>
+              <legend className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Game Mode</legend>
               <div className="grid grid-cols-2 gap-2.5">
                 {([
                   ['HP', 'HP Battle', 'Score drains health'],
@@ -220,16 +223,14 @@ export default function BotRoomCreationPage() {
                     onClick={() => setGameMode(value)}
                     className={`rounded-2xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 cursor-pointer ${
                       gameMode === value
-                        ? value === 'HP'
-                          ? 'border-2 border-rose-400/90 bg-gradient-to-r from-rose-950/60 to-rose-900/40 text-white shadow-[0_0_18px_rgba(244,63,94,0.3)] ring-1 ring-rose-400/30'
-                          : 'border-2 border-cyan-400/90 bg-gradient-to-r from-cyan-950/60 to-cyan-900/40 text-white shadow-[0_0_18px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/30'
-                        : 'border border-white/10 bg-slate-800/40 text-slate-400 hover:border-white/20 hover:bg-slate-800/70 hover:text-slate-200'
+                        ? 'border-2 border-purple-400/80 bg-purple-400/10 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)] ring-1 ring-purple-400/30'
+                        : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:border-white/20 hover:bg-slate-800/60 hover:text-slate-200'
                     }`}
                   >
-                    <span className={`block text-xs sm:text-sm font-black ${gameMode === value ? (value === 'HP' ? 'text-rose-200' : 'text-cyan-200') : 'text-slate-200'}`}>
+                    <span className={`block text-xs sm:text-sm font-black ${gameMode === value ? 'text-white' : 'text-slate-200'}`}>
                       {title}
                     </span>
-                    <span className="mt-0.5 block text-[0.68rem] leading-snug text-slate-400 font-medium">
+                    <span className={`mt-0.5 block text-[0.68rem] leading-snug font-medium ${gameMode === value ? 'text-purple-200/80' : 'text-slate-400'}`}>
                       {description}
                     </span>
                   </button>
@@ -241,7 +242,7 @@ export default function BotRoomCreationPage() {
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               {gameMode === 'HP' ? (
                 <div>
-                  <label htmlFor="bot-page-starting-hp" className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-300">Starting HP</label>
+                  <label htmlFor="bot-page-starting-hp" className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Starting HP</label>
                   <CustomSelect
                     id="bot-page-starting-hp"
                     value={hpOption}
@@ -257,7 +258,7 @@ export default function BotRoomCreationPage() {
                 </div>
               ) : (
                 <div>
-                  <label htmlFor="bot-page-max-turns" className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-300">Game Length</label>
+                  <label htmlFor="bot-page-max-turns" className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Game Length</label>
                   <CustomSelect
                     id="bot-page-max-turns"
                     value={turnCountOption}
@@ -274,7 +275,7 @@ export default function BotRoomCreationPage() {
               )}
 
               <div>
-                <label htmlFor="bot-page-turn-time" className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-300">Turn Time</label>
+                <label htmlFor="bot-page-turn-time" className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Turn Time</label>
                 <CustomSelect
                   id="bot-page-turn-time"
                   value={turnTimeLimit === null ? '' : String(turnTimeLimit)}
@@ -292,94 +293,94 @@ export default function BotRoomCreationPage() {
 
             {/* Custom HP / Round Stepper if selected */}
             {gameMode === 'HP' && hpOption === 'custom' && (
-              <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner p-1 focus-within:border-purple-300 focus-within:ring-2 focus-within:ring-purple-300/20 transition-all overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-purple-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Decrease HP"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
-                    <input
-                      type="number"
-                      min={10}
-                      max={1000}
-                      value={customHp}
-                      onChange={event => setCustomHp(event.target.value)}
-                      aria-label="Custom starting HP"
-                      placeholder="100"
-                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span className="text-xs font-bold text-rose-400 uppercase tracking-wider select-none shrink-0">HP</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-purple-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Increase HP"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
+              <div className="flex items-center rounded-xl border border-white/10 bg-slate-900/90 shadow-inner p-1 focus-within:border-purple-400/80 focus-within:ring-2 focus-within:ring-purple-400/20 transition-all overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
+                  className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-300 hover:text-white hover:bg-white/5 active:scale-95 transition-all cursor-pointer select-none"
+                  aria-label="Decrease HP"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
+                  <input
+                    type="number"
+                    min={10}
+                    max={1000}
+                    value={customHp}
+                    onChange={event => setCustomHp(event.target.value)}
+                    aria-label="Custom starting HP"
+                    placeholder="100"
+                    className="w-full text-center font-bold text-white text-base bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <span className="text-[11px] font-bold text-purple-300/80 uppercase tracking-wider select-none shrink-0">HP</span>
                 </div>
-              )}
-
-              {gameMode === 'TURNS' && turnCountOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner p-1 focus-within:border-purple-300 focus-within:ring-2 focus-within:ring-purple-300/20 transition-all overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 7) - 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-purple-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Decrease rounds"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
-                    <input
-                      type="number"
-                      min={1}
-                      max={500}
-                      value={customTurnCount}
-                      onChange={event => setCustomTurnCount(event.target.value)}
-                      aria-label="Custom round count"
-                      placeholder="7"
-                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider select-none shrink-0">Rounds</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 7) + 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-purple-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Increase rounds"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-
-              {/* Opponent Preview Banner */}
-              <div className="flex items-center justify-between p-3 rounded-2xl border border-purple-400/35 bg-purple-950/35 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <span className="text-slate-400 font-semibold">Matchup:</span>
-                  <span className="font-bold text-white">You</span>
-                  <span className="text-purple-400 font-black">VS</span>
-                  <span className="font-bold text-purple-300">{BOT_PROFILES[botDifficulty].name}</span>
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-purple-500/25 border border-purple-400/30 text-[9px] font-black text-purple-200 uppercase tracking-wider">
-                  1v1 Match
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
+                  className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-300 hover:text-white hover:bg-white/5 active:scale-95 transition-all cursor-pointer select-none"
+                  aria-label="Increase HP"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
               </div>
+            )}
 
-              {error && <p className="text-red-400 text-xs sm:text-sm font-semibold p-2.5 rounded-xl bg-red-950/30 border border-red-500/30">{error}</p>}
+            {gameMode === 'TURNS' && turnCountOption === 'custom' && (
+              <div className="flex items-center rounded-xl border border-white/10 bg-slate-900/90 shadow-inner p-1 focus-within:border-purple-400/80 focus-within:ring-2 focus-within:ring-purple-400/20 transition-all overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 7) - 1)))}
+                  className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-300 hover:text-white hover:bg-white/5 active:scale-95 transition-all cursor-pointer select-none"
+                  aria-label="Decrease rounds"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={500}
+                    value={customTurnCount}
+                    onChange={event => setCustomTurnCount(event.target.value)}
+                    aria-label="Custom round count"
+                    placeholder="7"
+                    className="w-full text-center font-bold text-white text-base bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <span className="text-[11px] font-bold text-purple-300/80 uppercase tracking-wider select-none shrink-0">Rounds</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 7) + 1)))}
+                  className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-300 hover:text-white hover:bg-white/5 active:scale-95 transition-all cursor-pointer select-none"
+                  aria-label="Increase rounds"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
-              {/* Action Button */}
-              <button
-                onClick={handleCreateBot}
-                disabled={loading}
-                className="w-full mt-2 py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-indigo-500 hover:from-purple-400 hover:via-fuchsia-400 hover:to-indigo-400 text-white font-black text-base uppercase tracking-wider shadow-[0_8px_30px_rgba(168,85,247,0.45)] hover:shadow-[0_12px_40px_rgba(168,85,247,0.6)] hover:scale-[1.01] active:scale-98 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 border border-purple-300/40"
-              >
+            {/* Opponent Preview Banner */}
+            <div className="flex items-center justify-between p-3 rounded-2xl border border-purple-400/25 bg-purple-950/25 shadow-inner">
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <span className="text-slate-400 font-semibold">Matchup:</span>
+                <span className="font-bold text-white">You</span>
+                <span className="text-purple-400 font-black">VS</span>
+                <span className="font-bold text-purple-300">{BOT_PROFILES[botDifficulty].name}</span>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-400/30 text-[9px] font-black text-purple-200 uppercase tracking-wider">
+                1v1 Match
+              </span>
+            </div>
+
+            {error && <p className="text-red-400 text-xs sm:text-sm font-semibold p-2.5 rounded-xl bg-red-950/30 border border-red-500/30">{error}</p>}
+
+            {/* Action Button */}
+            <button
+              onClick={handleCreateBot}
+              disabled={loading}
+              className="w-full mt-2 py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-black text-base uppercase tracking-wider shadow-[0_4px_20px_rgba(168,85,247,0.35)] hover:shadow-[0_6px_28px_rgba(168,85,247,0.5)] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 border border-purple-300/40"
+            >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

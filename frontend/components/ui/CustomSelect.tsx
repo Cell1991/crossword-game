@@ -71,10 +71,10 @@ export default function CustomSelect({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         onClick={() => setIsOpen(prev => !prev)}
-        className={`w-full flex items-center justify-between gap-2 rounded-xl border bg-slate-800/80 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base outline-none transition-all cursor-pointer ${
+        className={`w-full flex items-center justify-between gap-2 rounded-xl border bg-slate-900/90 px-3.5 py-2.5 sm:py-3 text-sm sm:text-base outline-none transition-all cursor-pointer ${
           isOpen
-            ? 'border-amber-300 ring-2 ring-amber-300/20 shadow-[0_0_15px_rgba(251,191,36,0.15)] bg-slate-800 text-white'
-            : 'border-white/10 text-white hover:border-white/25 hover:bg-slate-800/90'
+            ? 'border-amber-400/80 ring-2 ring-amber-400/20 shadow-[0_0_15px_rgba(251,191,36,0.15)] bg-slate-900 text-white'
+            : 'border-white/10 text-white hover:border-white/20 hover:bg-slate-900'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <span className="truncate font-medium">
