@@ -92,6 +92,10 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   const pendingDragRef = useRef(false);
   const isPanningRef = useRef(false);
   const lastPointerRef = useRef({ x: 0, y: 0 });
+  const velocityHistoryRef = useRef<{ x: number; y: number; time: number }[]>([]);
+  const momentumAnimRef = useRef<number | null>(null);
+  const panRafRef = useRef<number | null>(null);
+  const pendingPanDeltaRef = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
   /** Where the current pan started, and whether it has moved far enough to stop counting as a click. */
   const panStartRef = useRef<{ x: number; y: number } | null>(null);
   const panMovedRef = useRef(false);
@@ -108,6 +112,13 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   const hoverTrailMapRef = useRef<Map<string, { row: number; col: number; time: number }>>(new Map());
   const currentHoverCellRef = useRef<CellPosition | null>(dragHoverCell ?? null);
   const dragHoverAnimRef = useRef<number | null>(null);
+
+  const stopMomentum = useCallback(() => {
+    if (momentumAnimRef.current !== null) {
+      cancelAnimationFrame(momentumAnimRef.current);
+      momentumAnimRef.current = null;
+    }
+  }, []);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -307,8 +318,13 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
         cancelAnimationFrame(animFrameRef.current);
         animFrameRef.current = null;
       }
+      if (panRafRef.current) {
+        cancelAnimationFrame(panRafRef.current);
+        panRafRef.current = null;
+      }
+      stopMomentum();
     };
-  }, []);
+  }, [stopMomentum]);
 
   // New board content: remember it for the imperative draws and draw it before the browser paints.
   useLayoutEffect(() => {
@@ -403,6 +419,14 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   // Pending tiles wait for movement before entering drag mode. A click collects
   // immediately; committed tiles never enter this path.
   const handlePointerDown = (e: React.PointerEvent) => {
+    stopMomentum();
+    if (panRafRef.current !== null) {
+      cancelAnimationFrame(panRafRef.current);
+      panRafRef.current = null;
+      pendingPanDeltaRef.current = { dx: 0, dy: 0 };
+    }
+    velocityHistoryRef.current = [{ x: e.clientX, y: e.clientY, time: performance.now() }];
+
     if (e.pointerType === 'touch') {
       touchPointsRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (touchPointsRef.current.size >= 2) {
@@ -468,13 +492,32 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     if (isPanningRef.current) {
       const dx = e.clientX - lastPointerRef.current.x;
       const dy = e.clientY - lastPointerRef.current.y;
-      if (dx !== 0 || dy !== 0) {
-        camera.setOffset(previous => ({
-          x: previous.x + dx,
-          y: previous.y + dy,
-        }));
-      }
       lastPointerRef.current = { x: e.clientX, y: e.clientY };
+
+      const now = performance.now();
+      const history = velocityHistoryRef.current;
+      history.push({ x: e.clientX, y: e.clientY, time: now });
+      while (history.length > 1 && now - history[0].time > 100) {
+        history.shift();
+      }
+
+      if (dx !== 0 || dy !== 0) {
+        pendingPanDeltaRef.current.dx += dx;
+        pendingPanDeltaRef.current.dy += dy;
+        if (panRafRef.current === null) {
+          panRafRef.current = requestAnimationFrame(() => {
+            panRafRef.current = null;
+            const { dx: px, dy: py } = pendingPanDeltaRef.current;
+            pendingPanDeltaRef.current = { dx: 0, dy: 0 };
+            if (px !== 0 || py !== 0) {
+              camera.setOffset(previous => ({
+                x: previous.x + px,
+                y: previous.y + py,
+              }));
+            }
+          });
+        }
+      }
       const start = panStartRef.current;
       if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) >= 5) panMovedRef.current = true;
     }
@@ -506,6 +549,64 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     }
     if (isPanningRef.current) {
       isPanningRef.current = false;
+
+      // Flush remaining buffered pan movement immediately
+      if (panRafRef.current !== null) {
+        cancelAnimationFrame(panRafRef.current);
+        panRafRef.current = null;
+        const { dx: px, dy: py } = pendingPanDeltaRef.current;
+        pendingPanDeltaRef.current = { dx: 0, dy: 0 };
+        if (px !== 0 || py !== 0) {
+          camera.setOffset(previous => ({
+            x: previous.x + px,
+            y: previous.y + py,
+          }));
+        }
+      }
+
+      // Smooth kinetic momentum deceleration if released while flicking
+      const history = velocityHistoryRef.current;
+      if (history.length >= 2 && panMovedRef.current) {
+        const first = history[0];
+        const last = history[history.length - 1];
+        const dt = last.time - first.time;
+        if (dt >= 12 && dt <= 130) {
+          let vx = (last.x - first.x) / dt;
+          let vy = (last.y - first.y) / dt;
+          const speed = Math.hypot(vx, vy);
+          if (speed > 0.12) {
+            const maxSpeed = 2.2;
+            if (speed > maxSpeed) {
+              vx = (vx / speed) * maxSpeed;
+              vy = (vy / speed) * maxSpeed;
+            }
+            let curVx = vx;
+            let curVy = vy;
+            let lastTime = performance.now();
+            const momentumLoop = (time: number) => {
+              const frameDt = Math.min(32, time - lastTime);
+              lastTime = time;
+              if (frameDt <= 0) {
+                momentumAnimRef.current = requestAnimationFrame(momentumLoop);
+                return;
+              }
+              const friction = Math.pow(0.002, frameDt / 1000);
+              curVx *= friction;
+              curVy *= friction;
+              if (Math.hypot(curVx, curVy) < 0.015) {
+                momentumAnimRef.current = null;
+                return;
+              }
+              camera.setOffset(prev => ({
+                x: prev.x + curVx * frameDt,
+                y: prev.y + curVy * frameDt,
+              }));
+              momentumAnimRef.current = requestAnimationFrame(momentumLoop);
+            };
+            momentumAnimRef.current = requestAnimationFrame(momentumLoop);
+          }
+        }
+      }
 
       // A press that never moved away from where it started is a cell click; a pan is not.
       const start = panStartRef.current ?? { x: e.clientX, y: e.clientY };
@@ -553,6 +654,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={(e) => {
+        stopMomentum();
         touchPointsRef.current.delete(e.pointerId);
         if (touchPointsRef.current.size < 2) pinchRef.current = null;
         pendingPointerRef.current = null;

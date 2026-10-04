@@ -1,4 +1,4 @@
-import { cellMultiplier, isDoubleLetterCell, isTripleLetterCell, isPowerCell } from '@/lib/board';
+import { cellMultiplier, getCellType, CELL_TYPE_DOUBLE, CELL_TYPE_TRIPLE, CELL_TYPE_POWER } from '@/lib/board';
 import { isBlankLetter } from '@/lib/tiles';
 import { TILE_THEME, type TilePalette } from '@/lib/tileTheme';
 
@@ -418,9 +418,10 @@ export class TileRenderer {
     let morphProgress = 1.0;
 
     const isConfirmed = !isTemporary && !effectiveIsRemote;
-    const is2L = isConfirmed && isDoubleLetterCell(row, col);
-    const is3L = isConfirmed && isTripleLetterCell(row, col);
-    const isPower = isConfirmed && isPowerCell(row, col);
+    const cellType = isConfirmed ? getCellType(row, col) : 0;
+    const is2L = cellType === CELL_TYPE_DOUBLE;
+    const is3L = cellType === CELL_TYPE_TRIPLE;
+    const isPower = cellType === CELL_TYPE_POWER;
     const isSpecialCellTile = is2L || is3L || isPower;
 
     if (animStart && animTime && !isFlipping) {

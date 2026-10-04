@@ -1,9 +1,11 @@
 import {
   CENTER_COL,
   CENTER_ROW,
-  isDoubleLetterCell,
-  isPowerCell,
-  isTripleLetterCell,
+  getCellType,
+  CELL_TYPE_CENTER,
+  CELL_TYPE_DOUBLE,
+  CELL_TYPE_TRIPLE,
+  CELL_TYPE_POWER,
 } from '@/lib/board';
 import { BoardModel } from '@/lib/engine/boardModel';
 
@@ -66,28 +68,25 @@ export class GridRenderer {
         );
 
         const isCenter = r === CENTER_ROW && c === CENTER_COL;
-        const isTriple = isTripleLetterCell(r, c);
-        const isDouble = isDoubleLetterCell(r, c);
-        const isPower = isPowerCell(r, c);
+        const cellType = isCenter ? CELL_TYPE_CENTER : getCellType(r, c);
 
-        if (isTriple || isDouble || isPower || isCenter) {
+        if (cellType !== 0) {
           const specialRadius = Math.max(3, cellSize * 0.12);
 
           ctx.globalAlpha = lineAlpha;
-          if (isTriple) {
+          if (cellType === CELL_TYPE_TRIPLE) {
             ctx.fillStyle = '#7f1d1d';
             drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
             ctx.fill();
-          } else if (isDouble) {
+          } else if (cellType === CELL_TYPE_DOUBLE) {
             ctx.fillStyle = '#166534';
             drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
             ctx.fill();
-          } else if (isPower) {
+          } else if (cellType === CELL_TYPE_POWER) {
             ctx.fillStyle = '#0e7490';
             drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
             ctx.fill();
-          }
-          if (isCenter) {
+          } else if (cellType === CELL_TYPE_CENTER) {
             ctx.fillStyle = '#1e1b4b';
             drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
             ctx.fill();

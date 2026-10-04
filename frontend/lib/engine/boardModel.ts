@@ -3,9 +3,10 @@ import {
   BOARD_ROWS,
   CENTER_COL,
   CENTER_ROW,
-  isDoubleLetterCell,
-  isPowerCell,
-  isTripleLetterCell,
+  getCellType,
+  CELL_TYPE_DOUBLE,
+  CELL_TYPE_TRIPLE,
+  CELL_TYPE_POWER,
 } from '@/lib/board';
 import { BoardCell, CellPosition, PlacedTile } from '@/lib/types';
 import { cellKey } from '@/lib/tiles';
@@ -197,10 +198,11 @@ export class BoardModel {
           const key = `${r}_${c}`;
           if (echoes.has(key) || this.isOccupied(r, c)) continue;
 
+          const cellType = getCellType(r, c);
           let type: 'power' | 'triple' | 'double' | null = null;
-          if (isPowerCell(r, c)) type = 'power';
-          else if (isTripleLetterCell(r, c)) type = 'triple';
-          else if (isDoubleLetterCell(r, c)) type = 'double';
+          if (cellType === CELL_TYPE_POWER) type = 'power';
+          else if (cellType === CELL_TYPE_TRIPLE) type = 'triple';
+          else if (cellType === CELL_TYPE_DOUBLE) type = 'double';
 
           if (type) {
             const distance = this.getDistanceToOccupied(r, c);
@@ -222,10 +224,11 @@ export class BoardModel {
         const key = `${r}_${c}`;
         if (echoes.has(key) || this.isOccupied(r, c)) continue;
 
+        const cellType = getCellType(r, c);
         let type: 'power' | 'triple' | 'double' | null = null;
-        if (isPowerCell(r, c)) type = 'power';
-        else if (isTripleLetterCell(r, c)) type = 'triple';
-        else if (isDoubleLetterCell(r, c)) type = 'double';
+        if (cellType === CELL_TYPE_POWER) type = 'power';
+        else if (cellType === CELL_TYPE_TRIPLE) type = 'triple';
+        else if (cellType === CELL_TYPE_DOUBLE) type = 'double';
 
         if (type) {
           const distance = this.getDistanceToOccupied(r, c);

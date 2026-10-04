@@ -48,6 +48,7 @@ export function useTileDrag(options: UseTileDragOptions) {
   const sessionRef = useRef<DragSession | null>(null);
   const hoverCellRef = useRef<CellPosition | null>(null);
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
+  const prevDragPosRef = useRef<{ x: number; y: number } | null>(null);
   const frameRef = useRef<number | null>(null);
   const rectsRef = useRef<{ board: DOMRect | null; rack: DOMRect | null }>({ board: null, rack: null });
   const latestRef = useRef(options);
@@ -67,12 +68,16 @@ export function useTileDrag(options: UseTileDragOptions) {
       frameRef.current = null;
       const position = pointerRef.current;
       if (!position) return;
-      moveFixedElement(ghostRef.current, position.x, position.y);
+      const prev = prevDragPosRef.current;
+      const dx = prev ? position.x - prev.x : 0;
+      prevDragPosRef.current = { x: position.x, y: position.y };
+      const tilt = Math.max(-8, Math.min(8, 2 + dx * 0.22));
+      moveFixedElement(ghostRef.current, position.x, position.y, tilt);
       const cell = cellUnderPointer(position.x, position.y);
-      const prev = hoverCellRef.current;
+      const prevCell = hoverCellRef.current;
       if (
-        (cell === null && prev !== null) ||
-        (cell !== null && (prev === null || cell.row !== prev.row || cell.col !== prev.col))
+        (cell === null && prevCell !== null) ||
+        (cell !== null && (prevCell === null || cell.row !== prevCell.row || cell.col !== prevCell.col))
       ) {
         hoverCellRef.current = cell;
         latestRef.current.onHoverCellChange?.(cell);
@@ -85,6 +90,7 @@ export function useTileDrag(options: UseTileDragOptions) {
       window.cancelAnimationFrame(frameRef.current);
       frameRef.current = null;
     }
+    prevDragPosRef.current = null;
     sessionRef.current = null;
     hoverCellRef.current = null;
     latestRef.current.onHoverCellChange?.(null);

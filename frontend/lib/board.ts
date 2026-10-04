@@ -56,21 +56,53 @@ export function mirrorCol(c: number): number {
   return m > BOARD_COLS - 1 ? period - m : m;
 }
 
+export const CELL_TYPE_NORMAL = 0;
+export const CELL_TYPE_CENTER = 1;
+export const CELL_TYPE_DOUBLE = 2;
+export const CELL_TYPE_TRIPLE = 3;
+export const CELL_TYPE_POWER = 4;
+
+// Precomputed flat lookup table: eliminates string template allocations in tight 120 FPS render loops
+const CELL_TYPE_TABLE = new Uint8Array(BOARD_ROWS * BOARD_COLS);
+
+for (let r = 0; r < BOARD_ROWS; r++) {
+  for (let c = 0; c < BOARD_COLS; c++) {
+    const key = `${r}_${c}`;
+    const idx = r * BOARD_COLS + c;
+    if (r === CENTER_ROW && c === CENTER_COL) {
+      CELL_TYPE_TABLE[idx] = CELL_TYPE_CENTER;
+    } else if (TRIPLE_LETTER.has(key)) {
+      CELL_TYPE_TABLE[idx] = CELL_TYPE_TRIPLE;
+    } else if (DOUBLE_LETTER.has(key)) {
+      CELL_TYPE_TABLE[idx] = CELL_TYPE_DOUBLE;
+    } else if (SECRET_POWER.has(key)) {
+      CELL_TYPE_TABLE[idx] = CELL_TYPE_POWER;
+    } else {
+      CELL_TYPE_TABLE[idx] = CELL_TYPE_NORMAL;
+    }
+  }
+}
+
+export function getCellType(row: number, col: number): number {
+  return CELL_TYPE_TABLE[mirrorRow(row) * BOARD_COLS + mirrorCol(col)];
+}
+
 export function isTripleLetterCell(row: number, col: number): boolean {
-  return TRIPLE_LETTER.has(`${mirrorRow(row)}_${mirrorCol(col)}`);
+  return CELL_TYPE_TABLE[mirrorRow(row) * BOARD_COLS + mirrorCol(col)] === CELL_TYPE_TRIPLE;
 }
 
 export function isDoubleLetterCell(row: number, col: number): boolean {
-  return DOUBLE_LETTER.has(`${mirrorRow(row)}_${mirrorCol(col)}`);
+  return CELL_TYPE_TABLE[mirrorRow(row) * BOARD_COLS + mirrorCol(col)] === CELL_TYPE_DOUBLE;
 }
 
 export function isPowerCell(row: number, col: number): boolean {
-  return SECRET_POWER.has(`${mirrorRow(row)}_${mirrorCol(col)}`);
+  return CELL_TYPE_TABLE[mirrorRow(row) * BOARD_COLS + mirrorCol(col)] === CELL_TYPE_POWER;
 }
 
 export function cellMultiplier(row: number, col: number): number {
-  if (isTripleLetterCell(row, col)) return 3;
-  if (isDoubleLetterCell(row, col)) return 2;
+  const type = CELL_TYPE_TABLE[mirrorRow(row) * BOARD_COLS + mirrorCol(col)];
+  if (type === CELL_TYPE_TRIPLE) return 3;
+  if (type === CELL_TYPE_DOUBLE) return 2;
   return 1;
 }
 
