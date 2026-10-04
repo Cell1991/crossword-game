@@ -168,12 +168,22 @@ export const RecentMovesPanel: React.FC<RecentMovesPanelProps> = ({
                   (isMe ? 'You' : entry.text.includes(':') ? entry.text.split(':')[0] : 'Player');
 
                 let wordLabel = entry.text;
-                if (hasWords && words && words.length > 0) {
-                  wordLabel = words.join(', ');
+                if (entry.type === 'card') {
+                  const regex = new RegExp(`^(${actorName}|You|Player)\\s+`, 'i');
+                  const stripped = entry.text.replace(regex, '').trim();
+                  wordLabel = stripped ? stripped.charAt(0).toUpperCase() + stripped.slice(1) : entry.text;
+                } else if (hasWords && words && words.length > 0) {
+                  const cardTagMatch = entry.text.match(/(🎴.+)$/);
+                  const cardTag = cardTagMatch ? ` (${cardTagMatch[1]})` : '';
+                  wordLabel = `${words.join(', ')}${cardTag}`;
                 } else if (entry.type === 'exchange' || entry.text.toLowerCase().includes('swap')) {
-                  wordLabel = 'Swapped tiles';
+                  const cardTagMatch = entry.text.match(/(🎴.+)$/);
+                  const cardTag = cardTagMatch ? ` (${cardTagMatch[1]})` : '';
+                  wordLabel = `Swapped tiles${cardTag}`;
                 } else if (entry.type === 'pass' || entry.text.toLowerCase().includes('pass')) {
-                  wordLabel = 'Passed turn';
+                  const cardTagMatch = entry.text.match(/(🎴.+)$/);
+                  const cardTag = cardTagMatch ? ` (${cardTagMatch[1]})` : '';
+                  wordLabel = `Passed turn${cardTag}`;
                 } else if (entry.text.includes(':')) {
                   wordLabel = entry.text.slice(entry.text.indexOf(':') + 1).trim();
                 } else {

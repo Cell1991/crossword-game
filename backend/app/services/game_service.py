@@ -420,20 +420,33 @@ class GameService:
                     elif isinstance(w, str):
                         words_list.append(w.upper())
 
+            c_details = m.card_details
+            card_names = []
+            if isinstance(c_details, list):
+                for cd in c_details:
+                    if isinstance(cd, dict) and "card" in cd:
+                        card_names.append(str(cd["card"]).replace('_', ' '))
+            elif isinstance(c_details, dict) and "card" in c_details:
+                card_names.append(str(c_details["card"]).replace('_', ' '))
+
+            card_tag = f" 🎴 {', '.join(card_names)}" if card_names else ""
+
             if m.move_type == "PASS":
                 m_type = "pass"
-                text = f"{p_name} passed turn"
+                text = f"{p_name} passed turn{card_tag}"
             elif m.move_type == "EXCHANGE":
                 m_type = "exchange"
-                text = f"{p_name} swapped tiles"
+                text = f"{p_name} swapped tiles{card_tag}"
             elif m.move_type == "CARD_USED":
                 m_type = "card"
                 card_info = m.card_details or {}
-                text = card_info.get("description") or f"{p_name} used {card_info.get('card', 'a card')}"
+                if isinstance(card_info, list) and len(card_info) > 0:
+                    card_info = card_info[0]
+                text = (card_info.get("description") if isinstance(card_info, dict) else None) or f"{p_name} used {card_info.get('card', 'a card') if isinstance(card_info, dict) else 'a card'}"
             else:
                 m_type = "move"
                 words_str = ", ".join(words_list)
-                text = f"{p_name}: {words_str}" if words_str else f"{p_name} placed tiles"
+                text = f"{p_name}: {words_str}{card_tag}" if words_str else f"{p_name} placed tiles{card_tag}"
 
             move_history_outs.append(MoveHistoryItem(
                 id=m.id,
@@ -447,6 +460,27 @@ class GameService:
                 type=m_type,
                 created_at=m.created_at,
             ))
+
+        # Include pending card uses for the active turn so they show up in Match Log live
+        if game.pending_card_events:
+            for pe in game.pending_card_events:
+                if isinstance(pe, dict):
+                    c_name = str(pe.get("card", "CARD")).replace('_', ' ')
+                    p_id = pe.get("player_id", game.current_player_id)
+                    p_n = player_name_map.get(p_id, "Player")
+                    desc = pe.get("description") or f"{p_n} used {c_name}"
+                    move_history_outs.append(MoveHistoryItem(
+                        id=f"pending_{uuid.uuid4()}",
+                        player_id=p_id or "",
+                        display_name=p_n,
+                        turn_number=game.turn_number,
+                        move_type="CARD_USED",
+                        text=desc,
+                        score=0,
+                        words=[],
+                        type="card",
+                        created_at=datetime.now(timezone.utc),
+                    ))
 
         return GameStateResponse(
             game_id=game.id,

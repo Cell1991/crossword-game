@@ -132,21 +132,66 @@ async def get_match_replay(
     moves_res = await db.execute(moves_stmt)
     raw_moves = moves_res.scalars().all()
 
+    # Pre-group any legacy CARD_USED events by (turn_number, player_id) so we can attach them to actual turn moves
+    legacy_turn_cards: dict[tuple[int, str], list[dict[str, Any]]] = {}
+    turn_moves_present: set[tuple[int, str]] = set()
+
+    for m in raw_moves:
+        if m.move_type != "CARD_USED":
+            turn_moves_present.add((m.turn_number, m.player_id))
+        else:
+            cd = m.card_details
+            c_list = [cd] if isinstance(cd, dict) else (cd if isinstance(cd, list) else [])
+            if c_list:
+                key = (m.turn_number, m.player_id)
+                legacy_turn_cards.setdefault(key, []).extend(c_list)
+
     replay_moves: list[dict[str, Any]] = []
     running_scores: dict[str, int] = {p.id: 0 for p in players}
 
     for m in raw_moves:
-        if m.move_type == "CARD_USED":
-            continue
         p_obj = player_map.get(m.player_id)
         p_name = p_obj.display_name if p_obj else "Unknown Player"
-        running_scores[m.player_id] = running_scores.get(m.player_id, 0) + m.score_earned
+        running_scores[m.player_id] = running_scores.get(m.player_id, 0) + (m.score_earned or 0)
 
         c_details = m.card_details
         if c_details and isinstance(c_details, dict):
             c_details = [c_details]
         elif not isinstance(c_details, list):
-            c_details = None
+            c_details = []
+
+        turn_key = (m.turn_number, m.player_id)
+
+        if m.move_type == "CARD_USED":
+            # If there was an actual turn move (PLACE/PASS/EXCHANGE) in this same turn,
+            # this legacy CARD_USED move is already merged into that move's card_details!
+            if turn_key in turn_moves_present:
+                continue
+
+            # Standalone card move in older game (no other move in that turn) -> keep it!
+            replay_moves.append({
+                "move_id": m.id,
+                "turn_number": m.turn_number,
+                "player_id": m.player_id,
+                "player_name": p_name,
+                "is_bot": p_obj.is_bot if p_obj else False,
+                "move_type": m.move_type,
+                "placed_tiles": m.placed_tiles or [],
+                "words_formed": m.words_formed or [],
+                "score_earned": m.score_earned or 0,
+                "rack_before": m.rack_before or [],
+                "card_details": c_details if c_details else None,
+                "running_scores": dict(running_scores),
+                "created_at": m.created_at.isoformat() if m.created_at else None,
+            })
+            continue
+
+        # For PLACE/PASS/EXCHANGE moves, include both its own card_details and any legacy CARD_USED moves for this turn
+        extra_cards = legacy_turn_cards.get(turn_key, [])
+        all_cards = list(c_details)
+        for ec in extra_cards:
+            if ec not in all_cards:
+                all_cards.append(ec)
 
         replay_moves.append({
             "move_id": m.id,
@@ -157,9 +202,9 @@ async def get_match_replay(
             "move_type": m.move_type,
             "placed_tiles": m.placed_tiles or [],
             "words_formed": m.words_formed or [],
-            "score_earned": m.score_earned,
+            "score_earned": m.score_earned or 0,
             "rack_before": m.rack_before or [],
-            "card_details": c_details,
+            "card_details": all_cards if all_cards else None,
             "running_scores": dict(running_scores),
             "created_at": m.created_at.isoformat() if m.created_at else None,
         })
