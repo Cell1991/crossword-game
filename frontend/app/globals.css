@@ -1008,5 +1008,19 @@ div[data-nextjs-dialog-backdrop] {
   will-change: transform;
 }
 
+@keyframes float-tile {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-16px);
+  }
+}
+
+.animate-float-tile {
+  animation: float-tile ease-in-out infinite alternate;
+  will-change: transform;
+}
+
 
 

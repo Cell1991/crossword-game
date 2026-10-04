@@ -27,6 +27,7 @@ import {
 import { createRoom, getApiBase, getRoom, getRooms, joinRoom, startGame, sessionStore } from '@/lib/api';
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
+import FloatingGameTiles from '@/components/effects/FloatingGameTiles';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { RockerSwitch } from '@/components/ui/RockerSwitch';
@@ -385,36 +386,51 @@ export default function HomePage() {
         <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
       </div>
 
-      {/* Subtle Background Particle Matrix */}
+      {/* Subtle Background Particle Matrix & Floating Letter Tiles */}
       <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" accent="245, 158, 11" />
+      <FloatingGameTiles />
 
-      {/* 1. TOP HEADER BAR (SYMMETRICALLY ALIGNED WITH MENU DECK) */}
-      <header className="relative z-30 w-full max-w-[550px] flex items-center justify-end gap-2.5 sm:gap-3 shrink-0 pt-2 sm:pt-4">
-        {/* Prominent Match Logs Button */}
-        <button
-          type="button"
-          onClick={() => setIsHistoryOpen(true)}
-          className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-cyan-400/50 bg-gradient-to-r from-cyan-500/20 via-cyan-950/50 to-blue-500/20 hover:from-cyan-500/35 hover:to-blue-500/35 hover:border-cyan-300 text-xs sm:text-sm font-black text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
-        >
-          <History className="w-4 h-4 text-cyan-300 group-hover:rotate-[-20deg] transition-transform drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]" strokeWidth={2.5} />
-          <span className="tracking-wide">Match Logs</span>
-        </button>
+      {/* 1. TOP HEADER BAR (ANCHORED ACROSS TOP) */}
+      <header className="relative z-30 w-full max-w-4xl flex items-center justify-between gap-3 shrink-0 pt-2 sm:pt-4 px-2 sm:px-4">
+        {/* Left Game Crest Badge */}
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl border-2 border-amber-400/40 bg-gradient-to-br from-amber-500/20 via-slate-900/80 to-amber-950/40 shadow-[0_0_15px_rgba(245,158,11,0.25)] backdrop-blur-xl">
+            <Swords className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300" />
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-white/10 bg-slate-900/40 backdrop-blur-md text-[11px] font-black text-slate-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="tracking-wider uppercase text-[10px] text-slate-400">Battle Arena</span>
+          </div>
+        </div>
 
-        {/* Prominent Rules & Guide Button */}
-        <button
-          type="button"
-          onClick={() => setIsGuideOpen(true)}
-          className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-500/20 via-amber-950/50 to-orange-500/20 hover:from-amber-500/35 hover:to-orange-500/35 hover:border-amber-300 text-xs sm:text-sm font-black text-amber-200 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
-        >
-          <BookOpen className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]" strokeWidth={2.5} />
-          <span className="tracking-wide">Rules & Guide</span>
-        </button>
+        {/* Right Tools Button Group */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Prominent Match Logs Button */}
+          <button
+            type="button"
+            onClick={() => setIsHistoryOpen(true)}
+            className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-cyan-400/50 bg-gradient-to-r from-cyan-500/20 via-cyan-950/50 to-blue-500/20 hover:from-cyan-500/35 hover:to-blue-500/35 hover:border-cyan-300 text-xs sm:text-sm font-black text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
+          >
+            <History className="w-4 h-4 text-cyan-300 group-hover:rotate-[-20deg] transition-transform drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]" strokeWidth={2.5} />
+            <span className="tracking-wide">Match Logs</span>
+          </button>
 
-        <FullscreenButton className="static z-10" />
+          {/* Prominent Rules & Guide Button */}
+          <button
+            type="button"
+            onClick={() => setIsGuideOpen(true)}
+            className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-500/20 via-amber-950/50 to-orange-500/20 hover:from-amber-500/35 hover:to-orange-500/35 hover:border-amber-300 text-xs sm:text-sm font-black text-amber-200 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
+          >
+            <BookOpen className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]" strokeWidth={2.5} />
+            <span className="tracking-wide">Rules & Guide</span>
+          </button>
+
+          <FullscreenButton className="static z-10" />
+        </div>
       </header>
 
       {/* 2. CENTER STAGE (NO SCROLLING) */}
-      <main className="relative z-20 flex w-full max-w-[550px] flex-1 flex-col items-center justify-center my-auto">
+      <main className="relative z-20 flex w-full max-w-xl flex-1 flex-col items-center justify-center my-auto">
         
         {/* HERO BRANDING HEADER */}
         <div className="flex flex-col items-center text-center mb-5 sm:mb-6">
@@ -472,6 +488,12 @@ export default function HomePage() {
                   <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-amber-200 transition-colors tracking-tight">
                     Host Match
                   </h3>
+                  <div className="flex items-center gap-1.5 mt-1 opacity-70">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400/40" />
+                  </div>
                 </div>
               </div>
 
@@ -489,8 +511,9 @@ export default function HomePage() {
                 className="sm:col-span-7 group relative flex items-center justify-between min-h-[76px] sm:min-h-[84px] rounded-3xl border-2 border-cyan-400/40 bg-gradient-to-br from-cyan-950/40 via-slate-900/90 to-slate-950/95 p-3.5 sm:p-4.5 shadow-[0_8px_30px_rgba(6,182,212,0.18)] hover:border-cyan-400 hover:shadow-[0_14px_40px_rgba(6,182,212,0.35)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
               >
                 <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
-                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-black shadow-[0_0_18px_rgba(6,182,212,0.45)] group-hover:scale-105 transition-transform">
-                    <Radio className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <div className="relative flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-black shadow-[0_0_18px_rgba(6,182,212,0.45)] group-hover:scale-105 transition-transform">
+                    <Radio className="w-5 h-5 sm:w-6 sm:h-6 relative z-10" />
+                    <div className="absolute -inset-1 rounded-2xl bg-cyan-400/20 animate-ping opacity-30 pointer-events-none" />
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-base sm:text-lg font-black text-white group-hover:text-cyan-200 transition-colors truncate">
@@ -516,7 +539,7 @@ export default function HomePage() {
                 className="sm:col-span-5 group relative flex items-center justify-between min-h-[76px] sm:min-h-[84px] rounded-3xl border-2 border-purple-400/40 bg-gradient-to-br from-purple-950/40 via-slate-900/90 to-slate-950/95 p-3.5 sm:p-4.5 shadow-[0_8px_30px_rgba(168,85,247,0.18)] hover:border-purple-400 hover:shadow-[0_14px_40px_rgba(168,85,247,0.35)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
               >
                 <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-400 to-indigo-600 text-slate-950 font-black shadow-[0_0_18px_rgba(168,85,247,0.45)] group-hover:scale-105 transition-transform">
+                  <div className="relative flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-400 to-indigo-600 text-slate-950 font-black shadow-[0_0_18px_rgba(168,85,247,0.45)] group-hover:scale-105 transition-transform">
                     <Bot className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div className="min-w-0">
