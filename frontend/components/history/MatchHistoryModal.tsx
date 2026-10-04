@@ -184,10 +184,10 @@ const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
       hasInitializedCameraRef.current = true;
       const rect = containerRef.current.getBoundingClientRect();
       if (rect.width < 768) {
-        // Automatically fit full map overview on mobile screens
+        // Comfortably readable initial zoom on mobile centered on the active board
         camera.setViewport(rect.width, rect.height);
-        const autoScale = Math.max(0.28, Math.min(0.65, (rect.width - 24) / (27 * 40)));
-        camera.zoomToScale(autoScale, rect.width / 2, rect.height / 2);
+        const initialMobileScale = 0.56;
+        camera.zoomToScale(initialMobileScale, rect.width / 2, rect.height / 2);
         camera.centerBoard(rect.width, rect.height);
       } else {
         camera.resetCamera();
