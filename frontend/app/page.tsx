@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   ArrowLeft,
   ArrowRight,
@@ -27,7 +28,6 @@ import { createRoom, getApiBase, getRoom, getRooms, joinRoom, startGame, session
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
 import FullscreenButton from '@/components/ui/FullscreenButton';
-import WordXLogo from '@/components/ui/WordXLogo';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { RockerSwitch } from '@/components/ui/RockerSwitch';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
@@ -417,8 +417,31 @@ export default function HomePage() {
       <main className="relative z-20 flex w-full max-w-4xl flex-1 flex-col items-center justify-center my-auto">
         
         {/* HERO BRANDING HEADER */}
-        <div className="mb-6 sm:mb-8">
-          <WordXLogo size="lg" />
+        <div className="flex flex-col items-center text-center mb-5 sm:mb-7">
+          {/* Floating 3D WordX Cube Logo */}
+          <div className="relative mb-2 flex items-center justify-center">
+            <div className="pointer-events-none absolute -inset-6 rounded-full bg-amber-400/20 blur-2xl" />
+            <div className="relative transform hover:scale-105 transition-transform duration-200 cursor-pointer drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)]">
+              <Image
+                src="/wordx-icon-256.png?v=20260915"
+                alt="WordX Logo"
+                width={90}
+                height={90}
+                priority
+                className="h-16 w-16 sm:h-20 sm:w-20 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.5)]"
+              />
+            </div>
+          </div>
+
+          {/* Heading */}
+          <h1 className="relative text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-none select-none">
+            <span className="bg-gradient-to-b from-white via-slate-100 to-slate-300 bg-clip-text text-transparent drop-shadow">
+              Word
+            </span>
+            <span className="relative inline-block bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] ml-0.5">
+              X
+            </span>
+          </h1>
         </div>
 
         {/* ======================================================== */}
