@@ -28,6 +28,7 @@ import { createRoom, getApiBase, getRoom, getRooms, joinRoom, startGame, session
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
 import FloatingGameTiles from '@/components/effects/FloatingGameTiles';
+import CyberGridBackground from '@/components/effects/CyberGridBackground';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { RockerSwitch } from '@/components/ui/RockerSwitch';
@@ -386,7 +387,8 @@ export default function HomePage() {
         <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
       </div>
 
-      {/* Subtle Background Particle Matrix & Floating Letter Tiles */}
+      {/* Subtle Background Particle Matrix, Cyber Grid & Floating Letter Tiles */}
+      <CyberGridBackground />
       <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" accent="245, 158, 11" />
       <FloatingGameTiles />
 
