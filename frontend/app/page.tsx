@@ -27,8 +27,6 @@ import {
 import { createRoom, getApiBase, getRoom, getRooms, joinRoom, startGame, sessionStore } from '@/lib/api';
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
-import FloatingGameTiles from '@/components/effects/FloatingGameTiles';
-import CyberGridBackground from '@/components/effects/CyberGridBackground';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { RockerSwitch } from '@/components/ui/RockerSwitch';
@@ -387,48 +385,36 @@ export default function HomePage() {
         <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
       </div>
 
-      {/* Subtle Background Particle Matrix, Cyber Grid & Floating Letter Tiles */}
-      <CyberGridBackground />
+      {/* Subtle Background Particle Matrix */}
       <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" accent="245, 158, 11" />
-      <FloatingGameTiles />
 
-      {/* 1. TOP HEADER BAR (ANCHORED ACROSS TOP) */}
-      <header className="relative z-30 w-full max-w-4xl flex items-center justify-end sm:justify-between gap-3 shrink-0 pt-2 sm:pt-4 px-2 sm:px-4">
-        {/* Left Game Crest Badge (Desktop Only - Matches Pill Style) */}
-        <div className="hidden sm:flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-emerald-400/50 bg-gradient-to-r from-emerald-500/20 via-emerald-950/50 to-teal-500/20 text-xs sm:text-sm font-black text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,0.3)] backdrop-blur-xl select-none">
-          <Swords className="w-4 h-4 text-emerald-300 drop-shadow-[0_0_8px_rgba(16,185,129,0.9)]" strokeWidth={2.5} />
-          <span className="tracking-wide">Battle Arena</span>
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
-        </div>
+      {/* 1. TOP HEADER BAR */}
+      <header className="relative z-30 w-full max-w-[550px] flex items-center justify-end gap-2.5 sm:gap-3 shrink-0 pt-2 sm:pt-4">
+        {/* Prominent Match Logs Button */}
+        <button
+          type="button"
+          onClick={() => setIsHistoryOpen(true)}
+          className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-cyan-400/50 bg-gradient-to-r from-cyan-500/20 via-cyan-950/50 to-blue-500/20 hover:from-cyan-500/35 hover:to-blue-500/35 hover:border-cyan-300 text-xs sm:text-sm font-black text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
+        >
+          <History className="w-4 h-4 text-cyan-300 group-hover:rotate-[-20deg] transition-transform drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]" strokeWidth={2.5} />
+          <span className="tracking-wide">Match Logs</span>
+        </button>
 
-        {/* Right Tools Button Group (Always Visible) */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Prominent Match Logs Button */}
-          <button
-            type="button"
-            onClick={() => setIsHistoryOpen(true)}
-            className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-cyan-400/50 bg-gradient-to-r from-cyan-500/20 via-cyan-950/50 to-blue-500/20 hover:from-cyan-500/35 hover:to-blue-500/35 hover:border-cyan-300 text-xs sm:text-sm font-black text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
-          >
-            <History className="w-4 h-4 text-cyan-300 group-hover:rotate-[-20deg] transition-transform drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]" strokeWidth={2.5} />
-            <span className="tracking-wide">Match Logs</span>
-          </button>
+        {/* Prominent Rules & Guide Button */}
+        <button
+          type="button"
+          onClick={() => setIsGuideOpen(true)}
+          className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-500/20 via-amber-950/50 to-orange-500/20 hover:from-amber-500/35 hover:to-orange-500/35 hover:border-amber-300 text-xs sm:text-sm font-black text-amber-200 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
+        >
+          <BookOpen className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]" strokeWidth={2.5} />
+          <span className="tracking-wide">Rules & Guide</span>
+        </button>
 
-          {/* Prominent Rules & Guide Button */}
-          <button
-            type="button"
-            onClick={() => setIsGuideOpen(true)}
-            className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-500/20 via-amber-950/50 to-orange-500/20 hover:from-amber-500/35 hover:to-orange-500/35 hover:border-amber-300 text-xs sm:text-sm font-black text-amber-200 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
-          >
-            <BookOpen className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]" strokeWidth={2.5} />
-            <span className="tracking-wide">Rules & Guide</span>
-          </button>
-
-          <FullscreenButton className="static z-10" />
-        </div>
+        <FullscreenButton className="static z-10" />
       </header>
 
       {/* 2. CENTER STAGE (NO SCROLLING) */}
-      <main className="relative z-20 flex w-full max-w-xl flex-1 flex-col items-center justify-center my-auto">
+      <main className="relative z-20 flex w-full max-w-[550px] flex-1 flex-col items-center justify-center my-auto">
         
         {/* HERO BRANDING HEADER */}
         <div className="flex flex-col items-center text-center mb-5 sm:mb-6">
