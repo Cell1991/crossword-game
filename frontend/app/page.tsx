@@ -378,20 +378,19 @@ export default function HomePage() {
         <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
       </div>
 
-      {/* Layer 1: Sleek Fine Golden Grid (Uniform & Clean) */}
+      {/* Layer 1: Sleek Uniform Small Golden Grid (Only Small Grid, No Major Lines) */}
       <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden">
         <div
           className="absolute inset-0"
           style={{
             backgroundImage: `
-              radial-gradient(circle, rgba(245, 158, 11, 0.35) 1px, transparent 1px),
-              linear-gradient(to right, rgba(245, 158, 11, 0.10) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(245, 158, 11, 0.10) 1px, transparent 1px)
+              linear-gradient(to right, rgba(245, 158, 11, 0.16) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(245, 158, 11, 0.16) 1px, transparent 1px)
             `,
-            backgroundSize: '36px 36px, 36px 36px, 36px 36px',
+            backgroundSize: '36px 36px',
             backgroundPosition: 'center center',
-            maskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 40%, transparent 95%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 40%, transparent 95%)',
+            maskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 45%, transparent 95%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 45%, transparent 95%)',
           }}
         />
       </div>
