@@ -132,19 +132,27 @@ async def get_match_replay(
     moves_res = await db.execute(moves_stmt)
     raw_moves = moves_res.scalars().all()
 
-    # Pre-group any legacy CARD_USED events by (turn_number, player_id) so we can attach them to actual turn moves
-    legacy_turn_cards: dict[tuple[int, str], list[dict[str, Any]]] = {}
-    turn_moves_present: set[tuple[int, str]] = set()
+    # Pre-group any legacy CARD_USED events by turn_number so we can attach them to the turn's
+    # actual move even when the card (e.g. a reactive SHIELD) was used by a different player than
+    # whoever ended up completing that turn.
+    legacy_turn_cards: dict[int, list[dict[str, Any]]] = {}
+    turn_moves_present: set[int] = set()
 
     for m in raw_moves:
         if m.move_type != "CARD_USED":
-            turn_moves_present.add((m.turn_number, m.player_id))
+            turn_moves_present.add(m.turn_number)
         else:
             cd = m.card_details
             c_list = [cd] if isinstance(cd, dict) else (cd if isinstance(cd, list) else [])
             if c_list:
-                key = (m.turn_number, m.player_id)
-                legacy_turn_cards.setdefault(key, []).extend(c_list)
+                caster = player_map.get(m.player_id)
+                caster_name = caster.display_name if caster else "Unknown Player"
+                tagged = [
+                    {**c, "player_id": c.get("player_id", m.player_id), "player_name": c.get("player_name", caster_name)}
+                    if isinstance(c, dict) else c
+                    for c in c_list
+                ]
+                legacy_turn_cards.setdefault(m.turn_number, []).extend(tagged)
 
     replay_moves: list[dict[str, Any]] = []
     running_scores: dict[str, int] = {p.id: 0 for p in players}
@@ -160,12 +168,10 @@ async def get_match_replay(
         elif not isinstance(c_details, list):
             c_details = []
 
-        turn_key = (m.turn_number, m.player_id)
-
         if m.move_type == "CARD_USED":
             # If there was an actual turn move (PLACE/PASS/EXCHANGE) in this same turn,
             # this legacy CARD_USED move is already merged into that move's card_details!
-            if turn_key in turn_moves_present:
+            if m.turn_number in turn_moves_present:
                 continue
 
             # Standalone card move in older game (no other move in that turn) -> keep it!
@@ -187,7 +193,7 @@ async def get_match_replay(
             continue
 
         # For PLACE/PASS/EXCHANGE moves, include both its own card_details and any legacy CARD_USED moves for this turn
-        extra_cards = legacy_turn_cards.get(turn_key, [])
+        extra_cards = legacy_turn_cards.get(m.turn_number, [])
         all_cards = list(c_details)
         for ec in extra_cards:
             if ec not in all_cards:

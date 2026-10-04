@@ -894,6 +894,11 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                           <span className={`text-xs font-black uppercase tracking-wider ${cardVis.text}`}>
                                             {cardVis.label}
                                           </span>
+                                          {cardEvent.player_id && cardEvent.player_id !== currentMove.player_id && cardEvent.player_name && (
+                                            <span className="text-[10px] font-semibold text-slate-400 normal-case">
+                                              (by {cardEvent.player_name})
+                                            </span>
+                                          )}
                                         </div>
                                         {cardEvent.amount !== undefined && cardEvent.amount > 0 && (
                                           <span className="text-[11px] font-mono font-bold text-emerald-300 bg-emerald-500/25 border border-emerald-400/40 px-2 py-0.5 rounded-md shadow-sm">
@@ -1165,7 +1170,12 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                           const isActive = currentStep === stepNumber;
                           const isFinalStep = idx === replayData.moves.length - 1;
 
-                          const moveCards = normalizeCardDetails(move.card_details);
+                          const allCards = normalizeCardDetails(move.card_details);
+                          // A card cast by someone other than this move's player (e.g. a reactive
+                          // SHIELD) is shown as its own "↳" sub-line instead of inline, so it's
+                          // attributed to its actual caster rather than implied to be this move's.
+                          const ownCards = allCards.filter((c) => !c.player_id || c.player_id === move.player_id);
+                          const reactiveCards = allCards.filter((c) => c.player_id && c.player_id !== move.player_id);
 
                           let moveSummary: React.ReactNode;
                           if (move.words_formed && move.words_formed.length > 0) {
@@ -1174,7 +1184,7 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                 <strong className="text-white font-mono font-bold">
                                   {move.words_formed.map((w) => w.word).join(', ')}
                                 </strong>
-                                {moveCards.map((cEvent, cIdx) => {
+                                {ownCards.map((cEvent, cIdx) => {
                                   const cardVis = getCardVisuals(cEvent.card);
                                   const CardIcon = cardVis.Icon;
                                   const cardUpper = cEvent.card.toUpperCase();
@@ -1202,13 +1212,13 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                 })}
                               </div>
                             );
-                          } else if (moveCards.length > 0) {
+                          } else if (ownCards.length > 0) {
                             moveSummary = (
                               <div className="inline-flex items-center gap-1.5 flex-wrap">
                                 <span className="italic text-slate-400 font-medium">
                                   {move.move_type === 'PASS' ? 'Pass' : move.move_type === 'EXCHANGE' ? 'Exchange' : move.move_type}
                                 </span>
-                                {moveCards.map((cEvent, cIdx) => {
+                                {ownCards.map((cEvent, cIdx) => {
                                   const cardVis = getCardVisuals(cEvent.card);
                                   const CardIcon = cardVis.Icon;
                                   const cardUpper = cEvent.card.toUpperCase();
@@ -1245,38 +1255,61 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                           }
 
                           return (
-                            <button
-                              key={move.move_id || idx}
-                              type="button"
-                              onClick={() => { setCurrentStep(stepNumber); setIsPlaying(false); }}
-                              data-move-step={stepNumber}
-                              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-all cursor-pointer ${
-                                isActive
-                                  ? 'bg-gradient-to-r from-amber-500/25 to-amber-500/10 border border-amber-400/50 text-amber-200 font-bold shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/40'
-                                  : isFinalStep
-                                  ? 'bg-amber-500/10 hover:bg-amber-500/15 border border-amber-400/30 text-amber-200'
-                                  : 'bg-white/[0.03] hover:bg-white/[0.08] text-slate-300'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 min-w-0">
-                                <span className="font-mono text-[10px] text-slate-500 shrink-0">
-                                  #{stepNumber}
-                                </span>
-                                <div className="flex items-center gap-1.5 truncate text-[11px] font-medium text-slate-200">
-                                  <span className="shrink-0">{move.player_name}:</span>
-                                  {moveSummary}
-                                </div>
-                                {isFinalStep && (
-                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-black uppercase tracking-wider shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.3)]">
-                                    <Crown className="w-2.5 h-2.5 text-amber-300 fill-amber-300/30" />
-                                    <span>WINNER</span>
+                            <div key={move.move_id || idx} className="space-y-0.5">
+                              <button
+                                type="button"
+                                onClick={() => { setCurrentStep(stepNumber); setIsPlaying(false); }}
+                                data-move-step={stepNumber}
+                                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-all cursor-pointer ${
+                                  isActive
+                                    ? 'bg-gradient-to-r from-amber-500/25 to-amber-500/10 border border-amber-400/50 text-amber-200 font-bold shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/40'
+                                    : isFinalStep
+                                    ? 'bg-amber-500/10 hover:bg-amber-500/15 border border-amber-400/30 text-amber-200'
+                                    : 'bg-white/[0.03] hover:bg-white/[0.08] text-slate-300'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="font-mono text-[10px] text-slate-500 shrink-0">
+                                    #{stepNumber}
                                   </span>
-                                )}
-                              </div>
-                              <span className="font-mono text-[11px] font-bold text-emerald-400 shrink-0 ml-1.5">
-                                +{move.score_earned}
-                              </span>
-                            </button>
+                                  <div className="flex items-center gap-1.5 truncate text-[11px] font-medium text-slate-200">
+                                    <span className="shrink-0">{move.player_name}:</span>
+                                    {moveSummary}
+                                  </div>
+                                  {isFinalStep && (
+                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-black uppercase tracking-wider shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.3)]">
+                                      <Crown className="w-2.5 h-2.5 text-amber-300 fill-amber-300/30" />
+                                      <span>WINNER</span>
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="font-mono text-[11px] font-bold text-emerald-400 shrink-0 ml-1.5">
+                                  +{move.score_earned}
+                                </span>
+                              </button>
+
+                              {reactiveCards.map((cEvent, cIdx) => {
+                                const cardVis = getCardVisuals(cEvent.card);
+                                const CardIcon = cardVis.Icon;
+                                return (
+                                  <div
+                                    key={cIdx}
+                                    className="flex items-center gap-1.5 pl-6 pr-3 py-0.5 text-[10.5px] text-slate-400"
+                                  >
+                                    <span className="text-slate-500">↳</span>
+                                    <span className="font-medium text-slate-300 shrink-0">
+                                      {cEvent.player_name || 'Player'}:
+                                    </span>
+                                    <span
+                                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border ${cardVis.bg} ${cardVis.border} ${cardVis.text}`}
+                                    >
+                                      <CardIcon className="w-2.5 h-2.5" />
+                                      <span>{cardVis.label}</span>
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           );
                         })}
                       </div>

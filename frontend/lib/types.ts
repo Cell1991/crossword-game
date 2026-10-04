@@ -355,6 +355,8 @@ export interface MatchReplayPlacedTile {
 
 export interface MatchReplayCardDetails {
   card: string;
+  player_id?: string;
+  player_name?: string;
   target_player_id?: string;
   target_player_name?: string;
   amount?: number;
