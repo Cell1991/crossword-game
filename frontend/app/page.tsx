@@ -68,15 +68,6 @@ export const BOT_PROFILES: Record<BotDifficulty, { name: string; title: string; 
   },
 };
 
-const PRO_TIPS = [
-  '⚡ Place tiles on Lightning blocks to draw game-changing Secret Power cards!',
-  '⚔️ In HP Battle, your word score deals direct damage to drain opponent HP.',
-  '🛡️ Shield card protects you from Freeze, Destroy, and Spy attacks.',
-  '❄️ Freeze card locks opponent tiles on premium multipliers.',
-  '🔥 Destroy card clears blocked paths on the board for comeback moves.',
-  '✨ Scoring a 7+ letter Bingo awards a massive +50 bonus score!',
-];
-
 export default function HomePage() {
   const router = useRouter();
   const search = useSyncExternalStore(subscribeToLocation, getLocationSearch, getServerLocationSearch);
@@ -105,16 +96,7 @@ export default function HomePage() {
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [roomsError, setRoomsError] = useState<string | null>(null);
-  const [tipIndex, setTipIndex] = useState(0);
   const nameInputRef = useRef<HTMLInputElement>(null);
-
-  // Cycling Game Tips
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTipIndex(prev => (prev + 1) % PRO_TIPS.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, []);
 
   // Pre-warm backend
   useEffect(() => {
@@ -407,42 +389,28 @@ export default function HomePage() {
       <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" accent="245, 158, 11" />
 
       {/* 1. TOP HEADER BAR */}
-      <header className="relative z-30 w-full max-w-4xl flex items-center justify-between shrink-0">
-        {/* Left: Server Status */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 backdrop-blur-md shadow-sm">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-[11px] font-bold tracking-wider text-emerald-300 uppercase">
-              Online
-            </span>
-          </div>
-        </div>
+      <header className="relative z-30 w-full max-w-4xl flex items-center justify-end gap-2.5 sm:gap-3.5 shrink-0 pt-2 sm:pt-4">
+        {/* Prominent Match Logs Button */}
+        <button
+          type="button"
+          onClick={() => setIsHistoryOpen(true)}
+          className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-cyan-400/50 bg-gradient-to-r from-cyan-500/20 via-cyan-950/50 to-blue-500/20 hover:from-cyan-500/35 hover:to-blue-500/35 hover:border-cyan-300 text-xs sm:text-sm font-black text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
+        >
+          <History className="w-4 h-4 text-cyan-300 group-hover:rotate-[-20deg] transition-transform drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]" strokeWidth={2.5} />
+          <span className="tracking-wide">Match Logs</span>
+        </button>
 
-        {/* Right: Quick Action Buttons */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsHistoryOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-cyan-500/15 hover:border-cyan-400/40 text-xs font-bold text-slate-300 hover:text-cyan-200 transition-all cursor-pointer shadow-sm active:scale-95"
-          >
-            <History className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Match Logs</span>
-          </button>
+        {/* Prominent Rules & Guide Button */}
+        <button
+          type="button"
+          onClick={() => setIsGuideOpen(true)}
+          className="group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-500/20 via-amber-950/50 to-orange-500/20 hover:from-amber-500/35 hover:to-orange-500/35 hover:border-amber-300 text-xs sm:text-sm font-black text-amber-200 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
+        >
+          <BookOpen className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]" strokeWidth={2.5} />
+          <span className="tracking-wide">Rules & Guide</span>
+        </button>
 
-          <button
-            type="button"
-            onClick={() => setIsGuideOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-amber-500/15 hover:border-amber-400/40 text-xs font-bold text-slate-300 hover:text-amber-200 transition-all cursor-pointer shadow-sm active:scale-95"
-          >
-            <BookOpen className="w-3.5 h-3.5 text-amber-400" />
-            <span>Spellbook & Rules</span>
-          </button>
-
-          <FullscreenButton className="static z-10" />
-        </div>
+        <FullscreenButton className="static z-10" />
       </header>
 
       {/* 2. CENTER STAGE (NO SCROLLING) */}
@@ -1123,22 +1091,6 @@ export default function HomePage() {
         )}
 
       </main>
-
-      {/* 3. FOOTER PRO-TIP TICKER */}
-      <footer className="relative z-20 w-full max-w-4xl px-2 py-2 flex flex-col sm:flex-row items-center justify-between gap-1.5 border-t border-white/[0.06] text-[11px] text-slate-400 shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="px-1.5 py-0.5 rounded bg-amber-400/15 border border-amber-400/30 text-[9px] font-bold text-amber-300 uppercase shrink-0">
-            PRO TIP
-          </span>
-          <span className="text-slate-300 font-medium truncate max-w-sm sm:max-w-md">
-            {PRO_TIPS[tipIndex]}
-          </span>
-        </div>
-
-        <div className="text-[10px] text-slate-500 font-medium">
-          WordX © 2026 • Tactical Spell Engine
-        </div>
-      </footer>
 
       {/* Global Modals */}
       {isGuideOpen && (
