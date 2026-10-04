@@ -89,13 +89,13 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
           className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity"
         />
 
-        {/* Unlocked Grimoire Modal (0-20 words list >= 3 letters) */}
+        {/* Unlocked Grimoire Modal (Fixed Constant Height) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.94, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 16 }}
           transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-          className="relative z-10 flex flex-col w-full max-w-2xl max-h-[85vh] overflow-hidden rounded-2xl sm:rounded-3xl border border-amber-400/40 bg-gradient-to-b from-[#12142e]/98 via-[#0b0d1e]/98 to-[#060710]/98 shadow-[0_20px_60px_rgba(0,0,0,0.95),0_0_45px_rgba(245,158,11,0.25)]"
+          className="relative z-10 flex flex-col w-full max-w-2xl h-[560px] max-h-[85vh] overflow-hidden rounded-2xl sm:rounded-3xl border border-amber-400/40 bg-gradient-to-b from-[#12142e]/98 via-[#0b0d1e]/98 to-[#060710]/98 shadow-[0_20px_60px_rgba(0,0,0,0.95),0_0_45px_rgba(245,158,11,0.25)]"
         >
           {/* Top Celestial Highlight */}
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-300/80 via-cyan-300/60 to-transparent pointer-events-none" />
@@ -175,16 +175,16 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
           </div>
 
           {/* Words Grid Container */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar min-h-[220px]">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
             {loading ? (
-              <div className="flex flex-col items-center justify-center h-48 gap-3 text-slate-400">
+              <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-3 text-slate-400">
                 <RefreshCw className="h-8 w-8 animate-spin text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
                 <span className="text-xs sm:text-sm font-bold tracking-wide text-slate-300">
                   Calculating playable words...
                 </span>
               </div>
             ) : filteredWords.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-48 text-center p-4">
+              <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-center p-4">
                 <div className="h-12 w-12 rounded-2xl border border-indigo-800/60 bg-indigo-950/40 flex items-center justify-center text-slate-500 mb-3">
                   <HelpCircle className="h-6 w-6" />
                 </div>
