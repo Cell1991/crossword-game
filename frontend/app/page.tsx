@@ -389,7 +389,7 @@ export default function HomePage() {
       <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" accent="245, 158, 11" />
 
       {/* 1. TOP HEADER BAR */}
-      <header className="relative z-30 w-full max-w-4xl flex items-center justify-end gap-2.5 sm:gap-3.5 shrink-0 pt-2 sm:pt-4">
+      <header className="relative z-30 w-full max-w-2xl flex items-center justify-end gap-2.5 sm:gap-3 shrink-0 pt-2 sm:pt-4">
         {/* Prominent Match Logs Button */}
         <button
           type="button"
@@ -414,10 +414,10 @@ export default function HomePage() {
       </header>
 
       {/* 2. CENTER STAGE (NO SCROLLING) */}
-      <main className="relative z-20 flex w-full max-w-4xl flex-1 flex-col items-center justify-center my-auto">
+      <main className="relative z-20 flex w-full max-w-2xl flex-1 flex-col items-center justify-center my-auto">
         
         {/* HERO BRANDING HEADER */}
-        <div className="flex flex-col items-center text-center mb-5 sm:mb-7">
+        <div className="flex flex-col items-center text-center mb-5 sm:mb-6">
           {/* Floating 3D WordX Cube Logo */}
           <div className="relative mb-2 flex items-center justify-center">
             <div className="pointer-events-none absolute -inset-6 rounded-full bg-amber-400/20 blur-2xl" />
@@ -425,16 +425,16 @@ export default function HomePage() {
               <Image
                 src="/wordx-icon-256.png?v=20260915"
                 alt="WordX Logo"
-                width={90}
-                height={90}
+                width={85}
+                height={85}
                 priority
-                className="h-16 w-16 sm:h-20 sm:w-20 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.5)]"
+                className="h-16 w-16 sm:h-18 sm:w-18 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.5)]"
               />
             </div>
           </div>
 
           {/* Heading */}
-          <h1 className="relative text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-none select-none">
+          <h1 className="relative text-4xl sm:text-5xl font-black tracking-tight leading-none select-none">
             <span className="bg-gradient-to-b from-white via-slate-100 to-slate-300 bg-clip-text text-transparent drop-shadow">
               Word
             </span>
@@ -465,71 +465,68 @@ export default function HomePage() {
               className="group relative flex items-center justify-between rounded-3xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-950/60 via-slate-900/90 to-amber-950/40 p-4 sm:p-5 shadow-[0_10px_35px_rgba(245,158,11,0.2)] hover:border-amber-400 hover:shadow-[0_14px_45px_rgba(245,158,11,0.35)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
             >
               <div className="flex items-center gap-3.5 sm:gap-4">
-                <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 font-black shadow-[0_0_20px_rgba(245,158,11,0.5)] group-hover:scale-105 transition-transform">
-                  <Crown className="w-6 h-6 sm:w-7 sm:h-7" />
+                <div className="flex h-11 w-11 sm:h-13 sm:w-13 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 font-black shadow-[0_0_20px_rgba(245,158,11,0.5)] group-hover:scale-105 transition-transform">
+                  <Crown className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white group-hover:text-amber-200 transition-colors">
+                  <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-amber-200 transition-colors">
                     Host Match
                   </h3>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-md group-hover:from-amber-300 group-hover:to-amber-400 transition-all shrink-0">
+              <div className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-md group-hover:from-amber-300 group-hover:to-amber-400 transition-all shrink-0">
                 <span>CREATE ROOM</span>
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 sm:w-4.5 sm:h-4.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
 
-            {/* 2. BOTTOM ROW: 2 EQUAL COLUMNS (JOIN & VS BOT) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
-              {/* JOIN MATCH */}
+            {/* 2. BOTTOM ROW: JOIN MATCH (WIDER 7-COL) & VS BOT (COMPACT 5-COL) */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-3.5">
+              {/* JOIN MATCH (7 COLS - LONGER) */}
               <div
                 onClick={handleOpenJoin}
-                className="group relative flex items-center justify-between rounded-3xl border-2 border-cyan-400/40 bg-gradient-to-br from-cyan-950/40 via-slate-900/90 to-slate-950/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(6,182,212,0.15)] hover:border-cyan-400 hover:shadow-[0_12px_35px_rgba(6,182,212,0.3)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
+                className="sm:col-span-7 group relative flex items-center justify-between rounded-3xl border-2 border-cyan-400/40 bg-gradient-to-br from-cyan-950/40 via-slate-900/90 to-slate-950/95 p-3.5 sm:p-4 shadow-[0_8px_30px_rgba(6,182,212,0.15)] hover:border-cyan-400 hover:shadow-[0_12px_35px_rgba(6,182,212,0.3)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
               >
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-black shadow-[0_0_18px_rgba(6,182,212,0.4)] group-hover:scale-105 transition-transform">
-                    <Radio className="w-5 h-5 sm:w-6 sm:h-6" />
+                <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+                  <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-black shadow-[0_0_18px_rgba(6,182,212,0.4)] group-hover:scale-105 transition-transform">
+                    <Radio className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h3 className="text-lg sm:text-xl font-black text-white group-hover:text-cyan-200 transition-colors">
+                  <div className="min-w-0">
+                    <h3 className="text-base sm:text-lg font-black text-white group-hover:text-cyan-200 transition-colors truncate">
                       Join Match
                     </h3>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                      <span className="text-[11px] font-bold text-cyan-300">
+                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse shrink-0" />
+                      <span className="text-[11px] font-bold text-cyan-300 truncate">
                         {rooms.length} Active {rooms.length === 1 ? 'Room' : 'Rooms'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 group-hover:bg-cyan-500/30 group-hover:translate-x-0.5 transition-all shrink-0">
+                <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 group-hover:bg-cyan-500/30 group-hover:translate-x-0.5 transition-all shrink-0 ml-2">
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
 
-              {/* PLAY VS AI BOT */}
+              {/* PLAY VS AI BOT (5 COLS - COMPACT) */}
               <div
                 onClick={() => { clearError(); setMode('bot'); }}
-                className="group relative flex items-center justify-between rounded-3xl border-2 border-purple-400/40 bg-gradient-to-br from-purple-950/40 via-slate-900/90 to-slate-950/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(168,85,247,0.15)] hover:border-purple-400 hover:shadow-[0_12px_35px_rgba(168,85,247,0.3)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
+                className="sm:col-span-5 group relative flex items-center justify-between rounded-3xl border-2 border-purple-400/40 bg-gradient-to-br from-purple-950/40 via-slate-900/90 to-slate-950/95 p-3.5 sm:p-4 shadow-[0_8px_30px_rgba(168,85,247,0.15)] hover:border-purple-400 hover:shadow-[0_12px_35px_rgba(168,85,247,0.3)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer backdrop-blur-xl"
               >
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-400 to-indigo-600 text-slate-950 font-black shadow-[0_0_18px_rgba(168,85,247,0.4)] group-hover:scale-105 transition-transform">
-                    <Bot className="w-5 h-5 sm:w-6 sm:h-6" />
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-400 to-indigo-600 text-slate-950 font-black shadow-[0_0_18px_rgba(168,85,247,0.4)] group-hover:scale-105 transition-transform">
+                    <Bot className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h3 className="text-lg sm:text-xl font-black text-white group-hover:text-purple-200 transition-colors">
-                      Play vs AI Bot
+                  <div className="min-w-0">
+                    <h3 className="text-base sm:text-lg font-black text-white group-hover:text-purple-200 transition-colors truncate">
+                      Play vs Bot
                     </h3>
-                    <span className="text-[11px] font-bold text-purple-300">
-                      Solo Practice
-                    </span>
                   </div>
                 </div>
 
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-500/15 border border-purple-400/30 text-purple-300 group-hover:bg-purple-500/30 group-hover:translate-x-0.5 transition-all shrink-0">
+                <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-purple-500/15 border border-purple-400/30 text-purple-300 group-hover:bg-purple-500/30 group-hover:translate-x-0.5 transition-all shrink-0 ml-2">
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
