@@ -509,15 +509,9 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
 
             {activeTab === 'replay' && replayData && (
               <div className="hidden md:flex items-center gap-2 pl-3 border-l border-white/10 text-xs text-slate-300">
-                <span className="font-bold text-amber-300">
-                  Game Replay
-                </span>
-                <span className="text-slate-500">•</span>
-                <span className="px-2 py-0.5 rounded-md bg-white/10 text-slate-300 font-semibold text-[10px]">
+                <span className="px-2.5 py-0.5 rounded-md bg-white/10 text-slate-300 font-semibold text-[11px]">
                   {replayData.game_mode} Mode
                 </span>
-                <span className="text-slate-500">•</span>
-                <span className="text-slate-400">{replayData.total_moves} Moves</span>
               </div>
             )}
           </div>
