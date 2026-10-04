@@ -17,7 +17,9 @@ async def get_match_history(
 ) -> dict[str, Any]:
     """
     Returns the last `limit` (default 10) completed or played games with full player summaries.
+    Excludes solo practice games (1 human player without bot opponents).
     """
+    # Fetch recent games (query more than limit so we have enough after filtering out solo games)
     stmt = (
         select(Game)
         .options(
@@ -26,7 +28,7 @@ async def get_match_history(
             selectinload(Game.moves),
         )
         .order_by(desc(Game.created_at))
-        .limit(limit)
+        .limit(max(limit * 5, 50))
     )
     result = await db.execute(stmt)
     games = result.scalars().all()
@@ -37,6 +39,11 @@ async def get_match_history(
         room = game.room
         players = list(game.players)
         moves = list(game.moves)
+
+        # Skip solo matches where only 1 human player played without bot opponents
+        has_bot = any(p.is_bot for p in players)
+        if len(players) <= 1 and not has_bot:
+            continue
 
         sorted_players = sorted(players, key=lambda p: p.score, reverse=True)
         winner_id = game.winner_id or (sorted_players[0].id if sorted_players else None)
@@ -73,6 +80,9 @@ async def get_match_history(
             "winner": winner_info,
             "players": player_list,
         })
+
+        if len(history_items) >= limit:
+            break
 
     return {
         "success": True,
