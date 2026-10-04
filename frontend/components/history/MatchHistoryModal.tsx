@@ -987,10 +987,10 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                     return (
                                       <div
                                         key={idx}
-                                        className={`tile-face relative flex flex-col items-center justify-center w-8 h-9 sm:w-9 sm:h-10 rounded-[9px] border font-sans select-none overflow-hidden transition-all duration-150 ${
+                                        className={`tile-face relative flex flex-col items-center justify-center w-8 h-9 sm:w-9 sm:h-10 rounded-[9px] font-sans select-none transition-all duration-200 ${
                                           isPlaced
-                                            ? 'border-cyan-300 ring-2 ring-cyan-400/80 shadow-[0_0_12px_rgba(34,211,238,0.7),inset_0_1px_1px_rgba(255,255,255,0.7)] scale-105 z-10'
-                                            : 'border-amber-200/80 opacity-80 hover:opacity-100 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                                            ? 'border-2 border-cyan-200 shadow-[0_0_0_2.5px_#22d3ee,0_0_20px_rgba(6,182,212,0.95),0_0_8px_rgba(34,211,238,1),inset_0_1.5px_2px_rgba(255,255,255,0.8)] -translate-y-1 scale-105 z-20 brightness-110'
+                                            : 'border border-amber-300/40 opacity-55 hover:opacity-80 scale-95 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]'
                                         }`}
                                         title={
                                           isPlaced
