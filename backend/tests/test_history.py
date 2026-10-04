@@ -37,6 +37,24 @@ async def test_match_history_endpoints_and_filtering():
         })
         assert join_bot_res.status_code == 200
 
+        # 2.5 Create a debug room with bot (is_debug=True)
+        debug_room_res = await client.post("/api/rooms", json={
+            "host_name": "DebugTester",
+            "game_mode": "HP",
+            "is_debug": True,
+        })
+        assert debug_room_res.status_code == 200
+        debug_pin = debug_room_res.json()["game_pin"]
+        debug_game_id = debug_room_res.json()["game_id"]
+
+        # Join bot into debug room
+        await client.post(f"/api/rooms/{debug_pin}/join", json={
+            "game_pin": debug_pin,
+            "player_name": "DebugBot",
+            "is_bot": True,
+            "bot_difficulty": "easy",
+        })
+
         # 3. Fetch match history list (default limit=50)
         hist_res = await client.get("/api/history")
         assert hist_res.status_code == 200
@@ -44,14 +62,17 @@ async def test_match_history_endpoints_and_filtering():
         assert data["success"] is True
         history = data["history"]
 
-        # Assert only the bot match is present, solo match is excluded
+        # Assert only normal bot match is present; solo match and debug match are excluded
         pins_in_history = [h["game_pin"] for h in history]
         assert bot_pin in pins_in_history
         assert solo_pin not in pins_in_history
+        assert debug_pin not in pins_in_history
 
-        # 4. Test 404 for non-existent match replay
+        # 4. Test 404 for non-existent or debug match replay
         res_404 = await client.get("/api/history/non-existent-game-id")
         assert res_404.status_code == 404
+        res_debug_404 = await client.get(f"/api/history/{debug_game_id}")
+        assert res_debug_404.status_code == 404
 
         # 5. Test clear history endpoint
         res_clear = await client.delete("/api/history")

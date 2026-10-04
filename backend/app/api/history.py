@@ -17,16 +17,18 @@ async def get_match_history(
 ) -> dict[str, Any]:
     """
     Returns the last `limit` (default 50) completed or played games with full player summaries.
-    Excludes solo practice games (1 human player without bot opponents).
+    Excludes debug mode games and solo practice games (1 human player without bot opponents).
     """
-    # Fetch recent games (query more than limit so we have enough after filtering out solo games)
+    # Fetch recent games (query more than limit so we have enough after filtering out solo/debug games)
     stmt = (
         select(Game)
+        .join(Game.room)
         .options(
             selectinload(Game.room),
             selectinload(Game.players),
             selectinload(Game.moves),
         )
+        .where(GameRoom.is_debug.is_(False))
         .order_by(desc(Game.created_at))
         .limit(max(limit * 5, 250))
     )
@@ -39,6 +41,10 @@ async def get_match_history(
         room = game.room
         players = list(game.players)
         moves = list(game.moves)
+
+        # Skip debug mode rooms
+        if room and room.is_debug:
+            continue
 
         # Skip solo matches where only 1 human player played without bot opponents
         has_bot = any(p.is_bot for p in players)
@@ -111,7 +117,7 @@ async def get_match_replay(
     result = await db.execute(stmt)
     game = result.scalar_one_or_none()
 
-    if not game:
+    if not game or (game.room and game.room.is_debug):
         raise HTTPException(status_code=404, detail="Match not found in history")
 
     room = game.room
