@@ -378,36 +378,20 @@ export default function HomePage() {
         <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
       </div>
 
-      {/* Layer 1: Sleek Cinematic Tactical Grid (Refined, Subtle & Premium) */}
+      {/* Layer 1: Sleek Fine Golden Grid (Uniform & Clean) */}
       <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden">
-        {/* Fine Tactical Crossword Matrix */}
         <div
           className="absolute inset-0"
           style={{
             backgroundImage: `
               radial-gradient(circle, rgba(245, 158, 11, 0.35) 1px, transparent 1px),
-              linear-gradient(to right, rgba(245, 158, 11, 0.07) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(245, 158, 11, 0.07) 1px, transparent 1px)
+              linear-gradient(to right, rgba(245, 158, 11, 0.10) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(245, 158, 11, 0.10) 1px, transparent 1px)
             `,
             backgroundSize: '36px 36px, 36px 36px, 36px 36px',
             backgroundPosition: 'center center',
             maskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 40%, transparent 95%)',
             WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 40%, transparent 95%)',
-          }}
-        />
-
-        {/* Major Tactical Sector Grid */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, rgba(251, 191, 36, 0.16) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(251, 191, 36, 0.16) 1px, transparent 1px)
-            `,
-            backgroundSize: '144px 144px, 144px 144px',
-            backgroundPosition: 'center center',
-            maskImage: 'radial-gradient(ellipse 85% 85% at 50% 50%, black 30%, transparent 95%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at 50% 50%, black 30%, transparent 95%)',
           }}
         />
       </div>
