@@ -40,6 +40,7 @@ import BackgroundMusic from '@/components/audio/BackgroundMusic';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
 import { GrimoireModal } from '@/components/game/GrimoireModal';
 import { DebugPanel } from '@/components/debug/DebugPanel';
+import ParticleField from '@/components/effects/ParticleField';
 
 const EMPTY_TILES: Tile[] = [];
 const EMPTY_CELL_POSITIONS: CellPosition[] = [];
@@ -634,10 +635,14 @@ export default function GamePage() {
 
   return (
     <div
-      className="wordx-game-shell relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden bg-[#030712] text-slate-100 select-none selection:bg-cyan-500/30 selection:text-cyan-200"
-      style={TILE_THEME_STYLE}
+      className="wordx-game-shell relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden bg-[#030712]"
+      style={{
+        ...TILE_THEME_STYLE,
+        background: 'radial-gradient(ellipse 70% 55% at 50% -10%, rgba(79, 70, 229, 0.18), rgba(245, 158, 11, 0.08) 50%, transparent 85%), radial-gradient(ellipse 45% 45% at 0% 100%, rgba(6, 182, 212, 0.10), transparent 70%), radial-gradient(ellipse 45% 45% at 100% 50%, rgba(147, 51, 234, 0.09), transparent 70%), #030712',
+      }}
     >
-
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 shadow-[inset_0_0_130px_rgba(0,0,0,0.42)]" />
+      <ParticleField className="pointer-events-none fixed inset-0 w-screen h-screen z-0 opacity-40" accent="245, 158, 11" />
       <GameHud
         isSpectator={isSpectator}
         isEliminated={isEliminated}
