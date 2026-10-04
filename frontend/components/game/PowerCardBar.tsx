@@ -381,13 +381,32 @@ export const PowerCardBar = memo(function PowerCardBar({
                     }`}
                   >
                     {isBlankLetter(tile.letter) ? (
-                      <span className="text-amber-300 text-xs font-bold">★</span>
+                      <div className="relative z-20 flex items-center justify-center">
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="tile-blank-star w-4 h-4 sm:w-5 sm:h-5"
+                          fill="currentColor"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+                        </svg>
+                      </div>
                     ) : (
-                      <span className="tile-letter tile-letter-orange text-[22px] sm:text-[24px] leading-none font-maple">
+                      <span
+                        className={`tile-letter tile-letter-orange text-[22px] sm:text-[24px] leading-none font-maple inline-block ${
+                          tile.letter.toUpperCase() === 'W'
+                            ? 'scale-x-90 -translate-x-[0.5px]'
+                            : tile.letter.toUpperCase() === 'M'
+                            ? 'scale-x-95'
+                            : ''
+                        }`}
+                      >
                         {tile.letter}
                       </span>
                     )}
-                    <span className="tile-score-blue absolute bottom-0.5 right-0.5 text-[9px] sm:text-[10px] font-maple">
+                    <span className="tile-score-blue absolute bottom-0.5 right-0.5 z-20 text-[9px] sm:text-[10px] font-maple">
                       {tile.value}
                     </span>
                   </button>
