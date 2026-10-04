@@ -3,10 +3,35 @@
 import React, { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, ArrowRight, BookMarked, BookOpen, Bot, Clock, Eye, History, LogIn, Minus, Plus, RefreshCw, Sparkles, User, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Bot,
+  Clock,
+  Crown,
+  Eye,
+  Flame,
+  Gamepad2,
+  Heart,
+  History,
+  Info,
+  Minus,
+  Plus,
+  Radio,
+  RefreshCw,
+  Shield,
+  Sparkles,
+  Swords,
+  User,
+  Users,
+  X,
+  Zap,
+} from 'lucide-react';
 import { createRoom, getApiBase, getRoom, getRooms, joinRoom, startGame, sessionStore } from '@/lib/api';
 import { GameMode, RoomSummary, TurnTimeLimit } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
+import FloatingTilesBackground from '@/components/effects/FloatingTilesBackground';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { RockerSwitch } from '@/components/ui/RockerSwitch';
@@ -16,6 +41,7 @@ import { getRandomPlayerName } from '@/lib/names';
 
 type Mode = 'home' | 'create' | 'join' | 'bot';
 type BotDifficulty = 'easy' | 'medium' | 'hard';
+
 const subscribeToLocation = (callback: () => void) => {
   window.addEventListener('popstate', callback);
   return () => window.removeEventListener('popstate', callback);
@@ -23,26 +49,38 @@ const subscribeToLocation = (callback: () => void) => {
 const getLocationSearch = () => window.location.search;
 const getServerLocationSearch = () => '';
 
-export const BOT_PROFILES: Record<BotDifficulty, { name: string; title: string; desc: string; badge: string }> = {
+export const BOT_PROFILES: Record<BotDifficulty, { name: string; title: string; desc: string; badge: string; color: string }> = {
   easy: {
     name: 'SparkBot',
     title: 'Easy',
     desc: 'Novice AI • Relaxed word strategy',
     badge: 'Novice',
+    color: 'from-emerald-500/20 to-teal-500/10 border-emerald-400/40 text-emerald-300',
   },
   medium: {
     name: 'Nexus AI',
     title: 'Medium',
-    desc: 'Tactical AI • Balanced & strategic',
+    desc: 'Tactical AI • Balanced & strategic spells',
     badge: 'Tactical',
+    color: 'from-amber-500/20 to-orange-500/10 border-amber-400/40 text-amber-300',
   },
   hard: {
     name: 'Titan AI',
     title: 'Hard',
-    desc: 'Master AI • Aggressive & high scoring',
+    desc: 'Master AI • High-scoring word combos',
     badge: 'Master',
+    color: 'from-rose-500/20 to-purple-500/10 border-rose-400/40 text-rose-300',
   },
 };
+
+const PRO_TIPS = [
+  '⚡ Place tiles on Lightning blocks to draw game-changing Secret Power cards!',
+  '⚔️ In HP Battle, your word score deals direct damage to drain opponent HP.',
+  '🛡️ Shield card protects you from Freeze, Destroy, and Spy attacks.',
+  '❄️ Freeze card locks opponent tiles on premium multipliers.',
+  '🔥 Destroy card clears blocked paths on the board for comeback moves.',
+  '✨ Scoring a 7+ letter Bingo awards a massive +50 bonus score!',
+];
 
 export default function HomePage() {
   const router = useRouter();
@@ -72,13 +110,22 @@ export default function HomePage() {
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [roomsError, setRoomsError] = useState<string | null>(null);
+  const [tipIndex, setTipIndex] = useState(0);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
+  // Cycling Game Tips
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTipIndex(prev => (prev + 1) % PRO_TIPS.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Pre-warm backend
   useEffect(() => {
     const apiBase = getApiBase();
     if (!/^https?:\/\//.test(apiBase)) return;
     const serverBase = apiBase.endsWith('/api') ? apiBase.slice(0, -4) : apiBase;
-    // Start a sleeping hosted backend while the player fills in the room form.
     void fetch(`${serverBase}/health`, {
       cache: 'no-store',
       signal: AbortSignal.timeout(120_000),
@@ -86,7 +133,7 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (!loading || mode !== 'create') return;
+    if (!loading || (mode !== 'create' && mode !== 'bot')) return;
     const timer = window.setTimeout(() => setCreateTakingLong(true), 8_000);
     return () => window.clearTimeout(timer);
   }, [loading, mode]);
@@ -100,6 +147,7 @@ export default function HomePage() {
     window.history.replaceState({}, '', `${window.location.pathname}${nextSearch}${window.location.hash}`);
     window.dispatchEvent(new PopStateEvent('popstate'));
   }, [setError]);
+
   const visibleError = error || (query.get('kicked') === 'expired'
     ? 'This room has been dissolved due to 10 minutes of inactivity.'
     : '');
@@ -128,6 +176,9 @@ export default function HomePage() {
         fetchRooms(false);
       }, 6000);
       return () => clearInterval(timer);
+    } else {
+      // Background pre-fetch rooms count for the lobby badge
+      fetchRooms(false);
     }
   }, [mode, fetchRooms]);
 
@@ -298,7 +349,6 @@ export default function HomePage() {
     await executeJoin(pin, name);
   };
 
-  /** Spectators need only the PIN: they take no seat, so they can come in before or during a game. */
   const executeWatch = async (pinToWatch: string) => {
     if (!pinToWatch.trim()) { setError('Please enter the game PIN'); return; }
     setLoading(true);
@@ -309,11 +359,11 @@ export default function HomePage() {
       const seatsAreFull = room.players.length >= 6;
       const spectatorGalleryIsFull = room.spectator_count >= spectatorLimit;
       if (seatsAreFull && spectatorGalleryIsFull) {
-        setError('This room is full for both players and spectators. Please choose another room.');
+        setError('This room is full for both players and spectators.');
         return;
       }
       if (!seatsAreFull && spectatorGalleryIsFull) {
-        setError('Spectator gallery is full, but player seats are still available in this room.');
+        setError('Spectator gallery is full, but player seats are available.');
         return;
       }
       sessionStore.save({
@@ -349,262 +399,406 @@ export default function HomePage() {
   const selectedRoom = rooms.find(r => r.game_pin === pin.trim());
   const isSelectedRoomPlaying = selectedRoom?.status === 'PLAYING';
 
-
   return (
-    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-x-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(99,102,241,0.16),transparent_30%),linear-gradient(135deg,#020617_0%,#0f172a_58%,#171942_100%)] px-4 py-6 sm:py-12">
-      <ParticleField className="pointer-events-none fixed inset-0 h-full w-full" />
-      <FullscreenButton className="fixed top-3.5 right-3.5 z-40" />
+    <div className="relative flex min-h-[100dvh] flex-col items-center justify-between overflow-x-hidden bg-[#030712] text-slate-100 selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Background Ambience Layers */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        {/* Dynamic Glowing Radial Nebulas */}
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-gradient-to-b from-indigo-600/25 via-amber-500/15 to-transparent blur-[120px]" />
+        <div className="absolute -bottom-40 -left-20 h-[500px] w-[500px] rounded-full bg-cyan-600/15 blur-[120px]" />
+        <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-purple-600/15 blur-[120px]" />
 
-      <div className="relative z-10 my-auto flex w-full max-w-[28rem] flex-col items-center gap-6 sm:gap-8">
-        {/* Logo / Title */}
-        <div className="relative text-center flex flex-col items-center">
-          {/* 3D Cube Logo with layered glowing aura */}
-          <div className="relative mb-2 sm:mb-3 flex items-center justify-center">
-            {/* Multi-layered dynamic neon ambient halos */}
-            <div className="pointer-events-none absolute -inset-6 rounded-full bg-gradient-to-tr from-indigo-500/35 via-amber-400/25 to-amber-500/40 blur-2xl hero-glow-breathe" />
-            <div className="pointer-events-none absolute h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-amber-400/25 blur-xl" />
+        {/* Ambient Subtle Cyber Grid Overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
+            backgroundSize: '48px 48px',
+          }}
+        />
+      </div>
 
-            {/* Floating 3D Logo */}
-            <div className="relative hero-logo-float transition-transform duration-300 hover:scale-110 active:scale-95 cursor-pointer">
+      {/* Floating 3D Scrabble Crossword Tiles */}
+      <FloatingTilesBackground />
+
+      {/* Particle Atmosphere Matrix */}
+      <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" accent="245, 158, 11" />
+
+      {/* Top Header Bar */}
+      <header className="relative z-30 w-full max-w-5xl px-4 pt-4 sm:pt-6 flex items-center justify-between">
+        {/* Left: Server Status & Version Capsule */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 backdrop-blur-md shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-[11px] font-bold tracking-wide text-emerald-300 uppercase">
+              Online
+            </span>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[11px] font-medium text-slate-300 backdrop-blur-md">
+            <Zap className="w-3 h-3 text-amber-400" />
+            <span>Tactical Spell Edition</span>
+          </div>
+        </div>
+
+        {/* Right: Quick Action Modals & Fullscreen */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsHistoryOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-cyan-500/15 hover:border-cyan-400/40 text-xs font-semibold text-slate-300 hover:text-cyan-200 transition-all cursor-pointer backdrop-blur-md shadow-sm active:scale-95"
+          >
+            <History className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Match Logs</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsGuideOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-amber-500/15 hover:border-amber-400/40 text-xs font-semibold text-slate-300 hover:text-amber-200 transition-all cursor-pointer backdrop-blur-md shadow-sm active:scale-95"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Spellbook & Rules</span>
+          </button>
+
+          <FullscreenButton className="static z-10" />
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="relative z-20 flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-4 py-6 sm:py-8">
+        
+        {/* HERO TITLE & 3D ICON */}
+        <div className="flex flex-col items-center text-center mb-6 sm:mb-8">
+          {/* Floating 3D WordX Cube with multi-tiered glow */}
+          <div className="relative mb-3 flex items-center justify-center">
+            <div className="pointer-events-none absolute -inset-8 rounded-full bg-gradient-to-tr from-indigo-500/40 via-amber-400/30 to-orange-500/40 blur-3xl opacity-80" />
+            <div className="relative transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 cursor-pointer drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]">
               <Image
                 src="/wordx-icon-256.png?v=20260915"
-                alt="WordX logo"
-                width={140}
-                height={140}
+                alt="WordX Game Logo"
+                width={150}
+                height={150}
                 priority
-                className="h-24 w-24 sm:h-32 sm:w-32 object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.65)] drop-shadow-[0_0_30px_rgba(245,158,11,0.45)]"
+                className="h-24 w-24 sm:h-32 sm:w-32 object-contain drop-shadow-[0_0_35px_rgba(245,158,11,0.55)]"
               />
             </div>
           </div>
 
-          {/* Prominent, Majestic WordX Title */}
-          <div className="relative select-none">
-            {/* Subtle glow behind title */}
-            <div className="pointer-events-none absolute -inset-x-8 -inset-y-4 rounded-full bg-gradient-to-r from-indigo-500/20 via-amber-400/30 to-orange-500/25 blur-2xl opacity-80" />
+          {/* Majestic Game Logo Heading */}
+          <h1 className="relative text-5xl sm:text-6xl md:text-7xl font-black tracking-tight select-none">
+            <span className="bg-gradient-to-b from-white via-slate-100 to-slate-300 bg-clip-text text-transparent [text-shadow:0_2px_20px_rgba(255,255,255,0.4)]">
+              Word
+            </span>
+            <span className="relative inline-block bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(245,158,11,0.9)] ml-1">
+              X
+            </span>
+          </h1>
 
-            <h1 className="relative text-5xl sm:text-6xl sm:text-[4.25rem] font-black tracking-[-0.03em] leading-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]">
-              <span className="bg-gradient-to-b from-white via-slate-100 to-slate-300 bg-clip-text text-transparent [text-shadow:0_2px_16px_rgba(255,255,255,0.35)]">
-                Word
-              </span>
-              <span className="relative inline-block bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(245,158,11,0.9)] drop-shadow-[0_4px_16px_rgba(217,119,6,0.7)] ml-0.5">
-                X
-              </span>
-            </h1>
+          {/* Subtitle Badge & Features Pills */}
+          <div className="mt-2.5 flex flex-col items-center gap-2">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-amber-400/30 bg-amber-500/10 text-xs sm:text-sm font-bold tracking-widest uppercase text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.15)]">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              Tactical Spellcasting Crossword Duels
+            </span>
+
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-[11px] font-semibold text-slate-400 mt-1">
+              <span className="px-2.5 py-0.5 rounded-md bg-white/5 border border-white/10 text-slate-300">⚡ 12 Spell Cards</span>
+              <span className="px-2.5 py-0.5 rounded-md bg-white/5 border border-white/10 text-slate-300">⚔️ HP & Turn Battles</span>
+              <span className="px-2.5 py-0.5 rounded-md bg-white/5 border border-white/10 text-slate-300">🤖 Smart AI Bots</span>
+              <span className="px-2.5 py-0.5 rounded-md bg-white/5 border border-white/10 text-slate-300">🌐 2-4 Players Live</span>
+            </div>
           </div>
         </div>
 
-        {/* Card */}
-        <div className="w-full rounded-2xl sm:rounded-[1.75rem] border border-white/[0.1] bg-slate-900/90 sm:bg-slate-900/65 sm:backdrop-blur-md p-4 sm:p-5 shadow-[0_28px_90px_rgba(2,6,23,0.38)]">
-
-          {mode === 'home' && (
-            <div className="flex flex-col gap-3 menu-tab-enter">
-              {visibleError && (
-                visibleError.toLowerCase().includes('dissolved') ? (
-                  <div className="relative overflow-hidden rounded-2xl border border-amber-400/40 bg-gradient-to-r from-amber-500/15 via-slate-800/90 to-amber-500/10 p-3.5 sm:p-4 shadow-[0_6px_25px_rgba(245,158,11,0.15)] backdrop-blur-md">
-                    {/* Glowing gold ambient accent line */}
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500" />
-                    
-                    <div className="flex items-start justify-between gap-3 pl-1">
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/30 shadow-[0_0_12px_rgba(245,158,11,0.25)]">
-                          <Clock className="h-4.5 w-4.5" strokeWidth={2.2} />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide">
-                              Room Dissolved
-                            </h4>
-                            <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300 border border-amber-400/25">
-                              10m Timeout
-                            </span>
-                          </div>
-                          <p className="mt-0.5 text-xs text-slate-300">
-                            Closed after 10 minutes of inactivity.
-                          </p>
-                        </div>
+        {/* ======================================================== */}
+        {/* MAIN MENU HUB (MODE === 'home') */}
+        {/* ======================================================== */}
+        {mode === 'home' && (
+          <div className="w-full max-w-3xl flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+            {/* Dissolved Room Notice / General Error */}
+            {visibleError && (
+              visibleError.toLowerCase().includes('dissolved') ? (
+                <div className="relative overflow-hidden rounded-2xl border border-amber-400/40 bg-gradient-to-r from-amber-500/20 via-slate-900/90 to-amber-500/15 p-4 shadow-[0_6px_30px_rgba(245,158,11,0.2)] backdrop-blur-md">
+                  <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500" />
+                  <div className="flex items-start justify-between gap-3 pl-2">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                        <Clock className="h-5 w-5" strokeWidth={2.2} />
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setError('')}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                        aria-label="Dismiss"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-bold text-white tracking-wide">Room Dissolved</h4>
+                          <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300 border border-amber-400/25">
+                            10m Timeout
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-xs text-slate-300">
+                          The room was closed automatically after 10 minutes of inactivity.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2.5 text-xs text-rose-300 font-medium">
-                    <span>{visibleError}</span>
                     <button
                       type="button"
                       onClick={() => setError('')}
-                      className="ml-2 text-rose-400 hover:text-white text-xs font-bold cursor-pointer"
-                      aria-label="Dismiss"
+                      className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                     >
-                      <X className="h-3.5 w-3.5" />
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
-                )
-              )}
-              <div className="flex items-center justify-between px-1 pb-1">
-                <div>
-                  <p className="text-sm font-semibold text-white">Start playing</p>
-                  <p className="mt-0.5 text-xs text-slate-400">Choose how you want to enter</p>
                 </div>
-                <div className="relative flex h-3 w-3 items-center justify-center" title="Online & Ready">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400 live-status-dot" aria-label="Online" />
+              ) : (
+                <div className="flex items-center justify-between rounded-xl border border-rose-500/30 bg-rose-500/15 px-4 py-3 text-xs sm:text-sm text-rose-300 font-semibold shadow-md">
+                  <span>{visibleError}</span>
+                  <button type="button" onClick={() => setError('')} className="p-1 text-rose-400 hover:text-white cursor-pointer">
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-              </div>
-              <button
-                onClick={() => { setMode('create'); clearError(); }}
-                className="tactile-button group flex w-full items-center justify-between rounded-xl sm:rounded-2xl border border-amber-200/50 bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3.5 sm:px-5 sm:py-4 text-left text-slate-950 shadow-[0_14px_34px_rgba(245,158,11,0.2)] hover:from-amber-200 hover:to-amber-300 hover:shadow-[0_18px_42px_rgba(245,158,11,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer"
-              >
-                <span className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950/10 group-hover:scale-105 transition-transform duration-150">
-                    <Plus className="h-5 w-5" strokeWidth={2.5} />
-                  </span>
-                  <span>
-                    <span className="block text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-800/70">New session</span>
-                    <span className="block text-lg font-bold tracking-tight">Create Game</span>
-                  </span>
-                </span>
-                <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1.5" />
-              </button>
-              <div className="flex items-stretch gap-2 sm:gap-2.5 w-full">
-                <button
-                  onClick={handleOpenJoin}
-                  className="tactile-button group flex flex-1 items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-3.5 py-3 sm:px-5 sm:py-4 text-left text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] hover:border-indigo-200/30 hover:from-indigo-300/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 min-w-0 cursor-pointer"
-                >
-                  <span className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-300/15 text-indigo-200 group-hover:scale-105 transition-transform duration-150">
-                      <LogIn className="h-5 w-5" strokeWidth={2.2} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-[0.62rem] sm:text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Have a PIN?</span>
-                      <span className="block text-base sm:text-lg font-bold tracking-tight truncate">Join Game</span>
-                    </span>
-                  </span>
-                  <ArrowRight className="h-4 sm:h-5 w-4 sm:w-5 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-1 group-hover:text-white ml-1" />
-                </button>
+              )
+            )}
 
-                <button
-                  type="button"
-                  onClick={() => { setMode('bot'); clearError(); }}
-                  title="Play vs Bot"
-                  aria-label="Play with Bot"
-                  className="tactile-button group relative flex flex-col items-center justify-center shrink-0 w-20 sm:w-24 rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-2 py-2.5 sm:py-3 text-center text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] hover:border-amber-400/35 hover:from-white/[0.14] hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer"
-                >
-                  <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/20 group-hover:scale-108 group-hover:bg-amber-400/20 group-hover:text-amber-200 transition-all shadow-[0_2px_10px_rgba(245,158,11,0.15)]">
-                    <Bot className="h-4.5 w-4.5" strokeWidth={2.2} />
-                  </span>
-                  <span className="mt-1.5 block">
-                    <span className="block text-[0.58rem] sm:text-[0.62rem] font-bold uppercase tracking-[0.16em] text-slate-400 group-hover:text-amber-300/80 transition-colors leading-none">
-                      Solo
-                    </span>
-                    <span className="mt-0.5 block text-xs sm:text-sm font-bold tracking-tight text-slate-200 group-hover:text-white transition-colors leading-tight">
-                      VS Bot
-                    </span>
-                  </span>
-                </button>
-              </div>
+            {/* HERO CARD 1: CREATE MATCH (HOST LOBBY) */}
+            <div
+              onClick={() => { clearError(); setMode('create'); }}
+              className="group relative overflow-hidden rounded-3xl border-2 border-amber-400/40 bg-gradient-to-r from-amber-950/60 via-slate-900/90 to-amber-950/40 p-5 sm:p-7 shadow-[0_12px_40px_rgba(245,158,11,0.2)] hover:border-amber-400 hover:shadow-[0_16px_50px_rgba(245,158,11,0.35)] hover:-translate-y-1 transition-all duration-300 cursor-pointer backdrop-blur-xl"
+            >
+              {/* Animated Light Sweep Background */}
+              <div className="pointer-events-none absolute -inset-full bg-gradient-to-r from-transparent via-amber-400/10 to-transparent group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+              
+              <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-4">
+                  {/* Glowing Icon Shield */}
+                  <div className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600 text-slate-950 font-black shadow-[0_0_25px_rgba(245,158,11,0.6)] group-hover:scale-105 transition-transform">
+                    <Crown className="w-8 h-8 drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]" />
+                  </div>
 
-              <div className="flex items-stretch gap-2 sm:gap-2.5 w-full">
-                <button
-                  type="button"
-                  onClick={() => setIsHistoryOpen(true)}
-                  title="Match History & Analysis"
-                  aria-label="Match History"
-                  className="tactile-button group relative flex flex-col items-center justify-center shrink-0 w-20 sm:w-24 rounded-xl sm:rounded-2xl border border-white/[0.12] bg-gradient-to-r from-white/[0.09] to-white/[0.05] px-2 py-2.5 sm:py-3 text-center text-white shadow-[0_12px_30px_rgba(2,6,23,0.2)] hover:border-cyan-400/35 hover:from-cyan-500/10 hover:to-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer"
-                >
-                  <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300 border border-cyan-400/20 group-hover:scale-108 group-hover:bg-cyan-400/20 group-hover:text-cyan-200 transition-all shadow-[0_2px_10px_rgba(6,182,212,0.15)]">
-                    <History className="h-4.5 w-4.5" strokeWidth={2.2} />
-                  </span>
-                  <span className="mt-1.5 block">
-                    <span className="block text-[0.58rem] sm:text-[0.62rem] font-bold uppercase tracking-[0.16em] text-slate-400 group-hover:text-cyan-300/80 transition-colors leading-none">
-                      Logs
-                    </span>
-                    <span className="mt-0.5 block text-xs sm:text-sm font-bold tracking-tight text-slate-200 group-hover:text-white transition-colors leading-tight">
-                      History
-                    </span>
-                  </span>
-                </button>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-[10px] font-black uppercase tracking-wider text-amber-300">
+                        MULTIPLAYER
+                      </span>
+                      <span className="text-xs text-amber-200/70 font-medium">Custom Rules & Host Controls</span>
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-black text-white group-hover:text-amber-200 transition-colors mt-0.5">
+                      Create Match
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-md">
+                      Host a live game lobby for 2-4 players with custom HP or Round rules and spell cards.
+                    </p>
+                  </div>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => setIsGuideOpen(true)}
-                  className="tactile-button group flex flex-1 items-center justify-between rounded-xl sm:rounded-2xl border border-white/[0.1] bg-gradient-to-r from-slate-800/40 via-slate-800/25 to-slate-900/40 px-3.5 py-3 sm:px-5 sm:py-3.5 text-left text-white shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:border-amber-400/30 hover:bg-slate-800/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/50 min-w-0 cursor-pointer"
-                >
-                  <span className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300/90 border border-amber-400/20 group-hover:scale-105 transition-transform duration-150">
-                      <BookOpen className="h-4.5 w-4.5" strokeWidth={2} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-[0.62rem] sm:text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Rules & Cards</span>
-                      <span className="block text-base sm:text-lg font-bold tracking-tight text-slate-200 group-hover:text-white transition-colors truncate">Game Guide</span>
-                    </span>
-                  </span>
-                  <ArrowRight className="h-4 sm:h-5 w-4 sm:w-5 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-1 group-hover:text-amber-200 ml-1" />
-                </button>
+                <div className="flex items-center justify-end">
+                  <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-sm sm:text-base shadow-[0_4px_20px_rgba(245,158,11,0.4)] group-hover:from-amber-300 group-hover:to-amber-400 group-hover:shadow-[0_6px_25px_rgba(245,158,11,0.6)] transition-all shrink-0">
+                    <span>HOST LOBBY</span>
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
               </div>
             </div>
-          )}
 
-          {mode === 'create' && (
-            <div className="flex flex-col gap-3.5 sm:gap-4 menu-tab-enter">
-              {/* Header */}
-              <div className="flex items-center gap-3 pb-2 border-b border-white/[0.06]">
+            {/* 2X2 ACTION GRID */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+              
+              {/* ACTION CARD 2: JOIN GAME */}
+              <div
+                onClick={handleOpenJoin}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-cyan-400/30 bg-gradient-to-br from-cyan-950/40 via-slate-900/90 to-slate-950/95 p-5 sm:p-6 shadow-[0_8px_30px_rgba(6,182,212,0.15)] hover:border-cyan-400/70 hover:shadow-[0_12px_35px_rgba(6,182,212,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer backdrop-blur-xl"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)] group-hover:scale-105 transition-transform">
+                    <Radio className="w-6 h-6" />
+                  </div>
+
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 text-[10px] font-bold text-cyan-300">
+                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    <span>{rooms.length} Active {rooms.length === 1 ? 'Room' : 'Rooms'}</span>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-cyan-200 transition-colors">
+                    Join Game
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                    Enter a 6-digit PIN to join friends or browse open rooms.
+                  </p>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between pt-3 border-t border-white/[0.08] text-cyan-300 font-bold text-xs sm:text-sm group-hover:text-cyan-200">
+                  <span>Enter PIN / Browse</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+
+              {/* ACTION CARD 3: SOLO VS BOT */}
+              <div
+                onClick={() => { clearError(); setMode('bot'); }}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-purple-400/30 bg-gradient-to-br from-purple-950/40 via-slate-900/90 to-slate-950/95 p-5 sm:p-6 shadow-[0_8px_30px_rgba(168,85,247,0.15)] hover:border-purple-400/70 hover:shadow-[0_12px_35px_rgba(168,85,247,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer backdrop-blur-xl"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-500/20 border border-purple-400/40 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.3)] group-hover:scale-105 transition-transform">
+                    <Bot className="w-6 h-6" />
+                  </div>
+
+                  <span className="px-2.5 py-1 rounded-full border border-purple-400/30 bg-purple-500/10 text-[10px] font-bold text-purple-300 uppercase tracking-wider">
+                    Instant Play
+                  </span>
+                </div>
+
+                <div className="mt-4">
+                  <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-purple-200 transition-colors">
+                    Play vs AI Bot
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                    Solo match with SparkBot, Nexus AI, or Titan Master.
+                  </p>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between pt-3 border-t border-white/[0.08] text-purple-300 font-bold text-xs sm:text-sm group-hover:text-purple-200">
+                  <span>3 AI Difficulties</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+
+              {/* ACTION CARD 4: MATCH HISTORY */}
+              <div
+                onClick={() => setIsHistoryOpen(true)}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-emerald-400/30 bg-gradient-to-br from-emerald-950/40 via-slate-900/90 to-slate-950/95 p-5 sm:p-6 shadow-[0_8px_30px_rgba(16,185,129,0.15)] hover:border-emerald-400/70 hover:shadow-[0_12px_35px_rgba(16,185,129,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer backdrop-blur-xl"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.3)] group-hover:scale-105 transition-transform">
+                    <History className="w-6 h-6" />
+                  </div>
+
+                  <span className="px-2.5 py-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 text-[10px] font-bold text-emerald-300 uppercase tracking-wider">
+                    Replays
+                  </span>
+                </div>
+
+                <div className="mt-4">
+                  <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-emerald-200 transition-colors">
+                    Match History
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                    Review completed games, scores, and turn-by-turn move replays.
+                  </p>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between pt-3 border-t border-white/[0.08] text-emerald-300 font-bold text-xs sm:text-sm group-hover:text-emerald-200">
+                  <span>View Match Logs</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+
+              {/* ACTION CARD 5: GAME GUIDE & SPELLBOOK */}
+              <div
+                onClick={() => setIsGuideOpen(true)}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-950/40 via-slate-900/90 to-slate-950/95 p-5 sm:p-6 shadow-[0_8px_30px_rgba(245,158,11,0.15)] hover:border-amber-400/70 hover:shadow-[0_12px_35px_rgba(245,158,11,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer backdrop-blur-xl"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.3)] group-hover:scale-105 transition-transform">
+                    <BookOpen className="w-6 h-6" />
+                  </div>
+
+                  <span className="px-2.5 py-1 rounded-full border border-amber-400/30 bg-amber-500/10 text-[10px] font-bold text-amber-300 uppercase tracking-wider">
+                    Spell Cards
+                  </span>
+                </div>
+
+                <div className="mt-4">
+                  <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-amber-200 transition-colors">
+                    Game Guide
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                    Master the 12 elemental cards, lightning powers, and bingo bonuses.
+                  </p>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between pt-3 border-t border-white/[0.08] text-amber-300 font-bold text-xs sm:text-sm group-hover:text-amber-200">
+                  <span>Read Rules & Cards</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* SUBMENU: CREATE ROOM (MODE === 'create') */}
+        {/* ======================================================== */}
+        {mode === 'create' && (
+          <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-slate-900/90 p-5 sm:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.6)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => { setMode('home'); clearError(); }}
-                  className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
-                  aria-label="Back"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/15 hover:text-white transition-all cursor-pointer active:scale-95"
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-5 w-5" />
                 </button>
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white">Create Room</h2>
+                  <h2 className="text-xl sm:text-2xl font-black text-white">Create Multiplayer Match</h2>
+                  <p className="text-xs text-slate-400">Configure game mode, player limit and rules</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              {/* Game Mode Selection */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Game Mode</label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setGameMode('HP')}
+                    className={`flex flex-col p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                      gameMode === 'HP'
+                        ? 'border-rose-500/80 bg-rose-500/15 shadow-[0_0_20px_rgba(244,63,94,0.2)]'
+                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm sm:text-base font-bold ${gameMode === 'HP' ? 'text-rose-200' : 'text-white'}`}>
+                        HP Battle
+                      </span>
+                      <Heart className={`w-4 h-4 ${gameMode === 'HP' ? 'text-rose-400 fill-rose-500/30' : 'text-slate-500'}`} />
+                    </div>
+                    <span className="text-[11px] text-slate-400 mt-1">Word scores drain opponent HP</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setGameMode('TURNS')}
+                    className={`flex flex-col p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                      gameMode === 'TURNS'
+                        ? 'border-cyan-500/80 bg-cyan-500/15 shadow-[0_0_20px_rgba(6,182,212,0.2)]'
+                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm sm:text-base font-bold ${gameMode === 'TURNS' ? 'text-cyan-200' : 'text-white'}`}>
+                        Round Count
+                      </span>
+                      <Clock className={`w-4 h-4 ${gameMode === 'TURNS' ? 'text-cyan-400' : 'text-slate-500'}`} />
+                    </div>
+                    <span className="text-[11px] text-slate-400 mt-1">Highest total score wins</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Game Mode */}
-              <fieldset>
-                <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Game Mode</legend>
-                <div className="grid grid-cols-2 gap-2">
-                  {([
-                    ['HP', 'HP Battle', 'Score drains health'],
-                    ['TURNS', 'Round Count', 'Highest score wins'],
-                  ] as const).map(([value, title, description]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={gameMode === value}
-                      onClick={() => setGameMode(value)}
-                      className={`rounded-xl border p-2.5 sm:p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
-                        gameMode === value
-                          ? 'border-amber-400/80 bg-amber-400/15 text-white shadow-[0_0_15px_rgba(251,191,36,0.12)]'
-                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
-                      }`}
-                    >
-                      <span className={`block text-xs sm:text-sm font-bold ${gameMode === value ? 'text-amber-200' : 'text-slate-200'}`}>
-                        {title}
-                      </span>
-                      <span className={`mt-0.5 block text-[0.68rem] leading-snug ${gameMode === value ? 'text-amber-300/80' : 'text-slate-400'}`}>
-                        {description}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              {/* Settings 2-Column: (Starting HP / Round Count) + Turn Time */}
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+              {/* Settings 2-Column: Starting HP / Rounds + Turn Time */}
+              <div className="grid grid-cols-2 gap-3">
                 {gameMode === 'HP' ? (
                   <div>
-                    <label htmlFor="starting-hp" className="mb-1.5 block text-xs font-semibold text-slate-300">Starting HP</label>
+                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Starting HP</label>
                     <CustomSelect
-                      id="starting-hp"
                       value={hpOption}
                       onChange={setHpOption}
                       options={[
@@ -612,15 +806,14 @@ export default function HomePage() {
                         { value: '100', label: '100 HP' },
                         { value: '150', label: '150 HP' },
                         { value: '200', label: '200 HP' },
-                        { value: 'custom', label: 'Custom' },
+                        { value: 'custom', label: 'Custom HP' },
                       ]}
                     />
                   </div>
                 ) : (
                   <div>
-                    <label htmlFor="max-turns" className="mb-1.5 block text-xs font-semibold text-slate-300">Game Length</label>
+                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Round Count</label>
                     <CustomSelect
-                      id="max-turns"
                       value={turnCountOption}
                       onChange={setTurnCountOption}
                       options={[
@@ -628,24 +821,23 @@ export default function HomePage() {
                         { value: '7', label: '7 Rounds' },
                         { value: '10', label: '10 Rounds' },
                         { value: '15', label: '15 Rounds' },
-                        { value: 'custom', label: 'Custom' },
+                        { value: 'custom', label: 'Custom Rounds' },
                       ]}
                     />
                   </div>
                 )}
 
                 <div>
-                  <label htmlFor="turn-time" className="mb-1.5 block text-xs font-semibold text-slate-300">Turn Time</label>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Turn Timer</label>
                   <CustomSelect
-                    id="turn-time"
                     value={turnTimeLimit === null ? '' : String(turnTimeLimit)}
                     onChange={val => setTurnTimeLimit(val === '' ? null : Number(val) as TurnTimeLimit)}
                     options={[
                       { value: '', label: 'Unlimited' },
-                      { value: '30', label: '30 sec' },
-                      { value: '60', label: '60 sec' },
-                      { value: '90', label: '90 sec' },
-                      { value: '120', label: '120 sec' },
+                      { value: '30', label: '30 Seconds' },
+                      { value: '60', label: '60 Seconds' },
+                      { value: '90', label: '90 Seconds' },
+                      { value: '120', label: '120 Seconds' },
                     ]}
                   />
                 </div>
@@ -653,33 +845,27 @@ export default function HomePage() {
 
               {/* Custom HP Stepper */}
               {gameMode === 'HP' && hpOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
+                <div className="flex items-center rounded-2xl border border-white/10 bg-slate-800/90 p-1 shadow-inner">
                   <button
                     type="button"
                     onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Decrease HP"
+                    className="flex h-10 w-12 items-center justify-center rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
-                    <input
-                      type="number"
-                      min={10}
-                      max={1000}
-                      value={customHp}
-                      onChange={event => setCustomHp(event.target.value)}
-                      aria-label="Custom starting HP"
-                      placeholder="100"
-                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">HP</span>
-                  </div>
+                  <input
+                    type="number"
+                    min={10}
+                    max={1000}
+                    value={customHp}
+                    onChange={e => setCustomHp(e.target.value)}
+                    className="flex-1 bg-transparent text-center font-bold text-lg text-white outline-none"
+                  />
+                  <span className="text-xs font-bold text-rose-400 mr-2">HP</span>
                   <button
                     type="button"
                     onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Increase HP"
+                    className="flex h-10 w-12 items-center justify-center rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -688,126 +874,81 @@ export default function HomePage() {
 
               {/* Custom Rounds Stepper */}
               {gameMode === 'TURNS' && turnCountOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
+                <div className="flex items-center rounded-2xl border border-white/10 bg-slate-800/90 p-1 shadow-inner">
                   <button
                     type="button"
                     onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 7) - 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Decrease rounds"
+                    className="flex h-10 w-12 items-center justify-center rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
-                    <input
-                      type="number"
-                      min={1}
-                      max={500}
-                      value={customTurnCount}
-                      onChange={event => setCustomTurnCount(event.target.value)}
-                      aria-label="Custom round count"
-                      placeholder="7"
-                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Rounds</span>
-                  </div>
+                  <input
+                    type="number"
+                    min={1}
+                    max={500}
+                    value={customTurnCount}
+                    onChange={e => setCustomTurnCount(e.target.value)}
+                    className="flex-1 bg-transparent text-center font-bold text-lg text-white outline-none"
+                  />
+                  <span className="text-xs font-bold text-cyan-400 mr-2">Rounds</span>
                   <button
                     type="button"
                     onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 7) + 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Increase rounds"
+                    className="flex h-10 w-12 items-center justify-center rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-200 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
               )}
 
-              {/* Settings Row: Player Limit & Grimoire (Balanced 2 Columns) */}
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                {/* Column 1: Player Limit */}
-                <fieldset>
-                  <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Player Limit</legend>
-                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+              {/* Player Limit & Grimoire Row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Player Limit</label>
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      aria-pressed={playerLimitOption === '4'}
                       onClick={() => setPlayerLimitOption('4')}
-                      className={`rounded-xl border py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                      className={`py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
                         playerLimitOption === '4'
-                          ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
-                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                          ? 'border-amber-400 bg-amber-400/20 text-amber-200'
+                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70'
                       }`}
                     >
-                      4P
+                      4 Players
                     </button>
                     <button
                       type="button"
-                      aria-pressed={playerLimitOption === 'custom'}
                       onClick={() => setPlayerLimitOption('custom')}
-                      className={`rounded-xl border py-2.5 text-center font-bold text-xs sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
+                      className={`py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
                         playerLimitOption === 'custom'
-                          ? 'border-amber-400/80 bg-amber-400/15 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.12)]'
-                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
+                          ? 'border-amber-400 bg-amber-400/20 text-amber-200'
+                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70'
                       }`}
                     >
                       Custom
                     </button>
                   </div>
-                </fieldset>
+                </div>
 
-                {/* Column 2: Grimoire (Tactile Rocker Switch) */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-300">Grimoire</label>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Grimoire Deck</label>
                   <RockerSwitch checked={enableGrimoire} onChange={setEnableGrimoire} />
                 </div>
               </div>
 
-              {/* Custom Player Limit Stepper */}
-              {playerLimitOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setCustomMaxPlayers(prev => String(Math.max(2, (Number(prev) || 10) - 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Decrease player limit"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
-                    <input
-                      type="number"
-                      min={2}
-                      max={50}
-                      value={customMaxPlayers}
-                      onChange={event => setCustomMaxPlayers(event.target.value)}
-                      aria-label="Custom player limit"
-                      placeholder="10"
-                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Players</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCustomMaxPlayers(prev => String(Math.min(50, (Number(prev) || 10) + 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Increase player limit"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-
-              {/* Your Name */}
+              {/* Your Name Input */}
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-300">Your Name</label>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Host Name</label>
                 <div className="relative">
                   <input
                     type="text"
                     value={name}
                     onChange={e => setName(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleCreate()}
-                    placeholder="Enter your name..."
+                    placeholder="Enter your player name..."
                     maxLength={24}
-                    className="w-full rounded-xl border border-white/10 bg-slate-800/80 pl-3.5 pr-11 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-colors placeholder:text-slate-500 hover:border-white/20 focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-800/90 pl-4 pr-12 py-3 text-sm sm:text-base text-white outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all placeholder:text-slate-500"
                   />
                   <button
                     type="button"
@@ -816,88 +957,88 @@ export default function HomePage() {
                       setName(rand);
                       clearError();
                     }}
-                    title="Generate Random Name"
-                    aria-label="Generate Random Name"
-                    className="group absolute right-2 top-1/2 -translate-y-1/2 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20 active:scale-95 transition-all cursor-pointer shadow-sm"
+                    title="Random Name"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-xl bg-amber-400/20 border border-amber-400/40 text-amber-300 hover:bg-amber-400/30 transition-all cursor-pointer shadow-sm"
                   >
-                    <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 group-hover:rotate-12 transition-transform drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
+                    <Sparkles className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {visibleError && <p className="text-red-400 text-xs sm:text-sm">{visibleError}</p>}
+              {visibleError && (
+                <div className="p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-300 font-semibold">
+                  {visibleError}
+                </div>
+              )}
 
-              {/* Action Button */}
+              {/* Submit CTA */}
               <button
+                type="button"
                 onClick={handleCreate}
                 disabled={loading}
-                className="tactile-button w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-amber-400 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_10px_25px_rgba(245,158,11,0.2)] hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer"
+                className="w-full mt-2 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 text-slate-950 font-black text-base sm:text-lg shadow-[0_8px_30px_rgba(245,158,11,0.4)] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5 text-slate-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Creating Room...
-                  </span>
-                ) : 'Create Room'}
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    <span>Creating Lobby...</span>
+                  </>
+                ) : (
+                  <>
+                    <Crown className="w-5 h-5" />
+                    <span>CREATE ROOM</span>
+                  </>
+                )}
               </button>
-              {loading && createTakingLong && (
-                <p role="status" className="text-center text-xs text-amber-200/90">
-                  Connecting to the game server. It may take about a minute to wake up after inactivity.
-                </p>
-              )}
             </div>
-          )}
+          </div>
+        )}
 
-          {mode === 'join' && (
-            <div className="flex flex-col gap-3.5 sm:gap-4 menu-tab-enter">
-              {/* Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => { setMode('home'); clearError(); }}
-                    className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
-                    aria-label="Back"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </button>
-                  <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white">Join Game</h2>
-                </div>
+        {/* ======================================================== */}
+        {/* SUBMENU: JOIN ROOM (MODE === 'join') */}
+        {/* ======================================================== */}
+        {mode === 'join' && (
+          <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-slate-900/90 p-5 sm:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.6)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => fetchRooms(true)}
-                  disabled={loadingRooms}
-                  aria-label="Refresh rooms"
-                  title="Refresh active rooms"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-amber-300 hover:bg-white/5 transition-colors disabled:opacity-50 cursor-pointer"
+                  onClick={() => { setMode('home'); clearError(); }}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/15 hover:text-white transition-all cursor-pointer active:scale-95"
                 >
-                  <RefreshCw className={`h-4 w-4 ${loadingRooms ? 'animate-spin text-amber-400' : ''}`} />
+                  <ArrowLeft className="h-5 w-5" />
                 </button>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-black text-white">Join Match</h2>
+                  <p className="text-xs text-slate-400">Enter room PIN or select from active lobbies</p>
+                </div>
               </div>
 
+              <button
+                type="button"
+                onClick={() => fetchRooms(true)}
+                disabled={loadingRooms}
+                className="p-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 transition-all cursor-pointer"
+                title="Refresh Room List"
+              >
+                <RefreshCw className={`w-4 h-4 ${loadingRooms ? 'animate-spin text-amber-400' : ''}`} />
+              </button>
+            </div>
+
+            <div className="mt-5 space-y-4">
               {/* Your Name Input */}
               <div>
-                <label className="mb-1.5 flex items-center justify-between text-xs font-bold tracking-wide text-slate-300">
-                  <span className="flex items-center gap-1.5">
-                    <User className="h-3.5 w-3.5 text-amber-400" />
-                    Your Name
-                  </span>
-                  {name.trim() && (
-                    <span className="text-[10px] font-semibold text-emerald-400">Ready</span>
-                  )}
-                </label>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Your Name</label>
                 <div className="relative">
                   <input
                     ref={nameInputRef}
                     type="text"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    placeholder="Enter your name..."
+                    placeholder="Enter your player name..."
                     maxLength={24}
-                    className="w-full rounded-xl border border-white/10 bg-slate-800/80 pl-3.5 pr-11 py-2.5 sm:py-3 text-sm sm:text-base text-white outline-none transition-all placeholder:text-slate-500 hover:border-white/20 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-800/90 pl-4 pr-12 py-3 text-sm sm:text-base text-white outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all placeholder:text-slate-500"
                   />
                   <button
                     type="button"
@@ -906,92 +1047,57 @@ export default function HomePage() {
                       setName(rand);
                       clearError();
                     }}
-                    title="Generate Random Name"
-                    aria-label="Generate Random Name"
-                    className="group absolute right-2 top-1/2 -translate-y-1/2 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20 active:scale-95 transition-all cursor-pointer shadow-sm"
+                    title="Random Name"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-400/20 border border-cyan-400/40 text-cyan-300 hover:bg-cyan-400/30 transition-all cursor-pointer shadow-sm"
                   >
-                    <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 group-hover:rotate-12 transition-transform drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
+                    <Sparkles className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Active Rooms */}
+              {/* Active Room Browser */}
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <label className="text-xs font-bold tracking-wide text-slate-200">
-                      Active Rooms {rooms.length > 0 && `(${rooms.length})`}
-                    </label>
-                  </div>
-                  {loadingRooms && (
-                    <span className="text-[10px] font-medium text-amber-300 animate-pulse">Refreshing...</span>
-                  )}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Open Lobbies ({rooms.length})
+                  </span>
+                  {loadingRooms && <span className="text-[10px] text-cyan-300 animate-pulse">Refreshing...</span>}
                 </div>
 
-                {roomsError ? (
-                  <div className="flex items-center justify-between rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
-                    <span className="truncate max-w-[210px]">{roomsError}</span>
-                    <button
-                      type="button"
-                      onClick={() => fetchRooms(true)}
-                      className="font-semibold text-amber-300 hover:text-amber-200 underline cursor-pointer shrink-0 ml-2"
-                    >
-                      Retry
-                    </button>
-                  </div>
-                ) : rooms.length > 0 ? (
-                  <div className="max-h-52 overflow-y-auto grid grid-cols-2 gap-2 pr-1 custom-scrollbar">
+                {rooms.length > 0 ? (
+                  <div className="max-h-56 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 pr-1 custom-scrollbar">
                     {rooms.map(room => {
                       const isFull = Boolean(room.max_players && room.player_count >= room.max_players);
                       const isPlaying = room.status === 'PLAYING';
                       const isSelected = pin === room.game_pin;
-                      const isSingle = rooms.length === 1;
+
                       return (
                         <div
                           key={room.id}
                           onClick={() => handleSelectRoom(room)}
-                          className={`tactile-button group relative flex items-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none ${
-                            isSingle ? 'col-span-2' : ''
-                          } ${
+                          className={`flex items-center gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
                             isSelected
-                              ? 'border-amber-400 bg-slate-800/90 shadow-[0_0_15px_rgba(245,158,11,0.2)] ring-1 ring-amber-400/50'
+                              ? 'border-cyan-400 bg-cyan-950/40 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
                               : 'border-white/10 bg-slate-800/50 hover:bg-slate-800/80 hover:border-white/20'
                           }`}
                         >
-                          {/* Host Avatar Badge - Clean, balanced, no protruding dots */}
-                          <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 font-black text-xs sm:text-sm shadow-[0_2px_10px_rgba(245,158,11,0.25)]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-black text-sm shadow-md">
                             {(room.host_name || 'H').charAt(0).toUpperCase()}
                           </div>
 
-                          <div className="min-w-0 flex-1 flex flex-col justify-center">
+                          <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-1">
-                              <span className="font-bold text-xs text-white group-hover:text-amber-200 transition-colors truncate" title={room.host_name}>
-                                {room.host_name}
-                              </span>
+                              <span className="font-bold text-xs text-white truncate">{room.host_name}</span>
                               {isPlaying ? (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 border border-rose-500/25 px-1.5 py-0.5 text-[9px] font-bold text-rose-400 shrink-0">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                  LIVE
-                                </span>
+                                <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 text-[9px] font-bold">LIVE</span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-400 shrink-0">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                                  Open
-                                </span>
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] font-bold">OPEN</span>
                               )}
                             </div>
-                            <div className="flex items-center gap-1 text-[10px] mt-0.5">
-                              <span className="font-mono font-bold text-amber-300 shrink-0">
-                                #{room.game_pin}
-                              </span>
-                              <span className="text-slate-500 shrink-0">•</span>
-                              <span className={`truncate font-medium ${isPlaying ? 'text-slate-300' : isFull ? 'text-amber-400' : 'text-emerald-400'}`}>
-                                {room.player_count}{room.max_players ? `/${room.max_players}` : ''} Players
-                              </span>
+                            <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
+                              <span className="font-mono font-bold text-cyan-300">#{room.game_pin}</span>
+                              <span>•</span>
+                              <span>{room.player_count}{room.max_players ? `/${room.max_players}` : ''}P</span>
                             </div>
                           </div>
                         </div>
@@ -999,351 +1105,204 @@ export default function HomePage() {
                     })}
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-dashed border-white/10 bg-slate-800/20 py-3 text-center">
-                    <p className="text-xs text-slate-400">No active rooms</p>
+                  <div className="py-6 text-center rounded-2xl border border-dashed border-white/10 bg-slate-800/30 text-xs text-slate-400">
+                    No active rooms found. Host a new game to get started!
                   </div>
                 )}
               </div>
 
-              {/* Clean Divider */}
-              <div className="my-0.5 border-t border-white/[0.08]" />
-
-              {/* Integrated Game PIN Row */}
+              {/* Enter PIN & Join Button */}
               <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Game PIN</label>
                 <div className="relative flex items-center">
                   <input
                     type="text"
                     value={pin}
                     onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        if (isSelectedRoomPlaying) {
-                          handleWatch();
-                        } else {
-                          handleJoin();
-                        }
-                      }
-                    }}
-                    placeholder="6-digit PIN..."
+                    onKeyDown={e => e.key === 'Enter' && (isSelectedRoomPlaying ? handleWatch() : handleJoin())}
+                    placeholder="Enter 6-digit PIN..."
                     maxLength={6}
-                    className="w-full rounded-xl border border-white/10 bg-slate-800/80 pl-3.5 pr-24 py-2.5 sm:py-3 font-mono text-sm sm:text-base tracking-[0.2em] text-amber-300 outline-none transition-all placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-sans hover:border-white/20 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-800/90 pl-4 pr-28 py-3.5 font-mono text-base tracking-[0.2em] text-cyan-300 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-sans"
                   />
                   <button
                     type="button"
                     onClick={isSelectedRoomPlaying ? handleWatch : handleJoin}
                     disabled={loading || !pin.trim()}
-                    className="tactile-button group absolute right-1.5 top-1.5 bottom-1.5 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 px-4 text-xs sm:text-sm font-black text-slate-950 shadow-[0_2px_14px_rgba(245,158,11,0.35)] hover:shadow-[0_2px_20px_rgba(245,158,11,0.5)] transition-all duration-200 disabled:opacity-35 disabled:shadow-none disabled:cursor-not-allowed disabled:hover:from-amber-400 disabled:hover:via-amber-500 disabled:hover:to-orange-500 cursor-pointer"
+                    className="absolute right-1.5 top-1.5 bottom-1.5 px-5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-black text-sm shadow-md transition-all cursor-pointer disabled:opacity-40"
                   >
                     {loading ? (
-                      <span className="flex items-center gap-1.5">
-                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                        <span>{isSelectedRoomPlaying ? 'Watching' : 'Joining'}</span>
-                      </span>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
                     ) : isSelectedRoomPlaying ? (
-                      <>
-                        <Eye className="h-3.5 w-3.5 stroke-[2.5]" />
-                        <span>Watch</span>
-                      </>
+                      'WATCH'
                     ) : (
-                      <>
-                        <span>Join</span>
-                        <ArrowRight className="h-3.5 w-3.5 stroke-[2.8] transition-transform duration-200 group-hover:translate-x-0.5" />
-                      </>
+                      'JOIN'
                     )}
                   </button>
                 </div>
               </div>
 
               {visibleError && (
-                <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300 font-medium">
+                <div className="p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-300 font-semibold">
+                  {visibleError}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* SUBMENU: SOLO VS BOT (MODE === 'bot') */}
+        {/* ======================================================== */}
+        {mode === 'bot' && (
+          <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-slate-900/90 p-5 sm:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.6)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setMode('home'); clearError(); }}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/15 hover:text-white transition-all cursor-pointer active:scale-95"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-black text-white">Play vs AI Bot</h2>
+                  <p className="text-xs text-slate-400">Solo practice match with tactical AI opponents</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              {/* Bot Difficulty Selector Cards */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Select Opponent</label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {(['easy', 'medium', 'hard'] as const).map(diff => {
+                    const profile = BOT_PROFILES[diff];
+                    const isSelected = botDifficulty === diff;
+                    return (
+                      <button
+                        key={diff}
+                        type="button"
+                        onClick={() => setBotDifficulty(diff)}
+                        className={`flex flex-col items-center text-center p-3 rounded-2xl border transition-all cursor-pointer ${
+                          isSelected
+                            ? `border-purple-400 bg-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.3)]`
+                            : 'border-white/10 bg-slate-800/40 hover:bg-slate-800/70 text-slate-400'
+                        }`}
+                      >
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl font-bold text-xs mb-1.5 border ${
+                          isSelected ? 'bg-purple-400/20 text-purple-300 border-purple-400/50' : 'bg-slate-700/50 text-slate-400 border-white/10'
+                        }`}>
+                          <Bot className="w-5 h-5" />
+                        </div>
+                        <span className={`text-xs sm:text-sm font-bold ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                          {profile.title}
+                        </span>
+                        <span className="text-[10px] text-purple-300 font-semibold">{profile.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Game Mode */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Game Mode</label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setGameMode('HP')}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                      gameMode === 'HP'
+                        ? 'border-rose-500 bg-rose-500/15 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
+                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70'
+                    }`}
+                  >
+                    <span className={`block font-bold text-sm ${gameMode === 'HP' ? 'text-rose-200' : 'text-white'}`}>HP Battle</span>
+                    <span className="text-[11px] text-slate-400">Score drains bot HP</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGameMode('TURNS')}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                      gameMode === 'TURNS'
+                        ? 'border-cyan-500 bg-cyan-500/15 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
+                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:bg-slate-800/70'
+                    }`}
+                  >
+                    <span className={`block font-bold text-sm ${gameMode === 'TURNS' ? 'text-cyan-200' : 'text-white'}`}>Round Count</span>
+                    <span className="text-[11px] text-slate-400">High score wins</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Matchup Summary Capsule */}
+              <div className="flex items-center justify-between p-3.5 rounded-2xl border border-purple-500/30 bg-purple-950/30">
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <span className="text-slate-400 font-medium">Matchup:</span>
+                  <span className="font-bold text-white">{name.trim() || 'Player'}</span>
+                  <span className="text-purple-400 font-black">VS</span>
+                  <span className="font-bold text-purple-300">{BOT_PROFILES[botDifficulty].name}</span>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-400/40 text-[10px] font-bold text-purple-300 uppercase">
+                  1v1 Solo
+                </span>
+              </div>
+
+              {visibleError && (
+                <div className="p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-300 font-semibold">
                   {visibleError}
                 </div>
               )}
 
-              {/* Spectator Option */}
+              {/* Start Bot Game Button */}
               <button
                 type="button"
-                onClick={handleWatch}
-                disabled={loading || !pin.trim()}
-                className={`flex items-center justify-center gap-1.5 py-1 text-xs font-semibold transition-colors disabled:opacity-40 cursor-pointer ${
-                  isSelectedRoomPlaying
-                    ? 'text-sky-300 hover:text-sky-200'
-                    : 'text-slate-400 hover:text-amber-300 disabled:hover:text-slate-400'
-                }`}
-                title="Watch game without playing (requires PIN)"
-              >
-                <Eye className="h-3.5 w-3.5" />
-                <span>
-                  {isSelectedRoomPlaying
-                    ? `Watch live match #${pin.trim()}`
-                    : `Watch as spectator ${pin.trim() ? `(#${pin.trim()})` : ''}`}
-                </span>
-              </button>
-            </div>
-          )}
-
-          {mode === 'bot' && (
-            <div className="flex flex-col gap-3.5 sm:gap-4 menu-tab-enter">
-              {/* Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => { setMode('home'); clearError(); }}
-                    className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95 cursor-pointer shrink-0"
-                    aria-label="Back"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </button>
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                      <span>Play vs Bot</span>
-                      <span className="flex items-center gap-1 rounded-full bg-amber-400/15 border border-amber-400/30 px-2 py-0.5 text-[10px] font-bold text-amber-300 uppercase tracking-wider">
-                        <Bot className="w-3 h-3" /> Solo Match
-                      </span>
-                    </h2>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bot Difficulty Selection */}
-              <fieldset>
-                <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Bot Difficulty</legend>
-                <div className="grid grid-cols-3 gap-2">
-                  {([
-                    ['easy', 'Easy', 'SparkBot', 'Novice'],
-                    ['medium', 'Medium', 'Nexus AI', 'Tactical'],
-                    ['hard', 'Hard', 'Titan AI', 'Master'],
-                  ] as const).map(([val, title, botName, level]) => (
-                    <button
-                      key={val}
-                      type="button"
-                      aria-pressed={botDifficulty === val}
-                      onClick={() => setBotDifficulty(val)}
-                      className={`rounded-xl border p-2 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
-                        botDifficulty === val
-                          ? 'border-amber-400/80 bg-amber-400/15 text-white shadow-[0_0_15px_rgba(251,191,36,0.12)]'
-                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
-                      }`}
-                    >
-                      <span className={`block text-xs sm:text-sm font-bold ${botDifficulty === val ? 'text-amber-200' : 'text-slate-200'}`}>
-                        {title}
-                      </span>
-                      <span className={`mt-0.5 block text-[0.65rem] truncate font-medium ${botDifficulty === val ? 'text-amber-300/90' : 'text-slate-400'}`}>
-                        {botName}
-                      </span>
-                      <span className={`mt-1 inline-block text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${
-                        botDifficulty === val ? 'bg-amber-400/25 text-amber-200' : 'bg-slate-700/50 text-slate-400'
-                      }`}>
-                        {level}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              {/* Game Mode */}
-              <fieldset>
-                <legend className="mb-1.5 block text-xs font-semibold text-slate-300">Game Mode</legend>
-                <div className="grid grid-cols-2 gap-2">
-                  {([
-                    ['HP', 'HP Battle', 'Score drains health'],
-                    ['TURNS', 'Round Count', 'Highest score wins'],
-                  ] as const).map(([value, title, description]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={gameMode === value}
-                      onClick={() => setGameMode(value)}
-                      className={`rounded-xl border p-2.5 sm:p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 cursor-pointer ${
-                        gameMode === value
-                          ? 'border-amber-400/80 bg-amber-400/15 text-white shadow-[0_0_15px_rgba(251,191,36,0.12)]'
-                          : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-slate-800/60'
-                      }`}
-                    >
-                      <span className={`block text-xs sm:text-sm font-bold ${gameMode === value ? 'text-amber-200' : 'text-slate-200'}`}>
-                        {title}
-                      </span>
-                      <span className={`mt-0.5 block text-[0.68rem] leading-snug ${gameMode === value ? 'text-amber-300/80' : 'text-slate-400'}`}>
-                        {description}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              {/* Settings 2-Column: (Starting HP / Round Count) + Turn Time */}
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                {gameMode === 'HP' ? (
-                  <div>
-                    <label htmlFor="bot-starting-hp" className="mb-1.5 block text-xs font-semibold text-slate-300">Starting HP</label>
-                    <CustomSelect
-                      id="bot-starting-hp"
-                      value={hpOption}
-                      onChange={setHpOption}
-                      options={[
-                        { value: '50', label: '50 HP' },
-                        { value: '100', label: '100 HP' },
-                        { value: '150', label: '150 HP' },
-                        { value: '200', label: '200 HP' },
-                        { value: 'custom', label: 'Custom' },
-                      ]}
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <label htmlFor="bot-max-turns" className="mb-1.5 block text-xs font-semibold text-slate-300">Game Length</label>
-                    <CustomSelect
-                      id="bot-max-turns"
-                      value={turnCountOption}
-                      onChange={setTurnCountOption}
-                      options={[
-                        { value: '5', label: '5 Rounds' },
-                        { value: '7', label: '7 Rounds' },
-                        { value: '10', label: '10 Rounds' },
-                        { value: '15', label: '15 Rounds' },
-                        { value: 'custom', label: 'Custom' },
-                      ]}
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label htmlFor="bot-turn-time" className="mb-1.5 block text-xs font-semibold text-slate-300">Turn Time</label>
-                  <CustomSelect
-                    id="bot-turn-time"
-                    value={turnTimeLimit === null ? '' : String(turnTimeLimit)}
-                    onChange={val => setTurnTimeLimit(val === '' ? null : Number(val) as TurnTimeLimit)}
-                    options={[
-                      { value: '', label: 'Unlimited' },
-                      { value: '30', label: '30 sec' },
-                      { value: '60', label: '60 sec' },
-                      { value: '90', label: '90 sec' },
-                      { value: '120', label: '120 sec' },
-                    ]}
-                  />
-                </div>
-              </div>
-
-              {/* Custom HP / Round Stepper if selected */}
-              {gameMode === 'HP' && hpOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setCustomHp(prev => String(Math.max(10, (Number(prev) || 100) - 10)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Decrease HP"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
-                    <input
-                      type="number"
-                      min={10}
-                      max={1000}
-                      value={customHp}
-                      onChange={event => setCustomHp(event.target.value)}
-                      aria-label="Custom starting HP"
-                      placeholder="100"
-                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">HP</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCustomHp(prev => String(Math.min(1000, (Number(prev) || 100) + 10)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Increase HP"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-
-              {gameMode === 'TURNS' && turnCountOption === 'custom' && (
-                <div className="flex items-center rounded-xl border border-white/10 bg-slate-800/90 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-300/20 transition-all overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setCustomTurnCount(prev => String(Math.max(1, (Number(prev) || 7) - 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Decrease rounds"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <div className="flex-1 flex items-center justify-center gap-1.5 px-2">
-                    <input
-                      type="number"
-                      min={1}
-                      max={500}
-                      value={customTurnCount}
-                      onChange={event => setCustomTurnCount(event.target.value)}
-                      aria-label="Custom round count"
-                      placeholder="7"
-                      className="w-full text-center font-mono font-bold text-white text-base sm:text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span className="text-xs font-bold text-amber-400/80 uppercase tracking-wider select-none shrink-0">Rounds</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCustomTurnCount(prev => String(Math.min(500, (Number(prev) || 7) + 1)))}
-                    className="flex items-center justify-center w-11 sm:w-12 h-10 sm:h-11 text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95 transition-all cursor-pointer select-none"
-                    aria-label="Increase rounds"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-
-              {/* Opponent Preview Banner */}
-              <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-800/60 px-4 py-3 shadow-[0_4px_16px_rgba(0,0,0,0.18)]">
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <span className="text-slate-400 font-medium">Matchup:</span>
-                  <span className="font-bold text-white">You</span>
-                  <span className="text-amber-400 font-bold">vs</span>
-                  <span className="font-bold text-amber-300">{BOT_PROFILES[botDifficulty].name}</span>
-                </div>
-                <span className="text-[10px] font-bold text-amber-300/90 uppercase tracking-wider bg-amber-400/15 border border-amber-400/30 px-2 py-0.5 rounded-full">
-                  1v1 Match
-                </span>
-              </div>
-
-              {visibleError && <p className="text-red-400 text-xs sm:text-sm">{visibleError}</p>}
-
-              {/* Action Button */}
-              <button
                 onClick={handleCreateBot}
                 disabled={loading}
-                className="tactile-button w-full rounded-xl sm:rounded-2xl border border-amber-300/40 bg-gradient-to-r from-amber-400 to-amber-500 py-3 sm:py-3.5 text-base sm:text-lg font-bold text-slate-950 shadow-[0_10px_25px_rgba(245,158,11,0.2)] hover:from-amber-300 hover:to-amber-400 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full mt-2 py-4 rounded-2xl bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-600 hover:from-purple-400 hover:to-indigo-500 text-white font-black text-base sm:text-lg shadow-[0_8px_30px_rgba(168,85,247,0.4)] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5 text-slate-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Setting up Bot Room...
-                  </span>
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    <span>Starting AI Match...</span>
+                  </>
                 ) : (
                   <>
-                    <Bot className="h-5 w-5" strokeWidth={2.2} />
-                    <span>Start Bot Match</span>
+                    <Bot className="w-5 h-5" />
+                    <span>START BOT MATCH</span>
                   </>
                 )}
               </button>
             </div>
-          )}
+          </div>
+        )}
+
+      </main>
+
+      {/* Footer Game Tip Ticker */}
+      <footer className="relative z-20 w-full max-w-5xl px-4 py-3 pb-4 sm:pb-6 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-white/[0.06] text-xs text-slate-400">
+        <div className="flex items-center gap-2 animate-in fade-in duration-300">
+          <span className="px-2 py-0.5 rounded bg-amber-400/15 border border-amber-400/30 text-[10px] font-bold text-amber-300 uppercase shrink-0">
+            PRO TIP
+          </span>
+          <span className="text-slate-300 font-medium truncate max-w-md sm:max-w-xl">
+            {PRO_TIPS[tipIndex]}
+          </span>
         </div>
-      </div>
 
-      {isGuideOpen && <GameGuideModal
-        isOpen
-        onClose={() => setIsGuideOpen(false)}
-      />}
+        <div className="text-[11px] text-slate-500 font-medium">
+          WordX © 2026 • Crafted with DeepMind Speed Engine
+        </div>
+      </footer>
 
-      <MatchHistoryModal
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-      />
+      {/* Global Modals */}
+      {isGuideOpen && (
+        <GameGuideModal isOpen onClose={() => setIsGuideOpen(false)} />
+      )}
+
+      <MatchHistoryModal isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
     </div>
   );
 }
