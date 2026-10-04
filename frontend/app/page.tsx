@@ -408,11 +408,12 @@ export default function HomePage() {
             <div className="pointer-events-none absolute -inset-6 rounded-full bg-amber-400/20 blur-2xl" />
             <div className="relative transform hover:scale-105 transition-transform duration-200 cursor-pointer drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)]">
               <Image
-                src="/wordx-icon-256.png?v=20260915"
+                src="/wordx-icon-256.png"
                 alt="WordX Logo"
                 width={90}
                 height={90}
                 priority
+                unoptimized
                 className="h-16 w-16 sm:h-20 sm:w-20 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.5)]"
               />
             </div>

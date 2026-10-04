@@ -230,11 +230,12 @@ export default function LobbyPage() {
             <div className="pointer-events-none absolute -inset-3 rounded-full bg-gradient-to-tr from-indigo-500/30 via-amber-400/20 to-amber-500/35 blur-xl hero-glow-breathe" />
             <div className="relative hero-logo-float transition-transform duration-300 hover:scale-105">
               <Image
-                src="/wordx-icon-256.png?v=20260915"
+                src="/wordx-icon-256.png"
                 alt="WordX logo"
                 width={76}
                 height={76}
                 priority
+                unoptimized
                 className="h-[72px] w-[72px] object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.55)] drop-shadow-[0_0_20px_rgba(245,158,11,0.35)]"
               />
             </div>

@@ -121,11 +121,12 @@ export default function BotRoomCreationPage() {
               className="relative hero-logo-float transition-transform duration-300 hover:scale-110 active:scale-95 cursor-pointer"
             >
               <Image
-                src="/wordx-icon-256.png?v=20260915"
+                src="/wordx-icon-256.png"
                 alt="WordX logo"
                 width={140}
                 height={140}
                 priority
+                unoptimized
                 className="h-24 w-24 sm:h-32 sm:w-32 object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.65)] drop-shadow-[0_0_30px_rgba(245,158,11,0.45)]"
               />
             </div>
