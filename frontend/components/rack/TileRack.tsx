@@ -489,26 +489,15 @@ export const TileRack = memo(function TileRack({
                   className={`game-primary-action game-btn-base group flex h-[40px] sm:h-[42px] items-center justify-center gap-2 rounded-xl px-3 font-black text-xs sm:text-sm ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
                       ? 'game-btn-play-ready cursor-pointer'
-                      : !isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? 'game-btn-dormant cursor-not-allowed border-amber-400/40 text-amber-200 opacity-90'
-                      : hasTemporaryTiles && placementValid === false
+                      : isMyTurn && hasTemporaryTiles
                       ? 'game-btn-play-invalid cursor-not-allowed'
                       : 'game-btn-dormant cursor-not-allowed opacity-70'
                   }`}
-                  title={
-                    !isMyTurn && hasTemporaryTiles && placementValid === true && estimatedScore !== undefined && estimatedScore > 0
-                      ? `Pre-staged move (+${estimatedScore} pts) - waiting for your turn`
-                      : !isMyTurn && hasTemporaryTiles && placementValid === false
-                      ? 'Invalid word placement'
-                      : undefined
-                  }
                 >
                   <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
                   {isMyTurn && hasTemporaryTiles && placementValid === true ? (
                     <Check className="w-5 h-5 stroke-[3.5] text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] relative z-10 shrink-0" />
-                  ) : !isMyTurn && hasTemporaryTiles && placementValid === true ? (
-                    <Check className="w-5 h-5 stroke-[3] text-amber-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] relative z-10 shrink-0" />
-                  ) : hasTemporaryTiles && placementValid === false ? (
+                  ) : isMyTurn && hasTemporaryTiles ? (
                     <X className="w-5 h-5 stroke-[3.5] text-rose-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] relative z-10 shrink-0" />
                   ) : (
                     <Check className="w-4 h-4 stroke-[2.5] text-slate-400 relative z-10 shrink-0" />
@@ -516,9 +505,7 @@ export const TileRack = memo(function TileRack({
                   <span className={`tracking-wider uppercase font-black truncate relative z-10 ${
                     isMyTurn && hasTemporaryTiles && placementValid === true
                       ? 'text-white drop-shadow-[0_1px_0_#000] drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]'
-                      : !isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? 'text-amber-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]'
-                      : hasTemporaryTiles && placementValid === false
+                      : isMyTurn && hasTemporaryTiles
                       ? 'text-rose-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]'
                       : 'text-slate-300'
                   }`}>
@@ -526,9 +513,7 @@ export const TileRack = memo(function TileRack({
                       ? 'Submitting...'
                       : isMyTurn && hasTemporaryTiles && placementValid === true
                       ? 'PLAY'
-                      : !isMyTurn && hasTemporaryTiles && placementValid === true
-                      ? (estimatedScore && estimatedScore > 0 ? `PRE-STAGED (+${estimatedScore})` : 'PRE-STAGED')
-                      : hasTemporaryTiles && placementValid === false
+                      : isMyTurn && hasTemporaryTiles
                       ? 'INVALID WORD'
                       : 'PLAY'}
                   </span>
@@ -700,25 +685,17 @@ export const TileRack = memo(function TileRack({
                 className={`game-primary-action game-btn-base group flex h-[38px] items-center justify-center gap-1 rounded-xl px-2 font-black text-xs ${
                   isMyTurn && hasTemporaryTiles && placementValid === true
                     ? 'game-btn-play-ready cursor-pointer'
-                    : !isMyTurn && hasTemporaryTiles && placementValid === true
-                    ? 'game-btn-dormant cursor-not-allowed border-amber-400/40 text-amber-200 opacity-90'
-                    : hasTemporaryTiles && placementValid === false
+                    : isMyTurn && hasTemporaryTiles
                     ? 'game-btn-play-invalid cursor-not-allowed'
                     : 'game-btn-dormant cursor-not-allowed opacity-70'
                 }`}
-                title={
-                  placementValid === true && estimatedScore !== undefined && estimatedScore > 0
-                    ? (!isMyTurn ? `Pre-staged (+${estimatedScore} pts) - waiting for your turn` : `Play word (+${estimatedScore} pts)`)
-                    : 'Play placed tiles'
-                }
+                title="Play placed tiles"
                 aria-label="Confirm move"
               >
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
                 {isMyTurn && hasTemporaryTiles && placementValid === true ? (
                   <Check className="w-4 h-4 stroke-[3.5] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] relative z-10 shrink-0" />
-                ) : !isMyTurn && hasTemporaryTiles && placementValid === true ? (
-                  <Check className="w-4 h-4 stroke-[3] text-amber-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] relative z-10 shrink-0" />
-                ) : hasTemporaryTiles && placementValid === false ? (
+                ) : isMyTurn && hasTemporaryTiles ? (
                   <X className="w-4 h-4 stroke-[3.5] text-rose-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] relative z-10 shrink-0" />
                 ) : (
                   <Check className="w-4 h-4 stroke-[2.5] text-slate-400 relative z-10 shrink-0" />
@@ -726,9 +703,7 @@ export const TileRack = memo(function TileRack({
                 <span className={`text-[10px] font-black uppercase tracking-wider relative z-10 truncate ${
                   isMyTurn && hasTemporaryTiles && placementValid === true
                     ? 'text-white drop-shadow-[0_1px_0_#000] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
-                    : !isMyTurn && hasTemporaryTiles && placementValid === true
-                    ? 'text-amber-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
-                    : hasTemporaryTiles && placementValid === false
+                    : isMyTurn && hasTemporaryTiles
                     ? 'text-rose-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
                     : 'text-slate-300'
                 }`}>
@@ -736,9 +711,7 @@ export const TileRack = memo(function TileRack({
                     ? '...'
                     : isMyTurn && hasTemporaryTiles && placementValid === true
                     ? 'PLAY'
-                    : !isMyTurn && hasTemporaryTiles && placementValid === true
-                    ? (estimatedScore && estimatedScore > 0 ? `+${estimatedScore}` : 'READY')
-                    : hasTemporaryTiles && placementValid === false
+                    : isMyTurn && hasTemporaryTiles
                     ? 'INVALID'
                     : 'PLAY'}
                 </span>
