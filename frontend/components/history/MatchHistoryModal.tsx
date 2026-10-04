@@ -31,8 +31,6 @@ import {
   RefreshCw,
   Lightbulb,
   Target,
-  ZoomIn,
-  ZoomOut,
   Maximize2,
 } from 'lucide-react';
 import {
@@ -53,7 +51,7 @@ import {
   clearAllMatchHistory,
 } from '@/lib/api';
 import { BoardCanvas } from '@/components/board/BoardCanvas';
-import { useBoardCamera, BUTTON_ZOOM_FACTOR } from '@/hooks/useBoardCamera';
+import { useBoardCamera } from '@/hooks/useBoardCamera';
 import { isBlankLetter } from '@/lib/tiles';
 
 const EMPTY_CELL_POSITIONS: CellPosition[] = [];
@@ -195,8 +193,6 @@ const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
     }
   }, [camera]);
 
-  const handleZoomIn = () => camera.zoomAtCenter(BUTTON_ZOOM_FACTOR);
-  const handleZoomOut = () => camera.zoomAtCenter(1 / BUTTON_ZOOM_FACTOR);
   const handleFitOverview = () => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
@@ -231,36 +227,16 @@ const ReplayBoardCanvasView: React.FC<ReplayBoardCanvasViewProps> = ({
           camera={camera}
         />
 
-        {/* Floating Quick Camera Controls (Zoom In, Zoom Out, Fit Overview) */}
-        <div className="absolute top-2.5 right-2.5 z-30 flex items-center gap-1 bg-slate-950/80 backdrop-blur-md p-1 rounded-xl border border-white/15 shadow-lg">
-          <button
-            type="button"
-            onClick={handleZoomIn}
-            className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 active:scale-95 text-slate-300 hover:text-white transition-all cursor-pointer"
-            title="Zoom In"
-            aria-label="Zoom In"
-          >
-            <ZoomIn className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={handleZoomOut}
-            className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 active:scale-95 text-slate-300 hover:text-white transition-all cursor-pointer"
-            title="Zoom Out (Overview)"
-            aria-label="Zoom Out"
-          >
-            <ZoomOut className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={handleFitOverview}
-            className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 active:scale-95 text-cyan-300 hover:text-cyan-200 border border-cyan-400/30 transition-all cursor-pointer"
-            title="Fit Full Map Overview"
-            aria-label="Fit Full Map Overview"
-          >
-            <Maximize2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        {/* Floating Quick Overview Button */}
+        <button
+          type="button"
+          onClick={handleFitOverview}
+          className="absolute top-2.5 right-2.5 z-30 flex h-7 w-7 items-center justify-center rounded-xl bg-slate-950/80 backdrop-blur-md hover:bg-slate-900 active:scale-95 text-cyan-300 hover:text-cyan-200 border border-white/15 shadow-lg transition-all cursor-pointer"
+          title="Fit Full Map Overview"
+          aria-label="Fit Full Map Overview"
+        >
+          <Maximize2 className="w-3.5 h-3.5" />
+        </button>
       </div>
     </div>
   );
