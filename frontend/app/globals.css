@@ -465,6 +465,21 @@ body {
   contain: layout;
 }
 
+/* Grimoire Modal: GPU paint layer isolation and virtualized row containment */
+.grimoire-dialog {
+  contain: layout paint;
+  isolation: isolate;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.grimoire-word-item {
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: 44px;
+}
+
 /* Allow live preview animations inside Game Guide modal on mobile & touch devices */
 .guide-modal .board-power-pulse { animation: board-power-pulse 2.4s ease-in-out infinite !important; }
 .guide-modal .board-lightning-halo { animation: board-lightning-flash 1.1s ease-in-out infinite !important; }
