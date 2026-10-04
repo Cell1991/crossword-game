@@ -385,6 +385,20 @@ export default function HomePage() {
         <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
       </div>
 
+      {/* Sleek Golden Tactical Grid */}
+      <div 
+        className="pointer-events-none fixed inset-0 z-0 opacity-45"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(245, 158, 11, 0.2) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(245, 158, 11, 0.2) 1px, transparent 1px)
+          `,
+          backgroundSize: '48px 48px',
+          maskImage: 'radial-gradient(ellipse 75% 65% at 50% 50%, black 25%, transparent 80%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 75% 65% at 50% 50%, black 25%, transparent 80%)',
+        }}
+      />
+
       {/* Subtle Background Particle Matrix */}
       <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" accent="245, 158, 11" />
 
