@@ -94,8 +94,6 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   const lastPointerRef = useRef({ x: 0, y: 0 });
   const velocityHistoryRef = useRef<{ x: number; y: number; time: number }[]>([]);
   const momentumAnimRef = useRef<number | null>(null);
-  const panRafRef = useRef<number | null>(null);
-  const pendingPanDeltaRef = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
   /** Where the current pan started, and whether it has moved far enough to stop counting as a click. */
   const panStartRef = useRef<{ x: number; y: number } | null>(null);
   const panMovedRef = useRef(false);
@@ -318,10 +316,6 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
         cancelAnimationFrame(animFrameRef.current);
         animFrameRef.current = null;
       }
-      if (panRafRef.current) {
-        cancelAnimationFrame(panRafRef.current);
-        panRafRef.current = null;
-      }
       stopMomentum();
     };
   }, [stopMomentum]);
@@ -420,11 +414,6 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   // immediately; committed tiles never enter this path.
   const handlePointerDown = (e: React.PointerEvent) => {
     stopMomentum();
-    if (panRafRef.current !== null) {
-      cancelAnimationFrame(panRafRef.current);
-      panRafRef.current = null;
-      pendingPanDeltaRef.current = { dx: 0, dy: 0 };
-    }
     velocityHistoryRef.current = [{ x: e.clientX, y: e.clientY, time: performance.now() }];
 
     if (e.pointerType === 'touch') {
@@ -502,21 +491,10 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       }
 
       if (dx !== 0 || dy !== 0) {
-        pendingPanDeltaRef.current.dx += dx;
-        pendingPanDeltaRef.current.dy += dy;
-        if (panRafRef.current === null) {
-          panRafRef.current = requestAnimationFrame(() => {
-            panRafRef.current = null;
-            const { dx: px, dy: py } = pendingPanDeltaRef.current;
-            pendingPanDeltaRef.current = { dx: 0, dy: 0 };
-            if (px !== 0 || py !== 0) {
-              camera.setOffset(previous => ({
-                x: previous.x + px,
-                y: previous.y + py,
-              }));
-            }
-          });
-        }
+        camera.setOffset(previous => ({
+          x: previous.x + dx,
+          y: previous.y + dy,
+        }));
       }
       const start = panStartRef.current;
       if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) >= 5) panMovedRef.current = true;
@@ -550,60 +528,50 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     if (isPanningRef.current) {
       isPanningRef.current = false;
 
-      // Flush remaining buffered pan movement immediately
-      if (panRafRef.current !== null) {
-        cancelAnimationFrame(panRafRef.current);
-        panRafRef.current = null;
-        const { dx: px, dy: py } = pendingPanDeltaRef.current;
-        pendingPanDeltaRef.current = { dx: 0, dy: 0 };
-        if (px !== 0 || py !== 0) {
-          camera.setOffset(previous => ({
-            x: previous.x + px,
-            y: previous.y + py,
-          }));
-        }
-      }
-
-      // Smooth kinetic momentum deceleration if released while flicking
-      const history = velocityHistoryRef.current;
-      if (history.length >= 2 && panMovedRef.current) {
-        const first = history[0];
-        const last = history[history.length - 1];
-        const dt = last.time - first.time;
-        if (dt >= 12 && dt <= 130) {
-          let vx = (last.x - first.x) / dt;
-          let vy = (last.y - first.y) / dt;
-          const speed = Math.hypot(vx, vy);
-          if (speed > 0.12) {
-            const maxSpeed = 2.2;
-            if (speed > maxSpeed) {
-              vx = (vx / speed) * maxSpeed;
-              vy = (vy / speed) * maxSpeed;
-            }
-            let curVx = vx;
-            let curVy = vy;
-            let lastTime = performance.now();
-            const momentumLoop = (time: number) => {
-              const frameDt = Math.min(32, time - lastTime);
-              lastTime = time;
-              if (frameDt <= 0) {
+      // Kinetic momentum ONLY for touch flick gestures on mobile/touch screens (never on desktop mouse)
+      if (e.pointerType === 'touch') {
+        const history = velocityHistoryRef.current;
+        const now = performance.now();
+        if (history.length >= 2 && panMovedRef.current) {
+          const first = history[0];
+          const last = history[history.length - 1];
+          const dt = last.time - first.time;
+          // Must be released actively during a flick motion (not paused before releasing)
+          if (now - last.time <= 60 && dt >= 15 && dt <= 120) {
+            let vx = (last.x - first.x) / dt;
+            let vy = (last.y - first.y) / dt;
+            const speed = Math.hypot(vx, vy);
+            if (speed > 0.35) {
+              const maxSpeed = 2.2;
+              if (speed > maxSpeed) {
+                vx = (vx / speed) * maxSpeed;
+                vy = (vy / speed) * maxSpeed;
+              }
+              let curVx = vx;
+              let curVy = vy;
+              let lastTime = performance.now();
+              const momentumLoop = (time: number) => {
+                const frameDt = Math.min(32, time - lastTime);
+                lastTime = time;
+                if (frameDt <= 0) {
+                  momentumAnimRef.current = requestAnimationFrame(momentumLoop);
+                  return;
+                }
+                const friction = Math.pow(0.002, frameDt / 1000);
+                curVx *= friction;
+                curVy *= friction;
+                if (Math.hypot(curVx, curVy) < 0.015) {
+                  momentumAnimRef.current = null;
+                  return;
+                }
+                camera.setOffset(prev => ({
+                  x: prev.x + curVx * frameDt,
+                  y: prev.y + curVy * frameDt,
+                }));
                 momentumAnimRef.current = requestAnimationFrame(momentumLoop);
-                return;
-              }
-              const friction = Math.pow(0.002, frameDt / 1000);
-              curVx *= friction;
-              curVy *= friction;
-              if (Math.hypot(curVx, curVy) < 0.015) {
-                momentumAnimRef.current = null;
-                return;
-              }
-              camera.setOffset(prev => ({
-                x: prev.x + curVx * frameDt,
-                y: prev.y + curVy * frameDt,
-              }));
+              };
               momentumAnimRef.current = requestAnimationFrame(momentumLoop);
-            };
-            momentumAnimRef.current = requestAnimationFrame(momentumLoop);
+            }
           }
         }
       }
