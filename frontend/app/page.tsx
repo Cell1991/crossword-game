@@ -754,6 +754,35 @@ export default function HomePage() {
                 </div>
               </div>
 
+              {/* Stepper for Custom Player Limit */}
+              {playerLimitOption === 'custom' && (
+                <div className="flex items-center rounded-xl border border-amber-400/30 bg-slate-950/90 p-1 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-400/40 transition-all animate-in fade-in zoom-in-95 duration-150">
+                  <button
+                    type="button"
+                    onClick={() => setCustomMaxPlayers(prev => String(Math.max(2, (Number(prev) || 4) - 1)))}
+                    className="flex h-9 w-10 items-center justify-center rounded-lg bg-amber-400/10 hover:bg-amber-400/25 text-amber-200 hover:text-white cursor-pointer active:scale-95 transition-all"
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <input
+                    type="number"
+                    min={2}
+                    max={50}
+                    value={customMaxPlayers}
+                    onChange={e => setCustomMaxPlayers(e.target.value)}
+                    className="flex-1 bg-transparent text-center font-black text-sm text-white outline-none"
+                  />
+                  <span className="text-[11px] font-black text-amber-300 mr-2.5 uppercase tracking-wider drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]">Players</span>
+                  <button
+                    type="button"
+                    onClick={() => setCustomMaxPlayers(prev => String(Math.min(50, (Number(prev) || 4) + 1)))}
+                    className="flex h-9 w-10 items-center justify-center rounded-lg bg-amber-400/10 hover:bg-amber-400/25 text-amber-200 hover:text-white cursor-pointer active:scale-95 transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
               {/* Host Name Input */}
               <div>
                 <label className="block text-[11px] font-black text-amber-200/90 uppercase tracking-wider mb-1.5">Your Name</label>
