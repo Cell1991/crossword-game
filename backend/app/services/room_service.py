@@ -298,8 +298,7 @@ class RoomService:
             raise HTTPException(status_code=400, detail=f"At least {settings.MIN_PLAYERS} players are needed to start")
 
         # Deal starting rack to each player
-        base_hp = room.starting_hp if room.starting_hp is not None else 100
-        starting_hp = base_hp + max(0, len(players) - 2) * 20
+        starting_hp = room.starting_hp if room.starting_hp is not None else 100
         bag = list(game.tile_bag)
         for player in players:
             player.hp = starting_hp
@@ -311,7 +310,7 @@ class RoomService:
         game.status = "PLAYING"
         game.current_player_id = players[0].id if players else None
         game.max_turns = room.max_turns if room.game_mode == "TURNS" else None
-        game.starting_hp = base_hp
+        game.starting_hp = starting_hp
         room.status = "PLAYING"
         room.started_at = get_utc_now()
         game.turn_started_at = get_utc_now()
