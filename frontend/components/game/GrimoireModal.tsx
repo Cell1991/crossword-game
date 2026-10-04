@@ -204,18 +204,18 @@ export const GrimoireModal: React.FC<GrimoireModalProps> = ({
                         animate={{ opacity: 1 }}
                         transition={{ delay: index * 0.015, duration: 0.12 }}
                         onClick={() => handleCopyWord(word)}
-                        className={`group relative flex items-center justify-center p-2.5 sm:p-3.5 border-b border-indigo-500/20 ${
+                        className={`group relative flex items-center justify-start px-3.5 sm:px-4 py-2 sm:py-2.5 border-b border-indigo-500/20 ${
                           isRightCol ? '' : 'sm:border-r sm:border-indigo-500/20'
                         } hover:bg-indigo-950/50 active:bg-indigo-900/60 transition-colors cursor-pointer select-none`}
                       >
                         {/* Word Letter Tiles */}
-                        <div className="flex items-center justify-center gap-1 sm:gap-1.5 flex-wrap">
+                        <div className="flex items-center justify-start gap-1 flex-wrap">
                           {word.split('').map((ch, i) => (
                             <div
                               key={i}
-                              className="tile-face flex h-7 w-6 sm:h-8 sm:w-7 items-center justify-center rounded-md sm:rounded-lg border border-amber-100/90 shadow-sm"
+                              className="tile-face flex h-[26px] w-[21px] sm:h-[28px] sm:w-[23px] items-center justify-center rounded-[5px] sm:rounded-md border border-amber-100/90 shadow-sm"
                             >
-                              <span className="tile-letter tile-letter-orange text-sm sm:text-base font-maple leading-none">
+                              <span className="tile-letter tile-letter-orange text-xs sm:text-[13px] font-maple leading-none">
                                 {ch}
                               </span>
                             </div>
