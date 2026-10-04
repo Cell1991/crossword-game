@@ -31,6 +31,7 @@ export interface SceneRenderConfig {
   model: BoardModel;
   animTime?: number;
   tileAnimations?: Map<string, number>;
+  flipAnimations?: Map<string, number>;
 }
 
 /**
@@ -99,6 +100,7 @@ export class BoardCompositor {
       temporaryTilesValid: config.temporaryTilesValid,
       animTime: config.animTime,
       tileAnimations: config.tileAnimations,
+      flipAnimations: config.flipAnimations,
     };
 
     // 3. Layer 2: Committed Board Tiles

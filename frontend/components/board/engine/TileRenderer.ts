@@ -11,6 +11,7 @@ export interface TileRenderContext {
   temporaryTilesValid: boolean | null;
   animTime?: number;
   tileAnimations?: Map<string, number>;
+  flipAnimations?: Map<string, number>;
 }
 
 function drawRoundedRect(
@@ -376,12 +377,38 @@ export class TileRenderer {
     isFrozen = false,
     isLastMove = false
   ): void {
-    const { ctx, offset, cellSize, lowPower, tilePalette, temporaryTilesValid, animTime, tileAnimations } = context;
+    const { ctx, offset, cellSize, lowPower, tilePalette, temporaryTilesValid, animTime, tileAnimations, flipAnimations } = context;
     const x = offset.x + col * cellSize;
     const y = offset.y + row * cellSize;
     const pad = Math.max(1, cellSize * 0.06);
     const tileW = cellSize - pad * 2;
     const radius = Math.max(2, cellSize * 0.12);
+
+    // 3D Card Flip Animation (flip secret blue sparkle card to revealed letter on opponent confirm)
+    const flipStart = flipAnimations?.get(`${row}_${col}`);
+    let isFlipping = false;
+    let flipProgress = 1.0;
+    let flipScaleX = 1.0;
+    let flipPop = 1.0;
+    let flipLiftY = 0;
+
+    if (!lowPower && flipStart && animTime) {
+      const flipElapsed = animTime - flipStart;
+      const flipDuration = 480;
+      if (flipElapsed >= 0 && flipElapsed < flipDuration) {
+        isFlipping = true;
+        flipProgress = flipElapsed / flipDuration;
+        const angle = flipProgress * Math.PI; // 0 to PI
+        const cosA = Math.cos(angle);
+        flipScaleX = Math.max(0.04, Math.abs(cosA));
+        flipLiftY = -Math.sin(angle) * cellSize * 0.18;
+        flipPop = 1.0 + 0.15 * Math.sin(angle);
+      }
+    }
+
+    // First half of flip (< 0.5): Blue Star Card face. Second half (>= 0.5): Revealed letter face.
+    const effectiveIsRemote = isFlipping ? (flipProgress < 0.5) : isRemote;
+    const effectiveShowLetter = isFlipping ? (flipProgress >= 0.5 ? showLetter : false) : showLetter;
 
     // Animation physics (spring drop & bounce when placed, or gemstone morph on confirm)
     const animStart = tileAnimations?.get(`${row}_${col}`);
@@ -390,13 +417,13 @@ export class TileRenderer {
     let animProgress = 1.0;
     let morphProgress = 1.0;
 
-    const isConfirmed = !isTemporary && !isRemote;
+    const isConfirmed = !isTemporary && !effectiveIsRemote;
     const is2L = isConfirmed && isDoubleLetterCell(row, col);
     const is3L = isConfirmed && isTripleLetterCell(row, col);
     const isPower = isConfirmed && isPowerCell(row, col);
     const isSpecialCellTile = is2L || is3L || isPower;
 
-    if (!lowPower && animStart && animTime) {
+    if (!lowPower && animStart && animTime && !isFlipping) {
       const elapsed = animTime - animStart;
       if (isSpecialCellTile || isFrozen) {
         if (elapsed >= 0 && elapsed < 650) {
@@ -412,19 +439,22 @@ export class TileRenderer {
       }
     }
 
-    const isGolden = !isRemote && !isFrozen && !isSpecialCellTile;
-    const isCorrectPlacement = !isRemote && isTemporary && temporaryTilesValid === true;
-    const isInvalidPlacement = !isRemote && isTemporary && temporaryTilesValid === false;
-    const isPendingPlacement = !isRemote && isTemporary && (temporaryTilesValid === null || temporaryTilesValid === undefined);
-    const isPlacedTile = !isRemote && isTemporary;
+    const isGolden = !effectiveIsRemote && !isFrozen && !isSpecialCellTile;
+    const isCorrectPlacement = !effectiveIsRemote && isTemporary && temporaryTilesValid === true;
+    const isInvalidPlacement = !effectiveIsRemote && isTemporary && temporaryTilesValid === false;
+    const isPendingPlacement = !effectiveIsRemote && isTemporary && (temporaryTilesValid === null || temporaryTilesValid === undefined);
+    const isPlacedTile = !effectiveIsRemote && isTemporary;
 
     const cx = x + cellSize / 2;
     const cy = y + cellSize / 2;
-    const hasTransform = scale !== 1.0 || bounceY !== 0;
+    const hasTransform = scale !== 1.0 || bounceY !== 0 || isFlipping;
     if (hasTransform) {
       ctx.save();
-      ctx.translate(cx, cy + bounceY);
-      ctx.scale(scale, scale);
+      const totalBounceY = bounceY + (isFlipping ? flipLiftY : 0);
+      const totalScaleX = scale * (isFlipping ? flipScaleX * flipPop : 1.0);
+      const totalScaleY = scale * (isFlipping ? flipPop : 1.0);
+      ctx.translate(cx, cy + totalBounceY);
+      ctx.scale(totalScaleX, totalScaleY);
       ctx.translate(-cx, -cy);
     }
 
@@ -454,7 +484,7 @@ export class TileRenderer {
       ctx.fill();
       ctx.restore();
     } else {
-      const shadowFill = isRemote
+      const shadowFill = effectiveIsRemote
         ? 'rgba(6, 182, 212, 0.5)'
         : is2L
         ? 'rgba(4, 30, 15, 0.7)'
@@ -478,7 +508,7 @@ export class TileRenderer {
         } else if (isLastMove) {
           ctx.shadowColor = 'rgba(245, 158, 11, 0.75)';
           ctx.shadowBlur = Math.max(10, cellSize * 0.24);
-        } else if (isRemote) {
+        } else if (effectiveIsRemote) {
           ctx.shadowColor = 'rgba(6, 182, 212, 0.8)';
           ctx.shadowBlur = Math.max(8, cellSize * 0.2);
         } else if (is2L) {
@@ -530,7 +560,7 @@ export class TileRenderer {
     if (isFrozen) {
       // 3D Glacial Ice Block Encasing (matching realistic reference)
       drawGlacialIceBlock(ctx, x + pad, y + pad, tileW, radius, cellSize);
-    } else if (isRemote) {
+    } else if (effectiveIsRemote) {
       const ghostGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
       ghostGrad.addColorStop(0, '#0284c7');
       ghostGrad.addColorStop(0.3, '#0369a1');
@@ -586,7 +616,7 @@ export class TileRenderer {
     }
 
     // 3. Specular Sheen, Chiseled Facets & Holographic Glyphs
-    if (isRemote) {
+    if (effectiveIsRemote) {
       ctx.save();
       ctx.beginPath();
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
@@ -629,7 +659,7 @@ export class TileRenderer {
         ctx.stroke();
       }
       ctx.restore();
-    } else if (!isFrozen && !isRemote) {
+    } else if (!isFrozen && !effectiveIsRemote) {
       ctx.save();
       ctx.beginPath();
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
@@ -689,7 +719,7 @@ export class TileRenderer {
     }
 
     // 4. Stroke outline
-    if (isRemote) {
+    if (effectiveIsRemote) {
       ctx.save();
       ctx.shadowColor = '#38bdf8';
       ctx.shadowBlur = lowPower ? 0 : Math.max(6, cellSize * 0.16);
@@ -836,13 +866,13 @@ export class TileRenderer {
       ctx.stroke();
     }
 
-    const multiplier = (!isRemote && (isGolden || isSpecialCellTile || isFrozen))
+    const multiplier = (!effectiveIsRemote && (isGolden || isSpecialCellTile || isFrozen))
       ? cellMultiplier(row, col)
       : 1;
     const effectiveValue = value * multiplier;
 
     // 5. Letter & Score Rendering
-    if (showLetter && cellSize >= 12) {
+    if (effectiveShowLetter && cellSize >= 12) {
       ctx.save();
       if (isBlankLetter(letter)) {
         const cx = x + cellSize / 2;
@@ -862,7 +892,7 @@ export class TileRenderer {
         ctx.fill();
       } else {
         const letterFill = tilePalette.letter.color;
-        if (isRemote) {
+        if (effectiveIsRemote) {
           const letterGrad = ctx.createLinearGradient(0, y + cellSize * 0.27, 0, y + cellSize * 0.72);
           letterGrad.addColorStop(0, '#0f172a');
           letterGrad.addColorStop(1, '#334155');
@@ -886,13 +916,13 @@ export class TileRenderer {
           ctx.scale(0.92, 1.0);
         }
         
-        if (!isRemote) {
+        if (!effectiveIsRemote) {
           ctx.lineJoin = 'round';
           ctx.lineWidth = Math.max(2.4, fontSize * 0.11);
           ctx.strokeStyle = isFrozen ? '#011627' : tilePalette.letter.stroke;
           ctx.strokeText(letter, 0, 0);
         }
-        if (!lowPower && !isRemote) {
+        if (!lowPower && !effectiveIsRemote) {
           ctx.shadowColor = isFrozen ? 'rgba(56, 189, 248, 0.95)' : tilePalette.letter.shadow;
           ctx.shadowBlur = isFrozen ? Math.max(4, cellSize * 0.09) : Math.max(2, cellSize * 0.06);
           ctx.shadowOffsetY = Math.max(1.2, cellSize * 0.04);
@@ -925,7 +955,7 @@ export class TileRenderer {
     }
 
     // 5.5 Corner Status Pip for staged / recently placed tiles (ONLY on normal gold tiles)
-    if (cellSize >= 16 && !isRemote && !isSpecialCellTile && !isFrozen && (isPlacedTile || isLastMove)) {
+    if (cellSize >= 16 && !effectiveIsRemote && !isSpecialCellTile && !isFrozen && (isPlacedTile || isLastMove)) {
       ctx.save();
       const pipOffset = Math.max(3.5, cellSize * 0.12);
       const pipX = x + pad + pipOffset;
@@ -971,7 +1001,7 @@ export class TileRenderer {
     }
 
     // Shimmer wave gleam across temporary placed tiles
-    if (isTemporary && !isRemote && animTime && !lowPower) {
+    if (isTemporary && !effectiveIsRemote && animTime && !lowPower) {
       const phase = (animTime / 1400) % 1;
       const gleamX = x + pad + (tileW * 2.2) * phase - tileW * 0.6;
       const gleamGrad = ctx.createLinearGradient(gleamX - 18, y + pad, gleamX + 18, y + pad + tileW);
@@ -1001,7 +1031,57 @@ export class TileRenderer {
       ctx.restore();
     }
 
-    // 6. Gemstone Transformation FX: Shockwave Aura Ring & Specular Beam Sweep
+    // 6. 3D Card Flip Visual FX (Celestial Lens Flare Glint at 50% midpoint & Golden Ripple Wave on settle)
+    if (isFlipping && !lowPower) {
+      // Midpoint Lens Flare Sparkle (0.35 <= flipProgress <= 0.65)
+      if (flipProgress >= 0.35 && flipProgress <= 0.65) {
+        const midT = 1.0 - Math.abs(flipProgress - 0.5) / 0.15; // 0 -> 1 -> 0
+        ctx.save();
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = Math.max(12, cellSize * 0.35 * midT);
+        
+        // Horizontal energy beam
+        const beamW = cellSize * (0.8 + midT * 0.6);
+        const beamH = Math.max(2, cellSize * 0.07 * midT);
+        const flareGrad = ctx.createLinearGradient(cx - beamW / 2, cy, cx + beamW / 2, cy);
+        flareGrad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+        flareGrad.addColorStop(0.5, `rgba(255, 255, 255, ${0.95 * midT})`);
+        flareGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        ctx.fillStyle = flareGrad;
+        ctx.fillRect(cx - beamW / 2, cy - beamH / 2, beamW, beamH);
+
+        // Center 4-point solar diamond glint
+        const flareSize = Math.max(4, cellSize * 0.28 * midT);
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - flareSize);
+        ctx.lineTo(cx + flareSize * 0.25, cy - flareSize * 0.25);
+        ctx.lineTo(cx + flareSize, cy);
+        ctx.lineTo(cx + flareSize * 0.25, cy + flareSize * 0.25);
+        ctx.lineTo(cx, cy + flareSize);
+        ctx.lineTo(cx - flareSize * 0.25, cy + flareSize * 0.25);
+        ctx.lineTo(cx - flareSize, cy);
+        ctx.lineTo(cx - flareSize * 0.25, cy - flareSize * 0.25);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Golden Landing Sparkle Wave on settle (0.65 <= flipProgress <= 1.0)
+      if (flipProgress > 0.65) {
+        const settleProgress = (flipProgress - 0.65) / 0.35; // 0 -> 1
+        ctx.save();
+        ctx.beginPath();
+        const waveRadius = (tileW * 0.45) + (cellSize * 0.45) * settleProgress;
+        ctx.arc(cx, cy, waveRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(251, 191, 36, ${(1 - settleProgress) * 0.75})`;
+        ctx.lineWidth = Math.max(1.4, cellSize * 0.045 * (1 - settleProgress));
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // 7. Gemstone Transformation FX: Shockwave Aura Ring & Specular Beam Sweep
     if (morphProgress < 1.0 && !lowPower && (isSpecialCellTile || isFrozen)) {
       ctx.save();
       const waveRadius = tileW * (0.4 + morphProgress * 0.75);
@@ -1011,7 +1091,7 @@ export class TileRenderer {
       else if (isFrozen) auraColor = 'rgba(224, 242, 254, ';
       else if (isPower) auraColor = 'rgba(56, 189, 248, ';
 
-      // 6.1 Expanding Shockwave Ring
+      // 7.1 Expanding Shockwave Ring
       ctx.strokeStyle = `${auraColor}${waveAlpha})`;
       ctx.lineWidth = Math.max(1.5, cellSize * 0.045 * (1 - morphProgress));
       ctx.shadowColor = `${auraColor}1)`;
@@ -1020,7 +1100,7 @@ export class TileRenderer {
       ctx.arc(cx, cy, waveRadius, 0, Math.PI * 2);
       ctx.stroke();
 
-      // 6.2 Diagonal Specular Gleam Sweep across the newly transformed face
+      // 7.2 Diagonal Specular Gleam Sweep across the newly transformed face
       ctx.beginPath();
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
       ctx.clip();
@@ -1037,12 +1117,12 @@ export class TileRenderer {
     }
 
     // Landing drop shockwave on the board
-    if (animStart && animProgress < 1.0 && !lowPower && !isSpecialCellTile && !isFrozen) {
+    if (animStart && animProgress < 1.0 && !lowPower && !isSpecialCellTile && !isFrozen && !isFlipping) {
       ctx.save();
       ctx.beginPath();
       const waveRadius = (tileW * 0.48) + (cellSize * 0.38) * animProgress;
       ctx.arc(cx, cy, waveRadius, 0, Math.PI * 2);
-      ctx.strokeStyle = isRemote
+      ctx.strokeStyle = effectiveIsRemote
         ? `rgba(56, 189, 248, ${(1 - animProgress) * 0.65})`
         : `rgba(251, 191, 36, ${(1 - animProgress) * 0.55})`;
       ctx.lineWidth = Math.max(1.2, cellSize * 0.04 * (1 - animProgress));

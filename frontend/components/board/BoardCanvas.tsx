@@ -99,6 +99,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   const touchPointsRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; x: number; y: number } | null>(null);
   const tilePlacementTimesRef = useRef<Map<string, number>>(new Map());
+  const flipTileTimesRef = useRef<Map<string, number>>(new Map());
   const prevTemporaryTilesRef = useRef<PlacedTile[]>([]);
   const prevRemotePlacementsRef = useRef<{ row: number; col: number }[]>([]);
   const prevBoardStateRef = useRef<Record<string, BoardCell>>({});
@@ -128,6 +129,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       model: modelRef.current,
       animTime: performance.now(),
       tileAnimations: tilePlacementTimesRef.current,
+      flipAnimations: flipTileTimesRef.current,
       dragHoverCell: currentHoverCellRef.current,
       dragHoverTrails: hoverTrailMapRef.current,
     });
@@ -202,7 +204,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     };
   }, []);
 
-  // Track tile placement timestamps and drive active spring & gleam animations
+  // Track tile placement timestamps and drive active spring, gleam & card-flip animations
   useEffect(() => {
     const prevMap = new Map(prevTemporaryTilesRef.current.map(t => [t.tile_id, t]));
     const prevRemoteKeys = new Set(prevRemotePlacementsRef.current.map(r => `${r.row}_${r.col}`));
@@ -229,6 +231,11 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
         if (!prevBoardKeys.has(key)) {
           tilePlacementTimesRef.current.set(key, now);
           hasNew = true;
+          // If this tile was an opponent remote preview or freshly confirmed by another player, trigger the 3D card flip reveal
+          const wasLocal = prevTemporaryTilesRef.current.some(t => `${t.row}_${t.col}` === key);
+          if (prevRemoteKeys.has(key) || !wasLocal) {
+            flipTileTimesRef.current.set(key, now);
+          }
         }
       }
     }
@@ -239,7 +246,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     }
     prevFrozenTileRef.current = frozenTile;
 
-    // Clean up placements that were unstaged/recalled
+    // Clean up placements and flips that expired
     const currentKeys = new Set([
       ...temporaryTiles.map(t => `${t.row}_${t.col}`),
       ...remotePlacements.map(r => `${r.row}_${r.col}`),
@@ -249,6 +256,11 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     for (const key of Array.from(tilePlacementTimesRef.current.keys())) {
       if (key.includes('_') && !currentKeys.has(key)) {
         tilePlacementTimesRef.current.delete(key);
+      }
+    }
+    for (const [key, ts] of Array.from(flipTileTimesRef.current.entries())) {
+      if (now - ts > 600 || !currentKeys.has(key)) {
+        flipTileTimesRef.current.delete(key);
       }
     }
     prevTemporaryTilesRef.current = temporaryTiles;
@@ -262,9 +274,17 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
         draw();
         let stillAnimating = false;
         for (const ts of tilePlacementTimesRef.current.values()) {
-          if (time - ts < 400) {
+          if (time - ts < 650) {
             stillAnimating = true;
             break;
+          }
+        }
+        if (!stillAnimating) {
+          for (const ts of flipTileTimesRef.current.values()) {
+            if (time - ts < 550) {
+              stillAnimating = true;
+              break;
+            }
           }
         }
         if (stillAnimating) {

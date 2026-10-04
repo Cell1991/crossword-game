@@ -35,6 +35,7 @@ export interface BoardScene {
   model?: BoardModel;
   animTime?: number;
   tileAnimations?: Map<string, number>;
+  flipAnimations?: Map<string, number>;
 }
 
 const sharedModel = new BoardModel();
