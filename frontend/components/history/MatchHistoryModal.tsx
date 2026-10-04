@@ -784,55 +784,117 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
 
                           {/* Player's Rack at this turn */}
                           {(() => {
-                            const rackTiles = currentMove.rack_before && currentMove.rack_before.length > 0
+                            const rawRack = currentMove.rack_before && currentMove.rack_before.length > 0
                               ? currentMove.rack_before
-                              : (currentMove.placed_tiles || []);
-                            if (rackTiles.length === 0) return null;
+                              : null;
 
-                            const placedCounts = new Map<string, number>();
-                            if (currentMove.placed_tiles) {
-                              for (const pt of currentMove.placed_tiles) {
-                                const l = pt.letter.toUpperCase();
-                                placedCounts.set(l, (placedCounts.get(l) || 0) + 1);
+                            // If we have recorded 7-tile rack, use it. Otherwise, place known tiles and pad to 7.
+                            let displayTiles: Array<{ letter: string; value: number; isPlaced: boolean; isUnknown?: boolean }> = [];
+                            
+                            if (rawRack && rawRack.length > 0) {
+                              const placedCounts = new Map<string, number>();
+                              if (currentMove.placed_tiles) {
+                                for (const pt of currentMove.placed_tiles) {
+                                  const l = pt.letter.toUpperCase();
+                                  placedCounts.set(l, (placedCounts.get(l) || 0) + 1);
+                                }
+                              }
+                              const matchedPlaced = new Map<string, number>();
+
+                              displayTiles = rawRack.map((t) => {
+                                const lUpper = t.letter.toUpperCase();
+                                const totalPlaced = placedCounts.get(lUpper) || 0;
+                                const alreadyMatched = matchedPlaced.get(lUpper) || 0;
+                                const isPlaced = alreadyMatched < totalPlaced;
+                                if (isPlaced) {
+                                  matchedPlaced.set(lUpper, alreadyMatched + 1);
+                                }
+                                return { letter: t.letter, value: t.value, isPlaced };
+                              });
+                            } else if (currentMove.placed_tiles && currentMove.placed_tiles.length > 0) {
+                              // Legacy matches fallback: show placed tiles + placeholders up to 7
+                              displayTiles = currentMove.placed_tiles.map(pt => ({
+                                letter: pt.letter,
+                                value: pt.value,
+                                isPlaced: true,
+                              }));
+                              const missingCount = Math.max(0, 7 - displayTiles.length);
+                              for (let k = 0; k < missingCount; k++) {
+                                displayTiles.push({ letter: '?', value: 0, isPlaced: false, isUnknown: true });
                               }
                             }
-                            const matchedPlaced = new Map<string, number>();
+
+                            if (displayTiles.length === 0) return null;
 
                             return (
-                              <div className="pt-2 border-t border-white/[0.08] space-y-1.5">
+                              <div className="pt-2.5 border-t border-white/[0.08] space-y-1.5">
                                 <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                                  <span>Rack at Turn Start</span>
-                                  <span className="text-[9px] text-slate-500 font-normal">{rackTiles.length} tiles</span>
+                                  <span className="flex items-center gap-1.5 text-slate-300">
+                                    <span>Player Hand Rack</span>
+                                    <span className="text-[9px] text-amber-400/80 font-normal">
+                                      {rawRack ? '(Full 7 Tiles)' : '(Archived Move)'}
+                                    </span>
+                                  </span>
+                                  <span className="text-[9px] text-cyan-400 font-medium">
+                                    {displayTiles.filter(t => t.isPlaced && !t.isUnknown).length} Played
+                                  </span>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                  {rackTiles.map((t, idx) => {
-                                    const letterUpper = t.letter.toUpperCase();
-                                    const totalPlaced = placedCounts.get(letterUpper) || 0;
-                                    const alreadyMatched = matchedPlaced.get(letterUpper) || 0;
-                                    const isPlaced = alreadyMatched < totalPlaced;
-                                    if (isPlaced) {
-                                      matchedPlaced.set(letterUpper, alreadyMatched + 1);
-                                    }
 
-                                    return (
-                                      <div
-                                        key={idx}
-                                        className={`tile-face relative flex flex-col items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg font-sans select-none border transition-all ${
-                                          isPlaced
-                                            ? 'border-amber-300 ring-2 ring-cyan-400/80 shadow-[0_0_10px_rgba(34,211,238,0.5)] bg-slate-900 scale-105'
-                                            : 'border-amber-400/30 opacity-70 bg-slate-950'
+                                <div className="grid grid-cols-7 gap-1 sm:gap-1.5 pt-0.5">
+                                  {displayTiles.map((t, idx) => (
+                                    <div
+                                      key={idx}
+                                      className={`tile-face relative flex flex-col items-center justify-center h-8 sm:h-9 rounded-lg font-sans select-none overflow-hidden transition-all ${
+                                        t.isUnknown
+                                          ? 'border border-dashed border-white/20 bg-slate-950/40 opacity-40'
+                                          : t.isPlaced
+                                          ? 'border border-cyan-300 ring-2 ring-cyan-400/80 shadow-[0_0_12px_rgba(34,211,238,0.6)] scale-[1.03] z-10'
+                                          : 'border border-amber-300/60 opacity-90 shadow-sm'
+                                      }`}
+                                      title={
+                                        t.isUnknown
+                                          ? 'Unrecorded tile from earlier match archive'
+                                          : t.isPlaced
+                                          ? `Placed in this turn: ${t.letter} (${t.value} pts)`
+                                          : `Held in rack: ${t.letter} (${t.value} pts)`
+                                      }
+                                    >
+                                      {/* Top Glint */}
+                                      {!t.isUnknown && (
+                                        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-100/70 to-transparent pointer-events-none z-10" />
+                                      )}
+
+                                      {/* Letter with crisp black text stroke */}
+                                      <span
+                                        className={`tile-letter tile-letter-orange relative z-20 text-[13px] sm:text-[15px] font-maple font-black leading-none inline-block ${
+                                          t.isUnknown ? 'text-slate-500 font-sans' : 'text-white'
                                         }`}
-                                        title={isPlaced ? `Played: ${t.letter} (${t.value} pts)` : `Held: ${t.letter} (${t.value} pts)`}
+                                        style={
+                                          !t.isUnknown
+                                            ? {
+                                                WebkitTextStroke: '0.85px #000000',
+                                                textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 1px 2px #000',
+                                              }
+                                            : undefined
+                                        }
                                       >
-                                        <span className="text-xs sm:text-sm font-maple text-white font-bold leading-none">
-                                          {t.letter}
-                                        </span>
-                                        <span className="absolute bottom-0.5 right-0.5 text-[6px] sm:text-[7px] font-mono font-black text-amber-200 leading-none">
+                                        {t.letter}
+                                      </span>
+
+                                      {/* Value subscript */}
+                                      {!t.isUnknown && (
+                                        <span
+                                          className="absolute bottom-0.5 right-0.5 z-20 text-[6.5px] sm:text-[7.5px] font-mono font-black text-amber-200 leading-none"
+                                          style={{
+                                            WebkitTextStroke: '0.4px #000000',
+                                            textShadow: '0 1px 1px #000',
+                                          }}
+                                        >
                                           {t.value}
                                         </span>
-                                      </div>
-                                    );
-                                  })}
+                                      )}
+                                    </div>
+                                  ))}
                                 </div>
                               </div>
                             );
