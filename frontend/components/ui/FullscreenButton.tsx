@@ -5,7 +5,6 @@ import { Maximize, Minimize } from 'lucide-react';
 
 interface FullscreenButtonProps {
   className?: string;
-  showLabel?: boolean;
 }
 
 const subscribeToFullscreenSupport = () => () => {};
@@ -15,7 +14,7 @@ const getFullscreenSupport = () => Boolean(
 );
 const getServerFullscreenSupport = () => true;
 
-export default function FullscreenButton({ className = '', showLabel = true }: FullscreenButtonProps) {
+export default function FullscreenButton({ className = '' }: FullscreenButtonProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const supported = useSyncExternalStore(subscribeToFullscreenSupport, getFullscreenSupport, getServerFullscreenSupport);
 
@@ -73,7 +72,7 @@ export default function FullscreenButton({ className = '', showLabel = true }: F
     <button
       type="button"
       onClick={toggleFullscreen}
-      className={`group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-purple-400/50 bg-gradient-to-r from-purple-500/20 via-purple-950/50 to-indigo-500/20 hover:from-purple-500/35 hover:to-indigo-500/35 hover:border-purple-300 text-xs sm:text-sm font-black text-purple-200 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${className}`}
+      className={`group flex items-center justify-center h-[38px] w-[38px] sm:h-[40px] sm:w-[40px] rounded-2xl border-2 border-purple-400/50 bg-gradient-to-r from-purple-500/20 via-purple-950/50 to-indigo-500/20 hover:from-purple-500/35 hover:to-indigo-500/35 hover:border-purple-300 text-purple-200 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 shrink-0 ${className}`}
       title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
       aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
     >
@@ -81,11 +80,6 @@ export default function FullscreenButton({ className = '', showLabel = true }: F
         <Minimize className="w-4 h-4 text-purple-300 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(168,85,247,0.9)]" strokeWidth={2.5} />
       ) : (
         <Maximize className="w-4 h-4 text-purple-300 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(168,85,247,0.9)]" strokeWidth={2.5} />
-      )}
-      {showLabel && (
-        <span className="tracking-wide">
-          {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-        </span>
       )}
     </button>
   );
