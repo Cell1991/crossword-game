@@ -50,6 +50,7 @@ import {
 } from '@/lib/api';
 import { BoardCanvas } from '@/components/board/BoardCanvas';
 import { useBoardCamera } from '@/hooks/useBoardCamera';
+import { isBlankLetter } from '@/lib/tiles';
 
 const EMPTY_CELL_POSITIONS: CellPosition[] = [];
 const noop = () => {};
@@ -938,13 +939,19 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
 
                             // Track which tiles were played in this move
                             const placedCounts = new Map<string, number>();
+                            let placedBlankCount = 0;
                             if (currentMove.placed_tiles) {
                               for (const pt of currentMove.placed_tiles) {
-                                const l = pt.letter.toUpperCase();
-                                placedCounts.set(l, (placedCounts.get(l) || 0) + 1);
+                                if (isBlankLetter(pt.letter) || pt.letter.toUpperCase() === 'BLANK' || pt.value === 0) {
+                                  placedBlankCount++;
+                                } else {
+                                  const l = pt.letter.toUpperCase();
+                                  placedCounts.set(l, (placedCounts.get(l) || 0) + 1);
+                                }
                               }
                             }
                             const matchedPlaced = new Map<string, number>();
+                            let matchedBlankCount = 0;
 
                             return (
                               <div className="pt-2.5 border-t border-white/[0.08] space-y-2">
@@ -960,12 +967,21 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
 
                                 <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                                   {rackTiles.map((t, idx) => {
-                                    const lUpper = t.letter.toUpperCase();
-                                    const totalPlaced = placedCounts.get(lUpper) || 0;
-                                    const alreadyMatched = matchedPlaced.get(lUpper) || 0;
-                                    const isPlaced = alreadyMatched < totalPlaced;
-                                    if (isPlaced) {
-                                      matchedPlaced.set(lUpper, alreadyMatched + 1);
+                                    const isBlank = isBlankLetter(t.letter) || t.letter.toUpperCase() === 'BLANK' || t.value === 0;
+                                    let isPlaced = false;
+                                    if (isBlank) {
+                                      if (matchedBlankCount < placedBlankCount) {
+                                        isPlaced = true;
+                                        matchedBlankCount++;
+                                      }
+                                    } else {
+                                      const lUpper = t.letter.toUpperCase();
+                                      const totalPlaced = placedCounts.get(lUpper) || 0;
+                                      const alreadyMatched = matchedPlaced.get(lUpper) || 0;
+                                      if (alreadyMatched < totalPlaced) {
+                                        isPlaced = true;
+                                        matchedPlaced.set(lUpper, alreadyMatched + 1);
+                                      }
                                     }
 
                                     return (
@@ -978,8 +994,8 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                         }`}
                                         title={
                                           isPlaced
-                                            ? `Played in this move: ${t.letter} (${t.value} pts)`
-                                            : `Held in rack: ${t.letter} (${t.value} pts)`
+                                            ? `Played in this move: ${isBlank ? 'Wildcard Blank' : t.letter} (${t.value} pts)`
+                                            : `Held in rack: ${isBlank ? 'Wildcard Blank' : t.letter} (${t.value} pts)`
                                         }
                                       >
                                         {/* Top Highlight Glint */}
@@ -989,18 +1005,33 @@ export const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({
                                           } to-transparent pointer-events-none z-10`}
                                         />
 
-                                        {/* Authentic Letter (Solid Maple font without interior stroke lines) */}
-                                        <span
-                                          className={`tile-letter tile-letter-orange relative z-20 text-[19px] sm:text-[21px] leading-none font-maple inline-block ${
-                                            t.letter.toUpperCase() === 'W'
-                                              ? 'scale-x-90 -translate-x-[0.5px]'
-                                              : t.letter.toUpperCase() === 'M'
-                                              ? 'scale-x-95'
-                                              : ''
-                                          }`}
-                                        >
-                                          {t.letter}
-                                        </span>
+                                        {/* Letter / 4-Pointed Wildcard Star */}
+                                        {isBlank ? (
+                                          <div className="relative z-20 flex items-center justify-center">
+                                            <svg
+                                              viewBox="0 0 24 24"
+                                              className="tile-blank-star w-4 h-4 sm:w-5 sm:h-5 text-amber-300"
+                                              fill="currentColor"
+                                              stroke="currentColor"
+                                              strokeWidth="1.5"
+                                              strokeLinejoin="round"
+                                            >
+                                              <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+                                            </svg>
+                                          </div>
+                                        ) : (
+                                          <span
+                                            className={`tile-letter tile-letter-orange relative z-20 text-[19px] sm:text-[21px] leading-none font-maple inline-block ${
+                                              t.letter.toUpperCase() === 'W'
+                                                ? 'scale-x-90 -translate-x-[0.5px]'
+                                                : t.letter.toUpperCase() === 'M'
+                                                ? 'scale-x-95'
+                                                : ''
+                                            }`}
+                                          >
+                                            {t.letter}
+                                          </span>
+                                        )}
 
                                         {/* Authentic Score Subscript */}
                                         <span className="tile-score-blue absolute bottom-0.5 right-1 z-20 text-[8.5px] sm:text-[9.5px] font-maple leading-none">
