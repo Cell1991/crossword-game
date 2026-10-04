@@ -385,19 +385,26 @@ export default function HomePage() {
         <div className="absolute top-1/2 -right-20 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
       </div>
 
-      {/* Sleek Golden Tactical Grid */}
-      <div 
-        className="pointer-events-none fixed inset-0 z-0 opacity-45"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, rgba(245, 158, 11, 0.2) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(245, 158, 11, 0.2) 1px, transparent 1px)
-          `,
-          backgroundSize: '48px 48px',
-          maskImage: 'radial-gradient(ellipse 75% 65% at 50% 50%, black 25%, transparent 80%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 75% 65% at 50% 50%, black 25%, transparent 80%)',
-        }}
-      />
+      {/* Sleek Golden Tactical Grid (Crisp High-Visibility SVG) */}
+      <div className="pointer-events-none fixed inset-0 z-0 select-none">
+        <svg className="h-full w-full opacity-75" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="golden-grid" width="44" height="44" patternUnits="userSpaceOnUse">
+              <path d="M 44 0 L 0 0 0 44" fill="none" stroke="rgba(245, 158, 11, 0.45)" strokeWidth="1.2" />
+              <circle cx="0" cy="0" r="1.5" fill="rgba(251, 191, 36, 0.85)" />
+            </pattern>
+            <radialGradient id="grid-fade" cx="50%" cy="50%" r="75%">
+              <stop offset="0%" stopColor="white" stopOpacity="1" />
+              <stop offset="55%" stopColor="white" stopOpacity="0.75" />
+              <stop offset="100%" stopColor="white" stopOpacity="0.15" />
+            </radialGradient>
+            <mask id="grid-mask">
+              <rect width="100%" height="100%" fill="url(#grid-fade)" />
+            </mask>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#golden-grid)" mask="url(#grid-mask)" />
+        </svg>
+      </div>
 
       {/* Subtle Background Particle Matrix */}
       <ParticleField className="pointer-events-none fixed inset-0 z-0 h-full w-full" accent="245, 158, 11" />
