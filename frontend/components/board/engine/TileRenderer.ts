@@ -558,6 +558,7 @@ export class TileRenderer {
     }
 
     // 2. Tile face fill
+    const isSmall = cellSize < 16;
     if (isFrozen) {
       // 3D Glacial Ice Block Encasing (matching realistic reference)
       drawGlacialIceBlock(ctx, x + pad, y + pad, tileW, radius, cellSize);
@@ -568,8 +569,12 @@ export class TileRenderer {
       ghostGrad.addColorStop(0.7, '#075985');
       ghostGrad.addColorStop(1, '#082f49');
       ctx.fillStyle = ghostGrad;
-      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-      ctx.fill();
+      if (isSmall) {
+        ctx.fillRect(x + pad, y + pad, tileW, tileW);
+      } else {
+        drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+        ctx.fill();
+      }
     } else if (is2L) {
       // 2L Emerald Green Gemstone Face Gradient
       const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
@@ -579,8 +584,12 @@ export class TileRenderer {
       grad.addColorStop(0.85, '#15803d');
       grad.addColorStop(1, '#064e3b');
       ctx.fillStyle = grad;
-      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-      ctx.fill();
+      if (isSmall) {
+        ctx.fillRect(x + pad, y + pad, tileW, tileW);
+      } else {
+        drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+        ctx.fill();
+      }
     } else if (is3L) {
       // 3L Ruby Crimson Gemstone Face Gradient
       const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
@@ -590,8 +599,12 @@ export class TileRenderer {
       grad.addColorStop(0.85, '#be123c');
       grad.addColorStop(1, '#881337');
       ctx.fillStyle = grad;
-      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-      ctx.fill();
+      if (isSmall) {
+        ctx.fillRect(x + pad, y + pad, tileW, tileW);
+      } else {
+        drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+        ctx.fill();
+      }
     } else if (isPower) {
       // Lightning Electric Cyan Power Gemstone Face Gradient
       const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
@@ -601,8 +614,12 @@ export class TileRenderer {
       grad.addColorStop(0.85, '#0369a1');
       grad.addColorStop(1, '#082f49');
       ctx.fillStyle = grad;
-      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-      ctx.fill();
+      if (isSmall) {
+        ctx.fillRect(x + pad, y + pad, tileW, tileW);
+      } else {
+        drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+        ctx.fill();
+      }
     } else {
       // Standard Golden Amber Resin Face Gradient
       const grad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
@@ -612,12 +629,16 @@ export class TileRenderer {
       grad.addColorStop(0.88, '#b45309');
       grad.addColorStop(1, '#78350f');
       ctx.fillStyle = grad;
-      drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
-      ctx.fill();
+      if (isSmall) {
+        ctx.fillRect(x + pad, y + pad, tileW, tileW);
+      } else {
+        drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);
+        ctx.fill();
+      }
     }
 
-    // 3. Specular Sheen, Chiseled Facets & Holographic Glyphs
-    if (effectiveIsRemote) {
+    // 3. Specular Sheen, Chiseled Facets & Holographic Glyphs (skipped when zoomed out for extreme speed)
+    if (!isSmall && effectiveIsRemote) {
       ctx.save();
       ctx.beginPath();
       drawRoundedRect(ctx, x + pad, y + pad, tileW, tileW, radius);

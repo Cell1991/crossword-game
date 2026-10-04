@@ -16,7 +16,10 @@ function detectLowPowerDevice() {
 }
 
 function canvasPixelRatio(lowPower: boolean) {
-  return Math.min(window.devicePixelRatio || 1, lowPower ? 1.5 : 2);
+  if (typeof window === 'undefined') return 1;
+  const isTouch = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
+  if (isTouch) return 1;
+  return Math.min(window.devicePixelRatio || 1, lowPower ? 1.25 : 2);
 }
 
 /** What the board shows, apart from the camera and the canvas size. */

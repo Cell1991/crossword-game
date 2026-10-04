@@ -71,40 +71,74 @@ export class GridRenderer {
         const cellType = isCenter ? CELL_TYPE_CENTER : getCellType(r, c);
 
         if (cellType !== 0) {
-          const specialRadius = Math.max(3, cellSize * 0.12);
-
           ctx.globalAlpha = lineAlpha;
+          const isSmall = cellSize < 16;
+          const specialRadius = isSmall ? 0 : Math.max(3, cellSize * 0.12);
+
           if (cellType === CELL_TYPE_TRIPLE) {
             ctx.fillStyle = '#7f1d1d';
-            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-            ctx.fill();
+            if (isSmall) {
+              ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+            } else {
+              drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+              ctx.fill();
+            }
+            if (cellSize >= 14) {
+              ctx.fillStyle = '#fecdd3';
+              ctx.font = `bold ${Math.max(9, Math.round(cellSize * 0.4))}px sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('3L', x + cellSize / 2, y + cellSize / 2);
+            }
           } else if (cellType === CELL_TYPE_DOUBLE) {
             ctx.fillStyle = '#166534';
-            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-            ctx.fill();
+            if (isSmall) {
+              ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+            } else {
+              drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+              ctx.fill();
+            }
+            if (cellSize >= 14) {
+              ctx.fillStyle = '#bbf7d0';
+              ctx.font = `bold ${Math.max(9, Math.round(cellSize * 0.4))}px sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('2L', x + cellSize / 2, y + cellSize / 2);
+            }
           } else if (cellType === CELL_TYPE_POWER) {
             ctx.fillStyle = '#0e7490';
-            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-            ctx.fill();
+            if (isSmall) {
+              ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+            } else {
+              drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+              ctx.fill();
+            }
+            if (cellSize >= 13) {
+              ctx.fillStyle = '#bae6fd';
+              ctx.font = `${Math.max(10, Math.round(cellSize * 0.52))}px sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('⚡', x + cellSize / 2, y + cellSize / 2);
+            }
           } else if (cellType === CELL_TYPE_CENTER) {
             ctx.fillStyle = '#1e1b4b';
-            drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
-            ctx.lineWidth = 1.2;
-            ctx.stroke();
+            if (isSmall) {
+              ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+            } else {
+              drawRoundedRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, specialRadius);
+              ctx.fill();
+              ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
+              ctx.lineWidth = 1.2;
+              ctx.stroke();
+            }
 
-            if (cellSize >= 12) {
-              ctx.save();
-              ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
-              ctx.shadowBlur = lowPower ? 0 : Math.max(4, cellSize * 0.2);
+            if (cellSize >= 10) {
               ctx.fillStyle = '#fbbf24';
-              const starSize = Math.max(12, Math.round(cellSize * 0.72));
+              const starSize = Math.max(10, Math.round(cellSize * 0.72));
               ctx.font = `${starSize}px sans-serif`;
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               ctx.fillText('★', x + cellSize / 2, y + cellSize / 2);
-              ctx.restore();
             }
           }
         }

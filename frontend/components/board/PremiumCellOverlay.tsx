@@ -47,15 +47,23 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
 }: PremiumCellOverlayProps) {
   const layerRef = useRef<HTMLDivElement>(null);
 
-  // Pure GPU transform: 0ms DOM reflow, 60-144 FPS
+  // Pure GPU transform with zero DOM overhead during mobile play & zoom out
   useLayoutEffect(() => {
     const layer = layerRef.current;
     if (!layer) return;
     layer.style.transformOrigin = '0 0';
     layer.style.willChange = 'transform';
 
+    const isTouch = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches);
+
     const applyCamera = () => {
       const { scale, offset } = camera.getView();
+      // On mobile touch devices or when zoomed out (scale < 0.65), bypass the 100+ DOM node tree completely
+      if (isTouch || scale < 0.65) {
+        if (layer.style.display !== 'none') layer.style.display = 'none';
+        return;
+      }
+      if (layer.style.display !== 'block') layer.style.display = 'block';
       layer.style.transform = `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${scale})`;
     };
     applyCamera();
