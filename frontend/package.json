@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@next/font": "^14.2.15",
     "canvas-confetti": "^1.9.4",
     "lucide-react": "^1.41.0",
     "motion": "^13.5.0",
