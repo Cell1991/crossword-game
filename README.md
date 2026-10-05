@@ -464,66 +464,10 @@ PYTHONPATH=. pytest tests/ -v
 
 <br/>
 
+<!-- Animated Core Development Crew SVG with Embedded Base64 Avatars -->
 <div align="center">
-
-<table>
-  <tr>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/Cell1991">
-        <img src="https://github.com/Cell1991.png" width="90" height="90" alt="Cell1991" /><br/><br/>
-        <img src="https://img.shields.io/badge/👑_Lead_Architect-f59e0b?style=flat-square" alt="Lead" /><br/>
-        <b>Cell1991</b><br/>
-        <sub>Chu</sub><br/>
-        <sub><i>Core Game Engine</i></sub>
-      </a>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/friend47">
-        <img src="https://github.com/friend47.png" width="90" height="90" alt="friend47" /><br/><br/>
-        <img src="https://img.shields.io/badge/⚡_Multiplayer-0284c7?style=flat-square" alt="Multiplayer" /><br/>
-        <b>friend47</b><br/>
-        <sub>Peerapatr</sub><br/>
-        <sub><i>WebSocket &amp; Sync</i></sub>
-      </a>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/waiwaix43">
-        <img src="https://github.com/waiwaix43.png" width="90" height="90" alt="waiwaix43" /><br/><br/>
-        <img src="https://img.shields.io/badge/🤖_AI_Triad-a855f7?style=flat-square" alt="AI Bot" /><br/>
-        <b>waiwaix43</b><br/>
-        <sub>waiwaix43</sub><br/>
-        <sub><i>Bot Solver Heuristics</i></sub>
-      </a>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/Natthaset2547">
-        <img src="https://github.com/Natthaset2547.png" width="90" height="90" alt="Natthaset2547" /><br/><br/>
-        <img src="https://img.shields.io/badge/📖_Lexicon-10b981?style=flat-square" alt="Lexicon" /><br/>
-        <b>Natthaset2547</b><br/>
-        <sub>Natthaset</sub><br/>
-        <sub><i>Grimoire Dictionary</i></sub>
-      </a>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/Rednoselittledog">
-        <img src="https://github.com/Rednoselittledog.png" width="90" height="90" alt="Rednoselittledog" /><br/><br/>
-        <img src="https://img.shields.io/badge/🎨_Canvas_FX-f43f5e?style=flat-square" alt="Canvas" /><br/>
-        <b>Rednoselittledog</b><br/>
-        <sub>Kanin Noisiri</sub><br/>
-        <sub><i>60 FPS Board Engine</i></sub>
-      </a>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/ReFresh-bit">
-        <img src="https://github.com/ReFresh-bit.png" width="90" height="90" alt="ReFresh-bit" /><br/><br/>
-        <img src="https://img.shields.io/badge/🐳_DevOps-38bdf8?style=flat-square" alt="DevOps" /><br/>
-        <b>ReFresh-bit</b><br/>
-        <sub>ReFresh-bit</sub><br/>
-        <sub><i>Docker &amp; Gateway</i></sub>
-      </a>
-    </td>
-  </tr>
-</table>
+  <img src="docs/assets/team-banner.svg" alt="Core Development Crew" width="100%" />
+</div>
 
 <br/>
 
@@ -535,8 +479,6 @@ PYTHONPATH=. pytest tests/ -v
   <a href="https://github.com/Rednoselittledog"><img src="https://img.shields.io/badge/Rednoselittledog-Kanin-f43f5e?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="Rednoselittledog" /></a>
   <a href="https://github.com/ReFresh-bit"><img src="https://img.shields.io/badge/ReFresh--bit-ReFresh-38bdf8?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="ReFresh-bit" /></a>
 </p>
-
-</div>
 
 ---
 
