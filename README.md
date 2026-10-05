@@ -1,10 +1,10 @@
-<div align="center">
+﻿<div align="center">
 
 <!-- ========================================================================= -->
 <!-- ⚔️ HERO BANNER (Animated Cyberpunk SVG Header with Floating 3D Tiles)     -->
 <!-- ========================================================================= -->
 <a href="https://github.com/Cell1991/crossword-game">
-  <img src="./docs/assets/hero-banner.svg" alt="Crossword Battle Arena Hero Banner" width="100%" />
+  <img src="docs/assets/hero-banner.svg" alt="Crossword Battle Arena Hero Banner" width="100%" />
 </a>
 
 <br/><br/>
@@ -112,7 +112,7 @@
 
 <!-- Animated Bento Grid SVG Diagram -->
 <div align="center">
-  <img src="./docs/assets/bento-features.svg" alt="Bento Grid Feature Highlights" width="100%" />
+  <img src="docs/assets/bento-features.svg" alt="Bento Grid Feature Highlights" width="100%" />
 </div>
 
 <br/>
@@ -136,7 +136,7 @@
 
 <!-- Animated Game Modes Showcase Graphic -->
 <div align="center">
-  <img src="./docs/assets/game-modes.svg" alt="Game Modes Showcase" width="100%" />
+  <img src="docs/assets/game-modes.svg" alt="Game Modes Showcase" width="100%" />
 </div>
 
 <br/>
@@ -173,7 +173,7 @@ Players acquire tactical Power Cards by placing letters onto **Secret Power (★
 
 <!-- Animated Power Cards Arsenal Graphic -->
 <div align="center">
-  <img src="./docs/assets/power-cards.svg" alt="Tactical Power Cards Arsenal" width="100%" />
+  <img src="docs/assets/power-cards.svg" alt="Tactical Power Cards Arsenal" width="100%" />
 </div>
 
 <br/>
@@ -205,7 +205,7 @@ Players acquire tactical Power Cards by placing letters onto **Secret Power (★
 
 <!-- Animated Board Radar & Multipliers Graphic -->
 <div align="center">
-  <img src="./docs/assets/board-radar.svg" alt="19x27 Tactical Matrix Radar" width="100%" />
+  <img src="docs/assets/board-radar.svg" alt="19x27 Tactical Matrix Radar" width="100%" />
 </div>
 
 <br/>
@@ -242,14 +242,14 @@ Players acquire tactical Power Cards by placing letters onto **Secret Power (★
 
 <!-- Animated 5-Step Combat Lifecycle Pipeline -->
 <div align="center">
-  <img src="./docs/assets/combat-flow.svg" alt="Turn and Combat Lifecycle Pipeline" width="100%" />
+  <img src="docs/assets/combat-flow.svg" alt="Turn and Combat Lifecycle Pipeline" width="100%" />
 </div>
 
 <br/>
 
 <!-- Crystal-Clear Combat Sequence Diagram Infographic -->
 <div align="center">
-  <img src="./docs/assets/combat-sequence.svg" alt="Combat Sequence Arbitration" width="100%" />
+  <img src="docs/assets/combat-sequence.svg" alt="Combat Sequence Arbitration" width="100%" />
 </div>
 
 <br/>
@@ -262,7 +262,7 @@ Players acquire tactical Power Cards by placing letters onto **Secret Power (★
 
 <!-- Animated System Architecture SVG -->
 <div align="center">
-  <img src="./docs/assets/architecture-flow.svg" alt="System Architecture Data Pipeline" width="100%" />
+  <img src="docs/assets/architecture-flow.svg" alt="System Architecture Data Pipeline" width="100%" />
 </div>
 
 <br/>
@@ -275,7 +275,7 @@ Players acquire tactical Power Cards by placing letters onto **Secret Power (★
 
 <!-- Crystal-Clear Database ER Diagram Infographic -->
 <div align="center">
-  <img src="./docs/assets/database-schema.svg" alt="Database Entity-Relationship Architecture" width="100%" />
+  <img src="docs/assets/database-schema.svg" alt="Database Entity-Relationship Architecture" width="100%" />
 </div>
 
 <br/>
