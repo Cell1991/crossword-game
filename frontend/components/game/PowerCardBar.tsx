@@ -144,7 +144,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
     shortTitle: 'Spy Swap',
     subtitle: 'STEAL TILES',
     element: 'YOUR TURN',
-    description: 'Swap 1 to 3 rack tiles with random tiles stolen from an opponent. (Your turn only)',
+    description: 'Swap 1 to 7 rack tiles with random tiles stolen from an opponent. (Your turn only)',
     ownTurnOnly: true,
     icon: <Repeat2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-200 drop-shadow-[0_0_8px_#34d399]" />,
     bgGradient: 'from-emerald-950/95 via-teal-950/90 to-slate-950/95',
@@ -166,7 +166,7 @@ interface PowerCardBarProps {
   armedCard: BoardCard | null;
   pendingArmedCell: CellPosition | null;
   deferredFreezeTileId: string | null;
-  busy: boolean;
+  busy?: boolean;
   onUseSimple: (card: SimpleCard) => void;
   onUseTargeted: (card: TargetedCard, targetPlayerId: string) => void;
   onUseSpySwap: (targetPlayerId: string, ownTileIds: string[], targetTileIndices: number[]) => void;
@@ -324,7 +324,7 @@ export const PowerCardBar = memo(function PowerCardBar({
       setSpyOwnTileIds(current =>
         current.includes(tileId)
           ? current.filter(id => id !== tileId)
-          : current.length < 3
+          : current.length < 7
           ? [...current, tileId]
           : current
       );
@@ -356,11 +356,11 @@ export const PowerCardBar = memo(function PowerCardBar({
                   {POWER_CARDS_META.SPY_SWAP?.icon}
                 </div>
                 <div className="truncate">
-                  <span className="font-extrabold text-emerald-300 text-xs">Pick 1–3 tiles to swap:</span>
+                  <span className="font-extrabold text-emerald-300 text-xs">Pick 1–7 tiles to swap:</span>
                 </div>
               </div>
               <span className="font-mono font-black text-emerald-300 text-[11px] sm:text-xs bg-emerald-950/90 px-2 py-0.5 rounded-md border border-emerald-500/40 shrink-0">
-                {spyOwnTileIds.length}/3 Picked
+                {spyOwnTileIds.length}/7 Picked
               </span>
             </div>
 

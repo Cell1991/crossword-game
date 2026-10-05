@@ -374,7 +374,7 @@ export function GameGuideModal({
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Swap 1 to 3 rack tiles with <span className="text-amber-200/95 font-medium">random tiles stolen directly from an opponent</span>. Can only be activated on your turn.
+                    Swap 1 to 7 rack tiles with <span className="text-amber-200/95 font-medium">random tiles stolen directly from an opponent</span>. Can only be activated on your turn.
                   </p>
                 </div>
               </div>

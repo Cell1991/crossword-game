@@ -23,7 +23,7 @@ const CARD_CONFIG: Record<string, { label: string; icon: React.ReactNode; color:
   HEAL: { label: 'Heal', icon: <Heart className="w-3.5 h-3.5 text-rose-300" />, color: 'text-rose-300', desc: 'Rack tiles to HP' },
   FREEZE_TILE: { label: 'Freeze Tile', icon: <Snowflake className="w-3.5 h-3.5 text-cyan-300" />, color: 'text-cyan-300', desc: 'Lock 1 board tile' },
   DOUBLE_DAMAGE: { label: 'Double Damage', icon: <Swords className="w-3.5 h-3.5 text-purple-300" />, color: 'text-purple-300', desc: '2× Word damage' },
-  SPY_SWAP: { label: 'Spy Swap', icon: <ArrowLeftRight className="w-3.5 h-3.5 text-emerald-300" />, color: 'text-emerald-300', desc: 'Steal 1-3 tiles' },
+  SPY_SWAP: { label: 'Spy Swap', icon: <ArrowLeftRight className="w-3.5 h-3.5 text-emerald-300" />, color: 'text-emerald-300', desc: 'Steal 1-7 tiles' },
   DESTROY_TILE: { label: 'Destroy Tile', icon: <Flame className="w-3.5 h-3.5 text-orange-300" />, color: 'text-orange-300', desc: 'Destroy 1 tile' },
 };
 

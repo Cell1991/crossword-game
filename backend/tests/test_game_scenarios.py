@@ -905,14 +905,14 @@ async def test_cd10b_spy_swap_selects_multiple_hidden_opponent_tiles(open_table)
     assert letters((await table.player(bob))["rack"]) == "DTGCUNS"
 
 
-async def test_cd10c_spy_swap_rejects_more_than_three_tiles(open_table):
+async def test_cd10c_spy_swap_rejects_more_than_seven_tiles(open_table):
     table = await open_table("Alice", "Bob")
     alice, bob = table.seats
     await table.set_cards(alice, ["SPY_SWAP"])
 
     res = await table.act(alice, "cards/use", {
         "card": "SPY_SWAP", "target_player_id": bob.id,
-        "own_tile_ids": ["a", "b", "c", "d"], "target_tile_indices": [0, 1, 2, 3],
+        "own_tile_ids": ["a", "b", "c", "d", "e", "f", "g", "h"], "target_tile_indices": [0, 1, 2, 3, 4, 5, 6, 7],
     })
 
     assert res.status_code == 422

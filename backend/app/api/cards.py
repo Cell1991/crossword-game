@@ -32,8 +32,8 @@ class CardUseRequest(BaseModel):
     col: Optional[int] = Field(None, ge=0, le=Board.COLS - 1)
     own_tile_id: Optional[str] = None
     target_tile_id: Optional[str] = None
-    own_tile_ids: Optional[list[str]] = Field(None, min_length=1, max_length=3)
-    target_tile_indices: Optional[list[int]] = Field(None, min_length=1, max_length=3)
+    own_tile_ids: Optional[list[str]] = Field(None, min_length=1, max_length=7)
+    target_tile_indices: Optional[list[int]] = Field(None, min_length=1, max_length=7)
     placed_tiles: Optional[list[PlacedTileInput]] = None
 
 
@@ -264,8 +264,8 @@ async def use_card(
         if request.own_tile_ids is not None or request.target_tile_indices is not None:
             own_tile_ids = request.own_tile_ids or []
             target_tile_indices = request.target_tile_indices or []
-            if not 1 <= len(own_tile_ids) <= 3 or len(own_tile_ids) != len(set(own_tile_ids)):
-                raise HTTPException(status_code=400, detail="Choose one to three different tiles from your rack")
+            if not 1 <= len(own_tile_ids) <= 7 or len(own_tile_ids) != len(set(own_tile_ids)):
+                raise HTTPException(status_code=400, detail="Choose one to seven different tiles from your rack")
             if len(target_tile_indices) != len(own_tile_ids) or len(target_tile_indices) != len(set(target_tile_indices)):
                 raise HTTPException(status_code=400, detail="Choose the same number of different opponent tiles")
             own_tiles = {tile["id"]: tile for tile in player_rack_items}
