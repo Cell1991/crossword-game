@@ -50,6 +50,11 @@ export function useStagedMove({
   const isCommittingRef = useRef(false);
   const validationRequestRef = useRef(0);
   const validateTimeout = useRef<NodeJS.Timeout | null>(null);
+  /** The exact placement + score of the last hint suggestion staged via stageHintTiles: the
+   * server already validated it when computing the suggestion, so when temporaryTiles still
+   * matches it exactly, skip the normal null-then-revalidate round trip (that's what made the
+   * Confirm button visibly flash "INVALID WORD" before snapping back valid on every hint tap). */
+  const trustedHintRef = useRef<{ tiles: PlacedTile[]; score: number } | null>(null);
 
   const pendingTileIds = useMemo(
     () => new Set(temporaryTiles.map(tile => tile.tile_id)),
@@ -79,6 +84,22 @@ export function useStagedMove({
     }
     // Any new staged tile placement resets the commit flag
     isCommittingRef.current = false;
+
+    const trustedHint = trustedHintRef.current;
+    const matchesTrustedHint = Boolean(trustedHint) && trustedHint!.tiles.length === temporaryTiles.length
+      && trustedHint!.tiles.every(t => temporaryTiles.some(st =>
+        st.tile_id === t.tile_id && st.row === t.row && st.col === t.col && st.letter === t.letter
+      ));
+    if (matchesTrustedHint) {
+      startTransition(() => {
+        setEstimatedScore(trustedHint!.score);
+        setValidationState(true);
+        setValidationReason('');
+      });
+      sendPreview(true);
+      return;
+    }
+
     // Until the new placement is checked, Confirm must not rely on the previous verdict.
     startTransition(() => setValidationState(null));
     sendPreview(null);
@@ -233,8 +254,9 @@ export function useStagedMove({
     });
   }, [myPlayerId]);
 
-  /** Automatically stages a hint suggestion's tiles from rack onto the board. */
-  const stageHintTiles = useCallback((hintTiles: HintTile[], rack: Tile[]) => {
+  /** Automatically stages a hint suggestion's tiles from rack onto the board. `score` is the
+   * suggestion's already server-validated score, trusted immediately (see trustedHintRef). */
+  const stageHintTiles = useCallback((hintTiles: HintTile[], rack: Tile[], score: number) => {
     isCommittingRef.current = false;
     const availableRack = [...rack];
     const newPlaced: PlacedTile[] = [];
@@ -260,6 +282,9 @@ export function useStagedMove({
       }
     }
 
+    // Only trust the score when every suggested letter actually matched a rack tile - a partial
+    // match means this placement differs from what the server validated, so let it be re-checked.
+    trustedHintRef.current = newPlaced.length === hintTiles.length ? { tiles: newPlaced, score } : null;
     setDesignatedBlankLetters(prev => ({ ...prev, ...newBlankLetters }));
     setTemporaryTiles(newPlaced);
     setSelectedTileId(null);

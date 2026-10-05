@@ -33,7 +33,7 @@ async def commit_move(
 ):
     res, game, player = await MoveService.commit_move(
         db, game_id, x_player_id, req.placed_tiles,
-        freeze_tile_id=req.freeze_tile_id,
+        freeze_tile_ids=req.freeze_tile_ids,
         use_heal=bool(req.use_heal),
     )
     # Save before telling anyone: clients reload the game the moment an event arrives.
@@ -67,8 +67,6 @@ async def commit_move(
                     "id": p.id,
                     "hp": p.hp,
                     "score": p.score,
-                    "has_shield": getattr(p, "has_shield", False),
-                    "shield_amount": getattr(p, "shield_amount", 0),
                     "cards": p.cards or [],
                 }
                 for p in all_game_players

@@ -27,9 +27,9 @@ class ValidateMoveResponse(BaseModel):
 
 class CommitMoveRequest(BaseModel):
     placed_tiles: list[PlacedTileInput]
-    # A FREEZE_TILE card played on one of these placed tiles: freezes it once the move commits,
+    # A FREEZE_TILE card played on 1-3 of these placed tiles: freezes them once the move commits,
     # in the same turn (rather than needing an already-committed tile from a prior turn).
-    freeze_tile_id: Optional[str] = None
+    freeze_tile_ids: Optional[list[str]] = Field(None, max_length=3)
     use_heal: Optional[bool] = False
 
 class CommitMoveResponse(BaseModel):

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import random
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
@@ -103,6 +104,22 @@ class GameService:
         return None
 
     @staticmethod
+    def grant_fancy_card(game: Game, player: GamePlayer) -> str | None:
+        """Fancy mode has no SECRET_POWER board tiles; instead whoever's turn is starting
+        draws one random card automatically (capped at 3 in hand, same as the board version)."""
+        if game.game_mode != "FANCY":
+            return None
+        cards = list(player.cards or [])
+        if len(cards) >= 3:
+            return None
+        from app.services.move_service import MoveService  # deferred: avoids a circular import
+        new_card = random.choice(MoveService.CARD_TYPES)
+        cards.append(new_card)
+        player.cards = cards
+        flag_modified(player, "cards")
+        return new_card
+
+    @staticmethod
     def players_summary(players: list[GamePlayer]) -> list[dict]:
         """The player fields GameEndService needs."""
         return [
@@ -114,7 +131,7 @@ class GameService:
     @staticmethod
     async def finish_game(db: AsyncSession, game: Game, players: list[GamePlayer], winner_id: str | None = None) -> str | None:
         """End the game, record the winner and close the room. Returns the winner's id."""
-        winner_id = winner_id or GameEndService.determine_winner(GameService.players_summary(players))
+        winner_id = winner_id or GameEndService.determine_winner(GameService.players_summary(players), game.game_mode)
         game.status = "FINISHED"
         game.current_player_id = None
         game.turn_started_at = None
@@ -149,7 +166,7 @@ class GameService:
         in_game = GameService.players_in_game(players)
         # Check game end condition: 1 or 0 living players
         if len(players) > 1 and len(in_game) <= 1:
-            winner_id = in_game[0].id if in_game else GameEndService.determine_winner(GameService.players_summary(players))
+            winner_id = in_game[0].id if in_game else GameEndService.determine_winner(GameService.players_summary(players), game.game_mode)
             winner_id = await GameService.finish_game(db, game, players, winner_id)
             result["game_over"] = True
             result["reason"] = "Game ended: only one player has HP remaining"
@@ -174,6 +191,7 @@ class GameService:
                 game.current_player_id = next_player.id
                 game.turn_number += 1
                 game.turn_started_at = get_utc_now()
+                GameService.grant_fancy_card(game, next_player)
                 result["turn_advanced"] = True
                 result["passed_player_id"] = prev_id
                 result["next_player_id"] = next_player.id
@@ -393,8 +411,10 @@ class GameService:
                 score=p.score,
                 hp=p.hp,
                 max_hp=getattr(p, 'max_hp', 100) or 100,
-                has_shield=getattr(p, 'has_shield', False),
-                shield_amount=getattr(p, 'shield_amount', 0) or 0,
+                # Shield is a surprise block: only the player who armed it (or a debug room) sees
+                # it on their own health bar - everyone else's clients must not know it's up.
+                has_shield=getattr(p, 'has_shield', False) if (reveal_all or is_mine) else False,
+                shield_amount=(getattr(p, 'shield_amount', 0) or 0) if (reveal_all or is_mine) else 0,
                 turn_order=p.turn_order,
                 connection_status=p.connection_status,
                 rack_count=len(normalized_rack),
@@ -595,6 +615,7 @@ class GameService:
             game.current_player_id = next_player.id
             game.turn_number += 1
             game.turn_started_at = get_utc_now()
+            GameService.grant_fancy_card(game, next_player)
 
         # Record pass move
         passing_rack = passing_player.rack if (passing_player.rack is not None and isinstance(passing_player.rack, list)) else await player_rack(db, player_id)
@@ -622,7 +643,7 @@ class GameService:
         else:
             is_over, reason, winner = GameEndService.check_game_over(
                 game.tile_bag, GameService.players_summary(players), game.consecutive_passes,
-                GameService.scoreless_turn_limit(players),
+                GameService.scoreless_turn_limit(players), game_mode=game.game_mode,
             )
         if is_over or reached_max_turns:
             winner = await GameService.finish_game(db, game, players, winner)
@@ -674,7 +695,7 @@ class GameService:
         # Check if only 1 living player remains after an OFFLINE leave
         in_game = GameService.players_in_game(players)
         if len(players) > 1 and len(in_game) <= 1:
-            winner_id = in_game[0].id if in_game else GameEndService.determine_winner(GameService.players_summary(players))
+            winner_id = in_game[0].id if in_game else GameEndService.determine_winner(GameService.players_summary(players), game.game_mode)
             winner_id = await GameService.finish_game(db, game, players, winner_id)
             await db.flush()
             return game, True, "PLAYER_LEFT", winner_id
@@ -816,7 +837,7 @@ class GameService:
         else:
             scoreless_over, reason, winner = GameEndService.check_game_over(
                 game.tile_bag, GameService.players_summary(players), game.consecutive_passes,
-                GameService.scoreless_turn_limit(players),
+                GameService.scoreless_turn_limit(players), game_mode=game.game_mode,
             )
         reached_max_turns = bool(game.max_turns and game.turn_number >= game.max_turns)
         game_over = scoreless_over or reached_max_turns or GameService.too_few_players(players)
@@ -824,9 +845,11 @@ class GameService:
             winner = await GameService.finish_game(db, game, players, winner)
             reason = reason or ("MAX_TURNS" if reached_max_turns else "PLAYER_LEFT")
         else:
-            game.current_player_id = GameService.next_player_after(players, player_id).id
+            next_player = GameService.next_player_after(players, player_id)
+            game.current_player_id = next_player.id
             game.turn_number += 1
             game.turn_started_at = get_utc_now()
+            GameService.grant_fancy_card(game, next_player)
 
         await db.flush()
         await replace_game_tiles(db, game.id, game.tile_bag, players)

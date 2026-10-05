@@ -41,13 +41,21 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
   const [copiedPin, setCopiedPin] = useState(false);
   const [isReplayOpen, setIsReplayOpen] = useState(false);
 
-  // Sorted players by score
-  const sorted = [...(gameState.players ?? [])].sort((a, b) => b.score - a.score);
+  const rematchPin = gameState.rematch_pin;
+  // Blood mode (no turn limit) is a last-one-standing fight: the podium must agree with the
+  // server's winner_id (ranked by survival/HP - see GameEndService.determine_winner), not score.
+  const isHpMode = gameState.max_turns === null;
+  const sorted = [...(gameState.players ?? [])].sort((a, b) => {
+    if (isHpMode) {
+      if (a.id === gameState.winner_id) return -1;
+      if (b.id === gameState.winner_id) return 1;
+      return b.hp - a.hp;
+    }
+    return b.score - a.score;
+  });
   // Server determines the winner
   const winner = gameState.players.find(p => p.id === gameState.winner_id) || sorted[0];
   const isMeWinner = Boolean(winner && myPlayerId && winner.id === myPlayerId);
-  const rematchPin = gameState.rematch_pin;
-  const isHpMode = gameState.max_turns === null;
 
   const firstPlace = sorted[0];
   const secondPlace = sorted.length > 1 ? sorted[1] : null;

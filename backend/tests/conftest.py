@@ -81,7 +81,7 @@ class GameTable:
 
     async def place(
         self, seat: Seat, row: int, col: int, word: str, *,
-        down: bool = False, validate: bool = False, freeze_tile_id: str | None = None,
+        down: bool = False, validate: bool = False, freeze_tile_ids: list[str] | None = None,
         use_heal: bool = False,
     ):
         """Play `word` from the seat's rack starting at (row, col). A '.' skips a cell already on the board."""
@@ -100,8 +100,8 @@ class GameTable:
                 "value": tile["value"],
             })
         body: dict[str, Any] = {"placed_tiles": placed}
-        if freeze_tile_id:
-            body["freeze_tile_id"] = freeze_tile_id
+        if freeze_tile_ids:
+            body["freeze_tile_ids"] = freeze_tile_ids
         if use_heal:
             body["use_heal"] = True
         return await self.act(seat, "moves/validate" if validate else "moves", body)

@@ -85,7 +85,7 @@ export interface PendingEffect {
 }
 
 export type TurnTimeLimit = null | 30 | 60 | 90 | 120;
-export type GameMode = 'HP' | 'TURNS';
+export type GameMode = 'HP' | 'TURNS' | 'CLASSIC' | 'FANCY';
 
 export interface WordDefinitionMeaning {
   partOfSpeech: string;

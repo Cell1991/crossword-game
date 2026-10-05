@@ -139,7 +139,7 @@ export async function createRoom(
         turn_time_limit: turnTimeLimit,
         game_mode: gameMode,
         max_turns: gameMode === 'TURNS' ? maxTurns : null,
-        starting_hp: gameMode === 'HP' ? startingHp : null,
+        starting_hp: (gameMode === 'HP' || gameMode === 'FANCY') ? startingHp : null,
         is_debug: isDebug,
         enable_grimoire: enableGrimoire,
         max_players: maxPlayers,
@@ -420,7 +420,7 @@ export async function commitMove(
   gameId: string,
   playerId: string,
   placedTiles: PlacedTile[],
-  freezeTileId?: string,
+  freezeTileIds?: string[],
   useHeal?: boolean
 ): Promise<CommitMoveResponse> {
   const res = await fetch(`${getApiBase()}/games/${gameId}/moves`, {
@@ -431,7 +431,7 @@ export async function commitMove(
     },
     body: JSON.stringify({
       placed_tiles: placedTiles,
-      freeze_tile_id: freezeTileId,
+      freeze_tile_ids: freezeTileIds,
       use_heal: !!useHeal,
     }),
   });

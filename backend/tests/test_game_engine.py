@@ -233,6 +233,29 @@ def test_game_end_conditions():
     # assert "consecutive passes" in reason
 
 
+def test_cd09_blood_mode_winner_ranks_by_hp_not_score():
+    """Blood mode (HP/FANCY) is a last-one-standing fight: whoever survives with more HP wins
+    the match, even if an opponent out-scored them on words."""
+    players = [
+        {"id": "p1", "display_name": "Alice", "score": 116, "hp": 40, "rack": []},
+        {"id": "p2", "display_name": "Bob", "score": 101, "hp": 70, "rack": [{"id": "t1", "letter": "A", "value": 1}]},
+    ]
+
+    is_over, reason, winner = GameEndService.check_game_over(
+        tile_bag=[], players=players, consecutive_passes=0, game_mode="HP",
+    )
+    assert is_over
+    assert winner == "p2"
+    assert "exhausted" in reason
+
+    # Score-only modes (no HP combat) keep ranking by score.
+    is_over, reason, winner = GameEndService.check_game_over(
+        tile_bag=[], players=players, consecutive_passes=0, game_mode="TURNS",
+    )
+    assert is_over
+    assert winner == "p1"
+
+
 def test_csw24_dictionary_loading():
     dict_svc = DictionaryService()
     # Ensure large dictionary loaded (> 100,000 words)

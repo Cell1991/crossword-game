@@ -34,7 +34,8 @@ class RoomService:
         # Initialize tile bag
         tile_bag = TileService.create_tile_bag()
 
-        hp_setting = (starting_hp if starting_hp is not None else 100) if game_mode == "HP" else None
+        default_hp = 150 if game_mode == "FANCY" else 100
+        hp_setting = (starting_hp if starting_hp is not None else default_hp) if game_mode in ("HP", "FANCY") else None
 
         room = GameRoom(
             id=room_id,
@@ -55,6 +56,7 @@ class RoomService:
             status="WAITING",
             current_player_id=None,
             turn_number=1,
+            game_mode=game_mode,
             max_turns=max_turns if game_mode == "TURNS" else None,
             starting_hp=hp_setting,
             enable_grimoire=enable_grimoire,

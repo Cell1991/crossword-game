@@ -51,6 +51,7 @@ class Game(Base):
     status = Column(String(32), default="WAITING", nullable=False)  # WAITING, PLAYING, FINISHED
     current_player_id = Column(String(36), nullable=True)
     turn_number = Column(Integer, default=1, nullable=False)
+    game_mode = Column(String(16), default="HP", nullable=False)
     max_turns = Column(Integer, nullable=True)
     starting_hp = Column(Integer, default=100, nullable=True)
     enable_grimoire = Column(Boolean, default=False, nullable=False)

@@ -119,12 +119,13 @@ export default function GamePage() {
 
   const cards = usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, reload, toasts });
   const { armedCard, playArmedCardAt } = cards;
-  /** The staged tile a FREEZE_TILE mark will apply to on Confirm Move, for the board highlight. */
-  const deferredFreezeCell = useMemo(() => {
-    if (!cards.deferredFreezeTileId) return null;
-    const tile = temporaryTiles.find(t => t.tile_id === cards.deferredFreezeTileId);
-    return tile ? { row: tile.row, col: tile.col } : null;
-  }, [cards.deferredFreezeTileId, temporaryTiles]);
+  /** The staged tiles a FREEZE_TILE mark will apply to on Confirm Move, for the board highlight. */
+  const deferredFreezeCells = useMemo(() => {
+    return cards.deferredFreezeTileIds
+      .map(id => temporaryTiles.find(t => t.tile_id === id))
+      .filter((t): t is PlacedTile => Boolean(t))
+      .map(t => ({ row: t.row, col: t.col }));
+  }, [cards.deferredFreezeTileIds, temporaryTiles]);
   const { handleCellClick: placeAtCell, unstageTile, selectTile, clearSelection, clearStagedMove } = staged;
   const { validationState, validationReason } = staged;
   const { flashError, setError } = toasts;
@@ -241,7 +242,7 @@ export default function GamePage() {
     cards.setActiveHintIndex(index);
     const suggestion = cards.hintSuggestions[index];
     if (suggestion && serverRack.length > 0) {
-      staged.stageHintTiles(suggestion.tiles, serverRack);
+      staged.stageHintTiles(suggestion.tiles, serverRack, suggestion.score);
     }
   }, [cards, serverRack, staged]);
 
@@ -254,7 +255,7 @@ export default function GamePage() {
       if (activeSuggestion && serverRack.length > 0) {
         if (prevHintKeyRef.current !== hintKey) {
           prevHintKeyRef.current = hintKey;
-          staged.stageHintTiles(activeSuggestion.tiles, serverRack);
+          staged.stageHintTiles(activeSuggestion.tiles, serverRack, activeSuggestion.score);
         }
       }
     } else {
@@ -393,12 +394,12 @@ export default function GamePage() {
 
     // 2. Authoritative background server commit
     try {
-      const freezeTileId = cards.deferredFreezeTileId ?? undefined;
+      const freezeTileIds = cards.deferredFreezeTileIds.length > 0 ? cards.deferredFreezeTileIds : undefined;
       const res = await commitMove(
         gameId,
         myPlayerId,
         tilesToCommit,
-        freezeTileId,
+        freezeTileIds,
         cards.deferredHeal
       );
       if (cards.deferredHeal) cards.cancelDeferredHeal();
@@ -861,9 +862,9 @@ export default function GamePage() {
               frozenTile={gameState.frozen_tile}
               hintCell={cards.hintCell}
               hintTiles={cards.activeHintTiles}
-              pendingArmedCell={cards.pendingArmedCell ?? deferredFreezeCell}
-              pendingArmedCard={cards.armedCard ?? (cards.deferredFreezeTileId ? 'FREEZE_TILE' : null)}
-              pendingFrozenCells={cards.pendingFrozenCells}
+              pendingArmedCell={cards.pendingArmedCell}
+              pendingArmedCard={cards.armedCard}
+              pendingFrozenCells={[...cards.pendingFrozenCells, ...deferredFreezeCells]}
             />
             {/* Cinematic Board Burst & Particle Blast Effects (Freeze shockwave & Destroy incineration) */}
             <BoardEffectsLayer
@@ -932,7 +933,7 @@ export default function GamePage() {
                   armedCard={cards.armedCard}
                   pendingArmedCell={cards.pendingArmedCell}
                   pendingFrozenCells={cards.pendingFrozenCells}
-                  deferredFreezeTileId={cards.deferredFreezeTileId}
+                  deferredFreezeTileIds={cards.deferredFreezeTileIds}
                   deferredHeal={cards.deferredHeal}
                   onCancelDeferredHeal={cards.cancelDeferredHeal}
                   estimatedScore={staged.estimatedScore || 0}

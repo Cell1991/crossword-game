@@ -534,7 +534,8 @@ async def test_tn07_untimed_games_never_expire(open_table):
 async def test_tn08_game_ending_on_the_turn_limit_names_a_winner(open_table, broadcasts, last_action):
     table = await open_table("Alice", "Bob")
     alice, bob = table.seats
-    await table.update_game(max_turns=1)
+    # TURNS mode: no HP combat, so the turn-limit winner is decided by score (not survival/HP).
+    await table.update_game(max_turns=1, game_mode="TURNS")
     await table.set_tiles(racks={alice: "CATSEIO"})
     await table.update_player(bob, score=10)
 
@@ -792,7 +793,7 @@ async def test_cd07c_freeze_tile_can_target_a_tile_placed_this_turn(open_table):
     await table.set_tiles(racks={alice: "CATSEIO"})
 
     a_tile = next(t for t in (await table.player(alice))["rack"] if t["letter"] == "A")
-    res = await table.place(alice, ROW, COL - 1, "CAT", freeze_tile_id=a_tile["id"])
+    res = await table.place(alice, ROW, COL - 1, "CAT", freeze_tile_ids=[a_tile["id"]])
     assert res.status_code == 200, res.text
 
     state = await table.state(alice)
@@ -811,13 +812,35 @@ async def test_cd07d_freeze_tile_target_must_be_part_of_the_move(open_table):
     await table.set_cards(alice, ["FREEZE_TILE"])
     await table.set_tiles(racks={alice: "CATSEIO"})
 
-    res = await table.place(alice, ROW, COL - 1, "CAT", freeze_tile_id="not-a-real-tile-id")
+    res = await table.place(alice, ROW, COL - 1, "CAT", freeze_tile_ids=["not-a-real-tile-id"])
 
     assert res.status_code == 400
     assert "part of this move" in res.json()["detail"]
     # A rejected commit must not have spent the card or the tiles.
     assert (await table.state())["frozen_tile"] is None
     assert me(await table.state(alice), alice)["cards"] == ["FREEZE_TILE"]
+
+
+async def test_cd07e_freeze_tile_can_target_up_to_three_tiles_placed_this_turn(open_table):
+    """A single FREEZE_TILE use can lock up to 3 of the tiles placed in the current move."""
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.set_cards(alice, ["FREEZE_TILE"])
+    await table.set_tiles(racks={alice: "CATSEIO"})
+
+    rack = (await table.player(alice))["rack"]
+    tile_ids = [next(t for t in rack if t["letter"] == letter)["id"] for letter in "CAT"]
+    res = await table.place(alice, ROW, COL - 1, "CAT", freeze_tile_ids=tile_ids)
+    assert res.status_code == 200, res.text
+
+    frozen = (await table.state(alice))["frozen_tile"]
+    assert {(f["row"], f["col"]) for f in frozen} == {(ROW, COL - 1), (ROW, COL), (ROW, COL + 1)}
+    assert me(await table.state(alice), alice)["cards"] == []
+
+    await table.set_tiles(racks={bob: "SEIOURN"})
+    blocked = await table.place(bob, ROW, COL + 2, "S")
+    assert blocked.status_code == 400
+    assert "frozen" in blocked.json()["detail"]
 
 
 async def test_cd08_shield_blocks_damage_for_the_blocker_only(open_table):
@@ -844,8 +867,11 @@ async def test_cd09_shield_can_be_activated_proactively(open_table):
 
     assert res.status_code == 200
     assert res.json()["has_shield"] is True
-    state = await table.state()
+    state = await table.state(alice)
     assert me(state, alice)["has_shield"] is True
+    # Shield is a surprise block: Bob's own view of Alice must not reveal it.
+    bob_view = next(p for p in (await table.state(bob))["players"] if p["id"] == alice.id)
+    assert bob_view["has_shield"] is False
 
     # Now Bob attacks Alice with a word move. Arming a shield costs no turn, so Alice still holds
     # it and has to pass before Bob can play at all.
@@ -855,7 +881,7 @@ async def test_cd09_shield_can_be_activated_proactively(open_table):
     await resolve_damage(table)
 
     # Alice's shield fully blocked the attack - no points math, the card is just consumed outright.
-    state_after = await table.state()
+    state_after = await table.state(alice)
     assert me(state_after, alice)["hp"] == 100
     assert me(state_after, alice)["has_shield"] is False
     assert me(state_after, alice)["shield_amount"] == 0
@@ -1024,8 +1050,9 @@ async def test_cd13_cards_cannot_be_used_once_the_game_is_over(open_table):
     assert len((await table.state())["board_state"]) == 3
 
 
-@pytest.mark.parametrize("game_mode, max_turns, hp_cards_dealt", [("HP", None, True), ("TURNS", 7, False)])
-async def test_cd14_turn_count_games_never_deal_hp_only_cards(open_table, monkeypatch, game_mode, max_turns, hp_cards_dealt):
+@pytest.mark.parametrize("game_mode, max_turns, expect_card", [("HP", None, True), ("TURNS", 7, False)])
+async def test_cd14_quick_play_awards_no_cards_from_power_squares(open_table, monkeypatch, game_mode, max_turns, expect_card):
+    """HP mode still awards a card off a SECRET_POWER square; Quick Play (TURNS) now has no cards at all."""
     table = await open_table("Alice", "Bob", game_mode=game_mode, max_turns=max_turns)
     alice, _ = table.seats
     await table.set_board({(7, 11): "A", (7, 12): "T"})
@@ -1036,9 +1063,44 @@ async def test_cd14_turn_count_games_never_deal_hp_only_cards(open_table, monkey
     res = await table.place(alice, 7, 10, "C..")  # (7, 10) is a SECRET_POWER square
 
     assert res.status_code == 200, res.text
-    assert len(pools) == 1
-    assert bool({"HEAL", "DOUBLE_DAMAGE", "SHIELD"} & set(pools[0])) is hp_cards_dealt
-    assert {"HINT", "SPY_SWAP", "DESTROY_TILE", "FREEZE_TILE"} <= set(pools[0])
+    if expect_card:
+        assert len(pools) == 1
+        assert {"HINT", "SPY_SWAP", "DESTROY_TILE", "FREEZE_TILE", "HEAL", "DOUBLE_DAMAGE", "SHIELD"} <= set(pools[0])
+    else:
+        assert len(pools) == 0
+        assert res.json()["cards_awarded"] == []
+
+
+async def test_cd15_classic_mode_awards_no_cards_and_deals_no_damage(open_table):
+    table = await open_table("Alice", "Bob", game_mode="CLASSIC")
+    alice, bob = table.seats
+    await table.set_board({(7, 11): "A", (7, 12): "T"})
+    await table.set_tiles(racks={alice: "CSEIOUR"})
+    bob_before = await table.player(bob)
+
+    res = await table.place(alice, 7, 10, "C..")  # (7, 10) is a SECRET_POWER square, scores "CAT"
+
+    assert res.status_code == 200, res.text
+    assert res.json()["cards_awarded"] == []
+    assert res.json()["damage_dealt"] is None
+    bob_after = await table.player(bob)
+    assert bob_after["hp"] == bob_before["hp"]
+
+
+async def test_cd16_fancy_mode_grants_a_card_when_the_next_turn_starts(open_table):
+    table = await open_table("Alice", "Bob", game_mode="FANCY")
+    alice, bob = table.seats
+    await table.set_board({(7, 11): "A", (7, 12): "T"})
+    await table.set_tiles(racks={alice: "CSEIOUR"})
+    assert (await table.player(bob))["cards"] == []
+
+    # (7, 10) is a SECRET_POWER square, but Fancy ignores those and auto-draws at turn start instead.
+    res = await table.place(alice, 7, 10, "C..")
+
+    assert res.status_code == 200, res.text
+    assert res.json()["cards_awarded"] == []
+    bob_after = await table.player(bob)
+    assert len(bob_after["cards"]) == 1
 
 
 # --- Realtime sync (RT) --------------------------------------------------------------------------

@@ -237,8 +237,6 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
                     ...p,
                     hp: up.hp,
                     score: up.score,
-                    has_shield: (up as any).has_shield ?? p.has_shield,
-                    shield_amount: (up as any).shield_amount ?? p.shield_amount,
                     cards: (up as any).cards ?? p.cards,
                   };
                 }

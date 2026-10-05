@@ -10,19 +10,24 @@ class CreateRoomRequest(BaseModel):
     # is on, same as every other debug affordance.
     is_debug: bool = False
     enable_grimoire: bool = False
-    game_mode: Literal["HP", "TURNS"] = "HP"
+    # HP: WordX HP battle. TURNS: Quick Play, fixed round count, no cards. CLASSIC: play
+    # until tiles run out, no cards, no HP. FANCY: HP battle where cards come from an
+    # automatic draw each turn instead of board power-cells.
+    game_mode: Literal["HP", "TURNS", "CLASSIC", "FANCY"] = "HP"
     max_turns: Optional[int] = Field(None, ge=1, le=500)
     starting_hp: Optional[int] = Field(None, ge=10, le=1000)
     max_players: Optional[int] = Field(4, ge=2, le=100, description="Maximum players allowed (None for unlimited)")
 
     @model_validator(mode="after")
     def validate_game_mode_settings(self):
-        if self.game_mode == "TURNS" and self.max_turns is None:
+        uses_turns = self.game_mode == "TURNS"
+        uses_hp = self.game_mode in ("HP", "FANCY")
+        if uses_turns and self.max_turns is None:
             raise ValueError("max_turns is required for turn-count mode")
-        if self.game_mode == "HP" and self.max_turns is not None:
+        if not uses_turns and self.max_turns is not None:
             raise ValueError("max_turns is only available in turn-count mode")
-        if self.game_mode == "TURNS" and self.starting_hp is not None:
-            raise ValueError("starting_hp is only available in HP mode")
+        if not uses_hp and self.starting_hp is not None:
+            raise ValueError("starting_hp is only available in HP or Fancy mode")
         return self
 
 class CreateRoomResponse(BaseModel):

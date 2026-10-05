@@ -31,10 +31,10 @@ class MoveService:
 
     @classmethod
     def card_pool(cls, game: Game) -> tuple[str, ...]:
-        """The cards a SECRET_POWER square can award in this game."""
-        if game.max_turns is None:
+        """The cards a SECRET_POWER square (or Fancy's per-turn draw) can award in this game."""
+        if game.game_mode in ("HP", "FANCY"):
             return cls.CARD_TYPES
-        return tuple(card for card in cls.CARD_TYPES if card not in cls.HP_CARD_TYPES)
+        return ()  # CLASSIC and Quick Play (TURNS) have no cards at all
 
     @classmethod
     def _verify_tile_ownership(cls, player_rack: list[dict[str, Any]], placed_tiles: list[PlacedTileInput]) -> tuple[bool, str | None]:
@@ -188,7 +188,7 @@ class MoveService:
         game_id: str,
         player_id: str,
         placed_tiles: list[PlacedTileInput],
-        freeze_tile_id: str | None = None,
+        freeze_tile_ids: list[str] | None = None,
         use_heal: bool = False,
     ) -> tuple[CommitMoveResponse, Game, GamePlayer]:
         stmt_game = select(Game).where(Game.id == game_id).with_for_update()
@@ -249,15 +249,18 @@ class MoveService:
             if any(fc in w.cells for fc in frozen_cells for w in words):
                 raise HTTPException(status_code=400, detail="That letter is frozen this turn")
 
-        # FREEZE_TILE played on one of this move's own tiles: takes effect once the move commits,
+        # FREEZE_TILE played on 1-3 of this move's own tiles: takes effect once the move commits,
         # below, in this same turn - staging it client-side and only sending it here is what lets
-        # recalling the tile before Confirm Move act as cancelling the freeze.
-        freeze_target = None
-        if freeze_tile_id:
+        # recalling a tile before Confirm Move act as cancelling its freeze.
+        freeze_targets: list[PlacedTileInput] = []
+        if freeze_tile_ids:
             if "FREEZE_TILE" not in (player.cards or []):
                 raise HTTPException(status_code=400, detail="You don't have a Freeze card")
-            freeze_target = next((pt for pt in placed_tiles if pt.tile_id == freeze_tile_id), None)
-            if not freeze_target:
+            if not (1 <= len(freeze_tile_ids) <= 3) or len(freeze_tile_ids) != len(set(freeze_tile_ids)):
+                raise HTTPException(status_code=400, detail="Choose 1 to 3 unique tiles to freeze")
+            by_tile_id = {pt.tile_id: pt for pt in placed_tiles}
+            freeze_targets = [by_tile_id[tid] for tid in freeze_tile_ids if tid in by_tile_id]
+            if len(freeze_targets) != len(freeze_tile_ids):
                 raise HTTPException(status_code=400, detail="Freeze target is not part of this move")
 
         # Commit tiles to board
@@ -331,10 +334,12 @@ class MoveService:
             game.pending_heal_player_id = None
 
         cards_awarded: list[str] = []
-        power_cells_hit = [pt for pt in placed_tiles if Board.is_power_cell(pt.row, pt.col)]
+        pool = cls.card_pool(game)
+        # Fancy awards cards via the automatic per-turn draw (see GameService.grant_fancy_card)
+        # instead of board tiles, so only HP mode's SECRET_POWER squares award cards here.
+        power_cells_hit = [pt for pt in placed_tiles if pool and game.game_mode == "HP" and Board.is_power_cell(pt.row, pt.col)]
         if power_cells_hit:
             cards = list(player.cards or [])
-            pool = cls.card_pool(game)
             for _ in power_cells_hit:
                 if len(cards) < 3:
                     new_card = random.choice(pool)
@@ -349,12 +354,15 @@ class MoveService:
         rack_snapshot = [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in normalized_rack]
         move_id = str(uuid.uuid4())
         cards_used: list[dict[str, Any]] = list(game.pending_card_events or [])
-        if freeze_target is not None:
+        if freeze_targets:
             cards_used.append({
                 "card": "FREEZE_TILE",
-                "row": freeze_target.row,
-                "col": freeze_target.col,
-                "description": f"Froze newly placed tile '{freeze_target.letter}' at ({freeze_target.row}, {freeze_target.col})",
+                "cells": [{"row": t.row, "col": t.col} for t in freeze_targets],
+                "description": (
+                    f"Froze newly placed tile '{freeze_targets[0].letter}' at ({freeze_targets[0].row}, {freeze_targets[0].col})"
+                    if len(freeze_targets) == 1
+                    else f"Froze {len(freeze_targets)} newly placed tiles"
+                ),
             })
         if healed_amount > 0:
             cards_used.append({
@@ -391,17 +399,20 @@ class MoveService:
         stmt_players = select(GamePlayer).where(GamePlayer.game_id == game_id).order_by(GamePlayer.turn_order)
         all_players = (await db.execute(stmt_players)).scalars().all()
 
-        if freeze_target is not None:
+        if freeze_targets:
             held_cards = list(player.cards or [])
             if "FREEZE_TILE" in held_cards:
                 held_cards.remove("FREEZE_TILE")
                 player.cards = held_cards
                 await replace_player_cards(db, player.id, held_cards)
             turns_to_block = max(1, len(GameService.eligible_players(all_players)) - 1)
-            game.frozen_tile = [{
-                "row": freeze_target.row, "col": freeze_target.col,
-                "set_by": player.id, "expires_turn": game.turn_number + turns_to_block,
-            }]
+            game.frozen_tile = [
+                {
+                    "row": t.row, "col": t.col,
+                    "set_by": player.id, "expires_turn": game.turn_number + turns_to_block,
+                }
+                for t in freeze_targets
+            ]
             flag_modified(game, "frozen_tile")
 
         # Score is authoritative damage to every other living player, doubled for a
@@ -409,7 +420,7 @@ class MoveService:
         # or applied immediately if no opponent can shield.
         double_damage_target_id = game.pending_double_target_id
         damage_dealt: dict[str, int] = {}
-        if score > 0 and game.max_turns is None:
+        if score > 0 and game.game_mode in ("HP", "FANCY"):
             has_shield_holder = any(
                 getattr(p, "has_shield", False) or "SHIELD" in (p.cards or [])
                 for p in all_players if p.id != player.id and p.hp > 0
@@ -446,7 +457,8 @@ class MoveService:
             is_over, reason, winner = False, None, None
         else:
             is_over, reason, winner = GameEndService.check_game_over(
-                game.tile_bag, GameService.players_summary(all_players), game.consecutive_passes
+                game.tile_bag, GameService.players_summary(all_players), game.consecutive_passes,
+                game_mode=game.game_mode,
             )
         game_over = is_over or reached_max_turns or GameService.too_few_players(all_players)
         if game_over:
@@ -463,6 +475,7 @@ class MoveService:
                 game.current_player_id = next_player_id
                 game.turn_number += 1
                 game.turn_started_at = get_utc_now()
+                GameService.grant_fancy_card(game, next_player)
 
         await db.flush()
 

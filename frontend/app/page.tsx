@@ -62,6 +62,13 @@ export const BOT_PROFILES: Record<BotDifficulty, { name: string; title: string; 
   },
 };
 
+const GAME_MODES: { key: GameMode; label: string; desc: string }[] = [
+  { key: 'HP', label: 'WordX', desc: 'Score deals HP damage' },
+  { key: 'CLASSIC', label: 'Classic', desc: 'No cards, plays until tiles run out' },
+  { key: 'TURNS', label: 'Quick Play', desc: 'No cards, highest score after N rounds wins' },
+  { key: 'FANCY', label: 'Fancy', desc: 'Auto card draw each turn, higher starting HP' },
+];
+
 export default function HomePage() {
   const router = useRouter();
   const search = useSyncExternalStore(subscribeToLocation, getLocationSearch, getServerLocationSearch);
@@ -82,6 +89,8 @@ export default function HomePage() {
   const [turnCountOption, setTurnCountOption] = useState('7');
   const [customTurnCount, setCustomTurnCount] = useState('28');
   const [hpOption, setHpOption] = useState('100');
+  // Fancy's HP pool recovers slower (cards are auto-granted, not score-earned), so it defaults higher.
+  useEffect(() => { setHpOption(gameMode === 'FANCY' ? '150' : '100'); }, [gameMode]);
   const [customHp, setCustomHp] = useState('100');
   const [playerLimitOption, setPlayerLimitOption] = useState<'4' | 'custom'>('4');
   const [customMaxPlayers, setCustomMaxPlayers] = useState('10');
@@ -166,7 +175,7 @@ export default function HomePage() {
       return;
     }
     const startingHp = hpOption === 'custom' ? Number(customHp) : Number(hpOption);
-    if (gameMode === 'HP' && (!Number.isInteger(startingHp) || startingHp < 10 || startingHp > 1000)) {
+    if ((gameMode === 'HP' || gameMode === 'FANCY') && (!Number.isInteger(startingHp) || startingHp < 10 || startingHp > 1000)) {
       setError('Starting HP must be between 10 and 1000');
       return;
     }
@@ -187,7 +196,7 @@ export default function HomePage() {
         gameMode,
         gameMode === 'TURNS' ? maxTurns : null,
         false,
-        gameMode === 'HP' ? startingHp : null,
+        (gameMode === 'HP' || gameMode === 'FANCY') ? startingHp : null,
         maxPlayers,
         enableGrimoire,
       );
@@ -221,7 +230,7 @@ export default function HomePage() {
       return;
     }
     const startingHp = hpOption === 'custom' ? Number(customHp) : Number(hpOption);
-    if (gameMode === 'HP' && (!Number.isInteger(startingHp) || startingHp < 10 || startingHp > 1000)) {
+    if ((gameMode === 'HP' || gameMode === 'FANCY') && (!Number.isInteger(startingHp) || startingHp < 10 || startingHp > 1000)) {
       setError('Starting HP must be between 10 and 1000');
       return;
     }
@@ -239,7 +248,7 @@ export default function HomePage() {
         gameMode,
         gameMode === 'TURNS' ? maxTurns : null,
         false,
-        gameMode === 'HP' ? startingHp : null,
+        (gameMode === 'HP' || gameMode === 'FANCY') ? startingHp : null,
         2,
         enableGrimoire,
       );
@@ -566,54 +575,35 @@ export default function HomePage() {
             <div className="mt-4 space-y-3.5">
               {/* Mode Selector - Radiant Gold Selected States */}
               <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setGameMode('HP')}
-                  className={`relative p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                    gameMode === 'HP'
-                      ? 'border-amber-300 bg-gradient-to-b from-amber-400/25 via-yellow-500/15 to-slate-950/90 text-white shadow-[0_0_25px_rgba(251,191,36,0.35),inset_0_1px_2px_rgba(255,255,255,0.4)] ring-2 ring-amber-400/40'
-                      : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-amber-400/30 hover:bg-white/[0.07] hover:text-slate-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className={`block text-xs sm:text-sm font-black ${gameMode === 'HP' ? 'text-yellow-100 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'text-slate-300'}`}>
-                      HP Battle
+                {GAME_MODES.map(m => (
+                  <button
+                    key={m.key}
+                    type="button"
+                    onClick={() => setGameMode(m.key)}
+                    className={`relative p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+                      gameMode === m.key
+                        ? 'border-amber-300 bg-gradient-to-b from-amber-400/25 via-yellow-500/15 to-slate-950/90 text-white shadow-[0_0_25px_rgba(251,191,36,0.35),inset_0_1px_2px_rgba(255,255,255,0.4)] ring-2 ring-amber-400/40'
+                        : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-amber-400/30 hover:bg-white/[0.07] hover:text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`block text-xs sm:text-sm font-black ${gameMode === m.key ? 'text-yellow-100 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'text-slate-300'}`}>
+                        {m.label}
+                      </span>
+                      {gameMode === m.key && (
+                        <span className="h-2.5 w-2.5 rounded-full bg-yellow-300 shadow-[0_0_10px_#fde047,0_0_20px_#f59e0b] animate-pulse" />
+                      )}
+                    </div>
+                    <span className={`mt-0.5 block text-[11px] font-semibold ${gameMode === m.key ? 'text-amber-200' : 'text-slate-500'}`}>
+                      {m.desc}
                     </span>
-                    {gameMode === 'HP' && (
-                      <span className="h-2.5 w-2.5 rounded-full bg-yellow-300 shadow-[0_0_10px_#fde047,0_0_20px_#f59e0b] animate-pulse" />
-                    )}
-                  </div>
-                  <span className={`mt-0.5 block text-[11px] font-semibold ${gameMode === 'HP' ? 'text-amber-200' : 'text-slate-500'}`}>
-                    Score drains health
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setGameMode('TURNS')}
-                  className={`relative p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                    gameMode === 'TURNS'
-                      ? 'border-amber-300 bg-gradient-to-b from-amber-400/25 via-yellow-500/15 to-slate-950/90 text-white shadow-[0_0_25px_rgba(251,191,36,0.35),inset_0_1px_2px_rgba(255,255,255,0.4)] ring-2 ring-amber-400/40'
-                      : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-amber-400/30 hover:bg-white/[0.07] hover:text-slate-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className={`block text-xs sm:text-sm font-black ${gameMode === 'TURNS' ? 'text-yellow-100 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'text-slate-300'}`}>
-                      Round Match
-                    </span>
-                    {gameMode === 'TURNS' && (
-                      <span className="h-2.5 w-2.5 rounded-full bg-yellow-300 shadow-[0_0_10px_#fde047,0_0_20px_#f59e0b] animate-pulse" />
-                    )}
-                  </div>
-                  <span className={`mt-0.5 block text-[11px] font-semibold ${gameMode === 'TURNS' ? 'text-amber-200' : 'text-slate-500'}`}>
-                    Highest score wins
-                  </span>
-                </button>
+                  </button>
+                ))}
               </div>
 
               {/* 2-Column: HP/Rounds + Timer */}
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                {gameMode === 'HP' ? (
+                {gameMode === 'HP' || gameMode === 'FANCY' ? (
                   <div>
                     <label className="block text-[11px] font-black text-amber-200/90 uppercase tracking-wider mb-1.5">Starting HP</label>
                     <CustomSelect
@@ -628,7 +618,7 @@ export default function HomePage() {
                       ]}
                     />
                   </div>
-                ) : (
+                ) : gameMode === 'TURNS' ? (
                   <div>
                     <label className="block text-[11px] font-black text-amber-200/90 uppercase tracking-wider mb-1.5">Round Count</label>
                     <CustomSelect
@@ -642,6 +632,10 @@ export default function HomePage() {
                         { value: 'custom', label: 'Custom' },
                       ]}
                     />
+                  </div>
+                ) : (
+                  <div className="flex items-center h-full">
+                    <span className="text-[11px] font-semibold text-slate-500">Plays until the tile bag runs out. No cards.</span>
                   </div>
                 )}
 
@@ -662,7 +656,7 @@ export default function HomePage() {
               </div>
 
               {/* Steppers if custom */}
-              {gameMode === 'HP' && hpOption === 'custom' && (
+              {(gameMode === 'HP' || gameMode === 'FANCY') && hpOption === 'custom' && (
                 <div className="flex items-center rounded-xl border border-amber-400/30 bg-slate-950/90 p-1 shadow-inner focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-400/40 transition-all">
                   <button
                     type="button"
@@ -1064,48 +1058,30 @@ export default function HomePage() {
 
               {/* Game Mode */}
               <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setGameMode('HP')}
-                  className={`relative p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                    gameMode === 'HP'
-                      ? 'border-purple-300 bg-gradient-to-b from-purple-500/30 via-purple-950/50 to-slate-950 text-white shadow-[0_0_25px_rgba(168,85,247,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] ring-2 ring-purple-400/40'
-                      : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-purple-400/30 hover:bg-white/[0.07] hover:text-slate-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className={`block font-black text-xs sm:text-sm ${gameMode === 'HP' ? 'text-purple-100 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]' : 'text-slate-300'}`}>
-                      HP Battle
+                {GAME_MODES.map(m => (
+                  <button
+                    key={m.key}
+                    type="button"
+                    onClick={() => setGameMode(m.key)}
+                    className={`relative p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+                      gameMode === m.key
+                        ? 'border-purple-300 bg-gradient-to-b from-purple-500/30 via-purple-950/50 to-slate-950 text-white shadow-[0_0_25px_rgba(168,85,247,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] ring-2 ring-purple-400/40'
+                        : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-purple-400/30 hover:bg-white/[0.07] hover:text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`block font-black text-xs sm:text-sm ${gameMode === m.key ? 'text-purple-100 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]' : 'text-slate-300'}`}>
+                        {m.label}
+                      </span>
+                      {gameMode === m.key && (
+                        <span className="h-2.5 w-2.5 rounded-full bg-purple-300 shadow-[0_0_10px_#d8b4fe,0_0_20px_#a855f7] animate-pulse" />
+                      )}
+                    </div>
+                    <span className={`mt-0.5 block text-[11px] font-semibold ${gameMode === m.key ? 'text-purple-200' : 'text-slate-500'}`}>
+                      {m.desc}
                     </span>
-                    {gameMode === 'HP' && (
-                      <span className="h-2.5 w-2.5 rounded-full bg-purple-300 shadow-[0_0_10px_#d8b4fe,0_0_20px_#a855f7] animate-pulse" />
-                    )}
-                  </div>
-                  <span className={`mt-0.5 block text-[11px] font-semibold ${gameMode === 'HP' ? 'text-purple-200' : 'text-slate-500'}`}>
-                    Score deals HP damage
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGameMode('TURNS')}
-                  className={`relative p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                    gameMode === 'TURNS'
-                      ? 'border-purple-300 bg-gradient-to-b from-purple-500/30 via-purple-950/50 to-slate-950 text-white shadow-[0_0_25px_rgba(168,85,247,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] ring-2 ring-purple-400/40'
-                      : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-purple-400/30 hover:bg-white/[0.07] hover:text-slate-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className={`block font-black text-xs sm:text-sm ${gameMode === 'TURNS' ? 'text-purple-100 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]' : 'text-slate-300'}`}>
-                      Round Match
-                    </span>
-                    {gameMode === 'TURNS' && (
-                      <span className="h-2.5 w-2.5 rounded-full bg-purple-300 shadow-[0_0_10px_#d8b4fe,0_0_20px_#a855f7] animate-pulse" />
-                    )}
-                  </div>
-                  <span className={`mt-0.5 block text-[11px] font-semibold ${gameMode === 'TURNS' ? 'text-purple-200' : 'text-slate-500'}`}>
-                    Highest total score wins
-                  </span>
-                </button>
+                  </button>
+                ))}
               </div>
 
               {/* Matchup Summary */}

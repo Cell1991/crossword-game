@@ -262,7 +262,10 @@ export default function LobbyPage() {
                 <Swords className="w-3 h-3 text-amber-400" /> Mode
               </span>
               <span className="mt-0.5 text-xs sm:text-sm font-black text-amber-300 truncate max-w-full drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">
-                {gameMode === 'HP' ? `HP Battle (${startingHp ?? 100})` : `${maxTurns} Rounds`}
+                {gameMode === 'HP' ? `WordX (${startingHp ?? 100})`
+                  : gameMode === 'FANCY' ? `Fancy (${startingHp ?? 150})`
+                  : gameMode === 'CLASSIC' ? 'Classic'
+                  : `${maxTurns} Rounds`}
               </span>
             </div>
 

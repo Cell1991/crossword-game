@@ -166,7 +166,7 @@ interface PowerCardBarProps {
   armedCard: BoardCard | null;
   pendingArmedCell: CellPosition | null;
   pendingFrozenCells?: CellPosition[];
-  deferredFreezeTileId: string | null;
+  deferredFreezeTileIds: string[];
   deferredHeal?: boolean;
   onCancelDeferredHeal?: () => void;
   estimatedScore?: number;
@@ -193,7 +193,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   armedCard,
   pendingArmedCell,
   pendingFrozenCells = [],
-  deferredFreezeTileId,
+  deferredFreezeTileIds,
   deferredHeal = false,
   onCancelDeferredHeal,
   estimatedScore = 0,
@@ -220,7 +220,8 @@ export const PowerCardBar = memo(function PowerCardBar({
   // Filter only the 7 true power cards
   const validCards = cards.filter(card => POWER_CARDS_META[card]);
 
-  if (deferredFreezeTileId) {
+  if (deferredFreezeTileIds.length > 0) {
+    const count = deferredFreezeTileIds.length;
     return (
       <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-cyan-400/80 bg-gradient-to-r from-sky-950 via-cyan-950 to-slate-950 px-3 py-1.5 text-xs text-cyan-100 shadow-[0_0_20px_rgba(6,182,212,0.4)] ring-1 ring-cyan-400/30">
         <div className="flex items-center gap-2 min-w-0">
@@ -228,7 +229,7 @@ export const PowerCardBar = memo(function PowerCardBar({
             <Snowflake className="w-3.5 h-3.5 text-cyan-200" />
           </div>
           <span className="font-semibold text-slate-100 text-xs truncate">
-            <strong className="text-cyan-300 font-extrabold">Freeze Armed</strong> — activates on move
+            <strong className="text-cyan-300 font-extrabold">Freeze Armed ({count}/3)</strong> — activates on move
           </span>
         </div>
         <button

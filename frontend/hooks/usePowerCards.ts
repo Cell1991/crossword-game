@@ -24,10 +24,10 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   const [armedCard, setArmedCard] = useState<BoardCard | null>(null);
   const [pendingArmedCell, setPendingArmedCell] = useState<CellPosition | null>(null);
   const [pendingFrozenCells, setPendingFrozenCells] = useState<CellPosition[]>([]);
-  // FREEZE_TILE marked on a tile placed this turn (not yet committed): applied atomically with
-  // Confirm Move (see commitMove's freezeTileId). Recalling that tile clears it below - that
-  // recall *is* the cancel, so no extra confirmation step is needed for this path.
-  const [deferredFreezeTileId, setDeferredFreezeTileId] = useState<string | null>(null);
+  // FREEZE_TILE marked on 1-3 tiles placed this turn (not yet committed): applied atomically with
+  // Confirm Move (see commitMove's freezeTileIds). Recalling one of those tiles clears it below -
+  // that recall *is* the cancel for that tile, so no extra confirmation step is needed for this path.
+  const [deferredFreezeTileIds, setDeferredFreezeTileIds] = useState<string[]>([]);
   const [deferredHeal, setDeferredHeal] = useState<boolean>(false);
   const [hintCell, setHintCell] = useState<CellPosition | null>(null);
   const [hintSuggestions, setHintSuggestions] = useState<HintSuggestion[]>([]);
@@ -35,9 +35,7 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   const [busy, setBusy] = useState(false);
   const hasLoadedFromStorageRef = useRef(false);
 
-  const activeDeferredFreezeTileId = deferredFreezeTileId && temporaryTiles.some(t => t.tile_id === deferredFreezeTileId)
-    ? deferredFreezeTileId
-    : null;
+  const activeDeferredFreezeTileIds = deferredFreezeTileIds.filter(id => temporaryTiles.some(t => t.tile_id === id));
 
   // Load persisted hints when player ID and game ID become available
   useEffect(() => {
@@ -166,31 +164,25 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
 
   /**
    * An armed board card picks a target. A committed tile (from a prior turn) stages a second
-   * confirm and is only spent once confirmed. FREEZE_TILE selects 1 to 3 committed tiles (or can target one of this turn's staged tiles).
+   * confirm and is only spent once confirmed. FREEZE_TILE selects 1 to 3 tiles, either committed
+   * ones (frozen instantly on Confirm) or ones staged this turn (frozen once Confirm Move commits).
    */
   const playArmedCardAt = useCallback((row: number, col: number) => {
     if (!armedCard || busy) return;
     if (armedCard === 'FREEZE_TILE') {
-      if (isCellCommitted(boardState, row, col)) {
-        setPendingFrozenCells(prev => {
-          const exists = prev.some(p => p.row === row && p.col === col);
-          if (exists) {
-            return prev.filter(p => !(p.row === row && p.col === col));
-          }
-          if (prev.length >= 3) {
-            flashInfo('You can select up to 3 tiles to freeze.');
-            return prev;
-          }
-          return [...prev, { row, col }];
-        });
-        return;
-      }
-      const staged = temporaryTiles.find(tile => tile.row === row && tile.col === col);
-      if (staged) {
-        setDeferredFreezeTileId(staged.tile_id);
-        setArmedCard(null);
-        setPendingFrozenCells([]);
-      }
+      const isStaged = !isCellCommitted(boardState, row, col);
+      if (isStaged && !temporaryTiles.some(tile => tile.row === row && tile.col === col)) return;
+      setPendingFrozenCells(prev => {
+        const exists = prev.some(p => p.row === row && p.col === col);
+        if (exists) {
+          return prev.filter(p => !(p.row === row && p.col === col));
+        }
+        if (prev.length >= 3) {
+          flashInfo('You can select up to 3 tiles to freeze.');
+          return prev;
+        }
+        return [...prev, { row, col }];
+      });
       return;
     }
     if (isCellCommitted(boardState, row, col)) {
@@ -206,8 +198,27 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
         flashError('Select at least 1 tile to freeze');
         return;
       }
+      const committedCells = pendingFrozenCells.filter(c => isCellCommitted(boardState, c.row, c.col));
+      const stagedTileIds = pendingFrozenCells
+        .filter(c => !isCellCommitted(boardState, c.row, c.col))
+        .map(c => temporaryTiles.find(t => t.row === c.row && t.col === c.col)?.tile_id)
+        .filter((id): id is string => Boolean(id));
+
+      if (committedCells.length > 0 && stagedTileIds.length > 0) {
+        flashError('Pick either board tiles or tiles placed this turn, not both');
+        return;
+      }
+
+      if (stagedTileIds.length > 0) {
+        setDeferredFreezeTileIds(stagedTileIds);
+        setArmedCard(null);
+        setPendingFrozenCells([]);
+        setPendingArmedCell(null);
+        return;
+      }
+
       setBusy(true);
-      playCard(gameId, myPlayerId, { card: 'FREEZE_TILE', frozen_cells: pendingFrozenCells })
+      playCard(gameId, myPlayerId, { card: 'FREEZE_TILE', frozen_cells: committedCells })
         .then(() => reload())
         .catch((error: unknown) => flashError(error instanceof Error ? error.message : 'Failed to use card'))
         .finally(() => {
@@ -237,7 +248,7 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     setPendingArmedCell(null);
     setPendingFrozenCells([]);
   }, []);
-  const cancelDeferredFreeze = useCallback(() => setDeferredFreezeTileId(null), []);
+  const cancelDeferredFreeze = useCallback(() => setDeferredFreezeTileIds([]), []);
   const cancelDeferredHeal = useCallback(() => setDeferredHeal(false), []);
 
   const activeHintTiles = hintSuggestions.length > 0
@@ -252,7 +263,7 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     pendingFrozenCells,
     confirmArmedCardAt,
     cancelPendingArmedCell,
-    deferredFreezeTileId: activeDeferredFreezeTileId,
+    deferredFreezeTileIds: activeDeferredFreezeTileIds,
     cancelDeferredFreeze,
     deferredHeal,
     cancelDeferredHeal,

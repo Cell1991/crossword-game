@@ -165,6 +165,7 @@ def _upgrade_existing_schema(connection):
     inspector = inspect(connection)
     upgrades = {
         "games": {
+            "game_mode": "VARCHAR(16) DEFAULT 'HP' NOT NULL",
             "banned_letter": "VARCHAR(10)",
             "banned_until_turn": "INTEGER",
             "banned_by_player_id": "VARCHAR(36)",
