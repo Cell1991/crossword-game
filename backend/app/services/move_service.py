@@ -213,6 +213,8 @@ class MoveService:
 
         normalized_board = game.board_state if (game.board_state is not None and isinstance(game.board_state, dict)) else await board_state(db, game_id)
         normalized_rack = player.rack if (player.rack is not None and isinstance(player.rack, list)) else await player_rack(db, player.id)
+        normalized_cards = player.cards if (player.cards is not None and isinstance(player.cards, list)) else await player_cards(db, player.id)
+        player.cards = list(normalized_cards)
 
         # Check tile ownership. Bots are held to this too: they used to have their rack rewritten to
         # fit whatever they wanted to play, which let them conjure letters they never drew.
@@ -315,11 +317,11 @@ class MoveService:
         # Handle Heal & Shield activated on this move
         healed_amount = 0
         is_heal_active = bool(use_heal or (game.pending_heal_player_id == player.id))
-        if is_heal_active and "HEAL" in (player.cards or []):
-            held_cards = list(player.cards or [])
+        held_cards = list(player.cards or [])
+        if is_heal_active and "HEAL" in held_cards:
             held_cards.remove("HEAL")
             player.cards = held_cards
-            flag_modified(player, "cards")
+            await replace_player_cards(db, player.id, held_cards)
             game.pending_heal_player_id = None
             if score > 0:
                 healed_amount = math.ceil(score * 0.60)
@@ -331,11 +333,11 @@ class MoveService:
 
         shield_awarded = 0
         is_shield_active = bool(use_shield or (game.pending_shield_player_id == player.id))
-        if is_shield_active and "SHIELD" in (player.cards or []):
-            held_cards = list(player.cards or [])
+        held_cards = list(player.cards or [])
+        if is_shield_active and "SHIELD" in held_cards:
             held_cards.remove("SHIELD")
             player.cards = held_cards
-            flag_modified(player, "cards")
+            await replace_player_cards(db, player.id, held_cards)
             game.pending_shield_player_id = None
             if score > 0:
                 shield_awarded = math.ceil(score * 0.75)
@@ -413,13 +415,16 @@ class MoveService:
 
         if freeze_target is not None:
             held_cards = list(player.cards or [])
-            held_cards.remove("FREEZE_TILE")
-            player.cards = held_cards
+            if "FREEZE_TILE" in held_cards:
+                held_cards.remove("FREEZE_TILE")
+                player.cards = held_cards
+                await replace_player_cards(db, player.id, held_cards)
             turns_to_block = max(1, len(GameService.eligible_players(all_players)) - 1)
-            game.frozen_tile = {
+            game.frozen_tile = [{
                 "row": freeze_target.row, "col": freeze_target.col,
                 "set_by": player.id, "expires_turn": game.turn_number + turns_to_block,
-            }
+            }]
+            flag_modified(game, "frozen_tile")
 
         # Score is authoritative damage to every other living player, doubled for a
         # DOUBLE_DAMAGE target. Applied after a short SHIELD window if any opponent has shield,

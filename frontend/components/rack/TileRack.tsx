@@ -144,7 +144,6 @@ export const TileRack = memo(function TileRack({
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, slotIndex: number, tile: Tile) => {
-    soundFx.playPianoNote(slotIndex);
     if (!canStageMove) return;
     // While exchanging, don't drag — just capture click on release
     if (!isExchanging) {
@@ -168,7 +167,7 @@ export const TileRack = memo(function TileRack({
     }
   };
 
-  const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>, tile: Tile) => {
+  const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>, slotIndex: number, tile: Tile) => {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
@@ -180,6 +179,7 @@ export const TileRack = memo(function TileRack({
     if (wasDragging) {
       onFinishTileDrag(event.clientX, event.clientY);
     } else {
+      soundFx.playPianoNote(slotIndex);
       if (canStageMove) {
         onSelectTile(tile);
       }
@@ -296,7 +296,7 @@ export const TileRack = memo(function TileRack({
                       data-rack-tile-id={tile.id}
                       onPointerDown={(event) => handlePointerDown(event, slotIndex, tile)}
                       onPointerMove={handlePointerMove}
-                      onPointerUp={(event) => handlePointerUp(event, tile)}
+                      onPointerUp={(event) => handlePointerUp(event, slotIndex, tile)}
                       disabled={!canStageMove}
                       aria-pressed={isExchanging ? isMarkedForExchange : undefined}
                       style={animClass ? { animationDelay: `${staggerDelayMs}ms` } : undefined}

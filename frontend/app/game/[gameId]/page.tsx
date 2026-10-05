@@ -228,13 +228,31 @@ export default function GamePage() {
       playArmedCardAt(row, col);
       return;
     }
+    if (staged.selectedTileId) {
+      const slotIdx = myRack.findIndex(t => t?.id === staged.selectedTileId);
+      soundFx.playPianoNote(slotIdx >= 0 ? slotIdx : 0);
+    }
     placeAtCell(row, col, myRack);
-  }, [armedCard, myRack, placeAtCell, playArmedCardAt]);
+  }, [armedCard, myRack, placeAtCell, playArmedCardAt, staged.selectedTileId]);
 
   const handleCollectPendingTile = useCallback((tileId: string) => {
     if (!canStageMove) return;
+    const slotIdx = myRack.findIndex(t => t?.id === tileId);
+    soundFx.playPianoNote(slotIdx >= 0 ? slotIdx : 0);
     unstageTile(tileId);
-  }, [canStageMove, unstageTile]);
+  }, [canStageMove, myRack, unstageTile]);
+
+  const handleStartPendingDrag = useCallback((tile: PlacedTile, clientX: number, clientY: number) => {
+    const slotIdx = myRack.findIndex(t => t?.id === tile.tile_id);
+    startPendingDrag(tile, clientX, clientY, slotIdx >= 0 ? slotIdx : 0);
+  }, [myRack, startPendingDrag]);
+
+  const handleRecallMove = useCallback(() => {
+    if (temporaryTiles.length > 0) {
+      soundFx.playPianoNote(0);
+    }
+    clearStagedMove();
+  }, [clearStagedMove, temporaryTiles.length]);
 
   const isExchanging = exchangeTileIds !== null;
   const handleSelectTile = useCallback((tile: Tile) => {
@@ -794,7 +812,7 @@ export default function GamePage() {
               temporaryTilesValid={isBotTurn ? true : validationState}
               selectedCell={staged.selectedCell}
               onCellClick={handleCellClick}
-              onStartPendingDrag={startPendingDrag}
+              onStartPendingDrag={handleStartPendingDrag}
               onFinishPendingDrag={finishDrag}
               onCollectPendingTile={handleCollectPendingTile}
               onPendingDragMove={updateDragHover}
@@ -897,7 +915,7 @@ export default function GamePage() {
                 />
               }
               onSelectTile={handleSelectTile}
-              onCancelMove={clearStagedMove}
+              onCancelMove={handleRecallMove}
               onConfirmMove={handleConfirmMove}
               onPassTurn={handlePassTurn}
               onShuffleRack={handleShuffleRack}

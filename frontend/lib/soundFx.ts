@@ -202,64 +202,64 @@ class SoundSynthesizer {
   }
 
   /**
-   * Warm, soft acoustic piano note for the 7 rack tile positions:
-   * Slot 0: โด (Do - C5 / 523.25 Hz)
-   * Slot 1: เร (Re - D5 / 587.33 Hz)
-   * Slot 2: มี (Mi - E5 / 659.25 Hz)
-   * Slot 3: ฟา (Fa - F5 / 698.46 Hz)
-   * Slot 4: ซอล (Sol - G5 / 783.99 Hz)
-   * Slot 5: ลา (La - A5 / 880.00 Hz)
-   * Slot 6: ที (Ti - B5 / 987.77 Hz)
+   * Ultra-warm, velvety soft piano / marimba chime for 7 rack tile positions (Middle C Octave):
+   * Slot 0: โด (Do - C4 / 261.63 Hz)
+   * Slot 1: เร (Re - D4 / 293.66 Hz)
+   * Slot 2: มี (Mi - E4 / 329.63 Hz)
+   * Slot 3: ฟา (Fa - F4 / 349.23 Hz)
+   * Slot 4: ซอล (Sol - G4 / 392.00 Hz)
+   * Slot 5: ลา (La - A4 / 440.00 Hz)
+   * Slot 6: ที (Ti - B4 / 493.88 Hz)
    */
   playPianoNote(slotIndex: number) {
     const ctx = this.getContext();
     if (!ctx) return;
     const now = ctx.currentTime;
 
+    // Middle C Octave (Deep, warm, soothing register - zero high-pitch sharpness)
     const PIANO_NOTES = [
-      523.25, // 0: โด (Do - C5)
-      587.33, // 1: เร (Re - D5)
-      659.25, // 2: มี (Mi - E5)
-      698.46, // 3: ฟา (Fa - F5)
-      783.99, // 4: ซอล (Sol - G5)
-      880.00, // 5: ลา (La - A5)
-      987.77, // 6: ที (Ti - B5)
+      261.63, // 0: โด (Do - C4)
+      293.66, // 1: เร (Re - D4)
+      329.63, // 2: มี (Mi - E4)
+      349.23, // 3: ฟา (Fa - F4)
+      392.00, // 4: ซอล (Sol - G4)
+      440.00, // 5: ลา (La - A4)
+      493.88, // 6: ที (Ti - B4)
     ];
 
     const noteIdx = Math.max(0, Math.min(PIANO_NOTES.length - 1, slotIndex));
     const fundamental = PIANO_NOTES[noteIdx];
 
-    // Master gain for gentle, well-balanced acoustic volume
+    // Master gain: soft, cozy, non-intrusive volume
     const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.16, now);
+    masterGain.gain.setValueAtTime(0.12, now);
     masterGain.connect(ctx.destination);
 
-    // Warm Lowpass Filter simulating wooden piano soundboard & felt damper
+    // Warm Lowpass Filter: completely removes any harsh high-frequencies
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(fundamental * 3.8, now);
-    filter.frequency.exponentialRampToValueAtTime(fundamental * 1.4, now + 0.7);
-    filter.Q.setValueAtTime(1.1, now);
+    filter.frequency.setValueAtTime(fundamental * 2.2, now);
+    filter.frequency.exponentialRampToValueAtTime(fundamental * 1.05, now + 0.5);
+    filter.Q.setValueAtTime(0.65, now);
     filter.connect(masterGain);
 
-    // Harmonics for rich, natural, non-fatiguing piano timbre
+    // Pure, gentle sine harmonics (velvet Rhodes / soft acoustic upright piano feel)
     const harmonics = [
-      { mult: 0.5, type: 'sine' as const, gain: 0.18, decay: 0.70 }, // Warm lower resonance
-      { mult: 1.0, type: 'sine' as const, gain: 0.65, decay: 0.90 }, // Fundamental note
-      { mult: 2.0, type: 'triangle' as const, gain: 0.22, decay: 0.45 }, // 1st Octave harmonic
-      { mult: 3.0, type: 'sine' as const, gain: 0.08, decay: 0.30 }, // 12th harmonic
+      { mult: 0.5, gain: 0.16, decay: 0.45 }, // Deep body warmth
+      { mult: 1.0, gain: 0.78, decay: 0.55 }, // Fundamental note
+      { mult: 2.0, gain: 0.12, decay: 0.32 }, // Soft 1st overtone
     ];
 
-    harmonics.forEach(({ mult, type, gain: harmonicGain, decay }) => {
+    harmonics.forEach(({ mult, gain: harmonicGain, decay }) => {
       const osc = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
-      osc.type = type;
+      osc.type = 'sine';
       osc.frequency.setValueAtTime(fundamental * mult, now);
 
-      // Fast, gentle attack (4ms) to avoid clicks, followed by smooth exponential decay
-      gainNode.gain.setValueAtTime(0.001, now);
-      gainNode.gain.linearRampToValueAtTime(harmonicGain, now + 0.005);
+      // 10ms smooth rounded attack to eliminate any initial click/bite
+      gainNode.gain.setValueAtTime(0.0001, now);
+      gainNode.gain.linearRampToValueAtTime(harmonicGain, now + 0.012);
       gainNode.gain.exponentialRampToValueAtTime(0.0001, now + decay);
 
       osc.connect(gainNode);
@@ -268,22 +268,6 @@ class SoundSynthesizer {
       osc.start(now);
       osc.stop(now + decay + 0.05);
     });
-
-    // Soft felt hammer attack thud (subtle acoustic realism)
-    const hammerOsc = ctx.createOscillator();
-    const hammerGain = ctx.createGain();
-    hammerOsc.type = 'sine';
-    hammerOsc.frequency.setValueAtTime(fundamental * 0.4, now);
-    hammerOsc.frequency.exponentialRampToValueAtTime(50, now + 0.02);
-
-    hammerGain.gain.setValueAtTime(0.035, now);
-    hammerGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
-
-    hammerOsc.connect(hammerGain);
-    hammerGain.connect(masterGain);
-
-    hammerOsc.start(now);
-    hammerOsc.stop(now + 0.03);
   }
 }
 

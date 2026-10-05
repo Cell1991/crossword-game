@@ -4,6 +4,7 @@ import { RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useRef, us
 import { BoardCell, CellPosition, PlacedTile, Tile } from '@/lib/types';
 import { isCellCommitted } from '@/lib/tiles';
 import { moveFixedElement } from '@/lib/dom';
+import { soundFx } from '@/lib/soundFx';
 
 export interface DragSession {
   tile: Tile;
@@ -115,6 +116,8 @@ export function useTileDrag(options: UseTileDragOptions) {
     if (isInside(rackRect, x, y)) {
       const droppedSeat = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-rack-slot]');
       const targetSlot = droppedSeat ? Number(droppedSeat.dataset.rackSlot) : NaN;
+      const noteSlot = Number.isInteger(targetSlot) ? targetSlot : (session.slotIndex ?? 0);
+      soundFx.playPianoNote(noteSlot);
       if (session.source === 'board') {
         latest.seatReturningTile(session.tile.id, Number.isInteger(targetSlot) ? targetSlot : 0);
         latest.unstageTile(session.tile.id);
@@ -123,7 +126,12 @@ export function useTileDrag(options: UseTileDragOptions) {
       }
       return;
     }
-    if (!targetCell) return;
+    if (!targetCell) {
+      if (session.slotIndex !== undefined) {
+        soundFx.playPianoNote(session.slotIndex);
+      }
+      return;
+    }
 
     const occupiedByCommitted = isCellCommitted(latest.boardState, targetCell.row, targetCell.col);
     const targetPendingTile = latest.temporaryTiles.find(tile =>
@@ -131,6 +139,10 @@ export function useTileDrag(options: UseTileDragOptions) {
       tile.col === targetCell.col &&
       tile.tile_id !== session.tile.id
     );
+
+    if (session.slotIndex !== undefined) {
+      soundFx.playPianoNote(session.slotIndex);
+    }
 
     if (!occupiedByCommitted) {
       if (session.source === 'board' && session.origin && targetPendingTile) {
@@ -158,12 +170,13 @@ export function useTileDrag(options: UseTileDragOptions) {
     beginDrag({ tile, source: 'rack', origin: null, slotIndex, start: { x: clientX, y: clientY } });
   }, [beginDrag, canStageMove, deselectTile]);
 
-  const startPendingDrag = useCallback((tile: PlacedTile, clientX: number, clientY: number) => {
+  const startPendingDrag = useCallback((tile: PlacedTile, clientX: number, clientY: number, slotIndex?: number) => {
     if (!canStageMove) return;
     beginDrag({
       tile: { id: tile.tile_id, letter: tile.letter, value: tile.value },
       source: 'board',
       origin: { row: tile.row, col: tile.col },
+      slotIndex,
       start: { x: clientX, y: clientY },
     });
   }, [beginDrag, canStageMove]);
