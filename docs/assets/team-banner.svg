@@ -32,7 +32,7 @@
 
   <!-- Top Title / HUD Header -->
   <g transform="translate(600, 24)">
-    <text x="0" y="0" fill="#64748b" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="4">
+    <text x="0" y="0" fill="#64748b" font-family="'Inter', sans-serif" font-size="12" font-weight="900" text-anchor="middle" letter-spacing="3">
       CROSSWORD COMBAT ARENA • CORE DEVELOPMENT CREW
     </text>
   </g>
@@ -55,8 +55,8 @@
       <circle cx="90" cy="65" r="44" fill="none" stroke="#f59e0b" stroke-width="2.5"/>
 
       <!-- Member Names (No Roles) -->
-      <text x="90" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900" text-anchor="middle">Cell1991</text>
-      <text x="90" y="158" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">Cell</text>
+      <text x="90" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14.5" font-weight="900" text-anchor="middle">Cell1991</text>
+      <text x="90" y="158" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="12.5" font-weight="700" text-anchor="middle">Cell</text>
     </g>
   </a>
 
@@ -78,8 +78,8 @@
       <circle cx="90" cy="65" r="44" fill="none" stroke="#0284c7" stroke-width="2.5"/>
 
       <!-- Member Names (No Roles) -->
-      <text x="90" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900" text-anchor="middle">friend47</text>
-      <text x="90" y="158" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">Peerapatr</text>
+      <text x="90" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14.5" font-weight="900" text-anchor="middle">friend47</text>
+      <text x="90" y="158" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="12.5" font-weight="700" text-anchor="middle">Peerapatr</text>
     </g>
   </a>
 
@@ -101,8 +101,8 @@
       <circle cx="90" cy="65" r="44" fill="none" stroke="#c084fc" stroke-width="2.5"/>
 
       <!-- Member Names (No Roles) -->
-      <text x="90" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900" text-anchor="middle">waiwaix43</text>
-      <text x="90" y="158" fill="#c084fc" font-family="'Inter', sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">waiwaix43</text>
+      <text x="90" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14.5" font-weight="900" text-anchor="middle">waiwaix43</text>
+      <text x="90" y="158" fill="#c084fc" font-family="'Inter', sans-serif" font-size="12.5" font-weight="700" text-anchor="middle">waiwaix43</text>
     </g>
   </a>
 
@@ -124,8 +124,8 @@
       <circle cx="90" cy="65" r="44" fill="none" stroke="#10b981" stroke-width="2.5"/>
 
       <!-- Member Names (No Roles) -->
-      <text x="90" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900" text-anchor="middle">Natthaset2547</text>
-      <text x="90" y="158" fill="#34d399" font-family="'Inter', sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">Natthaset</text>
+      <text x="90" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14.5" font-weight="900" text-anchor="middle">Natthaset2547</text>
+      <text x="90" y="158" fill="#34d399" font-family="'Inter', sans-serif" font-size="12.5" font-weight="700" text-anchor="middle">Natthaset</text>
     </g>
   </a>
 
@@ -147,8 +147,8 @@
       <circle cx="90" cy="65" r="44" fill="none" stroke="#f43f5e" stroke-width="2.5"/>
 
       <!-- Member Names (No Roles) -->
-      <text x="90" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900" text-anchor="middle">Rednoselittledog</text>
-      <text x="90" y="158" fill="#fb7185" font-family="'Inter', sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">Kanin Noisiri</text>
+      <text x="90" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14.5" font-weight="900" text-anchor="middle">Rednoselittledog</text>
+      <text x="90" y="158" fill="#fb7185" font-family="'Inter', sans-serif" font-size="12.5" font-weight="700" text-anchor="middle">Kanin Noisiri</text>
     </g>
   </a>
 
@@ -170,8 +170,8 @@
       <circle cx="87" cy="65" r="44" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
 
       <!-- Member Names (No Roles) -->
-      <text x="87" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900" text-anchor="middle">ReFresh-bit</text>
-      <text x="87" y="158" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">ReFresh-bit</text>
+      <text x="87" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14.5" font-weight="900" text-anchor="middle">ReFresh-bit</text>
+      <text x="87" y="158" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="12.5" font-weight="700" text-anchor="middle">ReFresh-bit</text>
     </g>
   </a>
 </svg>

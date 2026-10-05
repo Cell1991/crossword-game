@@ -83,8 +83,8 @@ def main():
       <circle cx="{mid_x}" cy="65" r="{r}" fill="none" stroke="{m['color']}" stroke-width="2.5"/>
 
       <!-- Member Names (No Roles) -->
-      <text x="{mid_x}" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900" text-anchor="middle">{u}</text>
-      <text x="{mid_x}" y="158" fill="{m['text_name']}" font-family="'Inter', sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">{m['name']}</text>
+      <text x="{mid_x}" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14.5" font-weight="900" text-anchor="middle">{u}</text>
+      <text x="{mid_x}" y="158" fill="{m['text_name']}" font-family="'Inter', sans-serif" font-size="12.5" font-weight="700" text-anchor="middle">{m['name']}</text>
     </g>
   </a>'''
         svg_cards.append(card)
@@ -125,7 +125,7 @@ def main():
 
   <!-- Top Title / HUD Header -->
   <g transform="translate(600, 24)">
-    <text x="0" y="0" fill="#64748b" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="4">
+    <text x="0" y="0" fill="#64748b" font-family="'Inter', sans-serif" font-size="12" font-weight="900" text-anchor="middle" letter-spacing="3">
       CROSSWORD COMBAT ARENA • CORE DEVELOPMENT CREW
     </text>
   </g>

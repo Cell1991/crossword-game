@@ -74,7 +74,7 @@
  </g>
 
  <!-- Row Coordinate Labels (Left) -->
- <g font-family="'Inter', monospace" font-size="9" fill="#64748b" text-anchor="middle">
+ <g font-family="'Inter', monospace" font-size="11.5" fill="#64748b" text-anchor="middle">
  <text x="35" y="72">R0</text>
  <text x="35" y="142">R4</text>
  <text x="35" y="212">R9</text>
@@ -87,55 +87,55 @@
  <!-- 3L Cells (Triple Letter - Blue) -->
  <g fill="#0284c7" stroke="#38bdf8" stroke-width="1">
  <rect x="315" y="58" width="28" height="22" rx="4"/>
- <text x="329" y="73" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <text x="329" y="73" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
 
  <rect x="315" y="335" width="28" height="22" rx="4"/>
- <text x="329" y="350" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <text x="329" y="350" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
 
  <rect x="75" y="75" width="28" height="22" rx="4"/>
- <text x="89" y="90" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <text x="89" y="90" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
 
  <rect x="555" y="75" width="28" height="22" rx="4"/>
- <text x="569" y="90" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <text x="569" y="90" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
 
  <rect x="75" y="315" width="28" height="22" rx="4"/>
- <text x="89" y="330" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <text x="89" y="330" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
 
  <rect x="555" y="315" width="28" height="22" rx="4"/>
- <text x="569" y="330" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <text x="569" y="330" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
 
  <rect x="55" y="200" width="28" height="22" rx="4"/>
- <text x="69" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <text x="69" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
 
  <rect x="575" y="200" width="28" height="22" rx="4"/>
- <text x="589" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <text x="589" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
 
  <rect x="250" y="200" width="28" height="22" rx="4"/>
- <text x="264" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <text x="264" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
 
  <rect x="380" y="200" width="28" height="22" rx="4"/>
- <text x="394" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <text x="394" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
  </g>
 
  <!-- 2L Cells (Double Letter - Teal/Emerald) -->
  <g fill="#0369a1" stroke="#7dd3fc" stroke-width="1">
  <rect x="220" y="110" width="28" height="22" rx="4"/>
- <text x="234" y="125" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ <text x="234" y="125" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">2L</text>
 
  <rect x="410" y="110" width="28" height="22" rx="4"/>
- <text x="424" y="125" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ <text x="424" y="125" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">2L</text>
 
  <rect x="220" y="285" width="28" height="22" rx="4"/>
- <text x="234" y="300" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ <text x="234" y="300" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">2L</text>
 
  <rect x="410" y="285" width="28" height="22" rx="4"/>
- <text x="424" y="300" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ <text x="424" y="300" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">2L</text>
 
  <rect x="180" y="200" width="28" height="22" rx="4"/>
- <text x="194" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ <text x="194" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">2L</text>
 
  <rect x="450" y="200" width="28" height="22" rx="4"/>
- <text x="464" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ <text x="464" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">2L</text>
  </g>
 
  <!-- ★ Secret Power Cells (Purple / Violet) -->
@@ -166,7 +166,7 @@
  </g>
 
  <rect x="240" y="235" width="180" height="20" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
- <text x="330" y="248" fill="#fde68a" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">
+ <text x="330" y="248" fill="#fde68a" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">
  ★ CENTER STAR (ROW 9, COL 13)
  </text>
  </g>
@@ -181,10 +181,10 @@
  <text x="35" y="49" fill="#fde68a" font-family="'Inter', sans-serif" font-size="24" font-weight="900" text-anchor="middle">★</text>
  
  <text x="70" y="32" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="13" font-weight="900">★ CENTER STAR (9, 13)</text>
- <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
+ <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11.5" font-weight="600">
  Mandatory Opening Move Anchor
  </text>
- <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
+ <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11.5">
  First word of the match must cover this coordinate.
  </text>
  </g>
@@ -196,10 +196,10 @@
  <text x="35" y="49" fill="#ffffff" font-family="'Inter', sans-serif" font-size="16" font-weight="900" text-anchor="middle">3L</text>
  
  <text x="70" y="32" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="13" font-weight="900"> TRIPLE LETTER (3× MULTIPLIER)</text>
- <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
+ <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11.5" font-weight="600">
  Triples the newly placed tile point value
  </text>
- <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
+ <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11.5">
  Applies across all horizontal and vertical words formed.
  </text>
  </g>
@@ -211,10 +211,10 @@
  <text x="35" y="49" fill="#ffffff" font-family="'Inter', sans-serif" font-size="16" font-weight="900" text-anchor="middle">2L</text>
  
  <text x="70" y="32" fill="#7dd3fc" font-family="'Inter', sans-serif" font-size="13" font-weight="900"> DOUBLE LETTER (2× MULTIPLIER)</text>
- <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
+ <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11.5" font-weight="600">
  Doubles the newly placed letter value
  </text>
- <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
+ <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11.5">
  Strategic stepping stone for high-yield combos.
  </text>
  </g>
@@ -226,10 +226,10 @@
  <text x="35" y="53" fill="#f5d0fe" font-size="22" text-anchor="middle">★</text>
  
  <text x="70" y="34" fill="#c084fc" font-family="'Inter', sans-serif" font-size="13" font-weight="900">★ POWER CELL &amp; +50 BINGO</text>
- <text x="70" y="52" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
+ <text x="70" y="52" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11.5" font-weight="600">
  Power Cards Drop &amp; All-7-Tiles Bonus
  </text>
- <text x="70" y="68" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
+ <text x="70" y="68" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11.5">
  Power cell awards tactical card. 7-tile bingo yields +50 pts!
  </text>
  </g>

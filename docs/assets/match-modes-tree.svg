@@ -62,7 +62,7 @@
 
  <!-- Title Header Inside SVG -->
  <g transform="translate(600, 24)">
- <text x="0" y="0" fill="#64748b" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="4">
+ <text x="0" y="0" fill="#64748b" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle" letter-spacing="4">
  TACTICAL MATCH ARBITRATION TREE
  </text>
  </g>
@@ -89,13 +89,13 @@
  <!-- Inner Accent Diamond -->
  <polygon points="0,-60 76,0 0,60 -76,0" fill="#1e293b" fill-opacity="0.6" stroke="#fbbf24" stroke-width="1"/>
  
- <text x="0" y="-14" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1">
+ <text x="0" y="-14" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="12" font-weight="900" text-anchor="middle" letter-spacing="1">
   MATCH SETUP
  </text>
  <text x="0" y="8" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="15" font-weight="900" text-anchor="middle">
  Select Mode
  </text>
- <text x="0" y="26" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5" font-weight="600" text-anchor="middle">
+ <text x="0" y="26" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="12" font-weight="600" text-anchor="middle">
  Lobby Ruleset
  </text>
  </g>
@@ -105,7 +105,7 @@
  <!-- Pill 1: HP Elimination -->
  <g transform="translate(420, 63)">
  <rect width="135" height="24" rx="12" fill="#1e1b4b" stroke="#ef4444" stroke-width="1.2"/>
- <text x="67" y="16" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="10" font-weight="800" text-anchor="middle">
+ <text x="67" y="16" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="11.5" font-weight="800" text-anchor="middle">
  HP Elimination
  </text>
  </g>
@@ -113,7 +113,7 @@
  <!-- Pill 2: Classic Scoring -->
  <g transform="translate(420, 173)">
  <rect width="135" height="24" rx="12" fill="#064e3b" stroke="#10b981" stroke-width="1.2"/>
- <text x="67" y="16" fill="#6ee7b7" font-family="'Inter', sans-serif" font-size="10" font-weight="800" text-anchor="middle">
+ <text x="67" y="16" fill="#6ee7b7" font-family="'Inter', sans-serif" font-size="11.5" font-weight="800" text-anchor="middle">
  Classic Scoring
  </text>
  </g>
@@ -121,7 +121,7 @@
  <!-- Pill 3: Solo / Fill -->
  <g transform="translate(420, 283)">
  <rect width="135" height="24" rx="12" fill="#581c87" stroke="#c084fc" stroke-width="1.2"/>
- <text x="67" y="16" fill="#e9d5ff" font-family="'Inter', sans-serif" font-size="10" font-weight="800" text-anchor="middle">
+ <text x="67" y="16" fill="#e9d5ff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="800" text-anchor="middle">
  Solo / Fill AI
  </text>
  </g>
@@ -129,7 +129,7 @@
  <!-- Pill 4: Watch Live -->
  <g transform="translate(420, 393)">
  <rect width="135" height="24" rx="12" fill="#0369a1" stroke="#38bdf8" stroke-width="1.2"/>
- <text x="67" y="16" fill="#7dd3fc" font-family="'Inter', sans-serif" font-size="10" font-weight="800" text-anchor="middle">
+ <text x="67" y="16" fill="#7dd3fc" font-family="'Inter', sans-serif" font-size="11.5" font-weight="800" text-anchor="middle">
  Watch Live
  </text>
  </g>
@@ -144,10 +144,10 @@
  HP DEATHMATCH • BATTLE ROYALE ELIMINATION
  </text>
  <rect x="475" y="5" width="80" height="18" rx="9" fill="#7f1d1d" stroke="#ef4444" stroke-width="1"/>
- <text x="515" y="17" fill="#fee2e2" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">10 - 1000 HP</text>
+ <text x="515" y="17" fill="#fee2e2" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800" text-anchor="middle">10 - 1000 HP</text>
 
  <!-- Checklist -->
- <g transform="translate(20, 48)" font-family="'Inter', sans-serif" font-size="11" fill="#cbd5e1">
+ <g transform="translate(20, 48)" font-family="'Inter', sans-serif" font-size="12" fill="#cbd5e1">
  <text y="0"><tspan fill="#f87171" font-weight="800">• Direct HP Damage:</tspan> Scored word points convert to lethal damage dealt to rivals</text>
  <text y="18"><tspan fill="#f87171" font-weight="800">• Reactive Defense:</tspan> 1.0s Shield reaction window &amp; rack-based Heal mechanics</text>
  <text y="36"><tspan fill="#f87171" font-weight="800">• Victory:</tspan> Last surviving player standing claims victory; 0 HP becomes Spectator</text>
@@ -162,10 +162,10 @@
  TURN COUNT MODE • CLASSIC TOURNAMENT SCORING
  </text>
  <rect x="475" y="5" width="80" height="18" rx="9" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
- <text x="515" y="17" fill="#d1fae5" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">7 - 500 ROUNDS</text>
+ <text x="515" y="17" fill="#d1fae5" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800" text-anchor="middle">7 - 500 ROUNDS</text>
 
  <!-- Checklist -->
- <g transform="translate(20, 48)" font-family="'Inter', sans-serif" font-size="11" fill="#cbd5e1">
+ <g transform="translate(20, 48)" font-family="'Inter', sans-serif" font-size="12" fill="#cbd5e1">
  <text y="0"><tspan fill="#34d399" font-weight="800">• Cumulative Points:</tspan> Highest total points scored across rounds wins the match</text>
  <text y="18"><tspan fill="#34d399" font-weight="800">• Pure Word Strategy:</tspan> HP cards automatically excluded from random drops</text>
  <text y="36"><tspan fill="#34d399" font-weight="800">• Multiplier Mastery:</tspan> Focus on 3L, 2L matrix yields and 50-point all-tile Bingos</text>
@@ -180,10 +180,10 @@
  AI BOT ARENA • AUTONOMOUS OPPONENT TRIAD
  </text>
  <rect x="475" y="5" width="80" height="18" rx="9" fill="#4a044e" stroke="#c084fc" stroke-width="1"/>
- <text x="515" y="17" fill="#fae8ff" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">3 TIERS</text>
+ <text x="515" y="17" fill="#fae8ff" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800" text-anchor="middle">3 TIERS</text>
 
  <!-- Checklist -->
- <g transform="translate(20, 48)" font-family="'Inter', sans-serif" font-size="11" fill="#cbd5e1">
+ <g transform="translate(20, 48)" font-family="'Inter', sans-serif" font-size="12" fill="#cbd5e1">
  <text y="0"><tspan fill="#c084fc" font-weight="800">• Bot Difficulty:</tspan> SparkBot (Easy 5-15pts), Nexus AI (Medium), Titan AI (Hard)</text>
  <text y="18"><tspan fill="#c084fc" font-weight="800">• Autonomous Engine:</tspan> CSW24 anagram solver with pass &amp; tile exchange intelligence</text>
  <text y="36"><tspan fill="#c084fc" font-weight="800">• Flexible Play:</tspan> Practice solo offline or auto-fill empty seats in multiplayer rooms</text>
@@ -198,10 +198,10 @@
  SPECTATOR STREAM • ZERO-SEAT REAL-TIME OBSERVER
  </text>
  <rect x="475" y="5" width="80" height="18" rx="9" fill="#075985" stroke="#38bdf8" stroke-width="1"/>
- <text x="515" y="17" fill="#e0f2fe" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">UNLIMITED</text>
+ <text x="515" y="17" fill="#e0f2fe" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800" text-anchor="middle">UNLIMITED</text>
 
  <!-- Checklist -->
- <g transform="translate(20, 48)" font-family="'Inter', sans-serif" font-size="11" fill="#cbd5e1">
+ <g transform="translate(20, 48)" font-family="'Inter', sans-serif" font-size="12" fill="#cbd5e1">
  <text y="0"><tspan fill="#38bdf8" font-weight="800">• Live Ghost Streaming:</tspan> Watch staged tiles placed live via WebSocket stream</text>
  <text y="18"><tspan fill="#38bdf8" font-weight="800">• Anti-Cheat Security:</tspan> Secret player tile racks hidden from observers</text>
  <text y="36"><tspan fill="#38bdf8" font-weight="800">• Instant Rematch:</tspan> Synchronized lobby rematch transition after match conclusion</text>
