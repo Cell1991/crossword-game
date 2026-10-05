@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="qsBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0f172a" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#090d16" stop-opacity="0.98"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Card Gradients -->
+    <linearGradient id="qsCardDocker" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0369a1" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="qsCardLocal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#065f46" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <!-- Glowing Drop Shadow Filter -->
+    <filter id="qsShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <style>
+      @keyframes slowBorderGlow {
+        0%, 100% { stroke-opacity: 0.4; }
+        50% { stroke-opacity: 1.0; }
+      }
+      .anim-glow-docker { animation: slowBorderGlow 4s ease-in-out infinite; }
+      .anim-glow-local { animation: slowBorderGlow 4.5s ease-in-out infinite 0.6s; }
+    </style>
+  </defs>
+
+  <!-- Background Base Canvas -->
+  <rect width="1200" height="260" fill="url(#qsBg)" rx="16"/>
+
+  <!-- Top Title / HUD Header -->
+  <g transform="translate(600, 26)">
+    <text x="0" y="0" fill="#64748b" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="4">
+      DEPLOYMENT &amp; RUNTIME ENVIRONMENTS
+    </text>
+  </g>
+
+  <!-- ==================== CARD 1: DOCKER COMPOSE (x = 40) ==================== -->
+  <g transform="translate(40, 45)" filter="url(#qsShadow)">
+    <rect width="540" height="195" rx="14" fill="url(#qsCardDocker)" stroke="#38bdf8" stroke-width="1.5" class="anim-glow-docker"/>
+    
+    <!-- Header Banner -->
+    <rect x="0" y="0" width="540" height="36" rx="14" fill="#0284c7" fill-opacity="0.3"/>
+    <text x="20" y="24" fill="#7dd3fc" font-family="'Inter', sans-serif" font-size="13" font-weight="900" letter-spacing="1">
+      🐳 OPTION 1: DOCKER COMPOSE ORCHESTRATION
+    </text>
+    <rect x="425" y="7" width="95" height="22" rx="11" fill="#0c4a6e" stroke="#38bdf8" stroke-width="1"/>
+    <text x="472" y="22" fill="#e0f2fe" font-family="'Inter', sans-serif" font-size="9.5" font-weight="800" text-anchor="middle">FULL STACK</text>
+
+    <!-- Terminal Command Pill -->
+    <g transform="translate(20, 52)">
+      <rect width="500" height="32" rx="6" fill="#030712" stroke="#334155" stroke-width="1"/>
+      <text x="15" y="21" fill="#38bdf8" font-family="'Inter', monospace" font-size="11" font-weight="700">
+        $ docker compose up --build
+      </text>
+    </g>
+
+    <!-- Service Badges Grid -->
+    <g transform="translate(20, 98)" font-family="'Inter', sans-serif" font-size="10.5">
+      <!-- Web Client -->
+      <rect x="0" y="0" width="155" height="38" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="16" fill="#94a3b8" font-size="9">🌐 Web Client</text>
+      <text x="12" y="30" fill="#38bdf8" font-weight="800">:3000 (Gateway: 8090)</text>
+
+      <!-- FastAPI -->
+      <rect x="170" y="0" width="155" height="38" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="16" fill="#94a3b8" font-size="9" transform="translate(170,0)">🔌 FastAPI Docs</text>
+      <text x="12" y="30" fill="#34d399" font-weight="800" transform="translate(170,0)">:8000/docs (Swagger)</text>
+
+      <!-- Adminer / DB -->
+      <rect x="340" y="0" width="160" height="38" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="16" fill="#94a3b8" font-size="9" transform="translate(340,0)">🗄️ PostgreSQL Admin</text>
+      <text x="12" y="30" fill="#c084fc" font-weight="800" transform="translate(340,0)">:8085 (Adminer UI)</text>
+    </g>
+
+    <!-- Tagline -->
+    <text x="20" y="172" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="500">
+      ⚡ Launches Frontend, Backend, PostgreSQL, Nginx Gateway &amp; Ngrok in 1-Click.
+    </text>
+  </g>
+
+  <!-- ==================== CARD 2: ZERO-CONFIG SQLITE (x = 620) ==================== -->
+  <g transform="translate(620, 45)" filter="url(#qsShadow)">
+    <rect width="540" height="195" rx="14" fill="url(#qsCardLocal)" stroke="#10b981" stroke-width="1.5" class="anim-glow-local"/>
+    
+    <!-- Header Banner -->
+    <rect x="0" y="0" width="540" height="36" rx="14" fill="#064e3b" fill-opacity="0.3"/>
+    <text x="20" y="24" fill="#6ee7b7" font-family="'Inter', sans-serif" font-size="13" font-weight="900" letter-spacing="1">
+      🛠️ OPTION 2: LOCAL DEV (ZERO-CONFIG SQLITE)
+    </text>
+    <rect x="425" y="7" width="95" height="22" rx="11" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+    <text x="472" y="22" fill="#d1fae5" font-family="'Inter', sans-serif" font-size="9.5" font-weight="800" text-anchor="middle">INSTANT DEV</text>
+
+    <!-- Dual Terminal Commands -->
+    <g transform="translate(20, 52)">
+      <!-- Backend Terminal -->
+      <rect width="240" height="32" rx="6" fill="#030712" stroke="#334155" stroke-width="1"/>
+      <text x="10" y="21" fill="#34d399" font-family="'Inter', monospace" font-size="10" font-weight="700">
+        $ uvicorn main:app --reload
+      </text>
+
+      <!-- Frontend Terminal -->
+      <rect x="255" y="0" width="245" height="32" rx="6" fill="#030712" stroke="#334155" stroke-width="1"/>
+      <text x="265" y="21" fill="#38bdf8" font-family="'Inter', monospace" font-size="10" font-weight="700">
+        $ npm run dev (Next.js 16)
+      </text>
+    </g>
+
+    <!-- Architecture Pillars -->
+    <g transform="translate(20, 98)" font-family="'Inter', sans-serif" font-size="10.5">
+      <rect x="0" y="0" width="155" height="38" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="16" fill="#94a3b8" font-size="9">📦 Auto SQLite</text>
+      <text x="12" y="30" fill="#34d399" font-weight="800">crossword.db</text>
+
+      <rect x="170" y="0" width="155" height="38" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="16" fill="#94a3b8" font-size="9" transform="translate(170,0)">📖 Lexicon Cache</text>
+      <text x="12" y="30" fill="#fbbf24" font-weight="800" transform="translate(170,0)">CSW24 Wordlist</text>
+
+      <rect x="340" y="0" width="160" height="38" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="16" fill="#94a3b8" font-size="9" transform="translate(340,0)">🔄 Proxy Middleware</text>
+      <text x="12" y="30" fill="#38bdf8" font-weight="800" transform="translate(340,0)">Next.js /api &amp; /ws</text>
+    </g>
+
+    <!-- Tagline -->
+    <text x="20" y="172" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="500">
+      ⚡ Zero database installation required. Runs out of the box with embedded SQLite!
+    </text>
+  </g>
+</svg>

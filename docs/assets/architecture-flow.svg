@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="100%" height="100%">
+  <defs>
+    <radialGradient id="archBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0f172a" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#090d16" stop-opacity="0.98"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="1"/>
+    </radialGradient>
+
+    <linearGradient id="streamGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+
+    <style>
+      @keyframes dashMove {
+        to { stroke-dashoffset: -40; }
+      }
+      .flow-path { stroke-dasharray: 8 6; animation: dashMove 2s linear infinite; }
+      .flow-path-fast { stroke-dasharray: 6 4; animation: dashMove 1.2s linear infinite; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="420" fill="url(#archBg)" rx="16"/>
+
+  <!-- Architecture Flow Header -->
+  <g transform="translate(600, 30)">
+    <text x="0" y="0" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13" font-weight="900" text-anchor="middle" letter-spacing="4">
+      🏗️ SYSTEM ARCHITECTURE &amp; LOW-LATENCY DATA PIPELINE
+    </text>
+  </g>
+
+  <!-- ==================== TIER 1: CLIENT LAYER ==================== -->
+  <g transform="translate(40, 60)">
+    <rect width="260" height="320" rx="12" fill="#0b1329" stroke="#0284c7" stroke-width="1.5"/>
+    <rect x="0" y="0" width="260" height="38" rx="12" fill="#0369a1" fill-opacity="0.3"/>
+    <text x="20" y="24" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="12" font-weight="900" letter-spacing="1">
+      🖥️ CLIENT TIER (FRONTEND)
+    </text>
+
+    <!-- Submodule 1: Next.js 16 -->
+    <g transform="translate(15, 52)">
+      <rect width="230" height="50" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="15" y="22" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="11.5" font-weight="800">Next.js 16 + React 19</text>
+      <text x="15" y="38" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">App Router &amp; Tailwind CSS 4 HUD</text>
+    </g>
+
+    <!-- Submodule 2: 60 FPS Canvas Engine -->
+    <g transform="translate(15, 112)">
+      <rect width="230" height="60" rx="8" fill="#1e293b" stroke="#d97706" stroke-width="1"/>
+      <text x="15" y="20" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="11.5" font-weight="800">60 FPS Canvas Engine</text>
+      <text x="15" y="36" fill="#fef3c7" font-family="'Inter', sans-serif" font-size="9.5">BoardCompositor &amp; Double Buffer</text>
+      <text x="15" y="50" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Decoupled Camera Pan/Zoom</text>
+    </g>
+
+    <!-- Submodule 3: CSS 3D Multipliers -->
+    <g transform="translate(15, 182)">
+      <rect width="230" height="50" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="15" y="22" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="11.5" font-weight="800">CSS 3D Multiplier Overlay</text>
+      <text x="15" y="38" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">Hardware-accelerated badges</text>
+    </g>
+
+    <!-- Submodule 4: WS Client -->
+    <g transform="translate(15, 242)">
+      <rect width="230" height="50" rx="8" fill="#1e293b" stroke="#7c3aed" stroke-width="1"/>
+      <text x="15" y="22" fill="#c084fc" font-family="'Inter', sans-serif" font-size="11.5" font-weight="800">WebSocket Sync Client</text>
+      <text x="15" y="38" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">Heartbeat, Ghost Previews &amp; FX</text>
+    </g>
+  </g>
+
+  <!-- FLOW LINE 1 -> 2 -->
+  <path d="M 300 140 L 350 140" stroke="#38bdf8" stroke-width="2.5" class="flow-path" fill="none"/>
+  <path d="M 300 290 L 350 290" stroke="#c084fc" stroke-width="2.5" class="flow-path-fast" fill="none"/>
+  <text x="325" y="132" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">HTTP / REST</text>
+  <text x="325" y="282" fill="#c084fc" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">WS STREAM</text>
+
+  <!-- ==================== TIER 2: INGRESS / PROXY ==================== -->
+  <g transform="translate(350, 60)">
+    <rect width="180" height="320" rx="12" fill="#0b1329" stroke="#475569" stroke-width="1.5"/>
+    <rect x="0" y="0" width="180" height="38" rx="12" fill="#334155" fill-opacity="0.3"/>
+    <text x="15" y="24" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="12" font-weight="900" letter-spacing="1">
+      🌐 GATEWAY / PROXY
+    </text>
+
+    <!-- Node Proxy server.js -->
+    <g transform="translate(15, 60)">
+      <rect width="150" height="70" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="12" y="22" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="11" font-weight="800">Node server.js</text>
+      <text x="12" y="40" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Port :3000</text>
+      <text x="12" y="55" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="8.5">API &amp; WS net.connect</text>
+    </g>
+
+    <!-- Nginx Gateway -->
+    <g transform="translate(15, 145)">
+      <rect width="150" height="65" rx="8" fill="#1e293b" stroke="#059669" stroke-width="1"/>
+      <text x="12" y="22" fill="#34d399" font-family="'Inter', sans-serif" font-size="11" font-weight="800">Nginx Gateway</text>
+      <text x="12" y="40" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Port :8090</text>
+      <text x="12" y="54" fill="#a7f3d0" font-family="'Inter', sans-serif" font-size="8.5">Unified Routing</text>
+    </g>
+
+    <!-- Ngrok Tunnel -->
+    <g transform="translate(15, 225)">
+      <rect width="150" height="65" rx="8" fill="#1e293b" stroke="#2563eb" stroke-width="1"/>
+      <text x="12" y="22" fill="#60a5fa" font-family="'Inter', sans-serif" font-size="11" font-weight="800">Ngrok Tunnel</text>
+      <text x="12" y="40" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Port :4040</text>
+      <text x="12" y="54" fill="#93c5fd" font-family="'Inter', sans-serif" font-size="8.5">Public HTTPS/WSS</text>
+    </g>
+  </g>
+
+  <!-- FLOW LINE 2 -> 3 -->
+  <path d="M 530 140 L 580 140" stroke="#34d399" stroke-width="2.5" class="flow-path" fill="none"/>
+  <path d="M 530 290 L 580 290" stroke="#c084fc" stroke-width="2.5" class="flow-path-fast" fill="none"/>
+
+  <!-- ==================== TIER 3: BACKEND ENGINE ==================== -->
+  <g transform="translate(580, 60)">
+    <rect width="320" height="320" rx="12" fill="#0b1329" stroke="#059669" stroke-width="1.5"/>
+    <rect x="0" y="0" width="320" height="38" rx="12" fill="#047857" fill-opacity="0.3"/>
+    <text x="20" y="24" fill="#34d399" font-family="'Inter', sans-serif" font-size="12" font-weight="900" letter-spacing="1">
+      ⚙️ FASTAPI BACKEND ENGINE (:8000)
+    </text>
+
+    <!-- Core Services Grid -->
+    <g transform="translate(15, 50)">
+      <rect width="140" height="60" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="10" y="20" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">Move &amp; Combat</text>
+      <text x="10" y="36" fill="#f87171" font-family="'Inter', sans-serif" font-size="9">Direct HP damage</text>
+      <text x="10" y="50" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5">Multipliers &amp; Bingo</text>
+    </g>
+
+    <g transform="translate(165, 50)">
+      <rect width="140" height="60" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="10" y="20" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">CSW24 Lexicon</text>
+      <text x="10" y="36" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="9">Orthogonal Extractor</text>
+      <text x="10" y="50" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5">Sub-ms validation</text>
+    </g>
+
+    <g transform="translate(15, 120)">
+      <rect width="140" height="60" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="10" y="20" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">Power Card Engine</text>
+      <text x="10" y="36" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="9">Shield 1s window</text>
+      <text x="10" y="50" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5">Freeze, Spy, Demolish</text>
+    </g>
+
+    <g transform="translate(165, 120)">
+      <rect width="140" height="60" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="10" y="20" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">AI Bot Service</text>
+      <text x="10" y="36" fill="#c084fc" font-family="'Inter', sans-serif" font-size="9">Spark / Nexus / Titan</text>
+      <text x="10" y="50" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5">Auto-turn scheduling</text>
+    </g>
+
+    <g transform="translate(15, 190)">
+      <rect width="290" height="50" rx="6" fill="#1e293b" stroke="#7c3aed" stroke-width="1"/>
+      <text x="12" y="20" fill="#c084fc" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">WebSocket Connection Hub</text>
+      <text x="12" y="36" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Room broadcasting, reconnection grace period &amp; spectator stream</text>
+    </g>
+
+    <g transform="translate(15, 250)">
+      <rect width="290" height="45" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="12" y="18" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">Game Lifecycle Manager</text>
+      <text x="12" y="32" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5">Pass/timeout arbitration, rematch lobby spawning &amp; room garbage collector</text>
+    </g>
+  </g>
+
+  <!-- FLOW LINE 3 -> 4 -->
+  <path d="M 900 160 L 950 160" stroke="#f59e0b" stroke-width="2.5" class="flow-path" fill="none"/>
+  <path d="M 900 270 L 950 270" stroke="#10b981" stroke-width="2.5" class="flow-path" fill="none"/>
+
+  <!-- ==================== TIER 4: DATA &amp; PERSISTENCE ==================== -->
+  <g transform="translate(950, 60)">
+    <rect width="210" height="320" rx="12" fill="#0b1329" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect x="0" y="0" width="210" height="38" rx="12" fill="#b45309" fill-opacity="0.3"/>
+    <text x="15" y="24" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="12" font-weight="900" letter-spacing="1">
+      🗄️ PERSISTENCE TIER
+    </text>
+
+    <!-- PostgreSQL / SQLite -->
+    <g transform="translate(15, 55)">
+      <rect width="180" height="75" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="1"/>
+      <text x="12" y="22" fill="#fde68a" font-family="'Inter', sans-serif" font-size="11" font-weight="800">SQLAlchemy Async</text>
+      <text x="12" y="40" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="9">PostgreSQL 16 / SQLite</text>
+      <text x="12" y="55" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5">Sparse JSON board coordinates</text>
+      <text x="12" y="67" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5">Zero-config local fallback</text>
+    </g>
+
+    <!-- 3-Tier Dictionary -->
+    <g transform="translate(15, 145)">
+      <rect width="180" height="85" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="1"/>
+      <text x="12" y="20" fill="#34d399" font-family="'Inter', sans-serif" font-size="11" font-weight="800">3-Tier Dictionary</text>
+      <text x="12" y="38" fill="#a7f3d0" font-family="'Inter', sans-serif" font-size="9">L1: In-Memory RAM Cache</text>
+      <text x="12" y="54" fill="#a7f3d0" font-family="'Inter', sans-serif" font-size="9">L2: Database Lexicon</text>
+      <text x="12" y="70" fill="#a7f3d0" font-family="'Inter', sans-serif" font-size="9">L3: Async Online API</text>
+    </g>
+
+    <!-- CSW24 Lexicon File -->
+    <g transform="translate(15, 245)">
+      <rect width="180" height="50" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="12" y="20" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="11" font-weight="800">Tournament Lexicon</text>
+      <text x="12" y="36" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">CSW24 wordlist.txt</text>
+    </g>
+  </g>
+</svg>

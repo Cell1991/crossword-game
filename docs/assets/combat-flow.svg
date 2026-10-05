@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" width="100%" height="100%">
+  <defs>
+    <radialGradient id="flowBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0f172a" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#090d16" stop-opacity="0.98"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Step Card Glows -->
+    <filter id="stepShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <style>
+      @keyframes calmStepGlow {
+        0%, 100% { stroke-opacity: 0.4; }
+        50% { stroke-opacity: 1.0; }
+      }
+      @keyframes dashFlow {
+        to { stroke-dashoffset: -32; }
+      }
+      .anim-step-glow {
+        animation: calmStepGlow 5s ease-in-out infinite;
+      }
+      .connector-stream {
+        stroke-dasharray: 6 6;
+        animation: dashFlow 2.5s linear infinite;
+      }
+    </style>
+  </defs>
+
+  <!-- Container Base -->
+  <rect width="1200" height="240" fill="url(#flowBg)" rx="16"/>
+
+  <!-- Connecting Energy Bus Line Across All 5 Steps -->
+  <line x1="120" y1="120" x2="1080" y2="120" stroke="#334155" stroke-width="3"/>
+  <line x1="120" y1="120" x2="1080" y2="120" stroke="#38bdf8" stroke-width="3" class="connector-stream"/>
+
+  <!-- STEP 1: DRAG &amp; STAGE (x = 30) -->
+  <g transform="translate(30, 25)" filter="url(#stepShadow)">
+    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="1.8" class="anim-step-glow"/>
+    <rect x="0" y="0" width="205" height="32" rx="12" fill="#0284c7" fill-opacity="0.3"/>
+    <text x="102" y="21" fill="#7dd3fc" font-family="'Inter', -apple-system, sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">STEP 1 • DRAG &amp; STAGE</text>
+    <circle cx="102" cy="70" r="24" fill="#0c4a6e" stroke="#38bdf8" stroke-width="1.2"/>
+    <text x="102" y="79" font-size="22" text-anchor="middle">🎯</text>
+    <text x="102" y="116" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13" font-weight="900" text-anchor="middle">Place on Matrix</text>
+    <text x="102" y="136" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+      <tspan x="102" dy="0">Snap to 19×27 grid</tspan>
+      <tspan x="102" dy="14">Dry-run score estimation</tspan>
+      <tspan x="102" dy="14">via /api/moves/validate</tspan>
+    </text>
+  </g>
+
+  <!-- STEP 2: LIVE GHOST PREVIEW (x = 265) -->
+  <g transform="translate(265, 25)" filter="url(#stepShadow)">
+    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#818cf8" stroke-width="1.8" class="anim-step-glow"/>
+    <rect x="0" y="0" width="205" height="32" rx="12" fill="#4f46e5" fill-opacity="0.3"/>
+    <text x="102" y="21" fill="#a5b4fc" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">STEP 2 • LIVE GHOST</text>
+    <circle cx="102" cy="70" r="24" fill="#312e81" stroke="#818cf8" stroke-width="1.2"/>
+    <text x="102" y="79" font-size="22" text-anchor="middle">👻</text>
+    <text x="102" y="116" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13" font-weight="900" text-anchor="middle">WebSocket Stream</text>
+    <text x="102" y="136" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+      <tspan x="102" dy="0">Broadcasts ghost coords</tspan>
+      <tspan x="102" dy="14">Rivals watch tile</tspan>
+      <tspan x="102" dy="14">staging in real-time</tspan>
+    </text>
+  </g>
+
+  <!-- STEP 3: LEXICON &amp; MULTIPLIERS (x = 500) -->
+  <g transform="translate(500, 25)" filter="url(#stepShadow)">
+    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="1.8" class="anim-step-glow"/>
+    <rect x="0" y="0" width="205" height="32" rx="12" fill="#059669" fill-opacity="0.3"/>
+    <text x="102" y="21" fill="#6ee7b7" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">STEP 3 • ARBITRATION</text>
+    <circle cx="102" cy="70" r="24" fill="#064e3b" stroke="#10b981" stroke-width="1.2"/>
+    <text x="102" y="79" font-size="22" text-anchor="middle">⚙️</text>
+    <text x="102" y="116" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13" font-weight="900" text-anchor="middle">CSW24 Validation</text>
+    <text x="102" y="136" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+      <tspan x="102" dy="0">Validates orthogonal words</tspan>
+      <tspan x="102" dy="14">Calculates 2L, 3L &amp; Bingo</tspan>
+      <tspan x="102" dy="14">Awards Secret Cards</tspan>
+    </text>
+  </g>
+
+  <!-- STEP 4: 1.0s SHIELD REACTION (x = 735) -->
+  <g transform="translate(735, 25)" filter="url(#stepShadow)">
+    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#f59e0b" stroke-width="1.8" class="anim-step-glow"/>
+    <rect x="0" y="0" width="205" height="32" rx="12" fill="#d97706" fill-opacity="0.3"/>
+    <text x="102" y="21" fill="#fde68a" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">STEP 4 • 1.0s SHIELD</text>
+    <circle cx="102" cy="70" r="24" fill="#78350f" stroke="#fbbf24" stroke-width="1.2"/>
+    <text x="102" y="79" font-size="22" text-anchor="middle">🛡️</text>
+    <text x="102" y="116" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13" font-weight="900" text-anchor="middle">Reaction Window</text>
+    <text x="102" y="136" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+      <tspan x="102" dy="0">1.0-second delay queue</tspan>
+      <tspan x="102" dy="14">Rivals can deploy Shield</tspan>
+      <tspan x="102" dy="14">to negate incoming hit</tspan>
+    </text>
+  </g>
+
+  <!-- STEP 5: HP DAMAGE &amp; REFILL (x = 970) -->
+  <g transform="translate(970, 25)" filter="url(#stepShadow)">
+    <rect width="200" height="190" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="1.8" class="anim-step-glow"/>
+    <rect x="0" y="0" width="200" height="32" rx="12" fill="#b91c1c" fill-opacity="0.3"/>
+    <text x="100" y="21" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">STEP 5 • HP DAMAGE</text>
+    <circle cx="100" cy="70" r="24" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.2"/>
+    <text x="100" y="79" font-size="22" text-anchor="middle">💥</text>
+    <text x="100" y="116" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13" font-weight="900" text-anchor="middle">Lethal Strike</text>
+    <text x="100" y="136" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+      <tspan x="100" dy="0">Deducts HP from rivals</tspan>
+      <tspan x="100" dy="14">Triggers particle burst</tspan>
+      <tspan x="100" dy="14">Refills rack &amp; next turn</tspan>
+    </text>
+  </g>
+</svg>

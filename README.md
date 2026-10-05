@@ -1,77 +1,79 @@
 <div align="center">
 
-# ⚔️ CROSSWORD BATTLE ARENA (WORDX)
-### Real-Time Multiplayer Word Combat & Power Card Strategy
+<!-- ========================================================================= -->
+<!-- ⚔️ HERO BANNER (Animated Cyberpunk SVG Header with Floating 3D Tiles)     -->
+<!-- ========================================================================= -->
+<a href="https://github.com/Cell1991/crossword-game">
+  <img src="docs/assets/hero-banner.svg" alt="Crossword Battle Arena Hero Banner" width="100%" />
+</a>
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+<br/><br/>
+
+<!-- ========================================================================= -->
+<!-- 🛡️ SHIELD BADGES MATRIX (Technologies & Status)                           -->
+<!-- ========================================================================= -->
+[![Next.js](https://img.shields.io/badge/Next.js-16.3.4-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2.8-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
-[![Database](https://img.shields.io/badge/SQLite%20%7C%20PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-Local%20Zero--Config-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS%204-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![HTML5 Canvas](https://img.shields.io/badge/Canvas%20Engine-60%20FPS%20rAF-F59E0B?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
+[![WebSockets](https://img.shields.io/badge/WebSockets-Real--Time%20Stream-8B5CF6?style=for-the-badge&logo=socketdotio&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
+[![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-MIT-10B981?style=for-the-badge)](LICENSE)
 
 <br/>
 
-**A next-generation real-time multiplayer Crossword combat game blending competitive word building strategy with RPG health elimination, tactical Power Cards, adaptive AI bot opponents, and a 60 FPS Canvas rendering engine.**
+**A next-generation real-time multiplayer Crossword combat battleground fusing competitive word-building mechanics with RPG health elimination, 11 tactical Power Cards, autonomous AI bot opponents, a 3-tier dictionary engine with Grimoire spellbook, and a 60 FPS HTML5 Canvas compositor.**
 
 <br/>
 
-<table>
-  <tr>
-    <td align="center" width="25%">
-      <a href="#-system-overview">
-        <b>🌟 Overview</b><br/>
-        <sub>Core Engine & Highlights</sub>
-      </a>
-    </td>
-    <td align="center" width="25%">
-      <a href="#-game-modes--ai-opponents">
-        <b>🎮 Game Modes</b><br/>
-        <sub>HP Combat, Turns & AI Bots</sub>
-      </a>
-    </td>
-    <td align="center" width="25%">
-      <a href="#-power-card-arsenal">
-        <b>⚡ Power Cards</b><br/>
-        <sub>Tactical Deck & Mechanics</sub>
-      </a>
-    </td>
-    <td align="center" width="25%">
-      <a href="#-board-mechanics--scoring">
-        <b>📐 Board & Scoring</b><br/>
-        <sub>19×27 Grid & Multipliers</sub>
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="25%">
-      <a href="#-system-architecture">
-        <b>🏗️ Architecture</b><br/>
-        <sub>Tier Diagram & Move Sequence</sub>
-      </a>
-    </td>
-    <td align="center" width="25%">
-      <a href="#-project-structure">
-        <b>📂 Project Structure</b><br/>
-        <sub>Full Directory Tree</sub>
-      </a>
-    </td>
-    <td align="center" width="25%">
-      <a href="#-quick-start--installation">
-        <b>🚀 Quick Start</b><br/>
-        <sub>Docker & Local Setup</sub>
-      </a>
-    </td>
-    <td align="center" width="25%">
-      <a href="#-api--websocket-specification">
-        <b>📡 API & WebSockets</b><br/>
-        <sub>REST Endpoints & Events</sub>
-      </a>
-    </td>
-  </tr>
-</table>
+<!-- ========================================================================= -->
+<!-- 🧭 TACTICAL NAVIGATION RADAR & SITEMAP MATRIX                            -->
+<!-- ========================================================================= -->
+<a href="https://github.com/Cell1991/crossword-game">
+  <img src="docs/assets/nav-matrix.svg" alt="Tactical Navigation Sitemap" width="100%" />
+</a>
+
+<br/><br/>
+
+<p align="center">
+  <a href="#-bento-grid-feature-matrix">
+    <img src="https://img.shields.io/badge/🍱_01._Bento_Grid-Feature_Highlights-0284c7?style=for-the-badge&amp;logo=blueprint&amp;logoColor=white" alt="Bento Grid" />
+  </a>
+  <a href="#-game-modes--ai-opponents">
+    <img src="https://img.shields.io/badge/🎮_02._Game_Modes-HP_%26_Turn_Arena-ef4444?style=for-the-badge&amp;logo=gamepad&amp;logoColor=white" alt="Game Modes" />
+  </a>
+  <a href="#-tactical-power-card-deck">
+    <img src="https://img.shields.io/badge/⚡_03._Power_Cards-11_Tactical_Spells-f59e0b?style=for-the-badge&amp;logo=lightning&amp;logoColor=white" alt="Power Cards" />
+  </a>
+  <a href="#-1927-modular-matrix--scoring">
+    <img src="https://img.shields.io/badge/📐_04._19x27_Matrix-Multipliers_%26_Bingo-10b981?style=for-the-badge&amp;logo=matrix&amp;logoColor=white" alt="Matrix" />
+  </a>
+  <a href="#-combat-lifecycle--sequence">
+    <img src="https://img.shields.io/badge/🔄_05._Combat_Flow-1.0s_Shield_Window-6366f1?style=for-the-badge&amp;logo=statuspage&amp;logoColor=white" alt="Combat Flow" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="#-system-architecture">
+    <img src="https://img.shields.io/badge/🏗️_06._Architecture-FastAPI_%26_Next.js-0ea5e9?style=for-the-badge&amp;logo=fastapi&amp;logoColor=white" alt="Architecture" />
+  </a>
+  <a href="#-database-entity-relationship-model">
+    <img src="https://img.shields.io/badge/🗄️_07._Database_ERD-SQLAlchemy_Async-a855f7?style=for-the-badge&amp;logo=postgresql&amp;logoColor=white" alt="Database ERD" />
+  </a>
+  <a href="#-project-directory-tree">
+    <img src="https://img.shields.io/badge/📂_08._Code_Tree-Monorepo_Layout-f97316?style=for-the-badge&amp;logo=files&amp;logoColor=white" alt="Directory Tree" />
+  </a>
+  <a href="#-quick-start--installation">
+    <img src="https://img.shields.io/badge/🚀_09._Quick_Start-Docker_%26_SQLite-10b981?style=for-the-badge&amp;logo=docker&amp;logoColor=white" alt="Quick Start" />
+  </a>
+  <a href="#-api--websocket-specification">
+    <img src="https://img.shields.io/badge/📡_10._API_%26_WS-Live_Stream-f43f5e?style=for-the-badge&amp;logo=socketdotio&amp;logoColor=white" alt="API & WebSocket" />
+  </a>
+</p>
 
 </div>
 
@@ -79,222 +81,148 @@
 
 ---
 
-## 🌟 System Overview
-
-**Crossword Battle Arena** elevates classic crossword puzzle gameplay into a tactical, real-time battleground. Players place letters on an expansive **$19 \times 27$ grid** (starter coordinates centered at $(9, 13)$) validated against the official tournament **CSW24 Lexicon**. In battle mode, every point scored deals direct lethal damage to opponents, reinforced with power-ups, shields, and board-disrupting tactical cards.
+## 🍱 Bento Grid Feature Matrix
 
 <br/>
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>⚔️ Real-Time Combat & Health Engine</h3>
-      <p>Convert scored points into authoritative HP damage dealt to all living opponents. Survive by timing reactive <b>Shields</b> during the 1-second defense reaction window or recovering life with tile-based <b>Heals</b>.</p>
-    </td>
-    <td width="50%" valign="top">
-      <h3>🎨 60 FPS HTML5 Canvas Rendering Engine</h3>
-      <p>Custom multi-layer 2D canvas pipeline (<code>BoardCompositor</code>) featuring offscreen double-buffered grid caching, smooth physics-based panning and pinch/wheel zooming, and a decoupled CSS 3D hardware-accelerated multiplier overlay.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>⚡ Low-Latency WebSocket Synchronization</h3>
-      <p>Bidirectional WebSocket stream (<code>/ws/games/{gameId}</code>) broadcasting sub-second turn transitions, live placement previews, active card resolution, timer countdowns, and real-time spectator feeds.</p>
-    </td>
-    <td width="50%" valign="top">
-      <h3>📖 3-Tier Dictionary & Definition Engine</h3>
-      <p>High-speed in-memory CSW24 lexicon validation paired with a 3-tier definition lookup: <b>L1 RAM Cache</b> &rarr; <b>L2 Database Persistence</b> &rarr; <b>L3 Asynchronous Online Fallback</b> with phonetics and parts of speech.</p>
-    </td>
-  </tr>
-</table>
+<!-- Animated Bento Grid SVG Diagram -->
+<div align="center">
+  <img src="docs/assets/bento-features.svg" alt="Bento Grid Feature Highlights" width="100%" />
+</div>
+
+<br/>
+
+### 🌟 Deep Feature Breakdown
+
+| Core Pillar | Technical Implementation | Gameplay & Strategic Impact |
+| :--- | :--- | :--- |
+| **🎨 60 FPS Canvas Engine** | Custom `BoardCompositor` with offscreen double-buffered bitmap grid caching, dynamic frustum culling, inertial camera pan/zoom, and starlight comet particle trails (`FXRenderer`). | Butter-smooth 60 FPS rendering on high-DPI desktop and mobile screens, eliminating DOM lag across the expansive $19 \times 27$ grid. |
+| **⚔️ HP Combat Engine** | Scored word points are converted authoritatively into lethal damage dealt to living rivals. Features a 1.0-second reactive `SHIELD` reaction window, rack-based `HEAL`, and spectator demotion at 0 HP. | Replaces passive word games with high-intensity elimination combat where defensive timing and offensive burst damage decide victory. |
+| **📖 3-Tier Dictionary &amp; Grimoire** | In-memory **CSW24 Tournament Lexicon** (`wordlist.txt`), multi-tier definition cache (**L1 RAM** &rarr; **L2 Database** &rarr; **L3 Async Online API**), and positional anagram spellbook (`grimoire.py`). | Sub-millisecond orthogonal validation with rich definitions, phonetic IPA transcriptions, and instant AI move generation. |
+| **🤖 Autonomous AI Bot Triad** | 3 difficulty profiles (**SparkBot / Easy**, **Nexus AI / Medium**, **Titan AI / Hard**) driven by heuristic candidate solvers and auto-scheduled turn executors (`bot_service.py`). | Enables solo offline practice or automatically fills vacant lobby seats with believable, competitive tactical opponents. |
+| **⚡ Low-Latency WebSocket Stream** | Persistent real-time stream (`/ws/games/{id}`) broadcasting turn clocks, translucent placement ghosts, card shockwaves, spectator feeds, and 15-second reconnection grace. | True sub-second multiplayer synchronization allowing rivals to watch opponents stage tiles live before committing. |
+| **🎵 Dynamic Sound &amp; Themes** | Web Audio API synthesized sound FX, ambient background soundtracks (`BackgroundMusic`), and 4 switchable tile palettes (Wooden, Golden, Ivory, Neon Obsidian). | Immersive audio-visual tactile feedback on tile drops, power card triggers, Bingo bonuses, and elimination alerts. |
 
 ---
 
 ## 🎮 Game Modes & AI Opponents
 
-Choose between high-stakes elimination battles, classic tournament scoring, or solo training with distinct AI bot personalities:
+<br/>
 
-| Mode | Win Condition | Core Mechanics & Scoring Flow |
-| :--- | :--- | :--- |
-| **⚔️ HP Deathmatch (`HP`)** | Last Player Standing | Players start with configurable HP (**default 100 HP**, range 10–1000). Every valid word scored deals direct HP damage to all living opponents. When HP reaches 0, the player is eliminated. Mitigate damage via reactive `SHIELD` or regenerate life with `HEAL`. |
-| **🏆 Turn Count Mode (`TURNS`)** | Highest Cumulative Score | Traditional tournament rules across fixed rounds (**default 7/14/21/28**, configurable up to 500 turns). Deals no HP damage. HP-specific cards are automatically excluded from the Secret Power pool to focus purely on strategic board placement. |
-| **🤖 Solo Practice / AI Bot** | Practice & AI Challenge | Play solo to practice board layouts or challenge one of three distinct AI Bot personalities with automated turn scheduling. |
-| **👁️ Spectator Mode** | Live Spectating | Spectators can watch live matches in real-time with placement previews and turn history without occupying player seats. |
+<!-- Animated Game Modes Showcase Graphic -->
+<div align="center">
+  <img src="docs/assets/game-modes.svg" alt="Game Modes Showcase" width="100%" />
+</div>
 
-### 🤖 AI Bot Personalities
+<br/>
 
-| Bot Profile | Difficulty | AI Tactical Profile |
-| :--- | :--- | :--- |
-| ⚡ **SparkBot** | **Easy** | Novice AI. Prefers simple, short common words with relaxed board control. |
-| 🔮 **Nexus AI** | **Medium** | Tactical AI. Evaluates mid-tier word lengths, strategic multiplier cells, and balanced card management. |
-| 🛡️ **Titan AI** | **Hard** | Master AI. Aggressive high-scoring rack exploitation, seeking maximum multiplier yields and Bingo bonuses. |
+### 🕹️ Match Modes Specification
+
+<div align="center">
+  <img src="docs/assets/match-modes-tree.svg" alt="Tactical Match Arbitration Tree" width="100%" />
+</div>
 
 ---
 
-## ⚡ 7 Power Card Arsenal
+## ⚡ Tactical Power Card Deck
 
-Players collect tactical Power Cards by placing letters onto **Lightning Power** cells on the board (maximum **3 cards** held at any time). Cards can be deployed to defend, disrupt opponents, or alter the board:
+Players acquire tactical Power Cards by placing letters onto **Secret Power (★)** cells on the board (maximum **3 cards** held in hand). Cards can be deployed strategically to defend, attack rivals, or manipulate the board state:
 
-| Card | Backend ID | Target Type | Effect & Tactical Mechanics |
-| :--- | :--- | :--- | :--- |
-| 🛡️ **Shield** | `SHIELD` | Passive / Reaction | Blocks the next incoming attack damage or hostile tile swap completely. |
-| 💖 **Heal** | `HEAL` | Instant Self | Restores HP equal to the sum of all tile point values currently in your rack. |
-| ❄️ **Freeze Tile** | `FREEZE_TILE` | Board Cell | Locks a board tile in ice so opponents cannot connect words to it until your next turn. |
-| 💥 **Destroy Tile** | `DESTROY_TILE` | Board Cell | Removes 1 tile from the board to break enemy words or reopen multiplier cells. |
-| ⚔️ **Double Damage** | `DOUBLE_DAMAGE` | Targeted Rival | Your next confirmed word deals double ($2\times$) attack damage to a targeted opponent. |
-| 🔄 **Spy Swap** | `SPY_SWAP` | Targeted Rival | Swap 1 to 3 rack tiles with random tiles stolen directly from an opponent. |
-| 👁️ **Hint** | `HINT` | Your Turn | Highlights the top 3 highest-scoring word placements and point values. |
+<br/>
+
+<!-- Animated Power Cards Arsenal Graphic -->
+<div align="center">
+  <img src="docs/assets/power-cards.svg" alt="Tactical Power Cards Arsenal" width="100%" />
+</div>
+
+<br/>
+
+### 🎴 Complete 11-Card Tactical Index
+
+| Card Name | Backend Key | Target Type | Energy Cost | Tactical Mechanics & Strategic Application |
+| :--- | :--- | :--- | :---: | :--- |
+| 🛡️ **Shield** | `SHIELD` | Passive / Reaction | 0 | Automatically deflects the next incoming attack damage or hostile tile swap during the 1.0s defense reaction window. |
+| 💖 **Heal** | `HEAL` | Instant Self | 0 | Instantly restores HP equal to the sum of all tile point values currently sitting in your rack. |
+| ❄️ **Freeze Tile** | `FREEZE_TILE` | Board Cell | 0 | Locks a targeted board tile in ice crystal armor. Rivals cannot connect words to this tile until your next turn. |
+| 💥 **Destroy Tile** | `DESTROY_TILE` | Board Cell | 0 | Demolishes 1 existing tile from the matrix, severing enemy word pathways or reopening premium multiplier cells. |
+| ⚔️ **Double Damage** | `DOUBLE_DAMAGE` | Targeted Rival | 0 | Charges your next committed word with $2\times$ lethal attack damage directed at a chosen opponent. |
+| 🔄 **Spy Swap** | `SPY_SWAP` | Targeted Rival | 0 | Stealthily swaps 1 to 3 designated tiles from your rack with random tiles stolen directly from a rival's rack. |
+| 👁️ **Hint** | `HINT` | Your Turn | 0 | Computes and highlights the top 3 highest-scoring legal word placements and coordinate paths on the current board. |
+| 🚫 **Ban Letter** | `BAN_LETTER` | Room Global | 0 | Declares a specific alphabet character banned across the match; opponents cannot place this letter on their turn. |
+| 🔄 **Free Exchange** | `FREE_EXCHANGE` | Instant Self | 0 | Allows you to discard and redraw selected rack tiles from the bag without forfeiting or advancing your turn. |
+| 🎴 **Draw Tile** | `DRAW_TILE` | Instant Self | 0 | Immediately draws 1 extra bonus tile from the bag into your active rack. |
+| 💖 **Move Heal** | `MOVE_HEAL` | Self Passive | 0 | Passively heals your HP proportional to the score of your next committed word placement. |
 
 > [!NOTE]
-> In **Turn Count Mode (`TURNS`)**, HP-specific cards (`HEAL`, `DOUBLE_DAMAGE`, `SHIELD`) are automatically omitted from the random card reward pool.
+> In **Turn Count Mode (`TURNS`)**, all HP-specific combat cards (`HEAL`, `DOUBLE_DAMAGE`, `SHIELD`, `MOVE_HEAL`) are automatically excluded from the random card drop pool to preserve classic Scrabble balance.
 
 ---
 
-## 📐 Board Mechanics & Scoring
+## 📐 19×27 Modular Matrix & Multipliers
 
-### 🗺️ The $19 \times 27$ Modular Grid
+<br/>
 
-The game features an expanded **$19 \times 27$ grid** (19 rows $\times$ 27 columns) designed with an infinite-ready sparse coordinate architecture:
-- **Center Cell**: Located at `(Row 9, Col 13)`. The first move of the match must cover this tile.
-- **Sparse State Representation**: Saved in the database as coordinate keys `"{row}_{col}"`, allowing fast indexing and memory efficiency.
-- **Mirror Coordinate Geometry**: Multipliers follow a periodic mirror pattern, ensuring symmetrical tactical hotspots across the board.
+<!-- Animated Board Radar & Multipliers Graphic -->
+<div align="center">
+  <img src="docs/assets/board-radar.svg" alt="19x27 Tactical Matrix Radar" width="100%" />
+</div>
 
-### 🌟 Premium Multiplier Squares
+<br/>
 
-| Multiplier Square | Icon / Indicator | Multiplier Value | Board Functionality |
-| :--- | :---: | :---: | :--- |
-| **Triple Letter (3L)** | `3L` (Blue/Cyan) | $\times 3$ | Triples the point value of the newly placed letter on this cell. |
-| **Double Letter (2L)** | `2L` (Light Blue) | $\times 2$ | Doubles the point value of the newly placed letter on this cell. |
-| **Secret Power** | ★ (Violet / Purple) | Power Card Drop | Awards a random tactical Power Card to the player's hand when a tile is placed on it (if hand $< 3$). |
-| **All-Tiles Bingo** | 🎯 `ALL_TILES_BONUS` | **+50 Points** | Extra bonus awarded when a player places all 7 rack tiles in a single turn. |
+<!-- Animated 19x27 Matrix Geometry Blueprint SVG -->
+<div align="center">
+  <img src="docs/assets/matrix-geometry.svg" alt="19x27 Tactical Matrix Geometry Blueprint" width="100%" />
+</div>
+
+---
+
+## 🔄 Combat Lifecycle & Sequence
+
+<br/>
+
+<!-- Animated 5-Step Combat Lifecycle Pipeline -->
+<div align="center">
+  <img src="docs/assets/combat-flow.svg" alt="Turn and Combat Lifecycle Pipeline" width="100%" />
+</div>
+
+<br/>
+
+<!-- Crystal-Clear Combat Sequence Diagram Infographic -->
+<div align="center">
+  <img src="docs/assets/combat-sequence.svg" alt="Combat Sequence Arbitration" width="100%" />
+</div>
+
+<br/>
 
 ---
 
 ## 🏗️ System Architecture
 
-The application is engineered into modular, loosely coupled tiers designed for high-concurrency real-time gameplay:
+<br/>
 
-```mermaid
-graph TB
-    %% Actors
-    User(["👤 Player / Spectator<br/>[Web & Mobile Browsers]"])
-
-    %% Subgraphs
-    subgraph Client["🖥️ Client Layer (Frontend)"]
-        UI["<b>Next.js 16 + React 19</b><br/>[App Router & Tailwind CSS 4]"]
-        CanvasEngine["<b>60 FPS Canvas Engine</b><br/>[BoardCompositor & Multi-Layer rAF]"]
-        Overlay["<b>CSS 3D Overlay</b><br/>[Premium Multiplier Badges & Echoes]"]
-        CameraStore["<b>Decoupled Camera Store</b><br/>[External Pan & Pinch/Zoom State]"]
-        WSClient["<b>WebSocket Sync Client</b><br/>[Real-Time State & Previews]"]
-    end
-
-    subgraph ProxyTier["🌐 Gateway & Ingress Tier"]
-        CustomServer["<b>Node HTTP + Net Proxy</b><br/>[server.js / Next Server :3000]"]
-        Gateway["<b>Nginx Reverse Proxy</b><br/>[nginx.conf :8090]"]
-        Tunnel["<b>Public Tunnel</b><br/>[Ngrok Container :4040]"]
-    end
-
-    subgraph BackendTier["⚙️ Application Backend (FastAPI)"]
-        APIRouter["<b>FastAPI REST Router</b><br/>[Rooms, Games, Moves, Cards, Dict]"]
-        WSHub["<b>Connection Manager</b><br/>[Room Broadcasting & Spectator Hub]"]
-        GameService["<b>Game Lifecycle Engine</b><br/>[Turns, Timeouts, Rematch, Eliminations]"]
-        MoveService["<b>Move & Combat Engine</b><br/>[Connectivity, Scores & Damage]"]
-        CardService["<b>Power Card Processor</b><br/>[Effects, Shields & Freeze Locks]"]
-        BotService["<b>AI Bot Engine</b><br/>[Word Planning & Automated Turns]"]
-        RuleEngine["<b>CSW24 Lexicon Validator</b><br/>[In-Memory Orthogonal Extraction]"]
-    end
-
-    subgraph DataTier["🗄️ Persistence & Lexicon Tier"]
-        DB[("<b>Database</b><br/>[SQLite / PostgreSQL 16 via SQLAlchemy Async]")]
-        DictService["<b>3-Tier Dictionary Service</b><br/>[L1 RAM &bull; L2 DB &bull; L3 API Fallback]"]
-        Lexicon[("<b>Tournament CSW24</b><br/>[wordlist.txt]")]
-    end
-
-    %% Wiring
-    User -->|Interacts with UI| UI
-    UI -->|Render Board| CanvasEngine
-    UI -->|Synchronize Transform| Overlay
-    CanvasEngine -.->|Read Transform| CameraStore
-    UI -->|Sync Events| WSClient
-
-    User -.->|Public Access| Tunnel
-    Tunnel --> Gateway
-    Gateway --> CustomServer
-    WSClient ===>|WS /ws/games| CustomServer
-    UI ===>|HTTP /api| CustomServer
-
-    CustomServer -->|Forward /api & /ws| APIRouter
-    APIRouter --> GameService
-    APIRouter --> MoveService
-    APIRouter --> CardService
-    APIRouter --> DictService
-    APIRouter --> WSHub
-
-    MoveService --> RuleEngine
-    MoveService --> BotService
-    RuleEngine --> Lexicon
-
-    DictService --> DB
-    GameService ===> DB
-    MoveService ===> DB
-
-    GameService -->|Broadcast Events| WSHub
-    MoveService -->|Broadcast Moves| WSHub
-    WSHub -.->|Push JSON Event Stream| WSClient
-```
+<!-- Animated System Architecture SVG -->
+<div align="center">
+  <img src="docs/assets/architecture-flow.svg" alt="System Architecture Data Pipeline" width="100%" />
+</div>
 
 <br/>
 
-### 🔄 Real-Time Turn & Move Execution Lifecycle
+---
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor P1 as 👤 Player 1 (Active)
-    participant Canvas as 🎨 Canvas & UI
-    participant WS as ⚡ WebSocket Hub
-    participant Engine as ⚙️ Backend Engine
-    participant DB as 🗄️ Database (Async)
-    actor P2 as 👤 Player 2 (Opponent)
+## 🗄️ Database Entity-Relationship Model
 
-    P1->>Canvas: Drag & place tiles onto 19x27 board
-    Canvas->>Engine: POST /api/moves/validate (Provisional Check)
-    Engine-->>Canvas: Return valid status + Estimated score breakdown
-    Canvas->>WS: Send PLACEMENT_PREVIEW (Ghost tile positions)
-    WS-->>P2: Render translucent opponent placement ghost
+<br/>
 
-    P1->>Canvas: Click [Confirm Move]
-    Canvas->>Engine: POST /api/moves/commit
-    activate Engine
-    Engine->>Engine: 1. Verify tile ownership in player rack
-    Engine->>Engine: 2. Check orthogonal connectivity & center cover
-    Engine->>Engine: 3. Verify CSW24 dictionary validity
-    Engine->>Engine: 4. Compute 2L, 3L & 50-pt Bingo multipliers
-    Engine->>Engine: 5. Award Power Cards if placed on Secret Power cell
-    
-    alt Opponent has Shield or Shield Card
-        Engine->>Engine: Open 1-second pending damage reaction window
-        Engine->>WS: Broadcast EVENT: EFFECT_PENDING (DAMAGE)
-        WS-->>P2: Display 1s Shield alert countdown
-        opt P2 activates Shield
-            P2->>Engine: POST /api/games/{id}/cards/use {card: "SHIELD"}
-            Engine->>Engine: Absorb damage / Negate attack
-        end
-    else Immediate Damage Execution
-        Engine->>Engine: Deduct HP directly from all living opponents
-    end
+<!-- Crystal-Clear Database ER Diagram Infographic -->
+<div align="center">
+  <img src="docs/assets/database-schema.svg" alt="Database Entity-Relationship Architecture" width="100%" />
+</div>
 
-    Engine->>DB: Save updated board state, player racks & scores
-    Engine->>WS: Broadcast EVENT: MOVE_COMMITTED
-    deactivate Engine
-
-    WS-->>P1: Synchronize rack, refill tiles & trigger particle FX
-    WS-->>P2: Animate placed tiles, update HP bar & start turn clock
-```
+<br/>
 
 ---
 
-## 📂 Project Structure
+## 📂 Project Directory Tree
 
 ```
 crossword-game/
@@ -302,9 +230,10 @@ crossword-game/
 │   ├── app/
 │   │   ├── api/                            # REST API Endpoints
 │   │   │   ├── cards.py                    # Power Card activation & effect resolution
-│   │   │   ├── debug.py                    # God-mode testing & state inspection
+│   │   │   ├── debug.py                    # God-mode testing & multi-player simulation
 │   │   │   ├── dictionary.py               # Word definition & phonetics lookup
 │   │   │   ├── games.py                    # Game lifecycle, pass, exchange, rematch & bot
+│   │   │   ├── history.py                  # Move & card usage history queries
 │   │   │   ├── moves.py                    # Tile placement, validation & turn commit
 │   │   │   └── rooms.py                    # Lobby management, PIN join & settings
 │   │   ├── core/                           # Configuration, security & constants
@@ -314,11 +243,12 @@ crossword-game/
 │   │   │   ├── dictionary.py               # CSW24 tournament wordlist loader & indexer
 │   │   │   ├── extractor.py                # Orthogonal 2D word extraction
 │   │   │   ├── game_end.py                 # Victory conditions & pass exhaustion
+│   │   │   ├── grimoire.py                 # Positional anagram word solver & cache
 │   │   │   ├── hint.py                     # AI word candidate generator & hint solver
 │   │   │   ├── offline_definitions.py      # Pre-seeded offline word definitions
 │   │   │   ├── rules.py                    # Legal placement & connectivity verification
 │   │   │   ├── scoring.py                  # Score calculation & 50-point Bingo bonus
-│   │   │   └── tiles.py                    # Scrabble tile bag distribution & exchange logic
+│   │   │   └── tiles.py                    # Tile bag distribution & exchange logic
 │   │   ├── schemas/                        # Pydantic request/response & WebSocket event models
 │   │   ├── services/                       # Business logic services
 │   │   │   ├── bot_service.py              # AI Bot planning & automated turn execution
@@ -342,16 +272,19 @@ crossword-game/
 │   │   ├── layout.tsx                      # Root layout & font configurations
 │   │   └── page.tsx                        # Main landing hub, room browser & modal guides
 │   ├── components/
+│   │   ├── audio/                          # BackgroundMusic & synthesized sound effects
 │   │   ├── board/                          # HTML5 Canvas 2D Board Engine
 │   │   │   ├── BoardCanvas.tsx             # Canvas host, viewport resizing & pointer events
 │   │   │   ├── PremiumCellOverlay.tsx      # CSS 3D transformed multiplier badges & echoes
 │   │   │   └── engine/
-│   │   │       ├── BoardCompositor.ts      # Multi-layer rAF animation loop
+│   │   │       ├── BoardCompositor.ts      # Multi-layer rAF animation loop & frustum culling
 │   │   │       ├── FXRenderer.ts           # Placement shockwaves, glow trails & floating text
 │   │   │       ├── GridRenderer.ts         # Double-buffered offscreen cached grid background
 │   │   │       └── TileRenderer.ts         # Beveled wood tiles, typography & freeze shaders
+│   │   ├── debug/                          # DebugPanel god-mode session switcher
 │   │   ├── game/                           # GameHUD, RightSidebar, TurnBanner, PowerCardBar
 │   │   ├── lobby/                          # PlayerList, LobbyCard, RoomSettings
+│   │   ├── notification/                   # EnableNotify permission request component
 │   │   ├── rack/                           # TileRack, FloatingTile, DragPortal
 │   │   └── ui/                             # CustomSelect, FullscreenButton, Modal
 │   ├── hooks/                              # useBoardCamera, useTileDrag, useStagedMove, useGameSync
@@ -360,6 +293,9 @@ crossword-game/
 │   ├── package.json                        # Frontend dependencies & scripts
 │   └── tailwind.config.ts                  # Tailwind CSS 4 styling configuration
 │
+├── docs/                                   # Documentation & Animated Assets
+│   ├── assets/                             # Animated SVGs (Hero, Bento, Modes, Cards, Radar, Flow, Arch)
+│   └── TEST_SCENARIOS.md                   # Complete test scenarios and edge-case matrix
 ├── gateway/                                # Nginx gateway configuration
 │   └── nginx.conf                          # Reverse proxy routing for frontend & backend
 ├── docker-compose.yml                      # Full 5-service container stack orchestration
@@ -371,68 +307,68 @@ crossword-game/
 
 ## 🚀 Quick Start & Installation
 
+<br/>
+
+<!-- Animated Quick Start & Runtime Deployment Banner SVG -->
+<div align="center">
+  <img src="docs/assets/quickstart-banner.svg" alt="Quick Start & Installation Guide" width="100%" />
+</div>
+
+<br/>
+
 ### Option 1: 🐳 Docker Compose (Full Stack Orchestration)
 
-Launch the complete stack (Frontend, Backend, PostgreSQL, Nginx Gateway, Adminer, and Ngrok tunnel):
+Launch the complete container stack (**Frontend**, **Backend**, **PostgreSQL**, **Nginx Gateway**, **Adminer**, and **Ngrok tunnel**):
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Cell1991/crossword-game.git
-   cd crossword-game
-   ```
+```bash
+# 1. Clone repository & enter workspace
+git clone https://github.com/Cell1991/crossword-game.git
+cd crossword-game
 
-2. **Prepare environment variables**:
-   ```bash
-   cp .env.example .env
-   ```
+# 2. Copy environment template
+cp .env.example .env
 
-3. **Start all containers**:
-   ```bash
-   docker compose up --build
-   ```
+# 3. Launch full stack with live reload
+docker compose up --build
+```
 
-4. **Access the application**:
-   - 🌐 **Web Client**: [http://localhost:3000](http://localhost:3000) *(or via Gateway at [http://localhost:8090](http://localhost:8090))*
-   - 🔌 **API Documentation (Swagger UI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
-   - 🗄️ **Database Adminer**: [http://localhost:8085](http://localhost:8085)
-   - 🚇 **Ngrok Console (Tunneling)**: [http://localhost:4040](http://localhost:4040)
+#### 🌐 Active Service Ports & Endpoints
+| Service | Local URL | Port | Role & Function |
+| :--- | :--- | :---: | :--- |
+| **Web Client** | [http://localhost:3000](http://localhost:3000) | `3000` | Next.js 16 Client & Canvas 2D Engine *(Gateway: [http://localhost:8090](http://localhost:8090))* |
+| **API Docs (Swagger)** | [http://localhost:8000/docs](http://localhost:8000/docs) | `8000` | Interactive OpenAPI / Swagger Documentation & Live Testing |
+| **Database Adminer** | [http://localhost:8085](http://localhost:8085) | `8085` | PostgreSQL Web GUI Management & Table Inspector |
+| **Ngrok Tunnel** | [http://localhost:4040](http://localhost:4040) | `4040` | Live Public Webhook & Remote Multiplayer Inspection |
 
 ---
 
 ### Option 2: 🛠️ Local Development (Zero-Config SQLite)
 
-You can run the backend and frontend locally without setting up an external database. The backend automatically initializes and uses a local **SQLite** database (`crossword.db`) by default.
+Run the backend and frontend locally without installing PostgreSQL. The backend automatically initializes an embedded **SQLite** database (`crossword.db`) and pre-seeds the CSW24 lexicon.
 
-#### 1. Backend Setup
 ```bash
+# ─── 1. BACKEND SETUP (FastAPI) ─────────────────────────────────
 cd backend
-
-# Create and activate virtual environment
 python -m venv venv
-# On Windows (PowerShell):
+
+# Windows (PowerShell):
 .\venv\Scripts\Activate.ps1
-# On Linux/macOS:
+# Linux / macOS:
 source venv/bin/activate
 
-# Install dependencies
 pip install -r requirements.txt
-
-# Start backend development server
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### 2. Frontend Setup
 ```bash
+# ─── 2. FRONTEND SETUP (Next.js 16) ─────────────────────────────
 cd frontend
-
-# Install npm dependencies
 npm install
-
-# Start development server (serves app and proxies /api & /ws to localhost:8000)
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+> [!TIP]
+> Once launched, open **[http://localhost:3000](http://localhost:3000)** to enter the Arena lobby.
 
 ---
 
@@ -468,7 +404,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 #### ⚡ Tactical Power Cards (`/api/games/{game_id}/cards`)
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `POST` | `/api/games/{game_id}/cards/use` | Deploy a held Power Card (`SHIELD`, `HEAL`, `FREEZE_TILE`, `DESTROY_TILE`, `DOUBLE_DAMAGE`, `SPY_SWAP`, `HINT`). |
+| `POST` | `/api/games/{game_id}/cards/use` | Deploy a held Power Card (`SHIELD`, `HEAL`, `FREEZE_TILE`, `DESTROY_TILE`, `DOUBLE_DAMAGE`, `SPY_SWAP`, `HINT`, `BAN_LETTER`, `FREE_EXCHANGE`, `DRAW_TILE`). |
 
 #### 📖 Dictionary & Definitions (`/api/dictionary`)
 | Method | Endpoint | Description |
@@ -491,7 +427,7 @@ ws://localhost:3000/ws/games/{game_id}?token={session_token}
 - `PLACEMENT_PREVIEW`: Broadcasts translucent placement ghost tiles of active opponents.
 - `MOVE_COMMITTED`: Synchronizes committed board tiles, formed words, and damage dealt.
 - `TURN_PASSED` / `TILES_EXCHANGED`: Turn advance notification.
-- `EFFECT_PENDING`: Alerts opponents to incoming attacks and starts the 1-second Shield window.
+- `EFFECT_PENDING`: Alerts opponents to incoming attacks and starts the 1.0-second Shield window.
 - `EFFECT_RESOLVED`: Confirms damage inflicted, blocked, or tile swaps completed.
 - `CARD_USED`: Broadcasts tactical card activations to all players.
 - `GAME_ENDED`: Match conclusion, final scoreboard, and victory declaration.
@@ -499,89 +435,57 @@ ws://localhost:3000/ws/games/{game_id}?token={session_token}
 
 ---
 
-## 🧪 Testing
+## 🧪 Testing & Verification
 
-The backend includes comprehensive automated test suites verifying Scrabble rule compliance, combat mechanics, card interactions, and room lifecycles:
+<br/>
+
+<!-- Animated Testing Suite & Verification Matrix SVG -->
+<div align="center">
+  <img src="docs/assets/testing-suite.svg" alt="Automated Test Suite & Verification Matrix" width="100%" />
+</div>
+
+<br/>
+
+Execute the automated Pytest harness covering Scrabble compliance, damage mitigation, and card states:
 
 ```bash
 cd backend
 
-# Run the test suite with python module path configured
-# On Windows PowerShell:
-$env:PYTHONPATH="."
-pytest tests/ -v
+# Windows PowerShell:
+$env:PYTHONPATH="." ; pytest tests/ -v
 
-# On Linux/macOS:
+# Linux / macOS:
 PYTHONPATH=. pytest tests/ -v
 ```
 
 ---
 
-## 👥 Contributors & Team Members
+## 👥 Contributors & Development Team
 
+<br/>
+
+<!-- Animated Core Development Crew SVG with Embedded Base64 Avatars -->
 <div align="center">
-
-<table>
-  <tr>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/Cell1991">
-        <img src="https://github.com/Cell1991.png" width="90px;" alt="Cell1991" style="border-radius: 50%;" /><br />
-        <sub><b>Cell1991</b></sub>
-      </a>
-      <br />
-      <sub>Chu</sub>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/friend47">
-        <img src="https://github.com/friend47.png" width="90px;" alt="friend47" style="border-radius: 50%;" /><br />
-        <sub><b>friend47</b></sub>
-      </a>
-      <br />
-      <sub>Peerapatr</sub>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/waiwaix43">
-        <img src="https://github.com/waiwaix43.png" width="90px;" alt="waiwaix43" style="border-radius: 50%;" /><br />
-        <sub><b>waiwaix43</b></sub>
-      </a>
-      <br />
-      <sub>waiwaix43</sub>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/Natthaset2547">
-        <img src="https://github.com/Natthaset2547.png" width="90px;" alt="Natthaset2547" style="border-radius: 50%;" /><br />
-        <sub><b>Natthaset2547</b></sub>
-      </a>
-      <br />
-      <sub>Natthaset</sub>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/Rednoselittledog">
-        <img src="https://github.com/Rednoselittledog.png" width="90px;" alt="Rednoselittledog" style="border-radius: 50%;" /><br />
-        <sub><b>Rednoselittledog</b></sub>
-      </a>
-      <br />
-      <sub>Kanin Noisiri</sub>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/ReFresh-bit">
-        <img src="https://github.com/ReFresh-bit.png" width="90px;" alt="ReFresh-bit" style="border-radius: 50%;" /><br />
-        <sub><b>ReFresh-bit</b></sub>
-      </a>
-      <br />
-      <sub>ReFresh-bit</sub>
-    </td>
-  </tr>
-</table>
-
+  <img src="docs/assets/team-banner.svg" alt="Core Development Crew" width="100%" />
 </div>
+
+<br/>
+
+<p align="center">
+  <a href="https://github.com/Cell1991"><img src="https://img.shields.io/badge/Cell1991-Chu-f59e0b?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="Cell1991" /></a>
+  <a href="https://github.com/friend47"><img src="https://img.shields.io/badge/friend47-Peerapatr-0284c7?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="friend47" /></a>
+  <a href="https://github.com/waiwaix43"><img src="https://img.shields.io/badge/waiwaix43-waiwaix43-a855f7?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="waiwaix43" /></a>
+  <a href="https://github.com/Natthaset2547"><img src="https://img.shields.io/badge/Natthaset2547-Natthaset-10b981?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="Natthaset2547" /></a>
+  <a href="https://github.com/Rednoselittledog"><img src="https://img.shields.io/badge/Rednoselittledog-Kanin-f43f5e?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="Rednoselittledog" /></a>
+  <a href="https://github.com/ReFresh-bit"><img src="https://img.shields.io/badge/ReFresh--bit-ReFresh-38bdf8?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="ReFresh-bit" /></a>
+</p>
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+This project is open source and available under the **[MIT License](LICENSE)**.
 
 <div align="center">
-  <sub>Built with ❤️ by the development team for competitive word puzzle and strategy enthusiasts.</sub>
+  <sub>Crafted with passion for competitive word puzzle combat and real-time tactical multiplayer gaming.</sub>
 </div>

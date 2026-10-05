@@ -1,0 +1,242 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" width="100%" height="100%">
+  <defs>
+    <!-- Master Background -->
+    <radialGradient id="bentoBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0f172a" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#090d16" stop-opacity="0.98"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Glassmorphism Card Gradient -->
+    <linearGradient id="glassCard1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.85"/>
+    </linearGradient>
+
+    <!-- Glowing Drop Shadow -->
+    <filter id="bentoGlow" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <style>
+      @keyframes pulseGlowCyan {
+        0%, 100% { stroke-opacity: 0.35; }
+        50% { stroke-opacity: 0.95; }
+      }
+      @keyframes pulseGlowAmber {
+        0%, 100% { stroke-opacity: 0.35; }
+        50% { stroke-opacity: 0.95; }
+      }
+      @keyframes pulseGlowPurple {
+        0%, 100% { stroke-opacity: 0.35; }
+        50% { stroke-opacity: 0.95; }
+      }
+      @keyframes pulseGlowGreen {
+        0%, 100% { stroke-opacity: 0.35; }
+        50% { stroke-opacity: 0.95; }
+      }
+      .anim-cyan { animation: pulseGlowCyan 3s ease-in-out infinite; }
+      .anim-amber { animation: pulseGlowAmber 3.5s ease-in-out infinite 0.5s; }
+      .anim-purple { animation: pulseGlowPurple 2.8s ease-in-out infinite 1s; }
+      .anim-green { animation: pulseGlowGreen 3.2s ease-in-out infinite 1.5s; }
+    </style>
+  </defs>
+
+  <!-- Background Base Canvas -->
+  <rect width="1200" height="620" fill="url(#bentoBg)" rx="16"/>
+
+  <!-- Subtle Matrix Pattern Grid -->
+  <g opacity="0.15">
+    <path d="M 0 50 L 1200 50 M 0 100 L 1200 100 M 0 150 L 1200 150 M 0 200 L 1200 200 M 0 250 L 1200 250 M 0 300 L 1200 300 M 0 350 L 1200 350 M 0 400 L 1200 400 M 0 450 L 1200 450 M 0 500 L 1200 500 M 0 550 L 1200 550" stroke="#475569" stroke-width="0.75" stroke-dasharray="2 6"/>
+  </g>
+
+  <!-- Section Title Inside SVG -->
+  <g transform="translate(600, 36)">
+    <text x="0" y="0" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="4">
+      FEATURE ARCHITECTURE MATRIX
+    </text>
+    <text x="0" y="24" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="22" font-weight="900" text-anchor="middle" letter-spacing="1">
+      ⚡ Bento Grid Feature Highlights
+    </text>
+  </g>
+
+  <!-- ==================== BENTO CELL 1 (TOP LEFT - LARGE): 60 FPS Canvas Engine ==================== -->
+  <g transform="translate(30, 80)" filter="url(#cardShadow)">
+    <rect width="560" height="240" rx="14" fill="url(#glassCard1)" stroke="#f59e0b" stroke-width="1.5" class="anim-amber"/>
+    <!-- Card Header -->
+    <g transform="translate(25, 30)">
+      <rect width="36" height="36" rx="8" fill="#78350f" stroke="#fbbf24" stroke-width="1.2"/>
+      <text x="18" y="24" font-size="18" text-anchor="middle">🎨</text>
+      <text x="48" y="16" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="11" font-weight="900" letter-spacing="2">RENDER PIPELINE</text>
+      <text x="48" y="32" fill="#ffffff" font-family="'Inter', sans-serif" font-size="16" font-weight="900">60 FPS Multi-Layer Canvas Engine</text>
+    </g>
+
+    <!-- Description &amp; Bullets -->
+    <text x="25" y="105" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="12" font-weight="500">
+      Built with a custom decoupled <tspan fill="#fef08a" font-weight="700">BoardCompositor</tspan> rendering architecture:
+    </text>
+
+    <!-- Sub-feature Chips -->
+    <g transform="translate(25, 125)">
+      <!-- Chip 1 -->
+      <g transform="translate(0, 0)">
+        <rect width="245" height="42" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+        <text x="12" y="18" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">🖼️ Offscreen Grid Caching</text>
+        <text x="12" y="32" fill="#64748b" font-family="'Inter', sans-serif" font-size="9.5">Pre-renders 19×27 matrix into bitmap buffer</text>
+      </g>
+      <!-- Chip 2 -->
+      <g transform="translate(260, 0)">
+        <rect width="245" height="42" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+        <text x="12" y="18" fill="#34d399" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">🔍 Dynamic Frustum Culling</text>
+        <text x="12" y="32" fill="#64748b" font-family="'Inter', sans-serif" font-size="9.5">Renders only viewport-visible board bounds</text>
+      </g>
+      <!-- Chip 3 -->
+      <g transform="translate(0, 52)">
+        <rect width="245" height="42" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+        <text x="12" y="18" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">✨ Starlight Comet Trails</text>
+        <text x="12" y="32" fill="#64748b" font-family="'Inter', sans-serif" font-size="9.5">Smooth drag aura particles &amp; shockwaves</text>
+      </g>
+      <!-- Chip 4 -->
+      <g transform="translate(260, 52)">
+        <rect width="245" height="42" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+        <text x="12" y="18" fill="#c084fc" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">🎥 Inertial Camera Pan/Zoom</text>
+        <text x="12" y="32" fill="#64748b" font-family="'Inter', sans-serif" font-size="9.5">Physics momentum &amp; touch pinch bounds</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== BENTO CELL 2 (TOP RIGHT): Real-Time Combat ==================== -->
+  <g transform="translate(610, 80)" filter="url(#cardShadow)">
+    <rect width="560" height="240" rx="14" fill="url(#glassCard1)" stroke="#ef4444" stroke-width="1.5" class="anim-cyan"/>
+    <!-- Card Header -->
+    <g transform="translate(25, 30)">
+      <rect width="36" height="36" rx="8" fill="#7f1d1d" stroke="#f87171" stroke-width="1.2"/>
+      <text x="18" y="24" font-size="18" text-anchor="middle">⚔️</text>
+      <text x="48" y="16" fill="#f87171" font-family="'Inter', sans-serif" font-size="11" font-weight="900" letter-spacing="2">TACTICAL MECHANICS</text>
+      <text x="48" y="32" fill="#ffffff" font-family="'Inter', sans-serif" font-size="16" font-weight="900">Real-Time HP Elimination Combat</text>
+    </g>
+
+    <!-- Description &amp; Bullets -->
+    <text x="25" y="105" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="12" font-weight="500">
+      Transforms classic point scores into <tspan fill="#fca5a5" font-weight="700">authoritative lethal strike damage</tspan>:
+    </text>
+
+    <!-- Sub-feature Chips -->
+    <g transform="translate(25, 125)">
+      <g transform="translate(0, 0)">
+        <rect width="245" height="42" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+        <text x="12" y="18" fill="#f87171" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">💥 Direct Rival Damage</text>
+        <text x="12" y="32" fill="#64748b" font-family="'Inter', sans-serif" font-size="9.5">Points scored deduct HP from all living opponents</text>
+      </g>
+      <g transform="translate(260, 0)">
+        <rect width="245" height="42" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+        <text x="12" y="18" fill="#60a5fa" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">🛡️ 1.0s Reaction Shield</text>
+        <text x="12" y="32" fill="#64748b" font-family="'Inter', sans-serif" font-size="9.5">Pending effect window to block damage</text>
+      </g>
+      <g transform="translate(0, 52)">
+        <rect width="245" height="42" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+        <text x="12" y="18" fill="#34d399" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">💖 Rack-Based Life Recovery</text>
+        <text x="12" y="32" fill="#64748b" font-family="'Inter', sans-serif" font-size="9.5">HEAL restores HP = sum of rack tile values</text>
+      </g>
+      <g transform="translate(260, 52)">
+        <rect width="245" height="42" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+        <text x="12" y="18" fill="#fb923c" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">🎯 +50 All-Tiles Bingo</text>
+        <text x="12" y="32" fill="#64748b" font-family="'Inter', sans-serif" font-size="9.5">Dropping all 7 tiles unleashes massive burst</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== BENTO CELL 3 (BOTTOM LEFT): 3-Tier Dictionary &amp; Grimoire ==================== -->
+  <g transform="translate(30, 340)" filter="url(#cardShadow)">
+    <rect width="360" height="250" rx="14" fill="url(#glassCard1)" stroke="#10b981" stroke-width="1.5" class="anim-green"/>
+    <!-- Card Header -->
+    <g transform="translate(20, 25)">
+      <rect width="32" height="32" rx="7" fill="#064e3b" stroke="#34d399" stroke-width="1.2"/>
+      <text x="16" y="22" font-size="16" text-anchor="middle">📖</text>
+      <text x="42" y="14" fill="#34d399" font-family="'Inter', sans-serif" font-size="10" font-weight="900" letter-spacing="1.5">LEXICON ENGINE</text>
+      <text x="42" y="28" fill="#ffffff" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900">3-Tier Dictionary &amp; Grimoire</text>
+    </g>
+
+    <!-- Tiers List -->
+    <g transform="translate(20, 80)">
+      <rect width="320" height="44" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="18" fill="#6ee7b7" font-family="'Inter', sans-serif" font-size="10" font-weight="800">⚡ L1 In-Memory RAM Cache (0ms)</text>
+      <text x="12" y="33" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Tournament CSW24 Trie &amp; wordlist index</text>
+    </g>
+    <g transform="translate(20, 132)">
+      <rect width="320" height="44" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="18" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="10" font-weight="800">🗄️ L2 Database Lexicon</text>
+      <text x="12" y="33" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Pre-seeded definitions, phonetic IPA &amp; origins</text>
+    </g>
+    <g transform="translate(20, 184)">
+      <rect width="320" height="44" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="18" fill="#c084fc" font-family="'Inter', sans-serif" font-size="10" font-weight="800">🔮 Grimoire Spellbook Anagrams</text>
+      <text x="12" y="33" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Positional anchor solver with instant cache keys</text>
+    </g>
+  </g>
+
+  <!-- ==================== BENTO CELL 4 (BOTTOM MID): AI Bot Triad ==================== -->
+  <g transform="translate(410, 340)" filter="url(#cardShadow)">
+    <rect width="360" height="250" rx="14" fill="url(#glassCard1)" stroke="#8b5cf6" stroke-width="1.5" class="anim-purple"/>
+    <!-- Card Header -->
+    <g transform="translate(20, 25)">
+      <rect width="32" height="32" rx="7" fill="#4c1d95" stroke="#a78bfa" stroke-width="1.2"/>
+      <text x="16" y="22" font-size="16" text-anchor="middle">🤖</text>
+      <text x="42" y="14" fill="#a78bfa" font-family="'Inter', sans-serif" font-size="10" font-weight="900" letter-spacing="1.5">AUTONOMOUS AI</text>
+      <text x="42" y="28" fill="#ffffff" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900">Adaptive Bot Triad Engine</text>
+    </g>
+
+    <!-- Bot Triad -->
+    <g transform="translate(20, 80)">
+      <rect width="320" height="44" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="18" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="10" font-weight="800">⚡ SparkBot (Novice / Easy)</text>
+      <text x="12" y="33" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Common vocabulary, relaxed board control</text>
+    </g>
+    <g transform="translate(20, 132)">
+      <rect width="320" height="44" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="18" fill="#c084fc" font-family="'Inter', sans-serif" font-size="10" font-weight="800">🔮 Nexus AI (Tactical / Medium)</text>
+      <text x="12" y="33" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Targeted multipliers &amp; smart card utilization</text>
+    </g>
+    <g transform="translate(20, 184)">
+      <rect width="320" height="44" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="18" fill="#f43f5e" font-family="'Inter', sans-serif" font-size="10" font-weight="800">🛡️ Titan AI (Master / Hard)</text>
+      <text x="12" y="33" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Aggressive Bingo exploitation &amp; maximum lethality</text>
+    </g>
+  </g>
+
+  <!-- ==================== BENTO CELL 5 (BOTTOM RIGHT): WebSocket Hub ==================== -->
+  <g transform="translate(790, 340)" filter="url(#cardShadow)">
+    <rect width="380" height="250" rx="14" fill="url(#glassCard1)" stroke="#38bdf8" stroke-width="1.5" class="anim-cyan"/>
+    <!-- Card Header -->
+    <g transform="translate(20, 25)">
+      <rect width="32" height="32" rx="7" fill="#0369a1" stroke="#38bdf8" stroke-width="1.2"/>
+      <text x="16" y="22" font-size="16" text-anchor="middle">⚡</text>
+      <text x="42" y="14" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="10" font-weight="900" letter-spacing="1.5">REAL-TIME STREAM</text>
+      <text x="42" y="28" fill="#ffffff" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900">Low-Latency WebSocket Hub</text>
+    </g>
+
+    <g transform="translate(20, 80)">
+      <rect width="340" height="44" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="18" fill="#7dd3fc" font-family="'Inter', sans-serif" font-size="10" font-weight="800">👻 Live Translucent Ghost Previews</text>
+      <text x="12" y="33" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Opponents see staging in real-time before commit</text>
+    </g>
+    <g transform="translate(20, 132)">
+      <rect width="340" height="44" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="18" fill="#34d399" font-family="'Inter', sans-serif" font-size="10" font-weight="800">🔄 15s Reconnection Grace Period</text>
+      <text x="12" y="33" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Seamless token resume without losing game turn</text>
+    </g>
+    <g transform="translate(20, 184)">
+      <rect width="340" height="44" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="18" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="10" font-weight="800">👁️ Unlimited Live Spectator Seats</text>
+      <text x="12" y="33" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Zero-seat spectator broadcast with hidden racks</text>
+    </g>
+  </g>
+</svg>

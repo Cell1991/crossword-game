@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="radarBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0b132b" stop-opacity="0.95"/>
+      <stop offset="50%" stop-color="#0f172a" stop-opacity="0.98"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Glowing Filters -->
+    <filter id="radarGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <style>
+      @keyframes starGlow {
+        0%, 100% { stroke-opacity: 0.35; stroke-width: 1.5; }
+        50% { stroke-opacity: 1.0; stroke-width: 2.5; }
+      }
+      .center-star-glow { animation: starGlow 3.5s ease-in-out infinite; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="400" fill="url(#radarBg)" rx="16"/>
+
+  <!-- Left Side: 19x27 Tactical Matrix Radar Visual -->
+  <g transform="translate(40, 20)">
+    <!-- Radar Base Box -->
+    <rect width="600" height="360" rx="12" fill="#090d16" stroke="#1e293b" stroke-width="1.5"/>
+    <text x="20" y="28" fill="#64748b" font-family="'Inter', sans-serif" font-size="11" font-weight="800" letter-spacing="2">
+      TACTICAL MATRIX RADAR • 19 ROWS × 27 COLS
+    </text>
+
+    <!-- Coordinate Grid -->
+    <g opacity="0.3" stroke="#334155" stroke-width="0.8">
+      <!-- Horizontal lines -->
+      <line x1="20" y1="50" x2="580" y2="50"/>
+      <line x1="20" y1="90" x2="580" y2="90"/>
+      <line x1="20" y1="130" x2="580" y2="130"/>
+      <line x1="20" y1="170" x2="580" y2="170"/>
+      <line x1="20" y1="210" x2="580" y2="210"/>
+      <line x1="20" y1="250" x2="580" y2="250"/>
+      <line x1="20" y1="290" x2="580" y2="290"/>
+      <line x1="20" y1="330" x2="580" y2="330"/>
+
+      <!-- Vertical lines -->
+      <line x1="60" y1="50" x2="60" y2="330"/>
+      <line x1="120" y1="50" x2="120" y2="330"/>
+      <line x1="180" y1="50" x2="180" y2="330"/>
+      <line x1="240" y1="50" x2="240" y2="330"/>
+      <line x1="300" y1="50" x2="300" y2="330"/>
+      <line x1="360" y1="50" x2="360" y2="330"/>
+      <line x1="420" y1="50" x2="420" y2="330"/>
+      <line x1="480" y1="50" x2="480" y2="330"/>
+      <line x1="540" y1="50" x2="540" y2="330"/>
+    </g>
+
+    <!-- Radar Range Circles -->
+    <circle cx="300" cy="190" r="60" fill="none" stroke="#0ea5e9" stroke-width="1" stroke-opacity="0.3" stroke-dasharray="4 4"/>
+    <circle cx="300" cy="190" r="120" fill="none" stroke="#0ea5e9" stroke-width="1" stroke-opacity="0.2"/>
+
+    <!-- Multiplier Sample Nodes On Matrix -->
+    <!-- 3L Nodes (Blue) -->
+    <rect x="105" y="75" width="30" height="30" rx="6" fill="#0284c7" stroke="#38bdf8" stroke-width="1"/>
+    <text x="120" y="94" fill="#ffffff" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle">3L</text>
+
+    <rect x="465" y="75" width="30" height="30" rx="6" fill="#0284c7" stroke="#38bdf8" stroke-width="1"/>
+    <text x="480" y="94" fill="#ffffff" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle">3L</text>
+
+    <rect x="105" y="275" width="30" height="30" rx="6" fill="#0284c7" stroke="#38bdf8" stroke-width="1"/>
+    <text x="120" y="294" fill="#ffffff" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle">3L</text>
+
+    <rect x="465" y="275" width="30" height="30" rx="6" fill="#0284c7" stroke="#38bdf8" stroke-width="1"/>
+    <text x="480" y="294" fill="#ffffff" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle">3L</text>
+
+    <!-- 2L Nodes (Light Blue) -->
+    <rect x="225" y="115" width="30" height="30" rx="6" fill="#0369a1" stroke="#7dd3fc" stroke-width="1"/>
+    <text x="240" y="134" fill="#ffffff" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle">2L</text>
+
+    <rect x="345" y="115" width="30" height="30" rx="6" fill="#0369a1" stroke="#7dd3fc" stroke-width="1"/>
+    <text x="360" y="134" fill="#ffffff" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle">2L</text>
+
+    <!-- Power Cells (Purple / Violet) -->
+    <rect x="165" y="175" width="30" height="30" rx="6" fill="#581c87" stroke="#c084fc" stroke-width="1"/>
+    <text x="180" y="195" fill="#f5d0fe" font-size="14" text-anchor="middle">★</text>
+
+    <rect x="405" y="175" width="30" height="30" rx="6" fill="#581c87" stroke="#c084fc" stroke-width="1"/>
+    <text x="420" y="195" fill="#f5d0fe" font-size="14" text-anchor="middle">★</text>
+
+    <!-- Center Cell Star (Row 9, Col 13) -->
+    <g class="center-star-glow">
+      <rect x="282" y="172" width="36" height="36" rx="8" fill="#d97706" stroke="#fef08a" stroke-width="2"/>
+      <text x="300" y="196" fill="#ffffff" font-family="'Inter', sans-serif" font-size="20" font-weight="900" text-anchor="middle">★</text>
+    </g>
+
+    <!-- Center Tag -->
+    <rect x="235" y="215" width="130" height="20" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
+    <text x="300" y="228" fill="#fde68a" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">
+      CENTER (ROW 9, COL 13)
+    </text>
+  </g>
+
+  <!-- Right Side: Tactical Multipliers Spec Breakdown -->
+  <g transform="translate(670, 20)">
+    <!-- Card 1: 3L Multiplier -->
+    <g transform="translate(0, 0)">
+      <rect width="490" height="75" rx="10" fill="#0f172a" stroke="#0284c7" stroke-width="1.2"/>
+      <rect x="15" y="17" width="42" height="42" rx="8" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="36" y="44" fill="#ffffff" font-family="'Inter', sans-serif" font-size="16" font-weight="900" text-anchor="middle">3L</text>
+      <text x="75" y="32" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="14" font-weight="900">TRIPLE LETTER (3×)</text>
+      <text x="75" y="52" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">
+        Multiplies the placed tile point value by 3× in all connecting words.
+      </text>
+    </g>
+
+    <!-- Card 2: 2L Multiplier -->
+    <g transform="translate(0, 90)">
+      <rect width="490" height="75" rx="10" fill="#0f172a" stroke="#0369a1" stroke-width="1.2"/>
+      <rect x="15" y="17" width="42" height="42" rx="8" fill="#0369a1" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="36" y="44" fill="#ffffff" font-family="'Inter', sans-serif" font-size="16" font-weight="900" text-anchor="middle">2L</text>
+      <text x="75" y="32" fill="#7dd3fc" font-family="'Inter', sans-serif" font-size="14" font-weight="900">DOUBLE LETTER (2×)</text>
+      <text x="75" y="52" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">
+        Doubles the letter value for newly placed tiles on that tile coordinate.
+      </text>
+    </g>
+
+    <!-- Card 3: Secret Power Cell -->
+    <g transform="translate(0, 180)">
+      <rect width="490" height="75" rx="10" fill="#0f172a" stroke="#7c3aed" stroke-width="1.2"/>
+      <rect x="15" y="17" width="42" height="42" rx="8" fill="#581c87" stroke="#c084fc" stroke-width="1.5"/>
+      <text x="36" y="44" fill="#f5d0fe" font-size="20" text-anchor="middle">★</text>
+      <text x="75" y="32" fill="#c084fc" font-family="'Inter', sans-serif" font-size="14" font-weight="900">SECRET POWER SQUARE</text>
+      <text x="75" y="52" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">
+        Awards a random tactical card to hand (if player holds &lt; 3 cards).
+      </text>
+    </g>
+
+    <!-- Card 4: All-Tiles Bingo Bonus -->
+    <g transform="translate(0, 270)">
+      <rect width="490" height="85" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2"/>
+      <rect x="15" y="22" width="42" height="42" rx="8" fill="#78350f" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="36" y="49" fill="#fef08a" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">+50</text>
+      <text x="75" y="36" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="14" font-weight="900">ALL-TILES BINGO BONUS (+50 PTS)</text>
+      <text x="75" y="56" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">
+        Placing all 7 rack tiles in a single turn triggers a lethal +50 score bonus &amp; screen shockwave!
+      </text>
+    </g>
+  </g>
+</svg>
