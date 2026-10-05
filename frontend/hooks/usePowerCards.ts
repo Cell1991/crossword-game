@@ -12,6 +12,9 @@ const HINT_HIGHLIGHT_MS = 15000;
 interface UsePowerCardsOptions {
   gameId: string;
   myPlayerId: string | null;
+  /** Current turn number, once the game state has loaded. Used to detect a hint persisted from
+   * an earlier turn - the board has moved on since, so its suggested cells may now be occupied. */
+  turnNumber: number | undefined;
   boardState: Record<string, BoardCell>;
   temporaryTiles: PlacedTile[];
   reload: () => Promise<void>;
@@ -19,7 +22,7 @@ interface UsePowerCardsOptions {
 }
 
 /** Playing power cards: one request at a time, then a fresh snapshot. */
-export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, reload, toasts }: UsePowerCardsOptions) {
+export function usePowerCards({ gameId, myPlayerId, turnNumber, boardState, temporaryTiles, reload, toasts }: UsePowerCardsOptions) {
   const { flashError, flashInfo } = toasts;
   const [armedCard, setArmedCard] = useState<BoardCard | null>(null);
   const [pendingArmedCell, setPendingArmedCell] = useState<CellPosition | null>(null);
@@ -39,21 +42,24 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   const [busy, setBusy] = useState(false);
   const hasLoadedFromStorageRef = useRef(false);
 
+  // Recalling a staged tile is that tile's cancel; already-committed board cells aren't staged,
+  // so they never get recalled this way and always ride through to Confirm Move on their own.
   const activeDeferredFreezeTileIds = deferredFreezeTileIds.filter(id => temporaryTiles.some(t => t.tile_id === id));
-  // If every staged tile in the freeze got recalled, the board-cell half has no move left to ride
-  // along with, so it cancels too (matching the "recall is the cancel" behavior for this path).
-  const activeDeferredFreezeBoardCells = activeDeferredFreezeTileIds.length > 0 ? deferredFreezeBoardCells : [];
+  const activeDeferredFreezeBoardCells = deferredFreezeBoardCells;
 
-  // Load persisted hints when player ID and game ID become available
+  // Load persisted hints when player ID, game ID and the current turn number become available.
+  // Waiting on turnNumber (rather than just gameId/myPlayerId) matters: without it, a hint saved
+  // on an earlier turn would get restored before we can tell it's stale, and briefly auto-stage a
+  // suggestion whose cells the board has since filled in - the "collides with another tile" bug.
   useEffect(() => {
-    if (typeof window === 'undefined' || !gameId || !myPlayerId) return;
+    if (typeof window === 'undefined' || !gameId || !myPlayerId || turnNumber === undefined) return;
     if (hasLoadedFromStorageRef.current) return;
     try {
       const key = `crossword_hint_${gameId}_${myPlayerId}`;
       const stored = sessionStorage.getItem(key) || localStorage.getItem(key);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed.suggestions) && parsed.suggestions.length > 0) {
+        if (Array.isArray(parsed.suggestions) && parsed.suggestions.length > 0 && parsed.turnNumber === turnNumber) {
           const activeIdx = typeof parsed.activeIndex === 'number' ? parsed.activeIndex : 0;
           const firstTile = parsed.suggestions[activeIdx]?.tiles?.[0];
           startTransition(() => {
@@ -61,6 +67,9 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
             setActiveHintIndex(activeIdx);
             setHintCell(firstTile ? { row: firstTile.row, col: firstTile.col } : null);
           });
+        } else {
+          sessionStorage.removeItem(key);
+          localStorage.removeItem(key);
         }
       }
     } catch {
@@ -68,21 +77,22 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     } finally {
       hasLoadedFromStorageRef.current = true;
     }
-  }, [gameId, myPlayerId]);
+  }, [gameId, myPlayerId, turnNumber]);
 
-  // Persist hint suggestions and active index across page reloads (only after initial load completed)
+  // Persist hint suggestions, active index and the turn they were computed on, across page
+  // reloads (only after initial load completed).
   useEffect(() => {
     if (typeof window === 'undefined' || !gameId || !myPlayerId || !hasLoadedFromStorageRef.current) return;
     const key = `crossword_hint_${gameId}_${myPlayerId}`;
     if (hintSuggestions.length > 0) {
-      const data = JSON.stringify({ suggestions: hintSuggestions, activeIndex: activeHintIndex });
+      const data = JSON.stringify({ suggestions: hintSuggestions, activeIndex: activeHintIndex, turnNumber });
       sessionStorage.setItem(key, data);
       localStorage.setItem(key, data);
     } else {
       sessionStorage.removeItem(key);
       localStorage.removeItem(key);
     }
-  }, [activeHintIndex, gameId, hintSuggestions, myPlayerId]);
+  }, [activeHintIndex, gameId, hintSuggestions, myPlayerId, turnNumber]);
 
   const clearHints = useCallback(() => {
     hasLoadedFromStorageRef.current = true;
@@ -211,27 +221,13 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
         .map(c => temporaryTiles.find(t => t.row === c.row && t.col === c.col)?.tile_id)
         .filter((id): id is string => Boolean(id));
 
-      // Any staged tile in the mix means this freeze can only take effect once a move commits, so
-      // both pools (staged tiles and already-committed board tiles) defer together to that point.
-      if (stagedTileIds.length > 0) {
-        setDeferredFreezeTileIds(stagedTileIds);
-        setDeferredFreezeBoardCells(committedCells);
-        setArmedCard(null);
-        setPendingFrozenCells([]);
-        setPendingArmedCell(null);
-        return;
-      }
-
-      setBusy(true);
-      playCard(gameId, myPlayerId, { card: 'FREEZE_TILE', frozen_cells: committedCells })
-        .then(() => reload())
-        .catch((error: unknown) => flashError(error instanceof Error ? error.message : 'Failed to use card'))
-        .finally(() => {
-          setBusy(false);
-          setArmedCard(null);
-          setPendingFrozenCells([]);
-          setPendingArmedCell(null);
-        });
+      // Always defer to Confirm Move - no separate "confirm card" network call. This only takes
+      // effect once the move commits; cancelling beforehand (Unmark) is what backs it out.
+      setDeferredFreezeTileIds(stagedTileIds);
+      setDeferredFreezeBoardCells(committedCells);
+      setArmedCard(null);
+      setPendingFrozenCells([]);
+      setPendingArmedCell(null);
       return;
     }
     if (!pendingArmedCell) return;

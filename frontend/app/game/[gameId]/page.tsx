@@ -117,7 +117,7 @@ export default function GamePage() {
     [rackSlots]
   );
 
-  const cards = usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, reload, toasts });
+  const cards = usePowerCards({ gameId, myPlayerId, turnNumber: gameState?.turn_number, boardState, temporaryTiles, reload, toasts });
   const { armedCard, playArmedCardAt } = cards;
   /** The cells a FREEZE_TILE mark will apply to on Confirm Move, for the board highlight - this
    * move's own staged tiles plus any already-committed board cells bundled into the same freeze. */

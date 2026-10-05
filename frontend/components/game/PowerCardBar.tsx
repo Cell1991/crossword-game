@@ -222,54 +222,56 @@ export const PowerCardBar = memo(function PowerCardBar({
   // Filter only the 7 true power cards
   const validCards = cards.filter(card => POWER_CARDS_META[card]);
 
-  if (deferredFreezeTileIds.length > 0) {
-    const count = deferredFreezeTileIds.length + deferredFreezeBoardCells.length;
-    return (
-      <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-cyan-400/80 bg-gradient-to-r from-sky-950 via-cyan-950 to-slate-950 px-3 py-1.5 text-xs text-cyan-100 shadow-[0_0_20px_rgba(6,182,212,0.4)] ring-1 ring-cyan-400/30">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-400/50 shadow-[0_0_8px_rgba(6,182,212,0.5)] shrink-0">
-            <Snowflake className="w-3.5 h-3.5 text-cyan-200" />
+  // FREEZE_TILE and HEAL marks are independent of each other: each renders its own status row
+  // instead of replacing the whole bar, so marking one no longer blocks marking the other before
+  // Confirm Move (previously only one "armed" banner could show at a time).
+  const freezeArmedCount = deferredFreezeTileIds.length + deferredFreezeBoardCells.length;
+  const marksStrip = (freezeArmedCount > 0 || deferredHeal) && (
+    <div className="flex flex-col w-full gap-1.5">
+      {freezeArmedCount > 0 && (
+        <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-cyan-400/80 bg-gradient-to-r from-sky-950 via-cyan-950 to-slate-950 px-3 py-1.5 text-xs text-cyan-100 shadow-[0_0_20px_rgba(6,182,212,0.4)] ring-1 ring-cyan-400/30">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-400/50 shadow-[0_0_8px_rgba(6,182,212,0.5)] shrink-0">
+              <Snowflake className="w-3.5 h-3.5 text-cyan-200" />
+            </div>
+            <span className="font-semibold text-slate-100 text-xs truncate">
+              <strong className="text-cyan-300 font-extrabold">Freeze Armed ({freezeArmedCount}/3)</strong> — activates on move
+            </span>
           </div>
-          <span className="font-semibold text-slate-100 text-xs truncate">
-            <strong className="text-cyan-300 font-extrabold">Freeze Armed ({count}/3)</strong> — activates on move
-          </span>
+          <button
+            type="button"
+            onClick={onCancelDeferredFreeze}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-cyan-400/40 bg-cyan-950/80 hover:bg-cyan-900 px-2.5 py-1 text-xs font-bold text-cyan-200 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>Unmark</span>
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onCancelDeferredFreeze}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-cyan-400/40 bg-cyan-950/80 hover:bg-cyan-900 px-2.5 py-1 text-xs font-bold text-cyan-200 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
-        >
-          <X className="w-3.5 h-3.5" />
-          <span>Unmark</span>
-        </button>
-      </div>
-    );
-  }
-
-  if (deferredHeal) {
-    const healVal = estimatedScore || 0;
-    return (
-      <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-rose-400/80 bg-gradient-to-r from-rose-950 via-pink-950 to-slate-950 px-3 py-1.5 text-xs text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.4)] ring-1 ring-rose-400/30">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-rose-500/20 border border-rose-400/50 shadow-[0_0_8px_rgba(244,63,94,0.5)] shrink-0">
-            <Heart className="w-3.5 h-3.5 fill-rose-400 text-rose-200" />
+      )}
+      {deferredHeal && (
+        <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-rose-400/80 bg-gradient-to-r from-rose-950 via-pink-950 to-slate-950 px-3 py-1.5 text-xs text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.4)] ring-1 ring-rose-400/30">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-rose-500/20 border border-rose-400/50 shadow-[0_0_8px_rgba(244,63,94,0.5)] shrink-0">
+              <Heart className="w-3.5 h-3.5 fill-rose-400 text-rose-200" />
+            </div>
+            <span className="font-semibold text-slate-100 text-xs truncate">
+              <strong className="text-rose-300 font-extrabold">Heal Armed</strong> — +{estimatedScore || 0} HP on move (100%)
+            </span>
           </div>
-          <span className="font-semibold text-slate-100 text-xs truncate">
-            <strong className="text-rose-300 font-extrabold">Heal Armed</strong> — +{healVal} HP on move (100%)
-          </span>
+          <button
+            type="button"
+            onClick={onCancelDeferredHeal}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-rose-400/40 bg-rose-950/80 hover:bg-rose-900 px-2.5 py-1 text-xs font-bold text-rose-200 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>Unmark</span>
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onCancelDeferredHeal}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-rose-400/40 bg-rose-950/80 hover:bg-rose-900 px-2.5 py-1 text-xs font-bold text-rose-200 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
-        >
-          <X className="w-3.5 h-3.5" />
-          <span>Unmark</span>
-        </button>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 
+  const body = (() => {
   if (armedCard === 'FREEZE_TILE') {
     const meta = POWER_CARDS_META[armedCard];
     const count = pendingFrozenCells.length;
@@ -823,6 +825,14 @@ export const PowerCardBar = memo(function PowerCardBar({
           </button>
         );
       })}
+    </div>
+  );
+  })();
+
+  return (
+    <div className="flex flex-col w-full gap-1.5">
+      {marksStrip}
+      {body}
     </div>
   );
 });
