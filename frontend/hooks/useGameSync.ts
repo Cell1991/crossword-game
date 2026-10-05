@@ -229,10 +229,18 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
               turn_number: (event.payload?.turnNumber as number | undefined) ?? prev.turn_number,
               pending_effect: event.payload?.pendingEffect !== undefined ? (event.payload.pendingEffect as GameState['pending_effect']) : prev.pending_effect,
               pending_double_target_id: null,
+              frozen_tile: event.payload?.frozenTile !== undefined ? (event.payload.frozenTile as GameState['frozen_tile']) : prev.frozen_tile,
               players: prev.players.map(p => {
                 if (updatedPlayers) {
                   const up = updatedPlayers.find(u => u.id === p.id);
-                  if (up) return { ...p, hp: up.hp, score: up.score };
+                  if (up) return {
+                    ...p,
+                    hp: up.hp,
+                    score: up.score,
+                    has_shield: (up as any).has_shield ?? p.has_shield,
+                    shield_amount: (up as any).shield_amount ?? p.shield_amount,
+                    cards: (up as any).cards ?? p.cards,
+                  };
                 }
                 if (p.id === event.payload?.playerId && typeof event.payload?.playerTotalScore === 'number') {
                   return { ...p, score: event.payload.playerTotalScore };

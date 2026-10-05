@@ -443,7 +443,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     if (!rect) return;
     const cell = camera.screenToCell(e.clientX - rect.left, e.clientY - rect.top);
     const pendingTile = cell && temporaryTiles.find(tile => tile.row === cell.row && tile.col === cell.col);
-    if (pendingTile && canStageMove) {
+    if (pendingTile && canStageMove && !pendingArmedCard) {
       e.preventDefault();
       pendingPointerRef.current = {
         tile: pendingTile,

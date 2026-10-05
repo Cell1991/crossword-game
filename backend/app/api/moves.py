@@ -56,12 +56,22 @@ async def commit_move(
             "nextPlayerId": res.next_player_id,
             "boardState": game.board_state,
             "pendingEffect": game.pending_effect,
+            "frozenTile": game.frozen_tile,
             "cardAwarded": res.card_awarded,
             "cardsAwarded": res.cards_awarded,
             "damageDealt": res.damage_dealt,
             "doubleDamageTargetId": res.double_damage_target_id,
+            "healedAmount": res.healed_amount,
+            "shieldAwarded": res.shield_awarded,
             "players": [
-                {"id": p.id, "hp": p.hp, "score": p.score, "has_shield": getattr(p, "has_shield", False)}
+                {
+                    "id": p.id,
+                    "hp": p.hp,
+                    "score": p.score,
+                    "has_shield": getattr(p, "has_shield", False),
+                    "shield_amount": getattr(p, "shield_amount", 0),
+                    "cards": p.cards or [],
+                }
                 for p in all_game_players
             ],
         }
