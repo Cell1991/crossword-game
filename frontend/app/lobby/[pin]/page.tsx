@@ -213,7 +213,7 @@ export default function LobbyPage() {
   };
 
   return (
-    <div className="relative flex h-[100dvh] max-h-[100dvh] w-full flex-col items-center justify-between overflow-hidden bg-[#030712] p-3 sm:p-5 text-slate-100 select-none selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="relative flex min-h-[100dvh] w-full flex-col items-center justify-start sm:justify-center overflow-x-hidden overflow-y-auto bg-[#030712] p-3 sm:p-5 pt-4 sm:pt-6 pb-20 sm:pb-8 text-slate-100 select-none selection:bg-cyan-500/30 selection:text-cyan-200">
       
       {/* Layer 0: Dark Cosmic Void & Dynamic Ambient Nebulas */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
@@ -243,8 +243,8 @@ export default function LobbyPage() {
       <ParticleField className="pointer-events-none fixed inset-0 z-[2] h-full w-full" accent="245, 158, 11" />
       <FullscreenButton className="fixed top-3.5 right-3.5 z-40" />
 
-      {/* CENTER STAGE (Zero Scroll 100dvh) */}
-      <main className="relative z-20 flex w-full max-w-[550px] flex-1 flex-col items-center justify-center my-auto gap-3.5 sm:gap-4">
+      {/* CENTER STAGE (Scrollable on mobile, centered on large screens) */}
+      <main className="relative z-20 flex w-full max-w-[550px] flex-col items-center my-auto py-2 sm:py-4 gap-3.5 sm:gap-4">
         
         {/* Game PIN Display Box */}
         <PinDisplay pin={pin} />

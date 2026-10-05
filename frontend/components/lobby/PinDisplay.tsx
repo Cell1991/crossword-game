@@ -20,7 +20,7 @@ export const PinDisplay: React.FC<PinDisplayProps> = ({ pin }) => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-2 p-5 sm:p-6 bg-gradient-to-b from-slate-900/90 via-slate-950/95 to-slate-950 border-2 border-amber-400/40 rounded-3xl shadow-[0_16px_50px_rgba(0,0,0,0.8),0_0_40px_rgba(251,191,36,0.18)] backdrop-blur-2xl w-full text-center relative overflow-hidden ring-1 ring-amber-300/30">
+    <div className="flex flex-col items-center gap-1.5 sm:gap-2 p-4 sm:p-6 bg-gradient-to-b from-slate-900/90 via-slate-950/95 to-slate-950 border-2 border-amber-400/40 rounded-3xl shadow-[0_16px_50px_rgba(0,0,0,0.8),0_0_40px_rgba(251,191,36,0.18)] backdrop-blur-2xl w-full text-center relative overflow-hidden ring-1 ring-amber-300/30">
       {/* Top Gold Accent Line */}
       <span className="absolute inset-x-8 top-0 h-[2px] bg-gradient-to-r from-transparent via-yellow-300 to-transparent shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
 
@@ -30,14 +30,14 @@ export const PinDisplay: React.FC<PinDisplayProps> = ({ pin }) => {
 
       <button
         onClick={handleCopy}
-        className={`group relative flex items-center justify-center gap-3 px-6 py-2.5 rounded-2xl border-2 transition-all cursor-pointer ${
+        className={`group relative flex items-center justify-center gap-2.5 sm:gap-3 px-4 sm:px-6 py-2 sm:py-2.5 rounded-2xl border-2 transition-all cursor-pointer ${
           copied
             ? 'bg-emerald-950/60 border-emerald-400 text-emerald-300 shadow-[0_0_25px_rgba(16,185,129,0.4)] ring-2 ring-emerald-400/50'
             : 'bg-slate-950/80 hover:bg-amber-400/10 border-amber-400/50 hover:border-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.2)] hover:shadow-[0_0_30px_rgba(251,191,36,0.4)]'
         }`}
         title="Click to copy Game PIN"
       >
-        <span className="text-4xl sm:text-5xl font-black font-mono tracking-[0.15em] bg-gradient-to-b from-white via-amber-200 to-amber-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(251,191,36,0.7)] group-hover:scale-105 transition-transform">
+        <span className="text-3xl sm:text-5xl font-black font-mono tracking-[0.15em] bg-gradient-to-b from-white via-amber-200 to-amber-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(251,191,36,0.7)] group-hover:scale-105 transition-transform">
           {formattedPin}
         </span>
         {copied ? (

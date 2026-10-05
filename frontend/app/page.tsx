@@ -370,7 +370,7 @@ export default function HomePage() {
   const isSelectedRoomPlaying = selectedRoom?.status === 'PLAYING';
 
   return (
-    <div className="relative flex h-[100dvh] max-h-[100dvh] w-full flex-col items-center justify-between overflow-hidden bg-[#030712] p-3 sm:p-5 text-slate-100 select-none selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="relative flex min-h-[100dvh] w-full flex-col items-center justify-between overflow-x-hidden overflow-y-auto bg-[#030712] p-3 sm:p-5 pb-8 sm:pb-5 text-slate-100 select-none selection:bg-cyan-500/30 selection:text-cyan-200">
       
       {/* Layer 0: Dark Cosmic Void & Dynamic Ambient Nebulas */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
@@ -399,8 +399,8 @@ export default function HomePage() {
       {/* Layer 2: Subtle Ambient Rising Beams & Particle Matrix */}
       <ParticleField className="pointer-events-none fixed inset-0 z-[2] h-full w-full" accent="245, 158, 11" />
 
-      {/* CENTER STAGE (NO SCROLLING) */}
-      <main className="relative z-20 flex w-full max-w-[550px] flex-1 flex-col items-center justify-center my-auto">
+      {/* CENTER STAGE */}
+      <main className="relative z-20 flex w-full max-w-[550px] flex-1 flex-col items-center justify-center my-auto py-2 sm:py-0">
         
         {/* HERO BRANDING HEADER (ONLY ON HOME MODE) */}
         {mode === 'home' && (
