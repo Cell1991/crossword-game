@@ -64,7 +64,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
     shortTitle: 'Shield',
     subtitle: 'PROTECTION',
     element: 'PASSIVE',
-    description: 'Grants Shield equal to 75% of your points scored (rounded up) to block incoming attacks or swaps.',
+    description: 'Grants Shield equal to 95% of your points scored (rounded up) to block incoming attacks or swaps.',
     ownTurnOnly: false,
     icon: <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-200 fill-sky-400/20 drop-shadow-[0_0_8px_#38bdf8]" />,
     bgGradient: 'from-sky-950/95 via-blue-950/90 to-slate-950/95',
@@ -112,7 +112,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
     shortTitle: 'Heal',
     subtitle: 'RESTORE HP',
     element: 'HP MODE',
-    description: 'Restores HP equal to 60% of your points scored (rounded up).',
+    description: 'Restores HP equal to 90% of your points scored (rounded up).',
     ownTurnOnly: false,
     icon: <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-rose-400 text-rose-200 drop-shadow-[0_0_8px_#fb7185]" />,
     bgGradient: 'from-rose-950/95 via-pink-950/90 to-slate-950/95',
@@ -243,7 +243,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   }
 
   if (deferredHeal) {
-    const healVal = Math.ceil((estimatedScore || 0) * 0.6);
+    const healVal = Math.ceil((estimatedScore || 0) * 0.9);
     return (
       <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-rose-400/80 bg-gradient-to-r from-rose-950 via-pink-950 to-slate-950 px-3 py-1.5 text-xs text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.4)] ring-1 ring-rose-400/30">
         <div className="flex items-center gap-2 min-w-0">
@@ -251,7 +251,7 @@ export const PowerCardBar = memo(function PowerCardBar({
             <Heart className="w-3.5 h-3.5 fill-rose-400 text-rose-200" />
           </div>
           <span className="font-semibold text-slate-100 text-xs truncate">
-            <strong className="text-rose-300 font-extrabold">Heal Armed</strong> — +{healVal} HP on move (60%)
+            <strong className="text-rose-300 font-extrabold">Heal Armed</strong> — +{healVal} HP on move (90%)
           </span>
         </div>
         <button
@@ -267,7 +267,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   }
 
   if (deferredShield) {
-    const shieldVal = Math.ceil((estimatedScore || 0) * 0.75);
+    const shieldVal = Math.ceil((estimatedScore || 0) * 0.95);
     return (
       <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-sky-400/80 bg-gradient-to-r from-sky-950 via-blue-950 to-slate-950 px-3 py-1.5 text-xs text-sky-100 shadow-[0_0_20px_rgba(14,165,233,0.4)] ring-1 ring-sky-400/30">
         <div className="flex items-center gap-2 min-w-0">
@@ -275,7 +275,7 @@ export const PowerCardBar = memo(function PowerCardBar({
             <Shield className="w-3.5 h-3.5 text-sky-200 fill-sky-400/20" />
           </div>
           <span className="font-semibold text-slate-100 text-xs truncate">
-            <strong className="text-sky-300 font-extrabold">Shield Armed</strong> — +{shieldVal} Shield on move (75%)
+            <strong className="text-sky-300 font-extrabold">Shield Armed</strong> — +{shieldVal} Shield on move (95%)
           </span>
         </div>
         <button
@@ -670,8 +670,8 @@ export const PowerCardBar = memo(function PowerCardBar({
     const isShield = confirmingSimpleCard === 'SHIELD';
     const isHint = confirmingSimpleCard === 'HINT';
     const scoreVal = myScore ?? 0;
-    const healVal = Math.ceil(scoreVal * 0.6);
-    const shieldVal = Math.ceil(scoreVal * 0.75);
+    const healVal = Math.ceil(scoreVal * 0.9);
+    const shieldVal = Math.ceil(scoreVal * 0.95);
 
     const label = isHeal
       ? `Use Heal (+${healVal} HP)?`

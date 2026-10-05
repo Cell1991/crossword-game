@@ -130,9 +130,11 @@ async def use_card(
         cards.remove(card)
         player.cards = cards
         import math
-        shield_amt = max(1, math.ceil(player.score * 0.75)) if player.score > 0 else 0
-        player.has_shield = True
-        player.shield_amount = shield_amt
+        shield_amt = max(1, math.ceil(player.score * 0.95)) if player.score > 0 else 10
+        current_shield = getattr(player, "shield_amount", 0) or 0
+        total_shield = current_shield + shield_amt
+        player.shield_amount = total_shield
+        player.has_shield = total_shield > 0
         await replace_player_cards(db, player.id, cards)
 
         effect = game.pending_effect
@@ -154,7 +156,7 @@ async def use_card(
             "turn_number": game.turn_number,
             "shield_amount": shield_amt,
             "blocked": bool(targets_me),
-            "description": f"Activated Shield (Blocked incoming effect!)" if targets_me else f"Activated Shield protection (+{shield_amt} shield, 75% of {player.score} pts)",
+            "description": f"Activated Shield (Blocked incoming effect!)" if targets_me else f"Activated Shield protection (+{shield_amt} shield, 95% of {player.score} pts)",
         }
         pending = list(game.pending_card_events or [])
         pending.append(card_event)
@@ -162,35 +164,48 @@ async def use_card(
         flag_modified(game, "pending_card_events")
 
         if targets_me:
-            player.has_shield = False
-            player.shield_amount = 0
             if effect["type"] == "DAMAGE":
-                remaining_damage = {pid: amount for pid, amount in effect["damage"].items() if pid != player.id}
-                game.pending_effect = {**effect, "damage": remaining_damage} if remaining_damage else None
+                incoming_damage = effect["damage"].get(player.id, 0)
+                if total_shield >= incoming_damage:
+                    player.shield_amount = total_shield - incoming_damage
+                    player.has_shield = player.shield_amount > 0
+                    remaining_damage = {pid: amount for pid, amount in effect["damage"].items() if pid != player.id}
+                    game.pending_effect = {**effect, "damage": remaining_damage} if remaining_damage else None
+                else:
+                    remaining_damage_for_player = incoming_damage - total_shield
+                    player.shield_amount = 0
+                    player.has_shield = False
+                    effect_damage = dict(effect["damage"])
+                    effect_damage[player.id] = remaining_damage_for_player
+                    game.pending_effect = {**effect, "damage": effect_damage}
             else:
                 game.pending_effect = None
 
+            flag_modified(player, "shield_amount")
+            flag_modified(player, "has_shield")
             await db.commit()
             await manager.broadcast(game_id, WebSocketEvent(
                 type=EventType.CARD_USED,
-                payload={"playerId": player.id, "card": card, "shieldAmount": shield_amt},
+                payload={"playerId": player.id, "card": card, "shieldAmount": player.shield_amount},
             ).model_dump())
             await manager.broadcast(game_id, WebSocketEvent(
                 type=EventType.EFFECT_RESOLVED,
                 payload={"type": effect["type"], "blocked": True, "blockedBy": player.id},
             ).model_dump())
-            return {"success": True, "blocked": True, "has_shield": False, "shield_amount": shield_amt}
+            return {"success": True, "blocked": True, "has_shield": player.has_shield, "shield_amount": player.shield_amount}
 
+        flag_modified(player, "shield_amount")
+        flag_modified(player, "has_shield")
         await db.commit()
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.CARD_USED,
-            payload={"playerId": player.id, "card": card, "shieldAmount": shield_amt},
+            payload={"playerId": player.id, "card": card, "shieldAmount": player.shield_amount},
         ).model_dump())
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.GAME_STATE_SYNC,
-            payload={"reason": "CARD_USED", "card": "SHIELD", "playerId": player.id, "shieldAmount": shield_amt},
+            payload={"reason": "CARD_USED", "card": "SHIELD", "playerId": player.id, "shieldAmount": player.shield_amount},
         ).model_dump())
-        return {"success": True, "blocked": False, "has_shield": True, "shield_amount": shield_amt}
+        return {"success": True, "blocked": False, "has_shield": player.has_shield, "shield_amount": player.shield_amount}
 
     if card == "DOUBLE_DAMAGE":
         if game.current_player_id != player.id:
@@ -233,7 +248,7 @@ async def use_card(
 
     if card == "HEAL":
         import math
-        heal_amt = max(1, math.ceil(player.score * 0.60)) if player.score > 0 else 0
+        heal_amt = max(1, math.ceil(player.score * 0.90)) if player.score > 0 else 0
         max_cap = getattr(player, "max_hp", 100) or 100
         old_hp = player.hp
         player.hp = min(max_cap, player.hp + heal_amt)
@@ -246,7 +261,7 @@ async def use_card(
             "amount": actual_heal,
             "hp_after": player.hp,
             "turn_number": game.turn_number,
-            "description": f"Healed self for +{actual_heal} HP (60% of {player.score} pts, Current HP: {player.hp})",
+            "description": f"Healed self for +{actual_heal} HP (90% of {player.score} pts, Current HP: {player.hp})",
         }
         pending = list(game.pending_card_events or [])
         pending.append(card_event)

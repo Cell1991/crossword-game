@@ -269,6 +269,99 @@ class SoundSynthesizer {
       osc.stop(now + decay + 0.05);
     });
   }
+
+  /** Punchy damage hit audio (normal hit vs 2x critical heavy impact) */
+  playDamageHit(isCritical = false) {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    if (isCritical) {
+      // 2X Critical Damage: Heavy sub-bass thud + thunder crackle
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(160, now);
+      osc.frequency.exponentialRampToValueAtTime(45, now + 0.35);
+
+      gain.gain.setValueAtTime(0.28, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.42);
+
+      // High electric crackle burst
+      const crackleOsc = ctx.createOscillator();
+      const crackleGain = ctx.createGain();
+      crackleOsc.type = 'triangle';
+      crackleOsc.frequency.setValueAtTime(880, now);
+      crackleOsc.frequency.linearRampToValueAtTime(1400, now + 0.08);
+      crackleOsc.frequency.exponentialRampToValueAtTime(220, now + 0.25);
+
+      crackleGain.gain.setValueAtTime(0.18, now);
+      crackleGain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+      crackleOsc.connect(crackleGain);
+      crackleGain.connect(ctx.destination);
+      crackleOsc.start(now);
+      crackleOsc.stop(now + 0.3);
+    } else {
+      // Normal Damage: Crisp impact thud
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.2);
+
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    }
+  }
+
+  /** Dramatic slow-motion Final Blow / Knockout gong & fanfare */
+  playFinalKnockout() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    // Deep sub-bass resonance (gong / slow motion shockwave)
+    const sub = ctx.createOscillator();
+    const subGain = ctx.createGain();
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(110, now);
+    sub.frequency.exponentialRampToValueAtTime(32, now + 1.2);
+    subGain.gain.setValueAtTime(0.35, now);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
+    sub.connect(subGain);
+    subGain.connect(ctx.destination);
+    sub.start(now);
+    sub.stop(now + 1.5);
+
+    // Triumphant rising chords (C4, E4, G4, C5, E5)
+    const chords = [261.63, 329.63, 392.00, 523.25, 659.25];
+    chords.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + 0.1 + idx * 0.08);
+
+      gain.gain.setValueAtTime(0.001, now + 0.1 + idx * 0.08);
+      gain.gain.linearRampToValueAtTime(0.18, now + 0.1 + idx * 0.08 + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1 + idx * 0.08 + 1.0);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + 0.1 + idx * 0.08);
+      osc.stop(now + 0.1 + idx * 0.08 + 1.1);
+    });
+  }
 }
 
 export const soundFx = new SoundSynthesizer();

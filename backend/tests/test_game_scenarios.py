@@ -854,10 +854,23 @@ async def test_cd09_shield_can_be_activated_proactively(open_table):
     assert (await table.place(bob, ROW, COL - 1, "CAT")).status_code == 200
     await resolve_damage(table)
 
-    # Alice's shield absorbed the attack: Alice took 0 damage, shield is consumed
+    # Alice's shield absorbed the attack: Alice took 0 damage, shield absorbed 5 pts, 5 pts remain
     state_after = await table.state()
     assert me(state_after, alice)["hp"] == 100
-    assert me(state_after, alice)["has_shield"] is False
+    assert me(state_after, alice)["has_shield"] is True
+    assert me(state_after, alice)["shield_amount"] == 5
+
+    # Pass turn back to Bob to hit Alice with a second attack that consumes remaining shield
+    assert (await table.act(alice, "pass")).status_code == 200
+    await table.set_tiles(racks={bob: "BATSEIO"})
+    assert (await table.place(bob, ROW - 1, COL, "B.T", down=True)).status_code == 200
+    await resolve_damage(table)
+
+    # Bob's 5-point BAT attack absorbed remaining 5 shield points; shield is now completely consumed
+    state_final = await table.state()
+    assert me(state_final, alice)["hp"] == 100
+    assert me(state_final, alice)["has_shield"] is False
+    assert me(state_final, alice)["shield_amount"] == 0
 
 
 async def test_cd10_shield_cancels_a_pending_spy_swap(open_table):
@@ -1274,3 +1287,37 @@ async def test_dm04_debug_endpoints_work_inside_a_debug_room(open_table):
 
     assert res.status_code == 200
     assert me(res.json(), alice)["hp"] == 1
+
+
+async def test_cd14_heal_move_recovers_90_percent_rounded_up(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, _ = table.seats
+    await table.update_player(alice, hp=50)
+    await table.set_cards(alice, ["HEAL"])
+    await table.set_tiles(racks={alice: "CATSEIO"})
+
+    # CAT earns 5 points. 90% of 5 = 4.5 -> ceil = 5 HP
+    res = await table.place(alice, ROW, COL - 1, "CAT", use_heal=True)
+    assert res.status_code == 200
+    assert res.json().get("healed_amount") == 5
+
+    state = await table.state(alice)
+    assert me(state, alice)["hp"] == 55
+    assert "HEAL" not in me(state, alice)["cards"]
+
+
+async def test_cd15_shield_move_grants_95_percent_shield_points(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, _ = table.seats
+    await table.set_cards(alice, ["SHIELD"])
+    await table.set_tiles(racks={alice: "CATSEIO"})
+
+    # CAT earns 5 points. 95% of 5 = 4.75 -> ceil = 5 Shield
+    res = await table.place(alice, ROW, COL - 1, "CAT", use_shield=True)
+    assert res.status_code == 200
+    assert res.json().get("shield_awarded") == 5
+
+    state = await table.state(alice)
+    assert me(state, alice)["has_shield"] is True
+    assert me(state, alice)["shield_amount"] == 5
+    assert "SHIELD" not in me(state, alice)["cards"]

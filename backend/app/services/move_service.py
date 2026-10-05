@@ -324,7 +324,7 @@ class MoveService:
             await replace_player_cards(db, player.id, held_cards)
             game.pending_heal_player_id = None
             if score > 0:
-                healed_amount = math.ceil(score * 0.60)
+                healed_amount = math.ceil(score * 0.90)
                 max_cap = getattr(player, "max_hp", 100) or 100
                 player.hp = min(max_cap, player.hp + healed_amount)
                 flag_modified(player, "hp")
@@ -340,10 +340,11 @@ class MoveService:
             await replace_player_cards(db, player.id, held_cards)
             game.pending_shield_player_id = None
             if score > 0:
-                shield_awarded = math.ceil(score * 0.75)
+                shield_awarded = math.ceil(score * 0.95)
                 player.has_shield = True
-                player.shield_amount = max(getattr(player, "shield_amount", 0) or 0, shield_awarded)
+                player.shield_amount = (getattr(player, "shield_amount", 0) or 0) + shield_awarded
                 flag_modified(player, "shield_amount")
+                flag_modified(player, "has_shield")
         elif is_shield_active:
             game.pending_shield_player_id = None
 
@@ -381,7 +382,7 @@ class MoveService:
                 "amount": healed_amount,
                 "hp_after": player.hp,
                 "turn_number": game.turn_number,
-                "description": f"Healed self for +{healed_amount} HP (60% of {score} pts, Current HP: {player.hp})",
+                "description": f"Healed self for +{healed_amount} HP (90% of {score} pts, Current HP: {player.hp})",
             })
         if shield_awarded > 0:
             cards_used.append({
@@ -390,7 +391,7 @@ class MoveService:
                 "player_name": player.display_name,
                 "shield_amount": shield_awarded,
                 "turn_number": game.turn_number,
-                "description": f"Activated Shield protection (+{shield_awarded} shield, 75% of {score} pts)",
+                "description": f"Activated Shield protection (+{shield_awarded} shield, 95% of {score} pts)",
             })
         game.pending_card_events = []
         flag_modified(game, "pending_card_events")
@@ -433,7 +434,7 @@ class MoveService:
         damage_dealt: dict[str, int] = {}
         if score > 0 and game.max_turns is None:
             has_shield_holder = any(
-                getattr(p, "has_shield", False) or "SHIELD" in (p.cards or [])
+                (getattr(p, "shield_amount", 0) or 0) > 0 or getattr(p, "has_shield", False) or "SHIELD" in (p.cards or [])
                 for p in all_players if p.id != player.id and p.hp > 0
             )
             amounts = {
@@ -449,7 +450,24 @@ class MoveService:
             else:
                 for opponent in all_players:
                     if opponent.id in amounts:
-                        opponent.hp = max(0, opponent.hp - amounts[opponent.id])
+                        amount = amounts[opponent.id]
+                        current_shield = getattr(opponent, "shield_amount", 0) or 0
+                        if current_shield > 0:
+                            if current_shield >= amount:
+                                opponent.shield_amount = current_shield - amount
+                                opponent.has_shield = opponent.shield_amount > 0
+                            else:
+                                remaining = amount - current_shield
+                                opponent.shield_amount = 0
+                                opponent.has_shield = False
+                                opponent.hp = max(0, opponent.hp - remaining)
+                        else:
+                            opponent.shield_amount = 0
+                            opponent.has_shield = False
+                            opponent.hp = max(0, opponent.hp - amount)
+                        flag_modified(opponent, "shield_amount")
+                        flag_modified(opponent, "has_shield")
+                        flag_modified(opponent, "hp")
 
         completed_turn = game.turn_number
         reached_max_turns = bool(game.max_turns and completed_turn >= game.max_turns)

@@ -247,12 +247,26 @@ class GameService:
             for player in players:
                 amount = effect["damage"].get(player.id)
                 if amount and amount > 0:
-                    if getattr(player, "has_shield", False):
-                        player.has_shield = False
-                        applied[player.id] = 0
+                    current_shield = getattr(player, "shield_amount", 0) or 0
+                    if current_shield > 0:
+                        if current_shield >= amount:
+                            player.shield_amount = current_shield - amount
+                            player.has_shield = player.shield_amount > 0
+                            applied[player.id] = 0
+                        else:
+                            remaining = amount - current_shield
+                            player.shield_amount = 0
+                            player.has_shield = False
+                            player.hp = max(0, player.hp - remaining)
+                            applied[player.id] = remaining
                     else:
+                        player.shield_amount = 0
+                        player.has_shield = False
                         player.hp = max(0, player.hp - amount)
                         applied[player.id] = amount
+                    flag_modified(player, "shield_amount")
+                    flag_modified(player, "has_shield")
+                    flag_modified(player, "hp")
             validation = await GameService.ensure_turn_order_valid(db, game, players)
             return {
                 "type": "DAMAGE",
@@ -388,6 +402,7 @@ class GameService:
                 hp=p.hp,
                 max_hp=getattr(p, 'max_hp', 100) or 100,
                 has_shield=getattr(p, 'has_shield', False),
+                shield_amount=getattr(p, 'shield_amount', 0) or 0,
                 turn_order=p.turn_order,
                 connection_status=p.connection_status,
                 rack_count=len(normalized_rack),

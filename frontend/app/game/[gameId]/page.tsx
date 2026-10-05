@@ -5,7 +5,7 @@ export const dynamicParams = true;
 
 import React, { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { Bug, Eye, Skull } from 'lucide-react';
+import { Bug, Eye, Skull, Trophy, Crown, Sparkles } from 'lucide-react';
 import { commitMove, exchangeTiles, executeBotMove, expireTurn, getBotPlan, leaveGame, passTurn, rematchGame, sessionStore } from '@/lib/api';
 import confetti from 'canvas-confetti';
 import { soundFx } from '@/lib/soundFx';
@@ -142,6 +142,47 @@ export default function GamePage() {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isGrimoireOpen, setIsGrimoireOpen] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
+
+  // Final Knockout / Victory Transition Delay State
+  const wasActiveRef = useRef(false);
+  const [showGameOverScreen, setShowGameOverScreen] = useState(false);
+  const [isFinalKnockoutActive, setIsFinalKnockoutActive] = useState(false);
+  const knockoutTriggeredRef = useRef(false);
+
+  useEffect(() => {
+    if (!gameState) return;
+
+    if (gameState.status === 'PLAYING' || gameState.status === 'WAITING') {
+      wasActiveRef.current = true;
+    }
+
+    if (gameState.status === 'FINISHED') {
+      if (wasActiveRef.current && !knockoutTriggeredRef.current) {
+        knockoutTriggeredRef.current = true;
+
+        // Phase 1 (0ms - 1700ms): Let the HP bar visibly drain down to 0 first
+        const bannerTimer = setTimeout(() => {
+          // Phase 2 (1700ms): HP has reached 0, now show the central Final Blow popup!
+          setIsFinalKnockoutActive(true);
+          soundFx.playFinalKnockout();
+        }, 1700);
+
+        // Phase 3 (4800ms): Transition to the GameOverScreen victory podium
+        const finishTimer = setTimeout(() => {
+          setShowGameOverScreen(true);
+          setIsFinalKnockoutActive(false);
+        }, 4800);
+
+        return () => {
+          clearTimeout(bannerTimer);
+          clearTimeout(finishTimer);
+        };
+      } else if (!wasActiveRef.current) {
+        // Direct entry to already finished match URL
+        setShowGameOverScreen(true);
+      }
+    }
+  }, [gameState?.status]);
 
   const seatReturningTile = useCallback((tileId: string, targetSlot: number) => {
     seatReturning(tileId, targetSlot, pendingTileIds);
@@ -589,7 +630,7 @@ export default function GamePage() {
     );
   }
 
-  if (gameState.status === 'FINISHED') {
+  if (gameState.status === 'FINISHED' && showGameOverScreen) {
     const rematchPin = gameState.rematch_pin;
     const handlePlayAgain = async () => {
       // A debug game's clones all live in this tab, so set up a fresh set of them instead.
@@ -1017,6 +1058,76 @@ export default function GamePage() {
           onGameState={sync.setGameState}
         />
       )}
+
+      {/* Cinematic Final Knockout Banner Overlay */}
+      <AnimatePresence>
+        {isFinalKnockoutActive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950/45 backdrop-blur-[2px] pointer-events-auto"
+          >
+            {/* Screen edge flash vignette */}
+            <motion.div
+              initial={{ opacity: 0.95, scale: 0.96 }}
+              animate={{ opacity: 0, scale: 1.04 }}
+              transition={{ duration: 1.4, ease: 'easeOut' }}
+              className={`absolute inset-0 pointer-events-none ${
+                gameState.players.find(p => p.id === gameState.winner_id)?.id === myPlayerId
+                  ? 'border-4 border-amber-400 shadow-[0_0_80px_rgba(245,158,11,0.85),inset_0_0_50px_rgba(245,158,11,0.5)]'
+                  : 'border-4 border-rose-500 shadow-[0_0_80px_rgba(239,68,68,0.85),inset_0_0_50px_rgba(239,68,68,0.5)]'
+              }`}
+            />
+
+            {/* Central Grand Knockout Trophy / Banner */}
+            <motion.div
+              initial={{ scale: 0.4, opacity: 0, y: 30 }}
+              animate={{ scale: [0.4, 1.12, 1], opacity: 1, y: 0 }}
+              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col items-center text-center p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#1b1540]/95 via-[#110d2c]/95 to-[#09071b]/98 border-2 border-amber-300/80 shadow-[0_0_50px_rgba(245,158,11,0.65),0_12px_36px_rgba(0,0,0,0.95)] max-w-md mx-4 relative overflow-hidden"
+            >
+              {/* Shimmer Light Flare */}
+              <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+
+              {/* Icon Badge */}
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-600 shadow-[0_0_30px_rgba(245,158,11,0.8)] border border-yellow-100 mb-3 animate-bounce">
+                {gameState.players.find(p => p.id === gameState.winner_id)?.id === myPlayerId ? (
+                  <Crown className="w-9 h-9 text-amber-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)]" />
+                ) : (
+                  <Trophy className="w-9 h-9 text-amber-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)]" />
+                )}
+              </div>
+
+              {/* Title */}
+              <h2 className="text-3xl sm:text-4xl font-black font-maple tracking-wider uppercase bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(245,158,11,0.9)]">
+                {gameState.players.find(p => p.id === gameState.winner_id)?.id === myPlayerId ? 'FINAL BLOW!' : 'KNOCKOUT!'}
+              </h2>
+
+              <p className="text-xs sm:text-sm font-black text-amber-200/90 mt-1 uppercase tracking-widest flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                <span>
+                  {(gameState.players.find(p => p.id === gameState.winner_id) || [...(gameState.players ?? [])].sort((a, b) => b.score - a.score)[0])?.display_name ?? 'Player'} reigns victorious!
+                </span>
+                <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+              </p>
+
+              {/* Skip button if player wants to proceed immediately */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowGameOverScreen(true);
+                  setIsFinalKnockoutActive(false);
+                }}
+                className="mt-5 px-5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(245,158,11,0.6)] cursor-pointer"
+              >
+                View Match Results →
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
