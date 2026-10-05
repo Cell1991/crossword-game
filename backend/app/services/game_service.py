@@ -534,7 +534,9 @@ class GameService:
             return None
         if isinstance(frozen_tile, list):
             active = [ft for ft in frozen_tile if turn_number <= ft.get("expires_turn", 0)]
-            return active if active else None
+            if not active:
+                return None
+            return active[0] if len(active) == 1 else active
         if turn_number > frozen_tile.get("expires_turn", 0):
             return None
         return frozen_tile
