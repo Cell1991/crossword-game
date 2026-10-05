@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, Any
+from typing import Optional, Any, Union
 from datetime import datetime
 from app.schemas.player import PlayerOut
 
@@ -39,7 +39,7 @@ class GameStateResponse(BaseModel):
     starting_hp: Optional[int] = None
     pending_effect: Optional[dict[str, Any]] = None
     pending_double_target_id: Optional[str] = None
-    frozen_tile: Optional[dict[str, Any]] = None
+    frozen_tile: Optional[Union[dict[str, Any], list[dict[str, Any]]]] = None
     # True when this game's room was created in debug mode: every player in it gets revealed racks
     # and debug tools, not just whoever navigated in with a ?debug=1 query string.
     is_debug: bool = False

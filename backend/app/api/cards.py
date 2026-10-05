@@ -24,12 +24,18 @@ from app.database.state import bag_tiles, board_state, player_rack, player_cards
 router = APIRouter(prefix="/games/{game_id}/cards", tags=["Cards"])
 
 
+class FrozenCellInput(BaseModel):
+    row: int = Field(..., ge=0, le=Board.ROWS - 1)
+    col: int = Field(..., ge=0, le=Board.COLS - 1)
+
+
 class CardUseRequest(BaseModel):
     card: str
     target_player_id: Optional[str] = None
     letter: Optional[str] = Field(None, min_length=1, max_length=1)
     row: Optional[int] = Field(None, ge=0, le=Board.ROWS - 1)
     col: Optional[int] = Field(None, ge=0, le=Board.COLS - 1)
+    frozen_cells: Optional[list[FrozenCellInput]] = None
     own_tile_id: Optional[str] = None
     target_tile_id: Optional[str] = None
     own_tile_ids: Optional[list[str]] = Field(None, min_length=1, max_length=7)
@@ -123,7 +129,10 @@ async def use_card(
     if card == "SHIELD":
         cards.remove(card)
         player.cards = cards
+        import math
+        shield_amt = max(1, math.ceil(player.score * 0.75)) if player.score > 0 else 0
         player.has_shield = True
+        player.shield_amount = shield_amt
         await replace_player_cards(db, player.id, cards)
 
         effect = game.pending_effect
@@ -143,8 +152,9 @@ async def use_card(
             "player_id": player.id,
             "player_name": player.display_name,
             "turn_number": game.turn_number,
+            "shield_amount": shield_amt,
             "blocked": bool(targets_me),
-            "description": "Activated Shield (Blocked incoming effect!)" if targets_me else "Activated Shield protection",
+            "description": f"Activated Shield (Blocked incoming effect!)" if targets_me else f"Activated Shield protection (+{shield_amt} shield, 75% of {player.score} pts)",
         }
         pending = list(game.pending_card_events or [])
         pending.append(card_event)
@@ -153,6 +163,7 @@ async def use_card(
 
         if targets_me:
             player.has_shield = False
+            player.shield_amount = 0
             if effect["type"] == "DAMAGE":
                 remaining_damage = {pid: amount for pid, amount in effect["damage"].items() if pid != player.id}
                 game.pending_effect = {**effect, "damage": remaining_damage} if remaining_damage else None
@@ -162,24 +173,24 @@ async def use_card(
             await db.commit()
             await manager.broadcast(game_id, WebSocketEvent(
                 type=EventType.CARD_USED,
-                payload={"playerId": player.id, "card": card},
+                payload={"playerId": player.id, "card": card, "shieldAmount": shield_amt},
             ).model_dump())
             await manager.broadcast(game_id, WebSocketEvent(
                 type=EventType.EFFECT_RESOLVED,
                 payload={"type": effect["type"], "blocked": True, "blockedBy": player.id},
             ).model_dump())
-            return {"success": True, "blocked": True, "has_shield": False}
+            return {"success": True, "blocked": True, "has_shield": False, "shield_amount": shield_amt}
 
         await db.commit()
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.CARD_USED,
-            payload={"playerId": player.id, "card": card},
+            payload={"playerId": player.id, "card": card, "shieldAmount": shield_amt},
         ).model_dump())
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.GAME_STATE_SYNC,
-            payload={"reason": "CARD_USED", "card": "SHIELD", "playerId": player.id},
+            payload={"reason": "CARD_USED", "card": "SHIELD", "playerId": player.id, "shieldAmount": shield_amt},
         ).model_dump())
-        return {"success": True, "blocked": False, "has_shield": True}
+        return {"success": True, "blocked": False, "has_shield": True, "shield_amount": shield_amt}
 
     if card == "DOUBLE_DAMAGE":
         if game.current_player_id != player.id:
@@ -221,8 +232,8 @@ async def use_card(
     await replace_player_cards(db, player.id, cards)
 
     if card == "HEAL":
-        curr_rack = await player_rack(db, player.id)
-        heal_amt = sum(int(tile["value"]) for tile in curr_rack)
+        import math
+        heal_amt = max(1, math.ceil(player.score * 0.60)) if player.score > 0 else 0
         max_cap = getattr(player, "max_hp", 100) or 100
         old_hp = player.hp
         player.hp = min(max_cap, player.hp + heal_amt)
@@ -235,7 +246,7 @@ async def use_card(
             "amount": actual_heal,
             "hp_after": player.hp,
             "turn_number": game.turn_number,
-            "description": f"Healed self for +{actual_heal} HP (Current HP: {player.hp})",
+            "description": f"Healed self for +{actual_heal} HP (60% of {player.score} pts, Current HP: {player.hp})",
         }
         pending = list(game.pending_card_events or [])
         pending.append(card_event)
@@ -350,27 +361,46 @@ async def use_card(
     if card == "FREEZE_TILE":
         if game.current_player_id != player.id:
             raise HTTPException(status_code=400, detail="You can only use this on your turn")
-        if request.row is None or request.col is None:
-            raise HTTPException(status_code=400, detail="Choose a board tile")
+
+        target_cells: list[tuple[int, int]] = []
+        if request.frozen_cells:
+            for fc in request.frozen_cells:
+                target_cells.append((fc.row, fc.col))
+        elif request.row is not None and request.col is not None:
+            target_cells.append((request.row, request.col))
+        else:
+            raise HTTPException(status_code=400, detail="Choose 1 to 3 board tiles to freeze")
+
+        if not (1 <= len(target_cells) <= 3) or len(target_cells) != len(set(target_cells)):
+            raise HTTPException(status_code=400, detail="Choose 1 to 3 unique board tiles to freeze")
+
         current_board = await board_state(db, game.id)
-        if Board.key(request.row, request.col) not in current_board:
-            raise HTTPException(status_code=400, detail="Board tile not found")
+        for r, c in target_cells:
+            if Board.key(r, c) not in current_board:
+                raise HTTPException(status_code=400, detail=f"Board tile at ({r}, {c}) not found")
+
         # Block every opponent's turn until this wraps back around to the freezer, not just the
         # next one - with N players in rotation that is N-1 turns, regardless of table size.
         all_players = (await db.execute(select(GamePlayer).where(GamePlayer.game_id == game.id))).scalars().all()
         turns_to_block = max(1, len(GameService.eligible_players(all_players)) - 1)
-        game.frozen_tile = {
-            "row": request.row, "col": request.col,
-            "set_by": player.id, "expires_turn": game.turn_number + turns_to_block,
-        }
+        new_frozen = [
+            {
+                "row": r, "col": c,
+                "set_by": player.id, "expires_turn": game.turn_number + turns_to_block,
+            }
+            for r, c in target_cells
+        ]
+        game.frozen_tile = new_frozen
+        flag_modified(game, "frozen_tile")
+
         card_event = {
             "card": "FREEZE_TILE",
             "player_id": player.id,
             "player_name": player.display_name,
-            "row": request.row,
-            "col": request.col,
+            "count": len(target_cells),
+            "cells": [{"row": r, "col": c} for r, c in target_cells],
             "turn_number": game.turn_number,
-            "description": f"Froze board tile at ({request.row}, {request.col})",
+            "description": f"Froze {len(target_cells)} board tile{'s' if len(target_cells) > 1 else ''}",
         }
         pending = list(game.pending_card_events or [])
         pending.append(card_event)
@@ -383,11 +413,12 @@ async def use_card(
             payload={
                 "playerId": player.id,
                 "card": card,
-                "row": request.row,
-                "col": request.col,
+                "cells": [{"row": r, "col": c} for r, c in target_cells],
+                "row": target_cells[0][0],
+                "col": target_cells[0][1],
             },
         ).model_dump())
-        return {"success": True}
+        return {"success": True, "count": len(target_cells)}
 
     if card == "DESTROY_TILE":
         if game.current_player_id != player.id:

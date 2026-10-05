@@ -23,6 +23,7 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   const { flashError, flashInfo } = toasts;
   const [armedCard, setArmedCard] = useState<BoardCard | null>(null);
   const [pendingArmedCell, setPendingArmedCell] = useState<CellPosition | null>(null);
+  const [pendingFrozenCells, setPendingFrozenCells] = useState<CellPosition[]>([]);
   // FREEZE_TILE marked on a tile placed this turn (not yet committed): applied atomically with
   // Confirm Move (see commitMove's freezeTileId). Recalling that tile clears it below - that
   // recall *is* the cancel, so no extra confirmation step is needed for this path.
@@ -136,38 +137,85 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   /** Blocks an incoming DAMAGE/SWAP while its window is open. */
   const playShield = useCallback(() => runCard({ card: 'SHIELD' }, 'Failed to use Shield'), [runCard]);
 
+  const armBoardCard = useCallback((card: BoardCard) => {
+    setArmedCard(card);
+    setPendingArmedCell(null);
+    setPendingFrozenCells([]);
+  }, []);
+
   /**
    * An armed board card picks a target. A committed tile (from a prior turn) stages a second
-   * confirm and is only spent once confirmed. FREEZE_TILE can also target one of this turn's own
-   * staged tiles - that mark takes effect with Confirm Move itself, no extra confirm needed here
-   * since recalling the tile is already how you'd cancel it.
+   * confirm and is only spent once confirmed. FREEZE_TILE selects 1 to 3 committed tiles (or can target one of this turn's staged tiles).
    */
   const playArmedCardAt = useCallback((row: number, col: number) => {
     if (!armedCard || busy) return;
-    if (isCellCommitted(boardState, row, col)) {
-      setPendingArmedCell({ row, col });
-      return;
-    }
     if (armedCard === 'FREEZE_TILE') {
+      if (isCellCommitted(boardState, row, col)) {
+        setPendingFrozenCells(prev => {
+          const exists = prev.some(p => p.row === row && p.col === col);
+          if (exists) {
+            return prev.filter(p => !(p.row === row && p.col === col));
+          }
+          if (prev.length >= 3) {
+            flashInfo('You can select up to 3 tiles to freeze.');
+            return prev;
+          }
+          return [...prev, { row, col }];
+        });
+        return;
+      }
       const staged = temporaryTiles.find(tile => tile.row === row && tile.col === col);
       if (staged) {
         setDeferredFreezeTileId(staged.tile_id);
         setArmedCard(null);
+        setPendingFrozenCells([]);
       }
+      return;
     }
-  }, [armedCard, boardState, busy, temporaryTiles]);
+    if (isCellCommitted(boardState, row, col)) {
+      setPendingArmedCell({ row, col });
+      return;
+    }
+  }, [armedCard, boardState, busy, flashInfo, temporaryTiles]);
 
   const confirmArmedCardAt = useCallback(() => {
-    if (!armedCard || !pendingArmedCell || !myPlayerId || busy) return;
+    if (!armedCard || !myPlayerId || busy) return;
+    if (armedCard === 'FREEZE_TILE') {
+      if (pendingFrozenCells.length === 0) {
+        flashError('Select at least 1 tile to freeze');
+        return;
+      }
+      setBusy(true);
+      playCard(gameId, myPlayerId, { card: 'FREEZE_TILE', frozen_cells: pendingFrozenCells })
+        .then(() => reload())
+        .catch((error: unknown) => flashError(error instanceof Error ? error.message : 'Failed to use card'))
+        .finally(() => {
+          setBusy(false);
+          setArmedCard(null);
+          setPendingFrozenCells([]);
+          setPendingArmedCell(null);
+        });
+      return;
+    }
+    if (!pendingArmedCell) return;
     setBusy(true);
     playCard(gameId, myPlayerId, { card: armedCard, ...pendingArmedCell })
       .then(() => reload())
       .catch((error: unknown) => flashError(error instanceof Error ? error.message : 'Failed to use card'))
-      .finally(() => { setBusy(false); setArmedCard(null); setPendingArmedCell(null); });
-  }, [armedCard, pendingArmedCell, myPlayerId, busy, flashError, gameId, reload]);
+      .finally(() => {
+        setBusy(false);
+        setArmedCard(null);
+        setPendingArmedCell(null);
+        setPendingFrozenCells([]);
+      });
+  }, [armedCard, busy, flashError, gameId, myPlayerId, pendingArmedCell, pendingFrozenCells, reload]);
 
   const cancelPendingArmedCell = useCallback(() => setPendingArmedCell(null), []);
-  const cancelArm = useCallback(() => { setArmedCard(null); setPendingArmedCell(null); }, []);
+  const cancelArm = useCallback(() => {
+    setArmedCard(null);
+    setPendingArmedCell(null);
+    setPendingFrozenCells([]);
+  }, []);
   const cancelDeferredFreeze = useCallback(() => setDeferredFreezeTileId(null), []);
 
   const activeHintTiles = hintSuggestions.length > 0
@@ -176,9 +224,10 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
 
   return {
     armedCard,
-    armBoardCard: setArmedCard,
+    armBoardCard,
     cancelArm,
     pendingArmedCell,
+    pendingFrozenCells,
     confirmArmedCardAt,
     cancelPendingArmedCell,
     deferredFreezeTileId: activeDeferredFreezeTileId,

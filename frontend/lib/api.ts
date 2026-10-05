@@ -479,6 +479,7 @@ export interface UseCardPayload {
   letter?: string;
   row?: number;
   col?: number;
+  frozen_cells?: Array<{ row: number; col: number }>;
   own_tile_id?: string;
   target_tile_id?: string;
   own_tile_ids?: string[];

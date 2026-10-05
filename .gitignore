@@ -49,3 +49,6 @@ crossword.db
 .pytest_cache/
 /CSW24.txt
 
+
+.vercel
+.env*

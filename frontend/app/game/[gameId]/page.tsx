@@ -794,6 +794,7 @@ export default function GamePage() {
               hintTiles={cards.activeHintTiles}
               pendingArmedCell={cards.pendingArmedCell ?? deferredFreezeCell}
               pendingArmedCard={cards.armedCard ?? (cards.deferredFreezeTileId ? 'FREEZE_TILE' : null)}
+              pendingFrozenCells={cards.pendingFrozenCells}
             />
             {/* Cinematic Board Burst & Particle Blast Effects (Freeze shockwave & Destroy incineration) */}
             <BoardEffectsLayer
@@ -861,7 +862,9 @@ export default function GamePage() {
                   hasStagedMove={temporaryTiles.length > 0}
                   armedCard={cards.armedCard}
                   pendingArmedCell={cards.pendingArmedCell}
+                  pendingFrozenCells={cards.pendingFrozenCells}
                   deferredFreezeTileId={cards.deferredFreezeTileId}
+                  myScore={myPlayer?.score ?? 0}
                   busy={cards.busy}
                   onUseSimple={cards.playSimpleCard}
                   onUseTargeted={cards.playTargetedCard}

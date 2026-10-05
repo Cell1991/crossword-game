@@ -29,6 +29,7 @@ export interface Player {
   hp: number;
   max_hp?: number;
   has_shield?: boolean;
+  shield_amount?: number;
   turn_order: number;
   connection_status: 'ONLINE' | 'DISCONNECTED' | 'OFFLINE';
   rack_count: number;
@@ -56,7 +57,8 @@ export interface GameState {
   starting_hp?: number | null;
   pending_effect: PendingEffect | null;
   pending_double_target_id?: string | null;
-  frozen_tile: { row: number; col: number; set_by: string; expires_turn: number } | null;
+  frozen_tile: { row: number; col: number; set_by: string; expires_turn: number } | { row: number; col: number; set_by: string; expires_turn: number }[] | null;
+  frozen_tiles?: { row: number; col: number; set_by: string; expires_turn: number }[] | null;
   /** True when this game's room was created with debug mode on: every player in it gets it. */
   is_debug: boolean;
   enable_grimoire?: boolean;

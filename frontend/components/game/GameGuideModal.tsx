@@ -320,7 +320,7 @@ export function GameGuideModal({
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Blocks the next <span className="text-amber-200/95 font-medium">incoming attack damage or hostile tile swap</span> completely.
+                    Grants <span className="text-amber-200/95 font-medium">Shield equal to 75% of your points scored</span> (rounded up) to block incoming attack damage or hostile tile swaps.
                   </p>
                 </div>
               </div>
@@ -338,7 +338,7 @@ export function GameGuideModal({
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    <span className="text-amber-200/95 font-medium">Restores HP</span> equal to the total point value of all tiles currently in your rack.
+                    <span className="text-amber-200/95 font-medium">Restores HP</span> equal to 60% of your points scored (rounded up).
                   </p>
                 </div>
               </div>
@@ -392,7 +392,7 @@ export function GameGuideModal({
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Locks a board tile in ice. <span className="text-amber-200/95 font-medium">Opponents cannot connect words to it</span> until your next turn.
+                    Locks 1 to 3 board tiles in ice. <span className="text-amber-200/95 font-medium">Opponents cannot connect words to them</span> until your next turn.
                   </p>
                 </div>
               </div>

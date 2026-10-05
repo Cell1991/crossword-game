@@ -64,7 +64,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
     shortTitle: 'Shield',
     subtitle: 'PROTECTION',
     element: 'PASSIVE',
-    description: 'Blocks the next incoming attack damage or hostile tile swap.',
+    description: 'Grants Shield equal to 75% of your points scored (rounded up) to block incoming attacks or swaps.',
     ownTurnOnly: false,
     icon: <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-200 fill-sky-400/20 drop-shadow-[0_0_8px_#38bdf8]" />,
     bgGradient: 'from-sky-950/95 via-blue-950/90 to-slate-950/95',
@@ -80,7 +80,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
     shortTitle: 'Freeze',
     subtitle: 'LOCK CELL',
     element: 'YOUR TURN',
-    description: 'Locks a board tile in ice so opponents cannot connect words to it.',
+    description: 'Locks 1 to 3 board tiles in ice so opponents cannot connect words to them.',
     ownTurnOnly: true,
     icon: <Snowflake className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-200 drop-shadow-[0_0_8px_#22d3ee]" />,
     bgGradient: 'from-cyan-950/95 via-teal-950/90 to-slate-950/95',
@@ -112,7 +112,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
     shortTitle: 'Heal',
     subtitle: 'RESTORE HP',
     element: 'HP MODE',
-    description: 'Restores HP equal to the total point value of tiles in your rack.',
+    description: 'Restores HP equal to 60% of your points scored (rounded up).',
     ownTurnOnly: false,
     icon: <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-rose-400 text-rose-200 drop-shadow-[0_0_8px_#fb7185]" />,
     bgGradient: 'from-rose-950/95 via-pink-950/90 to-slate-950/95',
@@ -165,7 +165,9 @@ interface PowerCardBarProps {
   hasStagedMove: boolean;
   armedCard: BoardCard | null;
   pendingArmedCell: CellPosition | null;
+  pendingFrozenCells?: CellPosition[];
   deferredFreezeTileId: string | null;
+  myScore?: number;
   busy?: boolean;
   onUseSimple: (card: SimpleCard) => void;
   onUseTargeted: (card: TargetedCard, targetPlayerId: string) => void;
@@ -185,7 +187,9 @@ export const PowerCardBar = memo(function PowerCardBar({
   hasStagedMove: _hasStagedMove,
   armedCard,
   pendingArmedCell,
+  pendingFrozenCells = [],
   deferredFreezeTileId,
+  myScore = 0,
   busy,
   onUseSimple,
   onUseTargeted,
@@ -224,6 +228,43 @@ export const PowerCardBar = memo(function PowerCardBar({
           <X className="w-3.5 h-3.5" />
           <span>Unmark</span>
         </button>
+      </div>
+    );
+  }
+
+  if (armedCard === 'FREEZE_TILE') {
+    const meta = POWER_CARDS_META[armedCard];
+    const count = pendingFrozenCells.length;
+    return (
+      <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-cyan-400/80 bg-gradient-to-r from-sky-950 via-cyan-950 to-slate-950 px-3 py-1.5 text-xs text-cyan-100 shadow-[0_0_20px_rgba(6,182,212,0.4)] ring-1 ring-cyan-400/40">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center justify-center w-6 h-6 rounded-lg border bg-cyan-500/20 border-cyan-400/60 shadow-[0_0_8px_rgba(6,182,212,0.5)] shrink-0">
+            {meta?.icon}
+          </div>
+          <span className="font-extrabold text-slate-100 text-xs truncate">
+            {count > 0 ? `Freeze (${count}/3 tiles)` : 'Tap 1–3 tiles to freeze'}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {count > 0 && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onConfirmArmedCell}
+              className="flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-black bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.6)] hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+            >
+              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <span>Confirm</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onCancelArm}
+            className="rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-2.5 py-1 text-xs text-slate-300 hover:text-white transition-colors cursor-pointer active:scale-95"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     );
   }
@@ -568,7 +609,17 @@ export const PowerCardBar = memo(function PowerCardBar({
   if (confirmingSimpleCard) {
     const meta = POWER_CARDS_META[confirmingSimpleCard];
     const isHeal = confirmingSimpleCard === 'HEAL';
+    const isShield = confirmingSimpleCard === 'SHIELD';
     const isHint = confirmingSimpleCard === 'HINT';
+    const scoreVal = myScore ?? 0;
+    const healVal = Math.ceil(scoreVal * 0.6);
+    const shieldVal = Math.ceil(scoreVal * 0.75);
+
+    const label = isHeal
+      ? `Use Heal (+${healVal} HP)?`
+      : isShield
+      ? `Use Shield (+${shieldVal} Shield)?`
+      : `Use ${meta.title}?`;
 
     return (
       <div
@@ -577,7 +628,7 @@ export const PowerCardBar = memo(function PowerCardBar({
             ? 'border-amber-500/80 bg-gradient-to-r from-amber-950 via-yellow-950 to-slate-950 text-amber-100 shadow-[0_0_20px_rgba(245,158,11,0.4)] ring-1 ring-amber-500/40'
             : isHeal
             ? 'border-rose-500/80 bg-gradient-to-r from-rose-950 via-pink-950 to-slate-950 text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.4)] ring-1 ring-rose-500/40'
-            : 'border-blue-500/80 bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 text-blue-100 shadow-[0_0_20px_rgba(59,130,246,0.4)] ring-1 ring-blue-500/40'
+            : 'border-sky-500/80 bg-gradient-to-r from-sky-950 via-blue-950 to-slate-950 text-sky-100 shadow-[0_0_20px_rgba(14,165,233,0.4)] ring-1 ring-sky-500/40'
         }`}
       >
         <div className="flex items-center gap-2 min-w-0">
@@ -587,13 +638,13 @@ export const PowerCardBar = memo(function PowerCardBar({
                 ? 'bg-amber-500/20 border-amber-400/60 shadow-[0_0_8px_rgba(245,158,11,0.5)]'
                 : isHeal
                 ? 'bg-rose-500/20 border-rose-400/60 shadow-[0_0_8px_rgba(244,63,94,0.5)]'
-                : 'bg-blue-500/20 border-blue-400/60 shadow-[0_0_8px_rgba(59,130,246,0.5)]'
+                : 'bg-sky-500/20 border-sky-400/60 shadow-[0_0_8px_rgba(14,165,233,0.5)]'
             }`}
           >
             {meta?.icon}
           </div>
           <span className="font-extrabold text-slate-100 text-xs truncate">
-            Use <span className="font-black text-white">{meta.title}</span>?
+            {label}
           </span>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">

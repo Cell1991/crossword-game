@@ -527,10 +527,15 @@ class GameService:
         return effect
 
     @staticmethod
-    def _visible_frozen_tile(frozen_tile: Optional[dict[str, Any]], turn_number: int) -> Optional[dict[str, Any]]:
+    def _visible_frozen_tile(frozen_tile: Optional[Any], turn_number: int) -> Optional[Any]:
         """Stop showing a FREEZE_TILE marker once its blocking window (checked the same way in
         MoveService) has passed — the stored value on Game is never cleared on its own."""
-        if not frozen_tile or turn_number > frozen_tile["expires_turn"]:
+        if not frozen_tile:
+            return None
+        if isinstance(frozen_tile, list):
+            active = [ft for ft in frozen_tile if turn_number <= ft.get("expires_turn", 0)]
+            return active if active else None
+        if turn_number > frozen_tile.get("expires_turn", 0):
             return None
         return frozen_tile
 

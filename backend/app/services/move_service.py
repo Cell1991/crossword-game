@@ -157,9 +157,17 @@ class MoveService:
             is_first_move=is_first
         )
 
-        if valid and game.frozen_tile and game.turn_number <= game.frozen_tile["expires_turn"] and player.id != game.frozen_tile["set_by"]:
-            frozen_cell = (game.frozen_tile["row"], game.frozen_tile["col"])
-            if any(frozen_cell in w.cells for w in words):
+        if valid and game.frozen_tile:
+            frozen_cells = []
+            if isinstance(game.frozen_tile, list):
+                frozen_cells = [
+                    (ft["row"], ft["col"]) for ft in game.frozen_tile
+                    if game.turn_number <= ft.get("expires_turn", 0) and player.id != ft.get("set_by")
+                ]
+            elif isinstance(game.frozen_tile, dict) and game.turn_number <= game.frozen_tile.get("expires_turn", 0) and player.id != game.frozen_tile.get("set_by"):
+                frozen_cells = [(game.frozen_tile["row"], game.frozen_tile["col"])]
+
+            if any(fc in w.cells for fc in frozen_cells for w in words):
                 valid, err, score = False, "That letter is frozen this turn", 0
 
         words_formed = cls._words_formed(words, breakdown)
@@ -225,9 +233,17 @@ class MoveService:
         if not valid:
             raise HTTPException(status_code=400, detail=f"Invalid move: {err}")
 
-        if game.frozen_tile and game.turn_number <= game.frozen_tile["expires_turn"] and player.id != game.frozen_tile["set_by"]:
-            frozen_cell = (game.frozen_tile["row"], game.frozen_tile["col"])
-            if any(frozen_cell in w.cells for w in words):
+        if game.frozen_tile:
+            frozen_cells = []
+            if isinstance(game.frozen_tile, list):
+                frozen_cells = [
+                    (ft["row"], ft["col"]) for ft in game.frozen_tile
+                    if game.turn_number <= ft.get("expires_turn", 0) and player.id != ft.get("set_by")
+                ]
+            elif isinstance(game.frozen_tile, dict) and game.turn_number <= game.frozen_tile.get("expires_turn", 0) and player.id != game.frozen_tile.get("set_by"):
+                frozen_cells = [(game.frozen_tile["row"], game.frozen_tile["col"])]
+
+            if any(fc in w.cells for fc in frozen_cells for w in words):
                 raise HTTPException(status_code=400, detail="That letter is frozen this turn")
 
         # FREEZE_TILE played on one of this move's own tiles: takes effect once the move commits,

@@ -45,8 +45,8 @@ export const CARD_DETAILS: Record<string, CardStyleData> = {
   },
   SHIELD: {
     title: 'Shield',
-    subtitle: 'FULL IMMUNITY',
-    description: 'Completely blocks the next incoming HP attack or hostile tile steal from any opponent.',
+    subtitle: '75% SCORE SHIELD',
+    description: 'Grants Shield equal to 75% of your points scored (rounded up) to block incoming attack damage or hostile tile swaps.',
     element: 'PASSIVE',
     icon: <Shield className="w-14 h-14 sm:w-16 sm:h-16 text-sky-200 fill-sky-400/20 drop-shadow-[0_0_16px_#38bdf8]" />,
     bgGradient: 'from-sky-950/95 via-[#081830]/98 to-[#060a1a]/95',
@@ -55,8 +55,8 @@ export const CARD_DETAILS: Record<string, CardStyleData> = {
   },
   HEAL: {
     title: 'Heal',
-    subtitle: 'RACK TO HP',
-    description: 'Converts the total point value of all tiles currently in your rack directly into restored HP.',
+    subtitle: '60% SCORE HEAL',
+    description: 'Restores HP equal to 60% of your points scored (rounded up).',
     element: 'HP MODE',
     icon: <Heart className="w-14 h-14 sm:w-16 sm:h-16 fill-rose-400 text-rose-200 drop-shadow-[0_0_16px_#fb7185]" />,
     bgGradient: 'from-rose-950/95 via-[#2a0c18]/98 to-[#0d0718]/95',
@@ -85,8 +85,8 @@ export const CARD_DETAILS: Record<string, CardStyleData> = {
   },
   FREEZE_TILE: {
     title: 'Freeze Tile',
-    subtitle: 'LOCK 1 BOARD TILE',
-    description: 'Encases 1 board tile in ice. Opponents cannot attach words to it until your next turn.',
+    subtitle: 'LOCK UP TO 3 TILES',
+    description: 'Encases 1 to 3 board tiles in ice. Opponents cannot attach words to them until your next turn.',
     element: 'YOUR TURN',
     icon: <Snowflake className="w-14 h-14 sm:w-16 sm:h-16 text-cyan-200 drop-shadow-[0_0_16px_#22d3ee]" />,
     bgGradient: 'from-cyan-950/95 via-[#08202c]/98 to-[#050d1a]/95',

@@ -42,11 +42,12 @@ interface BoardCanvasProps {
   dragPreviewIsValid: boolean | null;
   canStageMove: boolean;
   camera: BoardCamera;
-  frozenTile?: CellPosition | null;
+  frozenTile?: CellPosition | CellPosition[] | null;
   hintCell?: CellPosition | null;
   hintTiles?: HintTile[] | null;
   pendingArmedCell?: CellPosition | null;
   pendingArmedCard?: string | null;
+  pendingFrozenCells?: CellPosition[] | null;
   dragHoverCell?: CellPosition | null;
   onRegisterHoverHandler?: (handler: (cell: CellPosition | null) => void) => void;
 }
@@ -82,6 +83,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   hintTiles = null,
   pendingArmedCell = null,
   pendingArmedCard = null,
+  pendingFrozenCells = null,
   dragHoverCell,
   onRegisterHoverHandler,
 }) {
@@ -106,7 +108,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   const prevTemporaryTilesRef = useRef<PlacedTile[]>([]);
   const prevRemotePlacementsRef = useRef<{ row: number; col: number }[]>([]);
   const prevBoardStateRef = useRef<Record<string, BoardCell>>({});
-  const prevFrozenTileRef = useRef<CellPosition | null>(null);
+  const prevFrozenTileRef = useRef<CellPosition | CellPosition[] | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const hoverTrailMapRef = useRef<Map<string, { row: number; col: number; time: number }>>(new Map());
   const currentHoverCellRef = useRef<CellPosition | null>(dragHoverCell ?? null);
@@ -249,10 +251,14 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
         }
       }
     }
-    const prevFrozen = prevFrozenTileRef.current;
-    if (frozenTile && (!prevFrozen || prevFrozen.row !== frozenTile.row || prevFrozen.col !== frozenTile.col)) {
-      tilePlacementTimesRef.current.set(`${frozenTile.row}_${frozenTile.col}`, now);
-      hasNew = true;
+    const frozenList = Array.isArray(frozenTile) ? frozenTile : (frozenTile ? [frozenTile] : []);
+    const prevFrozenList = Array.isArray(prevFrozenTileRef.current) ? prevFrozenTileRef.current : (prevFrozenTileRef.current ? [prevFrozenTileRef.current] : []);
+    for (const ft of frozenList) {
+      const match = prevFrozenList.some(p => p.row === ft.row && p.col === ft.col);
+      if (!match) {
+        tilePlacementTimesRef.current.set(`${ft.row}_${ft.col}`, now);
+        hasNew = true;
+      }
     }
     prevFrozenTileRef.current = frozenTile;
 
@@ -261,7 +267,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       ...temporaryTiles.map(t => `${t.row}_${t.col}`),
       ...remotePlacements.map(r => `${r.row}_${r.col}`),
       ...Object.keys(boardState || {}),
-      ...(frozenTile ? [`${frozenTile.row}_${frozenTile.col}`] : []),
+      ...frozenList.map(ft => `${ft.row}_${ft.col}`),
     ]);
     for (const key of Array.from(tilePlacementTimesRef.current.keys())) {
       if (key.includes('_') && !currentKeys.has(key)) {
@@ -309,7 +315,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     if (hasNew) {
       startAnimLoop();
     }
-  }, [temporaryTiles, remotePlacements, boardState, draw]);
+  }, [temporaryTiles, remotePlacements, boardState, frozenTile, draw]);
 
   useEffect(() => {
     return () => {
@@ -321,7 +327,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     };
   }, [stopMomentum]);
 
-  // New board content: remember it for the imperative draws and draw it before the browser paints.
+  // New board content: remember it for the imperative draws and drive canvas render before paint.
   useLayoutEffect(() => {
     modelRef.current.updateState(boardState, temporaryTiles, remotePlacements);
     sceneRef.current = {
@@ -341,10 +347,11 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       hintTiles,
       pendingArmedCell,
       pendingArmedCard,
+      pendingFrozenCells,
       model: modelRef.current,
     };
     draw();
-  }, [boardState, dragPreviewCell, dragPreviewIsValid, dragPreviewTile, draggingTileId, draw, frozenTile, hintCell, hintTiles, pendingArmedCell, pendingArmedCard, remotePlacements, selectedCell, temporaryTiles, temporaryTilesValid]);
+  }, [boardState, dragPreviewCell, dragPreviewIsValid, dragPreviewTile, draggingTileId, draw, frozenTile, hintCell, hintTiles, pendingArmedCell, pendingArmedCard, pendingFrozenCells, remotePlacements, selectedCell, temporaryTiles, temporaryTilesValid]);
 
   // Size the canvas to its container, and centre the board the first time it has a size.
   useLayoutEffect(() => {

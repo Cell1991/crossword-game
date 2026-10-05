@@ -23,11 +23,12 @@ export interface BoardScene {
   dragPreviewTile: { letter: string; value: number } | null;
   dragPreviewIsValid: boolean | null;
   draggingTileId: string | null;
-  frozenTile: CellPosition | null;
+  frozenTile: CellPosition | CellPosition[] | null;
   hintCell: CellPosition | null;
   hintTiles?: HintTile[] | null;
   pendingArmedCell: CellPosition | null;
   pendingArmedCard?: string | null;
+  pendingFrozenCells?: CellPosition[] | null;
   dragHoverCell?: CellPosition | null;
   dragHoverTrails?: Map<string, { row: number; col: number; time: number }>;
   lowPower: boolean;

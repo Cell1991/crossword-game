@@ -19,11 +19,12 @@ export interface SceneRenderConfig {
   dragPreviewTile: { letter: string; value: number } | null;
   dragPreviewIsValid: boolean | null;
   draggingTileId: string | null;
-  frozenTile: CellPosition | null;
+  frozenTile: CellPosition | CellPosition[] | null;
   hintCell: CellPosition | null;
   hintTiles?: HintTile[] | null;
   pendingArmedCell: CellPosition | null;
   pendingArmedCard?: string | null;
+  pendingFrozenCells?: CellPosition[] | null;
   dragHoverCell?: CellPosition | null;
   dragHoverTrails?: Map<string, { row: number; col: number; time: number }>;
   lowPower: boolean;
@@ -117,7 +118,9 @@ export class BoardCompositor {
     for (const key in config.boardState) {
       const cell = config.boardState[key];
       if (isCellVisible(cell.row, cell.col)) {
-        const isFrozen = config.frozenTile?.row === cell.row && config.frozenTile?.col === cell.col;
+        const isFrozen = Array.isArray(config.frozenTile)
+          ? config.frozenTile.some(ft => ft.row === cell.row && ft.col === cell.col)
+          : Boolean(config.frozenTile && config.frozenTile.row === cell.row && config.frozenTile.col === cell.col);
         const isLastMove = Boolean(maxTurn > 0 && cell.turn_number === maxTurn);
         TileRenderer.renderTile(
           tileContext,
@@ -150,6 +153,14 @@ export class BoardCompositor {
     // 4. Layer 3: Action Reticles
     if (config.pendingArmedCell && isCellVisible(config.pendingArmedCell.row, config.pendingArmedCell.col)) {
       FXRenderer.renderPendingArmed(ctx, config.pendingArmedCell, offset, cellSize, config.pendingArmedCard);
+    }
+    if (config.pendingFrozenCells && config.pendingFrozenCells.length > 0) {
+      for (let i = 0; i < config.pendingFrozenCells.length; i++) {
+        const fc = config.pendingFrozenCells[i];
+        if (isCellVisible(fc.row, fc.col)) {
+          FXRenderer.renderPendingArmed(ctx, fc, offset, cellSize, 'FREEZE_TILE');
+        }
+      }
     }
 
     // 5. Layer 4: Temporary Placed Tiles
