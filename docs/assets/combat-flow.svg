@@ -12,34 +12,35 @@
     </filter>
 
     <style>
-      @keyframes slowStepPulse {
-        0%, 100% { stroke-opacity: 0.4; transform: translateY(0); }
-        50% { stroke-opacity: 0.95; transform: translateY(-3px); }
+      @keyframes calmStepGlow {
+        0%, 100% { stroke-opacity: 0.4; }
+        50% { stroke-opacity: 1.0; }
       }
       @keyframes dashFlow {
         to { stroke-dashoffset: -32; }
       }
-      .anim-step-1 { animation: slowStepPulse 6s ease-in-out infinite; }
-      .anim-step-2 { animation: slowStepPulse 6s ease-in-out infinite 1.2s; }
-      .anim-step-3 { animation: slowStepPulse 6s ease-in-out infinite 2.4s; }
-      .anim-step-4 { animation: slowStepPulse 6s ease-in-out infinite 3.6s; }
-      .anim-step-5 { animation: slowStepPulse 6s ease-in-out infinite 4.8s; }
-      .connector-stream { stroke-dasharray: 6 6; animation: dashFlow 2.5s linear infinite; }
+      .anim-step-glow {
+        animation: calmStepGlow 5s ease-in-out infinite;
+      }
+      .connector-stream {
+        stroke-dasharray: 6 6;
+        animation: dashFlow 2.5s linear infinite;
+      }
     </style>
   </defs>
 
   <!-- Container Base -->
   <rect width="1200" height="240" fill="url(#flowBg)" rx="16"/>
 
-  <!-- Connecting Energy Bus Line -->
+  <!-- Connecting Energy Bus Line Across All 5 Steps -->
   <line x1="120" y1="120" x2="1080" y2="120" stroke="#334155" stroke-width="3"/>
   <line x1="120" y1="120" x2="1080" y2="120" stroke="#38bdf8" stroke-width="3" class="connector-stream"/>
 
-  <!-- STEP 1: DRAG & STAGE -->
-  <g class="anim-step-1" transform="translate(30, 25)" filter="url(#stepShadow)">
-    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="1.8"/>
+  <!-- STEP 1: DRAG & STAGE (x = 30) -->
+  <g transform="translate(30, 25)" filter="url(#stepShadow)">
+    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="1.8" class="anim-step-glow"/>
     <rect x="0" y="0" width="205" height="32" rx="12" fill="#0284c7" fill-opacity="0.3"/>
-    <text x="102" y="21" fill="#7dd3fc" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">STEP 1 • DRAG &amp; STAGE</text>
+    <text x="102" y="21" fill="#7dd3fc" font-family="'Inter', -apple-system, sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">STEP 1 • DRAG &amp; STAGE</text>
     <circle cx="102" cy="70" r="24" fill="#0c4a6e" stroke="#38bdf8" stroke-width="1.2"/>
     <text x="102" y="79" font-size="22" text-anchor="middle">🎯</text>
     <text x="102" y="116" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13" font-weight="900" text-anchor="middle">Place on Matrix</text>
@@ -50,9 +51,9 @@
     </text>
   </g>
 
-  <!-- STEP 2: LIVE GHOST PREVIEW -->
-  <g class="anim-step-2" transform="translate(265, 25)" filter="url(#stepShadow)">
-    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#818cf8" stroke-width="1.8"/>
+  <!-- STEP 2: LIVE GHOST PREVIEW (x = 265) -->
+  <g transform="translate(265, 25)" filter="url(#stepShadow)">
+    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#818cf8" stroke-width="1.8" class="anim-step-glow"/>
     <rect x="0" y="0" width="205" height="32" rx="12" fill="#4f46e5" fill-opacity="0.3"/>
     <text x="102" y="21" fill="#a5b4fc" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">STEP 2 • LIVE GHOST</text>
     <circle cx="102" cy="70" r="24" fill="#312e81" stroke="#818cf8" stroke-width="1.2"/>
@@ -65,9 +66,9 @@
     </text>
   </g>
 
-  <!-- STEP 3: LEXICON & MULTIPLIERS -->
-  <g class="anim-step-3" transform="translate(500, 25)" filter="url(#stepShadow)">
-    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="1.8"/>
+  <!-- STEP 3: LEXICON & MULTIPLIERS (x = 500) -->
+  <g transform="translate(500, 25)" filter="url(#stepShadow)">
+    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="1.8" class="anim-step-glow"/>
     <rect x="0" y="0" width="205" height="32" rx="12" fill="#059669" fill-opacity="0.3"/>
     <text x="102" y="21" fill="#6ee7b7" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">STEP 3 • ARBITRATION</text>
     <circle cx="102" cy="70" r="24" fill="#064e3b" stroke="#10b981" stroke-width="1.2"/>
@@ -80,9 +81,9 @@
     </text>
   </g>
 
-  <!-- STEP 4: 1.0s SHIELD REACTION -->
-  <g class="anim-step-4" transform="translate(735, 25)" filter="url(#stepShadow)">
-    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#f59e0b" stroke-width="1.8"/>
+  <!-- STEP 4: 1.0s SHIELD REACTION (x = 735) -->
+  <g transform="translate(735, 25)" filter="url(#stepShadow)">
+    <rect width="205" height="190" rx="12" fill="#0f172a" stroke="#f59e0b" stroke-width="1.8" class="anim-step-glow"/>
     <rect x="0" y="0" width="205" height="32" rx="12" fill="#d97706" fill-opacity="0.3"/>
     <text x="102" y="21" fill="#fde68a" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">STEP 4 • 1.0s SHIELD</text>
     <circle cx="102" cy="70" r="24" fill="#78350f" stroke="#fbbf24" stroke-width="1.2"/>
@@ -95,9 +96,9 @@
     </text>
   </g>
 
-  <!-- STEP 5: HP DAMAGE & REFILL -->
-  <g class="anim-step-5" transform="translate(970, 25)" filter="url(#stepShadow)">
-    <rect width="200" height="190" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="1.8"/>
+  <!-- STEP 5: HP DAMAGE & REFILL (x = 970) -->
+  <g transform="translate(970, 25)" filter="url(#stepShadow)">
+    <rect width="200" height="190" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="1.8" class="anim-step-glow"/>
     <rect x="0" y="0" width="200" height="32" rx="12" fill="#b91c1c" fill-opacity="0.3"/>
     <text x="100" y="21" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">STEP 5 • HP DAMAGE</text>
     <circle cx="100" cy="70" r="24" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.2"/>
