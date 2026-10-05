@@ -374,10 +374,10 @@ export const PowerCardBar = memo(function PowerCardBar({
                     type="button"
                     aria-pressed={selected}
                     onClick={() => toggleOwnTile(tile.id)}
-                    className={`tile-face relative flex shrink-0 h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] flex-col items-center justify-center overflow-hidden rounded-lg sm:rounded-xl border font-sans cursor-pointer transition-all active:scale-95 ${
+                    className={`tile-face relative flex shrink-0 h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] flex-col items-center justify-center overflow-hidden rounded-lg sm:rounded-xl font-sans cursor-pointer transition-all active:scale-95 ${
                       selected
-                        ? 'border-emerald-300 ring-2 ring-emerald-400 shadow-[0_0_14px_rgba(16,185,129,0.8)] -translate-y-0.5 scale-[1.04]'
-                        : 'border-amber-100/80 hover:brightness-105'
+                        ? 'border-2 sm:border-[2.5px] border-emerald-200 ring-2 sm:ring-[3px] ring-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.95),inset_0_0_10px_rgba(16,185,129,0.45)] -translate-y-1 scale-[1.06] z-10'
+                        : 'border border-amber-100/80 hover:brightness-105'
                     }`}
                   >
                     {isBlankLetter(tile.letter) ? (
@@ -482,10 +482,10 @@ export const PowerCardBar = memo(function PowerCardBar({
                     type="button"
                     disabled={!selected && spyTargetTileIndices.length >= spyOwnTileIds.length}
                     onClick={() => toggleTargetSlot(index)}
-                    className={`h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] shrink-0 rounded-lg sm:rounded-xl border font-black text-sm sm:text-base transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+                    className={`h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] shrink-0 rounded-lg sm:rounded-xl font-black text-sm sm:text-base transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
                       selected
-                        ? 'border-emerald-300 bg-emerald-700 text-white ring-2 ring-emerald-400 shadow-[0_0_14px_rgba(16,185,129,0.8)] -translate-y-0.5 scale-[1.04]'
-                        : 'border-slate-700 bg-slate-800/90 text-slate-300 hover:border-emerald-400 hover:text-white'
+                        ? 'border-2 sm:border-[2.5px] border-emerald-200 bg-emerald-700 text-white ring-2 sm:ring-[3px] ring-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.95)] -translate-y-1 scale-[1.06] z-10'
+                        : 'border border-slate-700 bg-slate-800/90 text-slate-300 hover:border-emerald-400 hover:text-white'
                     }`}
                   >
                     ?
