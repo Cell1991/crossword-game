@@ -39,23 +39,18 @@
 
     <style>
       @keyframes pulseBorder {
-        0%, 100% { stroke-opacity: 0.4; }
+        0%, 100% { stroke-opacity: 0.35; }
         50% { stroke-opacity: 0.95; }
       }
       @keyframes hpDeplete {
-        0%, 100% { width: 170px; }
-        50% { width: 95px; }
+        0%, 100% { width: 180px; }
+        50% { width: 90px; }
       }
-      @keyframes scanSweep {
-        0% { transform: translateY(0px); opacity: 0.1; }
-        50% { opacity: 0.5; }
-        100% { transform: translateY(220px); opacity: 0.1; }
-      }
-      .pulsing-border-red { animation: pulseBorder 2.8s ease-in-out infinite; }
-      .pulsing-border-green { animation: pulseBorder 3.2s ease-in-out infinite 0.5s; }
-      .pulsing-border-purple { animation: pulseBorder 3.0s ease-in-out infinite 1.0s; }
-      .pulsing-border-cyan { animation: pulseBorder 3.4s ease-in-out infinite 1.5s; }
-      .anim-hp-bar { animation: hpDeplete 4s ease-in-out infinite; }
+      .pulsing-border-red { animation: pulseBorder 5.5s ease-in-out infinite; }
+      .pulsing-border-green { animation: pulseBorder 6.2s ease-in-out infinite 0.8s; }
+      .pulsing-border-purple { animation: pulseBorder 5.8s ease-in-out infinite 1.6s; }
+      .pulsing-border-cyan { animation: pulseBorder 6.5s ease-in-out infinite 2.4s; }
+      .anim-hp-bar { animation: hpDeplete 7.0s ease-in-out infinite; }
     </style>
   </defs>
 

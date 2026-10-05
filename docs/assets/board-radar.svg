@@ -23,16 +23,10 @@
       }
       @keyframes starPulse {
         0%, 100% { transform: scale(1); opacity: 0.8; }
-        50% { transform: scale(1.25); opacity: 1; filter: drop-shadow(0 0 12px #fbbf24); }
+        50% { transform: scale(1.18); opacity: 1; filter: drop-shadow(0 0 14px #fbbf24); }
       }
-      @keyframes laserScanX {
-        0% { transform: translateX(0); opacity: 0.1; }
-        50% { opacity: 0.6; }
-        100% { transform: translateX(640px); opacity: 0.1; }
-      }
-      .radar-arm { transform-origin: 320px 200px; animation: radarSweep 8s linear infinite; }
-      .center-star-anim { transform-origin: 320px 200px; animation: starPulse 2.5s ease-in-out infinite; }
-      .laser-x { animation: laserScanX 4s ease-in-out infinite; }
+      .radar-arm { transform-origin: 320px 200px; animation: radarSweep 12s linear infinite; }
+      .center-star-anim { transform-origin: 320px 200px; animation: starPulse 5.0s ease-in-out infinite; }
     </style>
   </defs>
 

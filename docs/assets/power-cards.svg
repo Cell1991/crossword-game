@@ -1,197 +1,549 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="100%" height="100%">
   <defs>
     <!-- Background Gradient -->
     <radialGradient id="cardsBg" cx="50%" cy="50%" r="70%">
-      <stop offset="0%" stop-color="#1e1b4b" stop-opacity="0.9"/>
+      <stop offset="0%" stop-color="#1e1b4b" stop-opacity="0.95"/>
       <stop offset="60%" stop-color="#0f172a" stop-opacity="0.98"/>
       <stop offset="100%" stop-color="#020617" stop-opacity="1"/>
     </radialGradient>
 
-    <!-- Power Card Glows -->
-    <filter id="goldCardGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="blueCardGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
+    <!-- Glowing Filters -->
+    <filter id="cardGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
 
+    <filter id="cardDropShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000000" flood-opacity="0.65"/>
+    </filter>
+
+    <!-- Clip Path for Infinite Carousel Viewport -->
+    <clipPath id="carouselClip">
+      <rect x="0" y="0" width="1200" height="400" rx="16"/>
+    </clipPath>
+
     <style>
-      @keyframes cardBob1 {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-8px); }
+      /* Smooth, slow, infinite looping gliding animation */
+      @keyframes smoothCarouselLoop {
+        0% {
+          transform: translateX(0px);
+        }
+        100% {
+          /* Track width is 11 cards * 200px = 2200px per cycle */
+          transform: translateX(-2200px);
+        }
       }
-      @keyframes cardBob2 {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-      }
-      @keyframes cardBob3 {
+
+      /* Slow, gentle, hypnotic floating wave */
+      @keyframes gentleFloat1 {
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-7px); }
       }
-      @keyframes auraGlow {
-        0%, 100% { opacity: 0.5; }
+      @keyframes gentleFloat2 {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-9px); }
+      }
+      @keyframes gentleFloat3 {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
+      }
+
+      /* Slow breathing aura glow */
+      @keyframes slowAuraPulse {
+        0%, 100% { opacity: 0.45; }
         50% { opacity: 0.95; }
       }
-      .card-float-1 { animation: cardBob1 3.8s ease-in-out infinite; }
-      .card-float-2 { animation: cardBob2 4.2s ease-in-out infinite 0.4s; }
-      .card-float-3 { animation: cardBob3 3.5s ease-in-out infinite 0.8s; }
-      .card-float-4 { animation: cardBob1 4.0s ease-in-out infinite 1.2s; }
-      .card-float-5 { animation: cardBob2 3.7s ease-in-out infinite 1.6s; }
-      .card-float-6 { animation: cardBob3 4.4s ease-in-out infinite 2.0s; }
-      .card-float-7 { animation: cardBob1 3.9s ease-in-out infinite 2.4s; }
-      .aura-pulse { animation: auraGlow 2.5s ease-in-out infinite; }
+
+      /* Infinite linear gliding track - Slow 32s loop */
+      .carousel-track {
+        animation: smoothCarouselLoop 34s linear infinite;
+      }
+      
+      .f-card-1 { animation: gentleFloat1 6.0s ease-in-out infinite; }
+      .f-card-2 { animation: gentleFloat2 6.5s ease-in-out infinite 0.5s; }
+      .f-card-3 { animation: gentleFloat3 5.8s ease-in-out infinite 1.0s; }
+      .f-card-4 { animation: gentleFloat1 6.2s ease-in-out infinite 1.5s; }
+      .f-card-5 { animation: gentleFloat2 5.9s ease-in-out infinite 2.0s; }
+      .f-card-6 { animation: gentleFloat3 6.4s ease-in-out infinite 2.5s; }
+      .f-card-7 { animation: gentleFloat1 6.1s ease-in-out infinite 3.0s; }
+      .f-card-8 { animation: gentleFloat2 6.6s ease-in-out infinite 3.5s; }
+      .f-card-9 { animation: gentleFloat3 5.7s ease-in-out infinite 4.0s; }
+      .f-card-10 { animation: gentleFloat1 6.3s ease-in-out infinite 4.5s; }
+      .f-card-11 { animation: gentleFloat2 6.0s ease-in-out infinite 5.0s; }
+
+      .aura-slow {
+        animation: slowAuraPulse 4.5s ease-in-out infinite;
+      }
     </style>
   </defs>
 
-  <rect width="1200" height="380" fill="url(#cardsBg)" rx="16"/>
+  <!-- Background Base Container with Rounded Corners -->
+  <rect width="1200" height="400" fill="url(#cardsBg)" rx="16"/>
 
-  <!-- Section Header Inside Graphic -->
-  <g transform="translate(600, 32)">
-    <text x="0" y="0" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13" font-weight="900" text-anchor="middle" letter-spacing="4">
-      ⚡ TACTICAL POWER CARD ARSENAL • MAXIMUM 3 CARDS IN HAND ⚡
+  <!-- Subtle Ambient Track Guide Lines -->
+  <g opacity="0.15">
+    <line x1="0" y1="58" x2="1200" y2="58" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4 8"/>
+    <line x1="0" y1="365" x2="1200" y2="365" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4 8"/>
+  </g>
+
+  <!-- Header Branding Title -->
+  <g transform="translate(600, 36)">
+    <text x="0" y="0" fill="#f8fafc" font-family="'Inter', -apple-system, sans-serif" font-size="13" font-weight="900" text-anchor="middle" letter-spacing="4">
+      ⚡ 11 TACTICAL POWER CARDS • INFINITE CONTINUOUS GLIDE ⚡
     </text>
   </g>
 
-  <!-- Card Row: 7 Primary Tactical Cards -->
+  <!-- Viewport Masked Container for Seamless Looping -->
+  <g clip-path="url(#carouselClip)">
+    
+    <!-- Moving Carousel Track (Set 1 + Set 2 Duplicated for Seamless Infinite Loop) -->
+    <g class="carousel-track" transform="translate(0, 68)">
 
-  <!-- CARD 1: SHIELD -->
-  <g class="card-float-1" transform="translate(30, 60)">
-    <rect width="150" height="280" rx="12" fill="#0f172a" stroke="#3b82f6" stroke-width="2"/>
-    <rect x="0" y="0" width="150" height="36" rx="12" fill="#1d4ed8" fill-opacity="0.3"/>
-    <text x="75" y="24" fill="#60a5fa" font-family="'Inter', sans-serif" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1">DEFENSE</text>
-    <circle cx="75" cy="80" r="30" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1.5" class="aura-pulse"/>
-    <text x="75" y="92" font-size="30" text-anchor="middle">🛡️</text>
-    <text x="75" y="135" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">SHIELD</text>
-    <text x="75" y="155" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">REACTION / PASSIVE</text>
-    <line x1="20" y1="170" x2="130" y2="170" stroke="#334155" stroke-width="1"/>
-    <text x="75" y="195" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
-      <tspan x="75" dy="0">Negates incoming</tspan>
-      <tspan x="75" dy="14">attack damage</tspan>
-      <tspan x="75" dy="14">or tile theft.</tspan>
-    </text>
-    <rect x="20" y="245" width="110" height="20" rx="10" fill="#1e293b"/>
-    <text x="75" y="258" fill="#93c5fd" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">1s REACTION WINDOW</text>
+      <!-- ==================================================================== -->
+      <!-- SET 1 (11 CARDS: x = 0 to 2200px, 200px step per card)               -->
+      <!-- ==================================================================== -->
+
+      <!-- 1. SHIELD -->
+      <g class="f-card-1" transform="translate(20, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#3b82f6" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#1d4ed8" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#60a5fa" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">DEFENSE</text>
+        <circle cx="82" cy="78" r="28" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">🛡️</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">SHIELD</text>
+        <text x="82" y="148" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">REACTION / PASSIVE</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Negates next attack</tspan>
+          <tspan x="82" dy="14">damage or tile theft</tspan>
+          <tspan x="82" dy="14">completely.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#93c5fd" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">1.0s REACTION WINDOW</text>
+      </g>
+
+      <!-- 2. HEAL -->
+      <g class="f-card-2" transform="translate(220, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#047857" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#34d399" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">RECOVERY</text>
+        <circle cx="82" cy="78" r="28" fill="#064e3b" stroke="#34d399" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">💖</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">HEAL</text>
+        <text x="82" y="148" fill="#6ee7b7" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">INSTANT SELF</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Restores HP equal</tspan>
+          <tspan x="82" dy="14">to sum of all rack</tspan>
+          <tspan x="82" dy="14">tile point values.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#a7f3d0" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">RACK HP RECOVERY</text>
+      </g>
+
+      <!-- 3. FREEZE TILE -->
+      <g class="f-card-3" transform="translate(420, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#06b6d4" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#0e7490" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#22d3ee" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">CONTROL</text>
+        <circle cx="82" cy="78" r="28" fill="#164e63" stroke="#22d3ee" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">❄️</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">FREEZE TILE</text>
+        <text x="82" y="148" fill="#67e8f9" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">BOARD TARGET</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Locks a tile in ice.</tspan>
+          <tspan x="82" dy="14">Opponents cannot</tspan>
+          <tspan x="82" dy="14">connect words to it.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#bae6fd" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">UNTIL NEXT TURN</text>
+      </g>
+
+      <!-- 4. DESTROY TILE -->
+      <g class="f-card-4" transform="translate(620, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#f97316" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#c2410c" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#fb923c" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">DEMOLISH</text>
+        <circle cx="82" cy="78" r="28" fill="#7c2d12" stroke="#fb923c" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">💥</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">DESTROY</text>
+        <text x="82" y="148" fill="#fed7aa" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">BOARD TARGET</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Demolishes 1 tile</tspan>
+          <tspan x="82" dy="14">from the matrix to</tspan>
+          <tspan x="82" dy="14">reopen 3L cells.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#fed7aa" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">REOPENS MULTIPLIER</text>
+      </g>
+
+      <!-- 5. DOUBLE DAMAGE -->
+      <g class="f-card-5" transform="translate(820, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#b91c1c" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#f87171" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">OFFENSE</text>
+        <circle cx="82" cy="78" r="28" fill="#991b1b" stroke="#f87171" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">⚔️</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">2X DAMAGE</text>
+        <text x="82" y="148" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">TARGET RIVAL</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Your next word</tspan>
+          <tspan x="82" dy="14">deals 2× lethal</tspan>
+          <tspan x="82" dy="14">attack damage.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">200% STRIKE POWER</text>
+      </g>
+
+      <!-- 6. SPY SWAP -->
+      <g class="f-card-6" transform="translate(1020, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#a855f7" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#7e22ce" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#c084fc" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">ESPIONAGE</text>
+        <circle cx="82" cy="78" r="28" fill="#581c87" stroke="#c084fc" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">🔄</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">SPY SWAP</text>
+        <text x="82" y="148" fill="#d8b4fe" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">TARGET RIVAL</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Steals 1 to 3 tiles</tspan>
+          <tspan x="82" dy="14">directly from an</tspan>
+          <tspan x="82" dy="14">opponent&apos;s rack.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#e9d5ff" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">TACTICAL THEFT</text>
+      </g>
+
+      <!-- 7. HINT -->
+      <g class="f-card-7" transform="translate(1220, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#eab308" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#a16207" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#fde047" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">INTEL</text>
+        <circle cx="82" cy="78" r="28" fill="#713f12" stroke="#fde047" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">👁️</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">HINT</text>
+        <text x="82" y="148" fill="#fef08a" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">AI SOLVER</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Reveals top 3</tspan>
+          <tspan x="82" dy="14">highest scoring</tspan>
+          <tspan x="82" dy="14">legal word moves.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#fef08a" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">AI SOLVER CANDIDATES</text>
+      </g>
+
+      <!-- 8. BAN LETTER -->
+      <g class="f-card-8" transform="translate(1420, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#dc2626" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#991b1b" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">CURSE</text>
+        <circle cx="82" cy="78" r="28" fill="#7f1d1d" stroke="#f87171" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">🚫</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">BAN LETTER</text>
+        <text x="82" y="148" fill="#f87171" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">ROOM GLOBAL</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Bans a chosen</tspan>
+          <tspan x="82" dy="14">alphabet letter from</tspan>
+          <tspan x="82" dy="14">being placed.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">GLOBAL EMBARGO</text>
+      </g>
+
+      <!-- 9. FREE EXCHANGE -->
+      <g class="f-card-9" transform="translate(1620, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#14b8a6" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#0f766e" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#5eead4" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">AGILITY</text>
+        <circle cx="82" cy="78" r="28" fill="#134e4a" stroke="#2dd4bf" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">♻️</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">FREE SWAP</text>
+        <text x="82" y="148" fill="#5eead4" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">INSTANT SELF</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Swaps rack tiles</tspan>
+          <tspan x="82" dy="14">with the bag without</tspan>
+          <tspan x="82" dy="14">forfeiting your turn.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#99f6e4" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">ZERO-TURN COST</text>
+      </g>
+
+      <!-- 10. DRAW TILE -->
+      <g class="f-card-10" transform="translate(1820, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#ec4899" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#be185d" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#f472b6" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">SUPPLY</text>
+        <circle cx="82" cy="78" r="28" fill="#831843" stroke="#f472b6" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">🎴</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">DRAW TILE</text>
+        <text x="82" y="148" fill="#fbcfe8" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">INSTANT SELF</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Draws 1 bonus</tspan>
+          <tspan x="82" dy="14">extra tile directly</tspan>
+          <tspan x="82" dy="14">into your rack.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#fbcfe8" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">+1 TILE CAPACITY</text>
+      </g>
+
+      <!-- 11. MOVE HEAL -->
+      <g class="f-card-11" transform="translate(2020, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#84cc16" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#4d7c0f" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#a3e635" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">VAMPIRIC</text>
+        <circle cx="82" cy="78" r="28" fill="#365314" stroke="#a3e635" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">🩸</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">MOVE HEAL</text>
+        <text x="82" y="148" fill="#d9f99d" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">PASSIVE RECOVERY</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Heals HP proportional</tspan>
+          <tspan x="82" dy="14">to the score of your</tspan>
+          <tspan x="82" dy="14">next committed word.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#bef264" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">LIFE STEAL ON MOVE</text>
+      </g>
+
+      <!-- ==================================================================== -->
+      <!-- SET 2 (EXACT DUPLICATE FOR 100% SEAMLESS CONTINUOUS INFINITE LOOP)   -->
+      <!-- Starts at x = 2200px to 4400px                                       -->
+      <!-- ==================================================================== -->
+
+      <!-- 1. SHIELD (Dup) -->
+      <g class="f-card-1" transform="translate(2220, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#3b82f6" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#1d4ed8" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#60a5fa" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">DEFENSE</text>
+        <circle cx="82" cy="78" r="28" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">🛡️</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">SHIELD</text>
+        <text x="82" y="148" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">REACTION / PASSIVE</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Negates next attack</tspan>
+          <tspan x="82" dy="14">damage or tile theft</tspan>
+          <tspan x="82" dy="14">completely.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#93c5fd" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">1.0s REACTION WINDOW</text>
+      </g>
+
+      <!-- 2. HEAL (Dup) -->
+      <g class="f-card-2" transform="translate(2420, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#047857" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#34d399" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">RECOVERY</text>
+        <circle cx="82" cy="78" r="28" fill="#064e3b" stroke="#34d399" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">💖</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">HEAL</text>
+        <text x="82" y="148" fill="#6ee7b7" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">INSTANT SELF</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Restores HP equal</tspan>
+          <tspan x="82" dy="14">to sum of all rack</tspan>
+          <tspan x="82" dy="14">tile point values.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#a7f3d0" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">RACK HP RECOVERY</text>
+      </g>
+
+      <!-- 3. FREEZE TILE (Dup) -->
+      <g class="f-card-3" transform="translate(2620, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#06b6d4" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#0e7490" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#22d3ee" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">CONTROL</text>
+        <circle cx="82" cy="78" r="28" fill="#164e63" stroke="#22d3ee" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">❄️</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">FREEZE TILE</text>
+        <text x="82" y="148" fill="#67e8f9" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">BOARD TARGET</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Locks a tile in ice.</tspan>
+          <tspan x="82" dy="14">Opponents cannot</tspan>
+          <tspan x="82" dy="14">connect words to it.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#bae6fd" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">UNTIL NEXT TURN</text>
+      </g>
+
+      <!-- 4. DESTROY TILE (Dup) -->
+      <g class="f-card-4" transform="translate(2820, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#f97316" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#c2410c" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#fb923c" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">DEMOLISH</text>
+        <circle cx="82" cy="78" r="28" fill="#7c2d12" stroke="#fb923c" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">💥</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">DESTROY</text>
+        <text x="82" y="148" fill="#fed7aa" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">BOARD TARGET</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Demolishes 1 tile</tspan>
+          <tspan x="82" dy="14">from the matrix to</tspan>
+          <tspan x="82" dy="14">reopen 3L cells.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#fed7aa" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">REOPENS MULTIPLIER</text>
+      </g>
+
+      <!-- 5. DOUBLE DAMAGE (Dup) -->
+      <g class="f-card-5" transform="translate(3020, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#b91c1c" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#f87171" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">OFFENSE</text>
+        <circle cx="82" cy="78" r="28" fill="#991b1b" stroke="#f87171" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">⚔️</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">2X DAMAGE</text>
+        <text x="82" y="148" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">TARGET RIVAL</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Your next word</tspan>
+          <tspan x="82" dy="14">deals 2× lethal</tspan>
+          <tspan x="82" dy="14">attack damage.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">200% STRIKE POWER</text>
+      </g>
+
+      <!-- 6. SPY SWAP (Dup) -->
+      <g class="f-card-6" transform="translate(3220, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#a855f7" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#7e22ce" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#c084fc" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">ESPIONAGE</text>
+        <circle cx="82" cy="78" r="28" fill="#581c87" stroke="#c084fc" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">🔄</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">SPY SWAP</text>
+        <text x="82" y="148" fill="#d8b4fe" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">TARGET RIVAL</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Steals 1 to 3 tiles</tspan>
+          <tspan x="82" dy="14">directly from an</tspan>
+          <tspan x="82" dy="14">opponent&apos;s rack.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#e9d5ff" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">TACTICAL THEFT</text>
+      </g>
+
+      <!-- 7. HINT (Dup) -->
+      <g class="f-card-7" transform="translate(3420, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#eab308" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#a16207" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#fde047" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">INTEL</text>
+        <circle cx="82" cy="78" r="28" fill="#713f12" stroke="#fde047" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">👁️</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">HINT</text>
+        <text x="82" y="148" fill="#fef08a" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">AI SOLVER</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Reveals top 3</tspan>
+          <tspan x="82" dy="14">highest scoring</tspan>
+          <tspan x="82" dy="14">legal word moves.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#fef08a" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">AI SOLVER CANDIDATES</text>
+      </g>
+
+      <!-- 8. BAN LETTER (Dup) -->
+      <g class="f-card-8" transform="translate(3620, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#dc2626" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#991b1b" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">CURSE</text>
+        <circle cx="82" cy="78" r="28" fill="#7f1d1d" stroke="#f87171" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">🚫</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">BAN LETTER</text>
+        <text x="82" y="148" fill="#f87171" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">ROOM GLOBAL</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Bans a chosen</tspan>
+          <tspan x="82" dy="14">alphabet letter from</tspan>
+          <tspan x="82" dy="14">being placed.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">GLOBAL EMBARGO</text>
+      </g>
+
+      <!-- 9. FREE EXCHANGE (Dup) -->
+      <g class="f-card-9" transform="translate(3820, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#14b8a6" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#0f766e" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#5eead4" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">AGILITY</text>
+        <circle cx="82" cy="78" r="28" fill="#134e4a" stroke="#2dd4bf" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">♻️</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">FREE SWAP</text>
+        <text x="82" y="148" fill="#5eead4" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">INSTANT SELF</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Swaps rack tiles</tspan>
+          <tspan x="82" dy="14">with the bag without</tspan>
+          <tspan x="82" dy="14">forfeiting your turn.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#99f6e4" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">ZERO-TURN COST</text>
+      </g>
+
+      <!-- 10. DRAW TILE (Dup) -->
+      <g class="f-card-10" transform="translate(4020, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#ec4899" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#be185d" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#f472b6" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">SUPPLY</text>
+        <circle cx="82" cy="78" r="28" fill="#831843" stroke="#f472b6" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">🎴</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">DRAW TILE</text>
+        <text x="82" y="148" fill="#fbcfe8" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">INSTANT SELF</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Draws 1 bonus</tspan>
+          <tspan x="82" dy="14">extra tile directly</tspan>
+          <tspan x="82" dy="14">into your rack.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#fbcfe8" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">+1 TILE CAPACITY</text>
+      </g>
+
+      <!-- 11. MOVE HEAL (Dup) -->
+      <g class="f-card-11" transform="translate(4220, 0)" filter="url(#cardDropShadow)">
+        <rect width="165" height="275" rx="12" fill="#0f172a" stroke="#84cc16" stroke-width="2"/>
+        <rect x="0" y="0" width="165" height="34" rx="12" fill="#4d7c0f" fill-opacity="0.3"/>
+        <text x="82" y="22" fill="#a3e635" font-family="'Inter', sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" letter-spacing="1">VAMPIRIC</text>
+        <circle cx="82" cy="78" r="28" fill="#365314" stroke="#a3e635" stroke-width="1.5" class="aura-slow"/>
+        <text x="82" y="89" font-size="28" text-anchor="middle">🩸</text>
+        <text x="82" y="130" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">MOVE HEAL</text>
+        <text x="82" y="148" fill="#d9f99d" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">PASSIVE RECOVERY</text>
+        <line x1="20" y1="162" x2="145" y2="162" stroke="#334155" stroke-width="1"/>
+        <text x="82" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
+          <tspan x="82" dy="0">Heals HP proportional</tspan>
+          <tspan x="82" dy="14">to the score of your</tspan>
+          <tspan x="82" dy="14">next committed word.</tspan>
+        </text>
+        <rect x="18" y="238" width="129" height="22" rx="11" fill="#1e293b"/>
+        <text x="82" y="253" fill="#bef264" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">LIFE STEAL ON MOVE</text>
+      </g>
+
+    </g>
   </g>
 
-  <!-- CARD 2: HEAL -->
-  <g class="card-float-2" transform="translate(195, 60)">
-    <rect width="150" height="280" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
-    <rect x="0" y="0" width="150" height="36" rx="12" fill="#047857" fill-opacity="0.3"/>
-    <text x="75" y="24" fill="#34d399" font-family="'Inter', sans-serif" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1">RECOVERY</text>
-    <circle cx="75" cy="80" r="30" fill="#064e3b" stroke="#34d399" stroke-width="1.5" class="aura-pulse"/>
-    <text x="75" y="92" font-size="30" text-anchor="middle">💖</text>
-    <text x="75" y="135" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">HEAL</text>
-    <text x="75" y="155" fill="#6ee7b7" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">INSTANT SELF</text>
-    <line x1="20" y1="170" x2="130" y2="170" stroke="#334155" stroke-width="1"/>
-    <text x="75" y="195" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
-      <tspan x="75" dy="0">Restores HP equal</tspan>
-      <tspan x="75" dy="14">to sum of rack tile</tspan>
-      <tspan x="75" dy="14">point values.</tspan>
-    </text>
-    <rect x="20" y="245" width="110" height="20" rx="10" fill="#1e293b"/>
-    <text x="75" y="258" fill="#a7f3d0" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">RACK-BASED HEALING</text>
-  </g>
+  <!-- Left & Right Glassmorphic Vignette Fades for Seamless Conveyor Belt Illusion -->
+  <defs>
+    <linearGradient id="fadeLeft" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#020617" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="fadeRight" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#020617" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
 
-  <!-- CARD 3: FREEZE TILE -->
-  <g class="card-float-3" transform="translate(360, 60)">
-    <rect width="150" height="280" rx="12" fill="#0f172a" stroke="#06b6d4" stroke-width="2"/>
-    <rect x="0" y="0" width="150" height="36" rx="12" fill="#0e7490" fill-opacity="0.3"/>
-    <text x="75" y="24" fill="#22d3ee" font-family="'Inter', sans-serif" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1">CONTROL</text>
-    <circle cx="75" cy="80" r="30" fill="#164e63" stroke="#22d3ee" stroke-width="1.5" class="aura-pulse"/>
-    <text x="75" y="92" font-size="30" text-anchor="middle">❄️</text>
-    <text x="75" y="135" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">FREEZE TILE</text>
-    <text x="75" y="155" fill="#67e8f9" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">BOARD TARGET</text>
-    <line x1="20" y1="170" x2="130" y2="170" stroke="#334155" stroke-width="1"/>
-    <text x="75" y="195" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
-      <tspan x="75" dy="0">Locks a board tile.</tspan>
-      <tspan x="75" dy="14">Opponents cannot</tspan>
-      <tspan x="75" dy="14">connect words to it.</tspan>
-    </text>
-    <rect x="20" y="245" width="110" height="20" rx="10" fill="#1e293b"/>
-    <text x="75" y="258" fill="#bae6fd" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">UNTIL NEXT TURN</text>
-  </g>
-
-  <!-- CARD 4: DESTROY TILE -->
-  <g class="card-float-4" transform="translate(525, 60)">
-    <rect width="150" height="280" rx="12" fill="#0f172a" stroke="#f97316" stroke-width="2"/>
-    <rect x="0" y="0" width="150" height="36" rx="12" fill="#c2410c" fill-opacity="0.3"/>
-    <text x="75" y="24" fill="#fb923c" font-family="'Inter', sans-serif" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1">DEMOLISH</text>
-    <circle cx="75" cy="80" r="30" fill="#7c2d12" stroke="#fb923c" stroke-width="1.5" class="aura-pulse"/>
-    <text x="75" y="92" font-size="30" text-anchor="middle">💥</text>
-    <text x="75" y="135" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">DESTROY</text>
-    <text x="75" y="155" fill="#fed7aa" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">BOARD TARGET</text>
-    <line x1="20" y1="170" x2="130" y2="170" stroke="#334155" stroke-width="1"/>
-    <text x="75" y="195" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
-      <tspan x="75" dy="0">Obliterates 1 tile</tspan>
-      <tspan x="75" dy="14">from the board to</tspan>
-      <tspan x="75" dy="14">reopen 3L cells.</tspan>
-    </text>
-    <rect x="20" y="245" width="110" height="20" rx="10" fill="#1e293b"/>
-    <text x="75" y="258" fill="#fed7aa" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">REOPENS HOTSPOTS</text>
-  </g>
-
-  <!-- CARD 5: DOUBLE DAMAGE -->
-  <g class="card-float-5" transform="translate(690, 60)">
-    <rect width="150" height="280" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="2"/>
-    <rect x="0" y="0" width="150" height="36" rx="12" fill="#b91c1c" fill-opacity="0.3"/>
-    <text x="75" y="24" fill="#f87171" font-family="'Inter', sans-serif" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1">OFFENSE</text>
-    <circle cx="75" cy="80" r="30" fill="#991b1b" stroke="#f87171" stroke-width="1.5" class="aura-pulse"/>
-    <text x="75" y="92" font-size="30" text-anchor="middle">⚔️</text>
-    <text x="75" y="135" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">2X DAMAGE</text>
-    <text x="75" y="155" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">TARGET RIVAL</text>
-    <line x1="20" y1="170" x2="130" y2="170" stroke="#334155" stroke-width="1"/>
-    <text x="75" y="195" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
-      <tspan x="75" dy="0">Your next word</tspan>
-      <tspan x="75" dy="14">deals 2× lethal</tspan>
-      <tspan x="75" dy="14">attack damage.</tspan>
-    </text>
-    <rect x="20" y="245" width="110" height="20" rx="10" fill="#1e293b"/>
-    <text x="75" y="258" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">200% STRIKE POWER</text>
-  </g>
-
-  <!-- CARD 6: SPY SWAP -->
-  <g class="card-float-6" transform="translate(855, 60)">
-    <rect width="150" height="280" rx="12" fill="#0f172a" stroke="#a855f7" stroke-width="2"/>
-    <rect x="0" y="0" width="150" height="36" rx="12" fill="#7e22ce" fill-opacity="0.3"/>
-    <text x="75" y="24" fill="#c084fc" font-family="'Inter', sans-serif" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1">ESPIONAGE</text>
-    <circle cx="75" cy="80" r="30" fill="#581c87" stroke="#c084fc" stroke-width="1.5" class="aura-pulse"/>
-    <text x="75" y="92" font-size="30" text-anchor="middle">🔄</text>
-    <text x="75" y="135" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">SPY SWAP</text>
-    <text x="75" y="155" fill="#d8b4fe" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">TARGET RIVAL</text>
-    <line x1="20" y1="170" x2="130" y2="170" stroke="#334155" stroke-width="1"/>
-    <text x="75" y="195" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
-      <tspan x="75" dy="0">Steals 1 to 3</tspan>
-      <tspan x="75" dy="14">tiles directly from</tspan>
-      <tspan x="75" dy="14">rival&apos;s rack.</tspan>
-    </text>
-    <rect x="20" y="245" width="110" height="20" rx="10" fill="#1e293b"/>
-    <text x="75" y="258" fill="#e9d5ff" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">TACTICAL THEFT</text>
-  </g>
-
-  <!-- CARD 7: HINT -->
-  <g class="card-float-7" transform="translate(1020, 60)">
-    <rect width="150" height="280" rx="12" fill="#0f172a" stroke="#eab308" stroke-width="2"/>
-    <rect x="0" y="0" width="150" height="36" rx="12" fill="#a16207" fill-opacity="0.3"/>
-    <text x="75" y="24" fill="#fde047" font-family="'Inter', sans-serif" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1">INTEL</text>
-    <circle cx="75" cy="80" r="30" fill="#713f12" stroke="#fde047" stroke-width="1.5" class="aura-pulse"/>
-    <text x="75" y="92" font-size="30" text-anchor="middle">👁️</text>
-    <text x="75" y="135" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">HINT</text>
-    <text x="75" y="155" fill="#fef08a" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">AI SOLVER</text>
-    <line x1="20" y1="170" x2="130" y2="170" stroke="#334155" stroke-width="1"/>
-    <text x="75" y="195" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10" font-weight="500" text-anchor="middle">
-      <tspan x="75" dy="0">Reveals top 3</tspan>
-      <tspan x="75" dy="14">highest scoring</tspan>
-      <tspan x="75" dy="14">legal word moves.</tspan>
-    </text>
-    <rect x="20" y="245" width="110" height="20" rx="10" fill="#1e293b"/>
-    <text x="75" y="258" fill="#fef08a" font-family="'Inter', sans-serif" font-size="9" font-weight="800" text-anchor="middle">AI CANDIDATE SOLVER</text>
-  </g>
+  <rect x="0" y="55" width="90" height="320" fill="url(#fadeLeft)" pointer-events="none"/>
+  <rect x="1110" y="55" width="90" height="320" fill="url(#fadeRight)" pointer-events="none"/>
 </svg>
