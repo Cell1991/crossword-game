@@ -8,6 +8,6 @@ services:
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
-        value: postgresql+asyncpg://neondb_owner:npg_Trk2AdZJxI1v@ep-long-haze-b57x6p7c-pooler.c-7.us-east-2.aws.neon.tech/neondb?ssl=require
+        value: postgresql+asyncpg://neondb_owner:npg_u1M4njDJWyYc@ep-lingering-river-b5qqbz4r-pooler.c-7.us-east-2.aws.neon.tech/neondb?ssl=require
       - key: CORS_ORIGINS
         value: "*"
