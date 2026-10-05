@@ -59,7 +59,7 @@ export function GameGuideModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-3xl max-h-[86vh] flex flex-col rounded-[28px] sm:rounded-[32px] border border-white/10 bg-[#0c101c]/98 text-left shadow-[0_24px_80px_rgba(0,0,0,0.85)] ring-1 ring-white/5 overflow-hidden"
+        className="relative w-full max-w-3xl h-[86dvh] sm:h-[650px] max-h-[88vh] flex flex-col rounded-[28px] sm:rounded-[32px] border border-white/10 bg-[#0c101c]/98 text-left shadow-[0_24px_80px_rgba(0,0,0,0.85)] ring-1 ring-white/5 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Soft Warm Champagne Accent Line */}
@@ -136,7 +136,7 @@ export function GameGuideModal({
         </div>
 
         {/* Scrollable Content Body - Open, Luxurious & Breathing */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-8 sm:py-6 space-y-3">
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 sm:px-8 sm:py-6 space-y-3">
           {/* TAB 1: BOARD & TILES */}
           {activeTab === 'board' && (
             <div className="space-y-3">
