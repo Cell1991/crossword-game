@@ -45,8 +45,8 @@ export const CARD_DETAILS: Record<string, CardStyleData> = {
   },
   SHIELD: {
     title: 'Shield',
-    subtitle: '95% SCORE SHIELD',
-    description: 'Grants Shield equal to 95% of your points scored (rounded up) to absorb incoming attack damage or block tile swaps.',
+    subtitle: 'FULL BLOCK',
+    description: 'Fully blocks the next incoming attack damage or tile swap. Usable anytime, including an opponent\'s turn.',
     element: 'PASSIVE',
     icon: <Shield className="w-14 h-14 sm:w-16 sm:h-16 text-sky-200 fill-sky-400/20 drop-shadow-[0_0_16px_#38bdf8]" />,
     bgGradient: 'from-sky-950/95 via-[#081830]/98 to-[#060a1a]/95',
@@ -55,8 +55,8 @@ export const CARD_DETAILS: Record<string, CardStyleData> = {
   },
   HEAL: {
     title: 'Heal',
-    subtitle: '90% SCORE HEAL',
-    description: 'Restores HP equal to 90% of your points scored (rounded up).',
+    subtitle: '100% SCORE HEAL',
+    description: 'Restores HP equal to 100% of your points scored on this move.',
     element: 'HP MODE',
     icon: <Heart className="w-14 h-14 sm:w-16 sm:h-16 fill-rose-400 text-rose-200 drop-shadow-[0_0_16px_#fb7185]" />,
     bgGradient: 'from-rose-950/95 via-[#2a0c18]/98 to-[#0d0718]/95',

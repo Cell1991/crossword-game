@@ -19,8 +19,8 @@ interface DebugPanelProps {
 
 const CARD_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string; desc: string }> = {
   HINT: { label: 'Hint', icon: <Lightbulb className="w-3.5 h-3.5 text-amber-300" />, color: 'text-amber-300', desc: 'Reveal top 3 moves' },
-  SHIELD: { label: 'Shield', icon: <Shield className="w-3.5 h-3.5 text-blue-300" />, color: 'text-blue-300', desc: 'Shield 95% of score' },
-  HEAL: { label: 'Heal', icon: <Heart className="w-3.5 h-3.5 text-rose-300" />, color: 'text-rose-300', desc: 'Heal 90% of score' },
+  SHIELD: { label: 'Shield', icon: <Shield className="w-3.5 h-3.5 text-blue-300" />, color: 'text-blue-300', desc: 'Full block, any turn' },
+  HEAL: { label: 'Heal', icon: <Heart className="w-3.5 h-3.5 text-rose-300" />, color: 'text-rose-300', desc: 'Heal 100% of score' },
   FREEZE_TILE: { label: 'Freeze Tile', icon: <Snowflake className="w-3.5 h-3.5 text-cyan-300" />, color: 'text-cyan-300', desc: 'Lock 1–3 tiles' },
   DOUBLE_DAMAGE: { label: 'Double Damage', icon: <Swords className="w-3.5 h-3.5 text-purple-300" />, color: 'text-purple-300', desc: '2× Word damage' },
   SPY_SWAP: { label: 'Spy Swap', icon: <ArrowLeftRight className="w-3.5 h-3.5 text-emerald-300" />, color: 'text-emerald-300', desc: 'Steal 1-7 tiles' },

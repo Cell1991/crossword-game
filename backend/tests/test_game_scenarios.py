@@ -854,23 +854,19 @@ async def test_cd09_shield_can_be_activated_proactively(open_table):
     assert (await table.place(bob, ROW, COL - 1, "CAT")).status_code == 200
     await resolve_damage(table)
 
-    # Alice's shield absorbed the attack: Alice took 0 damage, shield absorbed 5 pts, 5 pts remain
+    # Alice's shield fully blocked the attack - no points math, the card is just consumed outright.
     state_after = await table.state()
     assert me(state_after, alice)["hp"] == 100
-    assert me(state_after, alice)["has_shield"] is True
-    assert me(state_after, alice)["shield_amount"] == 5
+    assert me(state_after, alice)["has_shield"] is False
+    assert me(state_after, alice)["shield_amount"] == 0
 
-    # Pass turn back to Bob to hit Alice with a second attack that consumes remaining shield
+    # Without a shield left, a second attack lands in full.
     assert (await table.act(alice, "pass")).status_code == 200
     await table.set_tiles(racks={bob: "BATSEIO"})
     assert (await table.place(bob, ROW - 1, COL, "B.T", down=True)).status_code == 200
-    await resolve_damage(table)
 
-    # Bob's 5-point BAT attack absorbed remaining 5 shield points; shield is now completely consumed
     state_final = await table.state()
-    assert me(state_final, alice)["hp"] == 100
-    assert me(state_final, alice)["has_shield"] is False
-    assert me(state_final, alice)["shield_amount"] == 0
+    assert me(state_final, alice)["hp"] == 95
 
 
 async def test_cd10_shield_cancels_a_pending_spy_swap(open_table):
@@ -916,6 +912,33 @@ async def test_cd10b_spy_swap_selects_multiple_hidden_opponent_tiles(open_table)
 
     assert letters((await table.player(alice))["rack"]) == "RAOSEIO"
     assert letters((await table.player(bob))["rack"]) == "DTGCUNS"
+
+
+async def test_cd10e_spy_swap_peek_reveals_target_rack_without_spending_card(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.set_cards(alice, ["SPY_SWAP"])
+    await table.set_tiles(racks={alice: "CATSEIO", bob: "DOGRUNS"})
+
+    res = await table.act(alice, "cards/spy-swap/peek", {"target_player_id": bob.id})
+
+    assert res.status_code == 200
+    assert letters(res.json()["rack"]) == "DOGRUNS"
+    # Peeking is free: Alice still holds the card, and neither rack changed.
+    assert me(await table.state(alice), alice)["cards"] == ["SPY_SWAP"]
+    assert letters((await table.player(bob))["rack"]) == "DOGRUNS"
+
+
+async def test_cd10f_spy_swap_peek_requires_the_card_and_your_turn(open_table):
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+
+    no_card = await table.act(alice, "cards/spy-swap/peek", {"target_player_id": bob.id})
+    assert no_card.status_code == 400
+
+    await table.set_cards(bob, ["SPY_SWAP"])
+    not_your_turn = await table.act(bob, "cards/spy-swap/peek", {"target_player_id": alice.id})
+    assert not_your_turn.status_code == 400
 
 
 async def test_cd10c_spy_swap_rejects_more_than_seven_tiles(open_table):
@@ -1289,35 +1312,18 @@ async def test_dm04_debug_endpoints_work_inside_a_debug_room(open_table):
     assert me(res.json(), alice)["hp"] == 1
 
 
-async def test_cd14_heal_move_recovers_90_percent_rounded_up(open_table):
+async def test_cd14_heal_move_recovers_100_percent_of_score(open_table):
     table = await open_table("Alice", "Bob")
     alice, _ = table.seats
     await table.update_player(alice, hp=50)
     await table.set_cards(alice, ["HEAL"])
     await table.set_tiles(racks={alice: "CATSEIO"})
 
-    # CAT earns 5 points. 90% of 5 = 4.5 -> ceil = 5 HP
+    # CAT earns 5 points. Heal is 100% of score, not a percentage - full score back as HP.
     res = await table.place(alice, ROW, COL - 1, "CAT", use_heal=True)
     assert res.status_code == 200
-    assert res.json().get("healed_amount") == 5
+    assert res.json().get("healed_amount") == res.json()["score_earned"]
 
     state = await table.state(alice)
-    assert me(state, alice)["hp"] == 55
+    assert me(state, alice)["hp"] == 50 + res.json()["score_earned"]
     assert "HEAL" not in me(state, alice)["cards"]
-
-
-async def test_cd15_shield_move_grants_95_percent_shield_points(open_table):
-    table = await open_table("Alice", "Bob")
-    alice, _ = table.seats
-    await table.set_cards(alice, ["SHIELD"])
-    await table.set_tiles(racks={alice: "CATSEIO"})
-
-    # CAT earns 5 points. 95% of 5 = 4.75 -> ceil = 5 Shield
-    res = await table.place(alice, ROW, COL - 1, "CAT", use_shield=True)
-    assert res.status_code == 200
-    assert res.json().get("shield_awarded") == 5
-
-    state = await table.state(alice)
-    assert me(state, alice)["has_shield"] is True
-    assert me(state, alice)["shield_amount"] == 5
-    assert "SHIELD" not in me(state, alice)["cards"]

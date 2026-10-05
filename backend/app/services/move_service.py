@@ -16,7 +16,6 @@ from app.database.state import (
     bag_tiles, board_state, player_rack, replace_board_state, replace_game_tiles, replace_player_cards,
 )
 from app.services.game_service import GameService
-import math
 import random
 
 class MoveService:
@@ -191,7 +190,6 @@ class MoveService:
         placed_tiles: list[PlacedTileInput],
         freeze_tile_id: str | None = None,
         use_heal: bool = False,
-        use_shield: bool = False,
     ) -> tuple[CommitMoveResponse, Game, GamePlayer]:
         stmt_game = select(Game).where(Game.id == game_id).with_for_update()
         game = (await db.execute(stmt_game)).scalar_one_or_none()
@@ -314,7 +312,8 @@ class MoveService:
         # Award score
         player.score += score
 
-        # Handle Heal & Shield activated on this move
+        # Handle Heal armed for this move: 100% of the score it earns, resolved the same way
+        # DOUBLE_DAMAGE is - the card is armed first, the effect lands once this move's score is known.
         healed_amount = 0
         is_heal_active = bool(use_heal or (game.pending_heal_player_id == player.id))
         held_cards = list(player.cards or [])
@@ -324,29 +323,12 @@ class MoveService:
             await replace_player_cards(db, player.id, held_cards)
             game.pending_heal_player_id = None
             if score > 0:
-                healed_amount = math.ceil(score * 0.90)
+                healed_amount = score
                 max_cap = getattr(player, "max_hp", 100) or 100
                 player.hp = min(max_cap, player.hp + healed_amount)
                 flag_modified(player, "hp")
         elif is_heal_active:
             game.pending_heal_player_id = None
-
-        shield_awarded = 0
-        is_shield_active = bool(use_shield or (game.pending_shield_player_id == player.id))
-        held_cards = list(player.cards or [])
-        if is_shield_active and "SHIELD" in held_cards:
-            held_cards.remove("SHIELD")
-            player.cards = held_cards
-            await replace_player_cards(db, player.id, held_cards)
-            game.pending_shield_player_id = None
-            if score > 0:
-                shield_awarded = math.ceil(score * 0.95)
-                player.has_shield = True
-                player.shield_amount = (getattr(player, "shield_amount", 0) or 0) + shield_awarded
-                flag_modified(player, "shield_amount")
-                flag_modified(player, "has_shield")
-        elif is_shield_active:
-            game.pending_shield_player_id = None
 
         cards_awarded: list[str] = []
         power_cells_hit = [pt for pt in placed_tiles if Board.is_power_cell(pt.row, pt.col)]
@@ -382,17 +364,12 @@ class MoveService:
                 "amount": healed_amount,
                 "hp_after": player.hp,
                 "turn_number": game.turn_number,
-                "description": f"Healed self for +{healed_amount} HP (90% of {score} pts, Current HP: {player.hp})",
+                "description": f"Healed self for +{healed_amount} HP (100% of {score} pts, Current HP: {player.hp})",
             })
-        if shield_awarded > 0:
-            cards_used.append({
-                "card": "SHIELD",
-                "player_id": player.id,
-                "player_name": player.display_name,
-                "shield_amount": shield_awarded,
-                "turn_number": game.turn_number,
-                "description": f"Activated Shield protection (+{shield_awarded} shield, 95% of {score} pts)",
-            })
+        # cards_used also carries any SHIELD-use events queued earlier (see app/api/cards.py) -
+        # that's how "who used Shield" only becomes visible once a turn actually ends, instead of
+        # the instant it's pressed. revealed_card_events below broadcasts this same list live.
+        revealed_card_events = list(cards_used)
         game.pending_card_events = []
         flag_modified(game, "pending_card_events")
 
@@ -434,7 +411,7 @@ class MoveService:
         damage_dealt: dict[str, int] = {}
         if score > 0 and game.max_turns is None:
             has_shield_holder = any(
-                (getattr(p, "shield_amount", 0) or 0) > 0 or getattr(p, "has_shield", False) or "SHIELD" in (p.cards or [])
+                getattr(p, "has_shield", False) or "SHIELD" in (p.cards or [])
                 for p in all_players if p.id != player.id and p.hp > 0
             )
             amounts = {
@@ -448,22 +425,15 @@ class MoveService:
                     db, game, type="DAMAGE", source_player_id=player.id, damage=amounts
                 )
             else:
+                # Nobody here can shield, so there is nothing to wait on: a held Shield fully
+                # blocks this hit (one-time, not points-sized) and gets consumed immediately.
                 for opponent in all_players:
                     if opponent.id in amounts:
                         amount = amounts[opponent.id]
-                        current_shield = getattr(opponent, "shield_amount", 0) or 0
-                        if current_shield > 0:
-                            if current_shield >= amount:
-                                opponent.shield_amount = current_shield - amount
-                                opponent.has_shield = opponent.shield_amount > 0
-                            else:
-                                remaining = amount - current_shield
-                                opponent.shield_amount = 0
-                                opponent.has_shield = False
-                                opponent.hp = max(0, opponent.hp - remaining)
-                        else:
-                            opponent.shield_amount = 0
+                        if getattr(opponent, "has_shield", False):
                             opponent.has_shield = False
+                            opponent.shield_amount = 0
+                        else:
                             opponent.hp = max(0, opponent.hp - amount)
                         flag_modified(opponent, "shield_amount")
                         flag_modified(opponent, "has_shield")
@@ -511,7 +481,7 @@ class MoveService:
             damage_dealt=damage_dealt if damage_dealt else None,
             double_damage_target_id=double_damage_target_id,
             healed_amount=healed_amount if healed_amount > 0 else None,
-            shield_awarded=shield_awarded if shield_awarded > 0 else None,
+            revealed_card_events=revealed_card_events,
         )
 
         return res, game, player

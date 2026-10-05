@@ -64,7 +64,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
     shortTitle: 'Shield',
     subtitle: 'PROTECTION',
     element: 'PASSIVE',
-    description: 'Grants Shield equal to 95% of your points scored (rounded up) to block incoming attacks or swaps.',
+    description: 'Fully blocks the next incoming attack or swap. Usable anytime, including an opponent\'s turn.',
     ownTurnOnly: false,
     icon: <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-200 fill-sky-400/20 drop-shadow-[0_0_8px_#38bdf8]" />,
     bgGradient: 'from-sky-950/95 via-blue-950/90 to-slate-950/95',
@@ -112,7 +112,7 @@ export const POWER_CARDS_META: Record<string, CardPowerMeta> = {
     shortTitle: 'Heal',
     subtitle: 'RESTORE HP',
     element: 'HP MODE',
-    description: 'Restores HP equal to 90% of your points scored (rounded up).',
+    description: 'Restores HP equal to 100% of your points scored on this move.',
     ownTurnOnly: false,
     icon: <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-rose-400 text-rose-200 drop-shadow-[0_0_8px_#fb7185]" />,
     bgGradient: 'from-rose-950/95 via-pink-950/90 to-slate-950/95',
@@ -169,14 +169,14 @@ interface PowerCardBarProps {
   deferredFreezeTileId: string | null;
   deferredHeal?: boolean;
   onCancelDeferredHeal?: () => void;
-  deferredShield?: boolean;
-  onCancelDeferredShield?: () => void;
   estimatedScore?: number;
   myScore?: number;
   busy?: boolean;
   onUseSimple: (card: SimpleCard) => void;
   onUseTargeted: (card: TargetedCard, targetPlayerId: string) => void;
   onUseSpySwap: (targetPlayerId: string, ownTileIds: string[], targetTileIndices: number[]) => void;
+  /** Read-only: fetches the target's real rack letters (visible to this player alone). */
+  onPeekSpyTarget: (targetPlayerId: string) => Promise<{ letter: string; value: number }[]>;
   onArmBoardCard: (card: BoardCard) => void;
   onCancelArm: () => void;
   onConfirmArmedCell: () => void;
@@ -196,14 +196,13 @@ export const PowerCardBar = memo(function PowerCardBar({
   deferredFreezeTileId,
   deferredHeal = false,
   onCancelDeferredHeal,
-  deferredShield = false,
-  onCancelDeferredShield,
   estimatedScore = 0,
   myScore = 0,
   busy,
   onUseSimple,
   onUseTargeted,
   onUseSpySwap,
+  onPeekSpyTarget,
   onArmBoardCard,
   onCancelArm,
   onConfirmArmedCell,
@@ -211,6 +210,8 @@ export const PowerCardBar = memo(function PowerCardBar({
 }: PowerCardBarProps) {
   const [pickingTargetFor, setPickingTargetFor] = useState<TargetedCard | null>(null);
   const [spySwapStep, setSpySwapStep] = useState<SpySwapStep | null>(null);
+  const [targetRackTiles, setTargetRackTiles] = useState<{ letter: string; value: number }[] | null>(null);
+  const [peekingTarget, setPeekingTarget] = useState(false);
   const [spyOwnTileIds, setSpyOwnTileIds] = useState<string[]>([]);
   const [spyTargetPlayerId, setSpyTargetPlayerId] = useState<string | null>(null);
   const [spyTargetTileIndices, setSpyTargetTileIndices] = useState<number[]>([]);
@@ -243,7 +244,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   }
 
   if (deferredHeal) {
-    const healVal = Math.ceil((estimatedScore || 0) * 0.9);
+    const healVal = estimatedScore || 0;
     return (
       <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-rose-400/80 bg-gradient-to-r from-rose-950 via-pink-950 to-slate-950 px-3 py-1.5 text-xs text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.4)] ring-1 ring-rose-400/30">
         <div className="flex items-center gap-2 min-w-0">
@@ -251,37 +252,13 @@ export const PowerCardBar = memo(function PowerCardBar({
             <Heart className="w-3.5 h-3.5 fill-rose-400 text-rose-200" />
           </div>
           <span className="font-semibold text-slate-100 text-xs truncate">
-            <strong className="text-rose-300 font-extrabold">Heal Armed</strong> — +{healVal} HP on move (90%)
+            <strong className="text-rose-300 font-extrabold">Heal Armed</strong> — +{healVal} HP on move (100%)
           </span>
         </div>
         <button
           type="button"
           onClick={onCancelDeferredHeal}
           className="flex shrink-0 items-center gap-1.5 rounded-lg border border-rose-400/40 bg-rose-950/80 hover:bg-rose-900 px-2.5 py-1 text-xs font-bold text-rose-200 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
-        >
-          <X className="w-3.5 h-3.5" />
-          <span>Unmark</span>
-        </button>
-      </div>
-    );
-  }
-
-  if (deferredShield) {
-    const shieldVal = Math.ceil((estimatedScore || 0) * 0.95);
-    return (
-      <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-sky-400/80 bg-gradient-to-r from-sky-950 via-blue-950 to-slate-950 px-3 py-1.5 text-xs text-sky-100 shadow-[0_0_20px_rgba(14,165,233,0.4)] ring-1 ring-sky-400/30">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-sky-500/20 border border-sky-400/50 shadow-[0_0_8px_rgba(14,165,233,0.5)] shrink-0">
-            <Shield className="w-3.5 h-3.5 text-sky-200 fill-sky-400/20" />
-          </div>
-          <span className="font-semibold text-slate-100 text-xs truncate">
-            <strong className="text-sky-300 font-extrabold">Shield Armed</strong> — +{shieldVal} Shield on move (95%)
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={onCancelDeferredShield}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-sky-400/40 bg-sky-950/80 hover:bg-sky-900 px-2.5 py-1 text-xs font-bold text-sky-200 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
         >
           <X className="w-3.5 h-3.5" />
           <span>Unmark</span>
@@ -442,6 +419,7 @@ export const PowerCardBar = memo(function PowerCardBar({
       setSpyOwnTileIds([]);
       setSpyTargetPlayerId(null);
       setSpyTargetTileIndices([]);
+      setTargetRackTiles(null);
     };
 
     return (
@@ -546,10 +524,14 @@ export const PowerCardBar = memo(function PowerCardBar({
                 <button
                   key={opponent.id}
                   type="button"
-                  disabled={busy || opponent.rack_count < spyOwnTileIds.length}
-                  onClick={() => {
+                  disabled={busy || peekingTarget || opponent.rack_count < spyOwnTileIds.length}
+                  onClick={async () => {
                     setSpyTargetPlayerId(opponent.id);
                     setSpyTargetTileIndices([]);
+                    setPeekingTarget(true);
+                    const rack = await onPeekSpyTarget(opponent.id);
+                    setTargetRackTiles(rack);
+                    setPeekingTarget(false);
                     setSpySwapStep('tiles');
                   }}
                   className="rounded-lg border border-emerald-400/60 bg-emerald-950/70 hover:bg-emerald-800/90 px-3 py-1 sm:px-3.5 sm:py-1.5 font-extrabold text-emerald-200 hover:text-white disabled:opacity-40 transition-all cursor-pointer shadow-md text-xs active:scale-95"
@@ -573,24 +555,47 @@ export const PowerCardBar = memo(function PowerCardBar({
         {spySwapStep === 'tiles' && selectedOpponent && (
           <div className="flex flex-col items-center gap-1.5 sm:gap-2 w-full">
             <span className="font-extrabold text-emerald-300 text-xs self-start">
-              Pick {spyOwnTileIds.length} from {selectedOpponent.display_name}:
+              Pick {spyOwnTileIds.length} from {selectedOpponent.display_name} (revealed to you only):
             </span>
             <div className="flex flex-nowrap items-center justify-center gap-1 sm:gap-1.5 w-full py-1.5 overflow-visible">
-              {Array.from({ length: selectedOpponent.rack_count }, (_, index) => {
+              {Array.from({ length: targetRackTiles?.length ?? selectedOpponent.rack_count }, (_, index) => {
                 const selected = spyTargetTileIndices.includes(index);
+                const tile = targetRackTiles?.[index];
                 return (
                   <button
                     key={index}
                     type="button"
                     disabled={!selected && spyTargetTileIndices.length >= spyOwnTileIds.length}
                     onClick={() => toggleTargetSlot(index)}
-                    className={`h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] shrink-0 rounded-lg sm:rounded-xl font-black text-sm sm:text-base transition-all duration-150 cursor-pointer active:scale-95 flex items-center justify-center ${
+                    className={`tile-face relative h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] shrink-0 rounded-lg sm:rounded-xl font-sans transition-all duration-150 cursor-pointer active:scale-95 flex flex-col items-center justify-center ${
                       selected
-                        ? 'border-2 border-emerald-200 bg-emerald-700 text-white ring-2 sm:ring-[3px] ring-emerald-400 shadow-[0_0_18px_rgba(16,185,129,0.95)] -translate-y-1 scale-[1.05] z-20'
-                        : 'border border-slate-700 bg-slate-800/90 text-slate-300 hover:border-emerald-400 hover:text-white z-10'
+                        ? 'border-2 border-emerald-300 ring-2 sm:ring-[3px] ring-emerald-400 shadow-[0_0_18px_rgba(16,185,129,0.95),inset_0_0_8px_rgba(16,185,129,0.4)] -translate-y-1 scale-[1.05] z-20'
+                        : 'border border-amber-200/90 hover:brightness-105 z-10'
                     }`}
                   >
-                    ?
+                    {!tile ? (
+                      <span className="text-sm sm:text-base font-black text-slate-400">?</span>
+                    ) : isBlankLetter(tile.letter) ? (
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="tile-blank-star w-3.5 h-3.5 sm:w-4 sm:h-4"
+                        fill="currentColor"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 0L14.4 8.6L23 11L14.4 13.4L12 22L9.6 13.4L1 11L9.6 8.6L12 0Z" />
+                      </svg>
+                    ) : (
+                      <span className="tile-letter tile-letter-orange text-[18px] sm:text-[20px] leading-none font-maple inline-block">
+                        {tile.letter}
+                      </span>
+                    )}
+                    {tile && (
+                      <span className="tile-score-blue absolute bottom-0.5 right-0.5 z-20 text-[8px] sm:text-[9px] font-maple leading-none">
+                        {tile.value}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -670,13 +675,12 @@ export const PowerCardBar = memo(function PowerCardBar({
     const isShield = confirmingSimpleCard === 'SHIELD';
     const isHint = confirmingSimpleCard === 'HINT';
     const scoreVal = myScore ?? 0;
-    const healVal = Math.ceil(scoreVal * 0.9);
-    const shieldVal = Math.ceil(scoreVal * 0.95);
+    const healVal = scoreVal;
 
     const label = isHeal
       ? `Use Heal (+${healVal} HP)?`
       : isShield
-      ? `Use Shield (+${shieldVal} Shield)?`
+      ? 'Use Shield (fully blocks the next hit)?'
       : `Use ${meta.title}?`;
 
     return (
@@ -789,10 +793,8 @@ export const PowerCardBar = memo(function PowerCardBar({
               } else if (card === 'SPY_SWAP') {
                 setSpySwapStep('own');
                 setSpyOwnTileIds([]);
-              } else if (card === 'HINT') {
+              } else if (card === 'HINT' || card === 'SHIELD') {
                 setConfirmingSimpleCard(card);
-              } else if (card === 'HEAL' || card === 'SHIELD') {
-                onUseSimple(card as SimpleCard);
               } else {
                 onUseSimple(card as SimpleCard);
               }

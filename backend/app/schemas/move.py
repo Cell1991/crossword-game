@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Any, Optional
 
 from app.core.config import settings
 
@@ -31,7 +31,6 @@ class CommitMoveRequest(BaseModel):
     # in the same turn (rather than needing an already-committed tile from a prior turn).
     freeze_tile_id: Optional[str] = None
     use_heal: Optional[bool] = False
-    use_shield: Optional[bool] = False
 
 class CommitMoveResponse(BaseModel):
     success: bool
@@ -48,7 +47,9 @@ class CommitMoveResponse(BaseModel):
     damage_dealt: Optional[dict[str, int]] = None
     double_damage_target_id: Optional[str] = None
     healed_amount: Optional[int] = None
-    shield_awarded: Optional[int] = None
+    # Card events (e.g. a reactive SHIELD block) that were held back until this move committed -
+    # that is how "who used Shield" only becomes visible after the turn ends.
+    revealed_card_events: list[dict[str, Any]] = []
 
 class ExchangeTilesRequest(BaseModel):
     # No upper bound: cards such as DRAW_TILE can push a rack past RACK_SIZE.

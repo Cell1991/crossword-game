@@ -247,21 +247,13 @@ class GameService:
             for player in players:
                 amount = effect["damage"].get(player.id)
                 if amount and amount > 0:
-                    current_shield = getattr(player, "shield_amount", 0) or 0
-                    if current_shield > 0:
-                        if current_shield >= amount:
-                            player.shield_amount = current_shield - amount
-                            player.has_shield = player.shield_amount > 0
-                            applied[player.id] = 0
-                        else:
-                            remaining = amount - current_shield
-                            player.shield_amount = 0
-                            player.has_shield = False
-                            player.hp = max(0, player.hp - remaining)
-                            applied[player.id] = remaining
-                    else:
-                        player.shield_amount = 0
+                    # Shield is a one-time full block, not a points-sized pool: active Shield
+                    # negates this hit entirely and is consumed, regardless of its size.
+                    if getattr(player, "has_shield", False):
                         player.has_shield = False
+                        player.shield_amount = 0
+                        applied[player.id] = 0
+                    else:
                         player.hp = max(0, player.hp - amount)
                         applied[player.id] = amount
                     flag_modified(player, "shield_amount")
@@ -512,7 +504,11 @@ class GameService:
             max_turns=game.max_turns,
             starting_hp=game.starting_hp,
             pending_effect=GameService._visible_pending_effect(game.pending_effect, requesting_player_id),
-            pending_double_target_id=game.pending_double_target_id,
+            # Hidden from the target (and everyone else) until the attacker's move actually lands -
+            # only the player who armed it (still the current turn holder at this point) can see it.
+            pending_double_target_id=(
+                game.pending_double_target_id if requesting_player_id == game.current_player_id else None
+            ),
             frozen_tile=GameService._visible_frozen_tile(game.frozen_tile, game.turn_number),
             is_debug=bool(room and room.is_debug),
             enable_grimoire=bool(getattr(game, "enable_grimoire", False) or (room and getattr(room, "enable_grimoire", False))),

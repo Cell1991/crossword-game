@@ -1,7 +1,7 @@
 'use client';
 
 import { startTransition, useCallback, useEffect, useRef, useState } from 'react';
-import { playCard, UseCardPayload } from '@/lib/api';
+import { peekSpySwapTarget, playCard, SpySwapPeekTile, UseCardPayload } from '@/lib/api';
 import { BoardCard, BoardCell, CellPosition, HintSuggestion, PlacedTile } from '@/lib/types';
 import { isCellCommitted } from '@/lib/tiles';
 import { GameToasts } from './useGameToasts';
@@ -29,7 +29,6 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   // recall *is* the cancel, so no extra confirmation step is needed for this path.
   const [deferredFreezeTileId, setDeferredFreezeTileId] = useState<string | null>(null);
   const [deferredHeal, setDeferredHeal] = useState<boolean>(false);
-  const [deferredShield, setDeferredShield] = useState<boolean>(false);
   const [hintCell, setHintCell] = useState<CellPosition | null>(null);
   const [hintSuggestions, setHintSuggestions] = useState<HintSuggestion[]>([]);
   const [activeHintIndex, setActiveHintIndex] = useState<number>(0);
@@ -124,11 +123,9 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
         setDeferredHeal(prev => !prev);
         return;
       }
-      if (card === 'SHIELD') {
-        setDeferredShield(prev => !prev);
-        return;
-      }
-      return runCard({ card });
+      // SHIELD activates immediately (like HINT): it's a one-time full block usable anytime,
+      // including an opponent's turn, so there's nothing to arm ahead of a future move.
+      return runCard({ card }, card === 'SHIELD' ? 'Failed to use Shield' : undefined);
     },
     [runCard],
   );
@@ -145,6 +142,18 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
       target_tile_indices: targetTileIndices,
     })
   ), [runCard]);
+
+  /** Read-only: shows the target's real rack letters to this player alone. Spends nothing - only
+   * playSpySwap (Confirm Swap) actually consumes the card. */
+  const peekSpySwap = useCallback(async (targetPlayerId: string): Promise<SpySwapPeekTile[]> => {
+    if (!myPlayerId) return [];
+    try {
+      return await peekSpySwapTarget(gameId, myPlayerId, targetPlayerId);
+    } catch (error: unknown) {
+      flashError(error instanceof Error ? error.message : 'Failed to peek opponent tiles');
+      return [];
+    }
+  }, [flashError, gameId, myPlayerId]);
 
   /** Blocks an incoming DAMAGE/SWAP while its window is open. */
   const playShield = useCallback(() => runCard({ card: 'SHIELD' }, 'Failed to use Shield'), [runCard]);
@@ -230,7 +239,6 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   }, []);
   const cancelDeferredFreeze = useCallback(() => setDeferredFreezeTileId(null), []);
   const cancelDeferredHeal = useCallback(() => setDeferredHeal(false), []);
-  const cancelDeferredShield = useCallback(() => setDeferredShield(false), []);
 
   const activeHintTiles = hintSuggestions.length > 0
     ? (hintSuggestions[activeHintIndex]?.tiles ?? null)
@@ -248,8 +256,6 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     cancelDeferredFreeze,
     deferredHeal,
     cancelDeferredHeal,
-    deferredShield,
-    cancelDeferredShield,
     hintCell,
     hintSuggestions,
     activeHintIndex,
@@ -260,6 +266,7 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     playSimpleCard,
     playTargetedCard,
     playSpySwap,
+    peekSpySwap,
     playShield,
     playArmedCardAt,
   };

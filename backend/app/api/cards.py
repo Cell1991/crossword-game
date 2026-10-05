@@ -129,12 +129,9 @@ async def use_card(
     if card == "SHIELD":
         cards.remove(card)
         player.cards = cards
-        import math
-        shield_amt = max(1, math.ceil(player.score * 0.95)) if player.score > 0 else 10
-        current_shield = getattr(player, "shield_amount", 0) or 0
-        total_shield = current_shield + shield_amt
-        player.shield_amount = total_shield
-        player.has_shield = total_shield > 0
+        # Shield is a one-time full block, not a points-sized pool: no score math, just "armed".
+        player.has_shield = True
+        player.shield_amount = 0
         await replace_player_cards(db, player.id, cards)
 
         effect = game.pending_effect
@@ -148,64 +145,42 @@ async def use_card(
             (effect["type"] == "DAMAGE" and player.id in effect.get("damage", {}))
             or (effect["type"] in ("SWAP", "SPY_SWAP") and player.id == effect.get("target_player_id"))
         )
+        blocked = bool(targets_me)
 
+        if blocked:
+            player.has_shield = False
+            if effect["type"] == "DAMAGE":
+                remaining_damage = {pid: amount for pid, amount in effect["damage"].items() if pid != player.id}
+                game.pending_effect = {**effect, "damage": remaining_damage} if remaining_damage else None
+            else:
+                game.pending_effect = None
+            flag_modified(player, "has_shield")
+
+        flag_modified(player, "shield_amount")
+
+        # Deliberately no live CARD_USED/EFFECT_RESOLVED broadcast here: who used Shield (and
+        # whether it blocked anything) stays hidden until the next move commits and surfaces it
+        # via revealed_card_events - that's "announce after the turn ends", not the instant it's used.
         card_event = {
             "card": "SHIELD",
             "player_id": player.id,
             "player_name": player.display_name,
             "turn_number": game.turn_number,
-            "shield_amount": shield_amt,
-            "blocked": bool(targets_me),
-            "description": f"Activated Shield (Blocked incoming effect!)" if targets_me else f"Activated Shield protection (+{shield_amt} shield, 95% of {player.score} pts)",
+            "blocked": blocked,
+            "description": "Blocked an incoming attack with Shield!" if blocked else "Activated Shield (fully blocks the next hit)",
         }
         pending = list(game.pending_card_events or [])
         pending.append(card_event)
         game.pending_card_events = pending
         flag_modified(game, "pending_card_events")
 
-        if targets_me:
-            if effect["type"] == "DAMAGE":
-                incoming_damage = effect["damage"].get(player.id, 0)
-                if total_shield >= incoming_damage:
-                    player.shield_amount = total_shield - incoming_damage
-                    player.has_shield = player.shield_amount > 0
-                    remaining_damage = {pid: amount for pid, amount in effect["damage"].items() if pid != player.id}
-                    game.pending_effect = {**effect, "damage": remaining_damage} if remaining_damage else None
-                else:
-                    remaining_damage_for_player = incoming_damage - total_shield
-                    player.shield_amount = 0
-                    player.has_shield = False
-                    effect_damage = dict(effect["damage"])
-                    effect_damage[player.id] = remaining_damage_for_player
-                    game.pending_effect = {**effect, "damage": effect_damage}
-            else:
-                game.pending_effect = None
-
-            flag_modified(player, "shield_amount")
-            flag_modified(player, "has_shield")
-            await db.commit()
-            await manager.broadcast(game_id, WebSocketEvent(
-                type=EventType.CARD_USED,
-                payload={"playerId": player.id, "card": card, "shieldAmount": player.shield_amount},
-            ).model_dump())
-            await manager.broadcast(game_id, WebSocketEvent(
-                type=EventType.EFFECT_RESOLVED,
-                payload={"type": effect["type"], "blocked": True, "blockedBy": player.id},
-            ).model_dump())
-            return {"success": True, "blocked": True, "has_shield": player.has_shield, "shield_amount": player.shield_amount}
-
-        flag_modified(player, "shield_amount")
-        flag_modified(player, "has_shield")
         await db.commit()
-        await manager.broadcast(game_id, WebSocketEvent(
-            type=EventType.CARD_USED,
-            payload={"playerId": player.id, "card": card, "shieldAmount": player.shield_amount},
-        ).model_dump())
+        # A silent refresh only - no identity or outcome revealed live.
         await manager.broadcast(game_id, WebSocketEvent(
             type=EventType.GAME_STATE_SYNC,
-            payload={"reason": "CARD_USED", "card": "SHIELD", "playerId": player.id, "shieldAmount": player.shield_amount},
+            payload={"reason": "SHIELD_USED"},
         ).model_dump())
-        return {"success": True, "blocked": False, "has_shield": player.has_shield, "shield_amount": player.shield_amount}
+        return {"success": True, "blocked": blocked, "has_shield": player.has_shield, "shield_amount": player.shield_amount}
 
     if card == "DOUBLE_DAMAGE":
         if game.current_player_id != player.id:
@@ -231,14 +206,12 @@ async def use_card(
         flag_modified(game, "pending_card_events")
         await db.commit()
 
+        # Deliberately no target reveal here: the victim (and everyone else) only learns who was
+        # targeted once the hit actually lands, via MOVE_COMMITTED's doubleDamageTargetId. A bare
+        # GAME_STATE_SYNC still lets the caster's own client refresh its hand/armed state.
         await manager.broadcast(game_id, WebSocketEvent(
-            type=EventType.CARD_USED,
-            payload={
-                "playerId": player.id,
-                "card": card,
-                "targetPlayerId": target.id,
-                "pendingDoubleTargetId": target.id,
-            },
+            type=EventType.GAME_STATE_SYNC,
+            payload={"reason": "DOUBLE_DAMAGE_ARMED"},
         ).model_dump())
         return {"success": True, "target_player_id": target.id}
 
@@ -247,8 +220,7 @@ async def use_card(
     await replace_player_cards(db, player.id, cards)
 
     if card == "HEAL":
-        import math
-        heal_amt = max(1, math.ceil(player.score * 0.90)) if player.score > 0 else 0
+        heal_amt = player.score if player.score > 0 else 0
         max_cap = getattr(player, "max_hp", 100) or 100
         old_hp = player.hp
         player.hp = min(max_cap, player.hp + heal_amt)
@@ -261,7 +233,7 @@ async def use_card(
             "amount": actual_heal,
             "hp_after": player.hp,
             "turn_number": game.turn_number,
-            "description": f"Healed self for +{actual_heal} HP (90% of {player.score} pts, Current HP: {player.hp})",
+            "description": f"Healed self for +{actual_heal} HP (100% of {player.score} pts, Current HP: {player.hp})",
         }
         pending = list(game.pending_card_events or [])
         pending.append(card_event)
@@ -478,6 +450,41 @@ async def use_card(
         return {"success": True}
 
     raise HTTPException(status_code=400, detail="Unknown card")
+
+
+class SpySwapPeekRequest(BaseModel):
+    target_player_id: str
+
+
+@router.post("/spy-swap/peek")
+async def peek_spy_swap_target(
+    game_id: str,
+    request: SpySwapPeekRequest,
+    x_player_id: str = Header(..., alias="X-Player-ID"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Reveals an opponent's rack letters to the Spy Swap caster only, so they can pick
+    deliberately instead of blind-guessing by index. Read-only: costs nothing, spends no card -
+    only Confirm Swap (the existing /use endpoint) actually consumes the card and trades tiles."""
+    game = (await db.execute(select(Game).where(Game.id == game_id))).scalar_one_or_none()
+    player = (await db.execute(select(GamePlayer).where(GamePlayer.id == x_player_id, GamePlayer.game_id == game_id))).scalar_one_or_none()
+    if not game or not player:
+        raise HTTPException(status_code=404, detail="Game or player not found")
+    if game.status != "PLAYING":
+        raise HTTPException(status_code=400, detail="Game is not currently active")
+    if game.current_player_id != player.id:
+        raise HTTPException(status_code=400, detail="Spy Swap can only be used on your turn")
+    cards = await player_cards(db, player.id)
+    if "SPY_SWAP" not in cards:
+        raise HTTPException(status_code=400, detail="You don't have a Spy Swap card")
+
+    target = await _target_player(db, game_id, request.target_player_id, player.id)
+    target_rack = await player_rack(db, target.id)
+    return {
+        "success": True,
+        "target_player_id": target.id,
+        "rack": [{"letter": t.get("letter", ""), "value": t.get("value", 0)} for t in target_rack],
+    }
 
 
 async def _target_player(db: AsyncSession, game_id: str, target_id: Optional[str], own_id: str) -> GamePlayer:

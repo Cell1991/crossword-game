@@ -320,7 +320,7 @@ export function GameGuideModal({
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    Grants <span className="text-amber-200/95 font-medium">Shield equal to 95% of your points scored</span> (rounded up) to absorb incoming attack damage or block tile swaps.
+                    <span className="text-amber-200/95 font-medium">Fully blocks</span> the next incoming attack damage or tile swap - no points math, usable anytime including an opponent's turn.
                   </p>
                 </div>
               </div>
@@ -338,7 +338,7 @@ export function GameGuideModal({
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                    <span className="text-amber-200/95 font-medium">Restores HP</span> equal to 90% of your points scored (rounded up).
+                    <span className="text-amber-200/95 font-medium">Restores HP</span> equal to 100% of your points scored on this move.
                   </p>
                 </div>
               </div>

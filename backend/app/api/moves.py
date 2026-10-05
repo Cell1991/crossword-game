@@ -35,7 +35,6 @@ async def commit_move(
         db, game_id, x_player_id, req.placed_tiles,
         freeze_tile_id=req.freeze_tile_id,
         use_heal=bool(req.use_heal),
-        use_shield=bool(req.use_shield),
     )
     # Save before telling anyone: clients reload the game the moment an event arrives.
     await db.commit()
@@ -62,7 +61,7 @@ async def commit_move(
             "damageDealt": res.damage_dealt,
             "doubleDamageTargetId": res.double_damage_target_id,
             "healedAmount": res.healed_amount,
-            "shieldAwarded": res.shield_awarded,
+            "revealedCardEvents": res.revealed_card_events,
             "players": [
                 {
                     "id": p.id,

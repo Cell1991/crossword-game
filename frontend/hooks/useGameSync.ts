@@ -260,6 +260,31 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
               setScreenVignette('DOUBLE_DAMAGE');
             }
           }
+
+          // Heal resolves with the move (same timing as Double Damage) - this is the first live
+          // reveal of it, so give it the same top banner the instant-use cards get.
+          if (event.payload?.healedAmount) {
+            const healerName = nameOf(event.payload?.playerId as string | undefined, 'Player');
+            flashInfo(`${healerName} healed +${event.payload.healedAmount} HP!`);
+            setActiveCardCast({ playerName: healerName, card: 'HEAL' });
+            window.setTimeout(() => setActiveCardCast(null), 2500);
+            setScreenVignette('HEAL');
+          }
+
+          // Shield intentionally has no live reveal when it's used - who used it (and whether it
+          // blocked anything) only surfaces here, once the next move commits and "the turn" it
+          // happened in is effectively over.
+          const revealedEvents = Array.isArray(event.payload?.revealedCardEvents)
+            ? (event.payload.revealedCardEvents as Array<Record<string, unknown>>)
+            : [];
+          for (const revealed of revealedEvents) {
+            if (revealed?.card !== 'SHIELD') continue;
+            const shielderId = revealed.player_id as string | undefined;
+            const shielderName = nameOf(shielderId, (revealed.player_name as string) || 'Player');
+            flashInfo(revealed.blocked ? `${shielderName} blocked an attack with Shield!` : `${shielderName} used Shield.`);
+            setActiveCardCast({ playerName: shielderName, card: 'SHIELD' });
+            window.setTimeout(() => setActiveCardCast(null), 2500);
+          }
         }
         loadGameState();
         const wordsFormed = event.payload?.wordsFormed ?? [];
@@ -302,18 +327,18 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
         break;
       }
       case 'CARD_USED': {
+        // DOUBLE_DAMAGE and SHIELD never reach this case: the server deliberately broadcasts
+        // GAME_STATE_SYNC for those instead, so neither the target nor the shield's user leaks
+        // here - both only surface later via MOVE_COMMITTED (doubleDamageTargetId / revealedCardEvents).
         loadGameState();
         const playerId = event.payload?.playerId;
         const card = event.payload?.card;
         if (!playerId || !card) break;
         const sourceName = nameOf(playerId, playerId === myPlayerId ? 'You' : 'Player');
-        const targetId = (event.payload?.pendingDoubleTargetId || event.payload?.targetPlayerId) as string | undefined;
-        const targetName = targetId ? nameOf(targetId, targetId === myPlayerId ? 'You' : 'Opponent') : null;
 
         setActiveCardCast({
           playerName: sourceName,
           card,
-          targetPlayerName: targetName,
         });
         window.setTimeout(() => setActiveCardCast(null), 2500);
 
@@ -354,30 +379,11 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
           }
         } else if (card === 'HEAL') {
           setScreenVignette('HEAL');
-        } else if (card === 'DOUBLE_DAMAGE') {
-          setScreenVignette('DOUBLE_DAMAGE');
-          if (targetId) {
-            const isVictim = targetId === myPlayerId;
-            const isCaster = playerId === myPlayerId;
-            setTargetLockAlert({
-              id: `lock-${Date.now()}-${Math.random()}`,
-              sourcePlayerId: playerId,
-              sourcePlayerName: sourceName,
-              targetPlayerId: targetId,
-              targetPlayerName: targetName ?? 'Opponent',
-              isVictim,
-              isCaster,
-            });
-          }
         } else if (card === 'SPY_SWAP') {
           setScreenVignette('SWAP');
         }
 
         setCardUseEffects(previous => ({ ...previous, [playerId]: card }));
-        if (targetId) {
-          replaceGameState(prev => prev ? { ...prev, pending_double_target_id: targetId } : prev);
-          flashInfo(`${sourceName} targeted ${targetName} with Word ×2!`);
-        }
         loadGameState();
         window.setTimeout(() => {
           setCardUseEffects(previous => {

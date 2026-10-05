@@ -399,17 +399,12 @@ export default function GamePage() {
         myPlayerId,
         tilesToCommit,
         freezeTileId,
-        cards.deferredHeal,
-        cards.deferredShield
+        cards.deferredHeal
       );
       if (cards.deferredHeal) cards.cancelDeferredHeal();
-      if (cards.deferredShield) cards.cancelDeferredShield();
       if (res) {
         if (res.healed_amount) {
           toasts.flashInfo(`❤️ Healed +${res.healed_amount} HP from move!`);
-        }
-        if (res.shield_awarded) {
-          toasts.flashInfo(`🛡️ Gained +${res.shield_awarded} Shield from move!`);
         }
         setGameState(prev => {
           if (!prev) return prev;
@@ -940,14 +935,13 @@ export default function GamePage() {
                   deferredFreezeTileId={cards.deferredFreezeTileId}
                   deferredHeal={cards.deferredHeal}
                   onCancelDeferredHeal={cards.cancelDeferredHeal}
-                  deferredShield={cards.deferredShield}
-                  onCancelDeferredShield={cards.cancelDeferredShield}
                   estimatedScore={staged.estimatedScore || 0}
                   myScore={myPlayer?.score ?? 0}
                   busy={cards.busy}
                   onUseSimple={cards.playSimpleCard}
                   onUseTargeted={cards.playTargetedCard}
                   onUseSpySwap={cards.playSpySwap}
+                  onPeekSpyTarget={cards.peekSpySwap}
                   onArmBoardCard={cards.armBoardCard}
                   onCancelArm={cards.cancelArm}
                   onConfirmArmedCell={cards.confirmArmedCardAt}

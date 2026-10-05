@@ -421,8 +421,7 @@ export async function commitMove(
   playerId: string,
   placedTiles: PlacedTile[],
   freezeTileId?: string,
-  useHeal?: boolean,
-  useShield?: boolean
+  useHeal?: boolean
 ): Promise<CommitMoveResponse> {
   const res = await fetch(`${getApiBase()}/games/${gameId}/moves`, {
     method: 'POST',
@@ -434,7 +433,6 @@ export async function commitMove(
       placed_tiles: placedTiles,
       freeze_tile_id: freezeTileId,
       use_heal: !!useHeal,
-      use_shield: !!useShield,
     }),
   });
   if (!res.ok) {
@@ -508,6 +506,30 @@ export async function playCard(gameId: string, playerId: string, payload: UseCar
     throw new Error(getErrorMessage(err, 'Failed to use card'));
   }
   return res.json();
+}
+
+export interface SpySwapPeekTile {
+  letter: string;
+  value: number;
+}
+
+/** Reveals an opponent's rack letters to the Spy Swap caster only (read-only, costs nothing -
+ * only playCard({card: 'SPY_SWAP', ...}) actually spends the card). */
+export async function peekSpySwapTarget(gameId: string, playerId: string, targetPlayerId: string): Promise<SpySwapPeekTile[]> {
+  const res = await fetch(`${getApiBase()}/games/${gameId}/cards/spy-swap/peek`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Player-ID': playerId,
+    },
+    body: JSON.stringify({ target_player_id: targetPlayerId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(getErrorMessage(err, 'Failed to peek opponent tiles'));
+  }
+  const data = await res.json();
+  return (data.rack ?? []) as SpySwapPeekTile[];
 }
 
 /** Applies a pending DAMAGE/SWAP effect once its SHIELD window has passed; a no-op if it's still open. */
