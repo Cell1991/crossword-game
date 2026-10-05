@@ -365,7 +365,7 @@ export const PowerCardBar = memo(function PowerCardBar({
             </div>
 
             {/* Tiles Row */}
-            <div className="flex flex-nowrap items-center justify-center gap-1 sm:gap-1.5 w-full py-0.5 overflow-hidden">
+            <div className="flex flex-nowrap items-center justify-center gap-1 sm:gap-1.5 w-full py-1.5 overflow-visible">
               {ownRack.map(tile => {
                 const selected = spyOwnTileIds.includes(tile.id);
                 return (
@@ -374,12 +374,15 @@ export const PowerCardBar = memo(function PowerCardBar({
                     type="button"
                     aria-pressed={selected}
                     onClick={() => toggleOwnTile(tile.id)}
-                    className={`tile-face relative flex shrink-0 h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] flex-col items-center justify-center overflow-hidden rounded-lg sm:rounded-xl font-sans cursor-pointer transition-all active:scale-95 ${
+                    className={`tile-face relative flex shrink-0 h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] flex-col items-center justify-center rounded-lg sm:rounded-xl font-sans cursor-pointer transition-all duration-150 active:scale-95 ${
                       selected
-                        ? 'border-2 sm:border-[2.5px] border-emerald-200 ring-2 sm:ring-[3px] ring-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.95),inset_0_0_10px_rgba(16,185,129,0.45)] -translate-y-1 scale-[1.06] z-10'
-                        : 'border border-amber-100/80 hover:brightness-105'
+                        ? 'border-2 border-emerald-300 ring-2 sm:ring-[3px] ring-emerald-400 shadow-[0_0_18px_rgba(16,185,129,0.95),inset_0_0_8px_rgba(16,185,129,0.4)] -translate-y-1 scale-[1.05] z-20'
+                        : 'border border-amber-200/90 hover:brightness-105 z-10'
                     }`}
                   >
+                    {/* Top Edge Subtle Specular Highlight */}
+                    <div className={`absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent ${selected ? 'via-emerald-100/90' : 'via-amber-100/60'} to-transparent pointer-events-none z-10`} />
+
                     {isBlankLetter(tile.letter) ? (
                       <div className="relative z-20 flex items-center justify-center">
                         <svg
@@ -473,7 +476,7 @@ export const PowerCardBar = memo(function PowerCardBar({
             <span className="font-extrabold text-emerald-300 text-xs self-start">
               Pick {spyOwnTileIds.length} from {selectedOpponent.display_name}:
             </span>
-            <div className="flex flex-nowrap items-center justify-center gap-1 sm:gap-1.5 w-full py-0.5 overflow-hidden">
+            <div className="flex flex-nowrap items-center justify-center gap-1 sm:gap-1.5 w-full py-1.5 overflow-visible">
               {Array.from({ length: selectedOpponent.rack_count }, (_, index) => {
                 const selected = spyTargetTileIndices.includes(index);
                 return (
@@ -482,10 +485,10 @@ export const PowerCardBar = memo(function PowerCardBar({
                     type="button"
                     disabled={!selected && spyTargetTileIndices.length >= spyOwnTileIds.length}
                     onClick={() => toggleTargetSlot(index)}
-                    className={`h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] shrink-0 rounded-lg sm:rounded-xl font-black text-sm sm:text-base transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+                    className={`h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] shrink-0 rounded-lg sm:rounded-xl font-black text-sm sm:text-base transition-all duration-150 cursor-pointer active:scale-95 flex items-center justify-center ${
                       selected
-                        ? 'border-2 sm:border-[2.5px] border-emerald-200 bg-emerald-700 text-white ring-2 sm:ring-[3px] ring-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.95)] -translate-y-1 scale-[1.06] z-10'
-                        : 'border border-slate-700 bg-slate-800/90 text-slate-300 hover:border-emerald-400 hover:text-white'
+                        ? 'border-2 border-emerald-200 bg-emerald-700 text-white ring-2 sm:ring-[3px] ring-emerald-400 shadow-[0_0_18px_rgba(16,185,129,0.95)] -translate-y-1 scale-[1.05] z-20'
+                        : 'border border-slate-700 bg-slate-800/90 text-slate-300 hover:border-emerald-400 hover:text-white z-10'
                     }`}
                   >
                     ?
