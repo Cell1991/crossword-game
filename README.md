@@ -118,25 +118,9 @@
 
 ### 🕹️ Match Modes Specification
 
-```mermaid
-graph LR
-    ModeChoice{"Select Game Mode"}
-    
-    ModeChoice -->|HP Elimination| ModeHP["⚔️ <b>HP Deathmatch</b><br/>• Configurable HP (10 - 1000)<br/>• Points Deal Direct Damage<br/>• 1s Reactive Shield Window<br/>• Last Player Standing Wins"]
-    ModeChoice -->|Classic Scoring| ModeTurns["🏆 <b>Turn Count Mode</b><br/>• Configurable Rounds (7 - 500)<br/>• Highest Total Points Wins<br/>• HP Cards Excluded from Deck<br/>• Pure Word-Building Strategy"]
-    ModeChoice -->|Solo / Fill| ModeBot["🤖 <b>AI Bot Arena</b><br/>• SparkBot (Novice)<br/>• Nexus AI (Tactical)<br/>• Titan AI (Master)<br/>• Auto-Scheduled Turns"]
-    ModeChoice -->|Watch Live| ModeSpec["👁️ <b>Spectator Stream</b><br/>• Unlimited Observer Seats<br/>• Live Translucent Ghosts<br/>• Hidden Tile Racks<br/>• Synchronized Rematch"]
-
-    classDef hpStyle fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#fee2e2;
-    classDef turnStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#d1fae5;
-    classDef botStyle fill:#4c1d95,stroke:#c084fc,stroke-width:2px,color:#fae8ff;
-    classDef specStyle fill:#0c4a6e,stroke:#38bdf8,stroke-width:2px,color:#e0f2fe;
-
-    class ModeHP hpStyle;
-    class ModeTurns turnStyle;
-    class ModeBot botStyle;
-    class ModeSpec specStyle;
-```
+<div align="center">
+  <img src="docs/assets/match-modes-tree.svg" alt="Tactical Match Arbitration Tree" width="100%" />
+</div>
 
 ---
 
