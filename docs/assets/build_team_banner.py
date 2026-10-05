@@ -22,7 +22,7 @@ def download_avatars(users):
 def main():
     members = [
         {
-            'user': 'Cell1991', 'name': 'Chu',
+            'user': 'Cell1991', 'name': 'Cell',
             'color': '#f59e0b', 'border': '#f59e0b', 'text_name': '#fbbf24',
             'x': 25, 'w': 180, 'glow': 'anim-lead-glow'
         },
