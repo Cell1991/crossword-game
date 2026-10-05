@@ -10,7 +10,7 @@ from app.game.rules import RuleEngine
 from app.game.game_end import GameEndService
 from app.game.tiles import TileService
 from app.services.game_service import GameService
-from app.schemas.move import PlacedTileInput, ValidateMoveResponse, CommitMoveResponse, WordFormed
+from app.schemas.move import PlacedTileInput, ValidateMoveResponse, CommitMoveResponse, WordFormed, CellPosition
 from app.game.board import Board
 from app.database.state import (
     bag_tiles, board_state, player_rack, replace_board_state, replace_game_tiles, replace_player_cards,
@@ -189,6 +189,7 @@ class MoveService:
         player_id: str,
         placed_tiles: list[PlacedTileInput],
         freeze_tile_ids: list[str] | None = None,
+        freeze_board_cells: list[CellPosition] | None = None,
         use_heal: bool = False,
     ) -> tuple[CommitMoveResponse, Game, GamePlayer]:
         stmt_game = select(Game).where(Game.id == game_id).with_for_update()
@@ -249,19 +250,35 @@ class MoveService:
             if any(fc in w.cells for fc in frozen_cells for w in words):
                 raise HTTPException(status_code=400, detail="That letter is frozen this turn")
 
-        # FREEZE_TILE played on 1-3 of this move's own tiles: takes effect once the move commits,
-        # below, in this same turn - staging it client-side and only sending it here is what lets
-        # recalling a tile before Confirm Move act as cancelling its freeze.
-        freeze_targets: list[PlacedTileInput] = []
-        if freeze_tile_ids:
+        # FREEZE_TILE played on up to 3 cells total, freely mixing tiles from this move itself
+        # (freeze_tile_ids) and already-committed board tiles from a prior turn (freeze_board_cells):
+        # all take effect once the move commits, below, in this same turn - staging it client-side
+        # and only sending it here is what lets recalling a this-move tile act as cancelling its freeze.
+        freeze_targets: list[tuple[int, int]] = []
+        if freeze_tile_ids or freeze_board_cells:
             if "FREEZE_TILE" not in (player.cards or []):
                 raise HTTPException(status_code=400, detail="You don't have a Freeze card")
-            if not (1 <= len(freeze_tile_ids) <= 3) or len(freeze_tile_ids) != len(set(freeze_tile_ids)):
+
+            tile_cells: list[tuple[int, int]] = []
+            if freeze_tile_ids:
+                if len(freeze_tile_ids) != len(set(freeze_tile_ids)):
+                    raise HTTPException(status_code=400, detail="Choose unique tiles to freeze")
+                by_tile_id = {pt.tile_id: pt for pt in placed_tiles}
+                matched = [by_tile_id[tid] for tid in freeze_tile_ids if tid in by_tile_id]
+                if len(matched) != len(freeze_tile_ids):
+                    raise HTTPException(status_code=400, detail="Freeze target is not part of this move")
+                tile_cells = [(pt.row, pt.col) for pt in matched]
+
+            board_cells: list[tuple[int, int]] = []
+            if freeze_board_cells:
+                for cell in freeze_board_cells:
+                    if f"{cell.row}_{cell.col}" not in normalized_board:
+                        raise HTTPException(status_code=400, detail=f"Board tile at ({cell.row}, {cell.col}) not found")
+                board_cells = [(cell.row, cell.col) for cell in freeze_board_cells]
+
+            freeze_targets = tile_cells + board_cells
+            if not (1 <= len(freeze_targets) <= 3) or len(freeze_targets) != len(set(freeze_targets)):
                 raise HTTPException(status_code=400, detail="Choose 1 to 3 unique tiles to freeze")
-            by_tile_id = {pt.tile_id: pt for pt in placed_tiles}
-            freeze_targets = [by_tile_id[tid] for tid in freeze_tile_ids if tid in by_tile_id]
-            if len(freeze_targets) != len(freeze_tile_ids):
-                raise HTTPException(status_code=400, detail="Freeze target is not part of this move")
 
         # Commit tiles to board
         updated_board = dict(game.board_state)
@@ -357,12 +374,8 @@ class MoveService:
         if freeze_targets:
             cards_used.append({
                 "card": "FREEZE_TILE",
-                "cells": [{"row": t.row, "col": t.col} for t in freeze_targets],
-                "description": (
-                    f"Froze newly placed tile '{freeze_targets[0].letter}' at ({freeze_targets[0].row}, {freeze_targets[0].col})"
-                    if len(freeze_targets) == 1
-                    else f"Froze {len(freeze_targets)} newly placed tiles"
-                ),
+                "cells": [{"row": r, "col": c} for r, c in freeze_targets],
+                "description": f"Froze {len(freeze_targets)} tile{'s' if len(freeze_targets) > 1 else ''}",
             })
         if healed_amount > 0:
             cards_used.append({
@@ -408,10 +421,10 @@ class MoveService:
             turns_to_block = max(1, len(GameService.eligible_players(all_players)) - 1)
             game.frozen_tile = [
                 {
-                    "row": t.row, "col": t.col,
+                    "row": r, "col": c,
                     "set_by": player.id, "expires_turn": game.turn_number + turns_to_block,
                 }
-                for t in freeze_targets
+                for r, c in freeze_targets
             ]
             flag_modified(game, "frozen_tile")
 

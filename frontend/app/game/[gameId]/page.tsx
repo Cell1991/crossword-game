@@ -119,13 +119,15 @@ export default function GamePage() {
 
   const cards = usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, reload, toasts });
   const { armedCard, playArmedCardAt } = cards;
-  /** The staged tiles a FREEZE_TILE mark will apply to on Confirm Move, for the board highlight. */
+  /** The cells a FREEZE_TILE mark will apply to on Confirm Move, for the board highlight - this
+   * move's own staged tiles plus any already-committed board cells bundled into the same freeze. */
   const deferredFreezeCells = useMemo(() => {
-    return cards.deferredFreezeTileIds
+    const stagedCells = cards.deferredFreezeTileIds
       .map(id => temporaryTiles.find(t => t.tile_id === id))
       .filter((t): t is PlacedTile => Boolean(t))
       .map(t => ({ row: t.row, col: t.col }));
-  }, [cards.deferredFreezeTileIds, temporaryTiles]);
+    return [...stagedCells, ...cards.deferredFreezeBoardCells];
+  }, [cards.deferredFreezeTileIds, cards.deferredFreezeBoardCells, temporaryTiles]);
   const { handleCellClick: placeAtCell, unstageTile, selectTile, clearSelection, clearStagedMove } = staged;
   const { validationState, validationReason } = staged;
   const { flashError, setError } = toasts;
@@ -395,12 +397,14 @@ export default function GamePage() {
     // 2. Authoritative background server commit
     try {
       const freezeTileIds = cards.deferredFreezeTileIds.length > 0 ? cards.deferredFreezeTileIds : undefined;
+      const freezeBoardCells = cards.deferredFreezeBoardCells.length > 0 ? cards.deferredFreezeBoardCells : undefined;
       const res = await commitMove(
         gameId,
         myPlayerId,
         tilesToCommit,
         freezeTileIds,
-        cards.deferredHeal
+        cards.deferredHeal,
+        freezeBoardCells
       );
       if (cards.deferredHeal) cards.cancelDeferredHeal();
       if (res) {
@@ -934,6 +938,7 @@ export default function GamePage() {
                   pendingArmedCell={cards.pendingArmedCell}
                   pendingFrozenCells={cards.pendingFrozenCells}
                   deferredFreezeTileIds={cards.deferredFreezeTileIds}
+                  deferredFreezeBoardCells={cards.deferredFreezeBoardCells}
                   deferredHeal={cards.deferredHeal}
                   onCancelDeferredHeal={cards.cancelDeferredHeal}
                   estimatedScore={staged.estimatedScore || 0}

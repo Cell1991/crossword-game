@@ -843,6 +843,31 @@ async def test_cd07e_freeze_tile_can_target_up_to_three_tiles_placed_this_turn(o
     assert "frozen" in blocked.json()["detail"]
 
 
+async def test_cd07f_freeze_tile_can_mix_this_moves_tiles_with_already_committed_board_tiles(open_table):
+    """A single FREEZE_TILE use can combine tiles from the current move with already-committed
+    board tiles from a prior turn, up to 3 total - not just one pool or the other."""
+    table = await open_table("Alice", "Bob")
+    alice, bob = table.seats
+    await table.set_cards(alice, ["FREEZE_TILE"])
+    await table.set_tiles(racks={alice: "CATSEIO"})
+    await table.place(alice, ROW, COL - 1, "CAT")  # commits C-A-T, no freeze yet
+    await table.act(bob, "pass")
+
+    await table.set_cards(alice, ["FREEZE_TILE"])
+    await table.set_tiles(racks={alice: "SEIOURN"})
+    s_tile = next(t for t in (await table.player(alice))["rack"] if t["letter"] == "S")
+    res = await table.place(
+        alice, ROW, COL + 2, "S",
+        freeze_tile_ids=[s_tile["id"]],
+        freeze_board_cells=[{"row": ROW, "col": COL - 1}, {"row": ROW, "col": COL}],
+    )
+    assert res.status_code == 200, res.text
+
+    frozen = (await table.state(alice))["frozen_tile"]
+    assert {(f["row"], f["col"]) for f in frozen} == {(ROW, COL + 2), (ROW, COL - 1), (ROW, COL)}
+    assert me(await table.state(alice), alice)["cards"] == []
+
+
 async def test_cd08_shield_blocks_damage_for_the_blocker_only(open_table):
     table = await open_table("Alice", "Bob", "Carol")
     alice, bob, carol = table.seats

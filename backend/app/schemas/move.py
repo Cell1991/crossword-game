@@ -25,11 +25,17 @@ class ValidateMoveResponse(BaseModel):
     estimated_score: int = 0
     bingo_bonus: int = 0
 
+class CellPosition(BaseModel):
+    row: int
+    col: int
+
 class CommitMoveRequest(BaseModel):
     placed_tiles: list[PlacedTileInput]
-    # A FREEZE_TILE card played on 1-3 of these placed tiles: freezes them once the move commits,
-    # in the same turn (rather than needing an already-committed tile from a prior turn).
+    # A single FREEZE_TILE use can target up to 3 cells total, split across these two - tiles from
+    # this move itself (by tile_id) and already-committed board tiles from a prior turn (by row/col)
+    # - combined freely. Both take effect atomically once the move commits.
     freeze_tile_ids: Optional[list[str]] = Field(None, max_length=3)
+    freeze_board_cells: Optional[list[CellPosition]] = Field(None, max_length=3)
     use_heal: Optional[bool] = False
 
 class CommitMoveResponse(BaseModel):

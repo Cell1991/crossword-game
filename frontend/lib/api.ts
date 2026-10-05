@@ -16,6 +16,7 @@ import {
   WordDefinition,
   MatchHistoryListResponse,
   MatchReplayResponse,
+  CellPosition,
 } from './types';
 
 function getErrorMessage(error: unknown, fallback: string): string {
@@ -421,7 +422,8 @@ export async function commitMove(
   playerId: string,
   placedTiles: PlacedTile[],
   freezeTileIds?: string[],
-  useHeal?: boolean
+  useHeal?: boolean,
+  freezeBoardCells?: CellPosition[]
 ): Promise<CommitMoveResponse> {
   const res = await fetch(`${getApiBase()}/games/${gameId}/moves`, {
     method: 'POST',
@@ -432,6 +434,7 @@ export async function commitMove(
     body: JSON.stringify({
       placed_tiles: placedTiles,
       freeze_tile_ids: freezeTileIds,
+      freeze_board_cells: freezeBoardCells,
       use_heal: !!useHeal,
     }),
   });

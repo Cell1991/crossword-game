@@ -10,6 +10,7 @@ from app.schemas.move import (
     CommitMoveResponse
 )
 from app.schemas.events import WebSocketEvent, EventType
+from app.services.game_service import GameService
 from app.services.move_service import MoveService
 from app.websocket.connection_manager import manager
 
@@ -34,6 +35,7 @@ async def commit_move(
     res, game, player = await MoveService.commit_move(
         db, game_id, x_player_id, req.placed_tiles,
         freeze_tile_ids=req.freeze_tile_ids,
+        freeze_board_cells=req.freeze_board_cells,
         use_heal=bool(req.use_heal),
     )
     # Save before telling anyone: clients reload the game the moment an event arrives.
@@ -55,7 +57,9 @@ async def commit_move(
             "nextPlayerId": res.next_player_id,
             "boardState": game.board_state,
             "pendingEffect": game.pending_effect,
-            "frozenTile": game.frozen_tile,
+            # Filtered the same way GameService.get_game_state is: an expired entry must not
+            # flash back up via the live broadcast before the next authoritative reload corrects it.
+            "frozenTile": GameService._visible_frozen_tile(game.frozen_tile, game.turn_number),
             "cardAwarded": res.card_awarded,
             "cardsAwarded": res.cards_awarded,
             "damageDealt": res.damage_dealt,

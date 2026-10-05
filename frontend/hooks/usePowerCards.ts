@@ -27,7 +27,11 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   // FREEZE_TILE marked on 1-3 tiles placed this turn (not yet committed): applied atomically with
   // Confirm Move (see commitMove's freezeTileIds). Recalling one of those tiles clears it below -
   // that recall *is* the cancel for that tile, so no extra confirmation step is needed for this path.
+  // Can be combined with deferredFreezeBoardCells (already-committed board tiles, frozen in the same
+  // call) - board cells only ride along while at least one staged tile is still part of the freeze,
+  // since the deferred path only fires when a move actually commits.
   const [deferredFreezeTileIds, setDeferredFreezeTileIds] = useState<string[]>([]);
+  const [deferredFreezeBoardCells, setDeferredFreezeBoardCells] = useState<CellPosition[]>([]);
   const [deferredHeal, setDeferredHeal] = useState<boolean>(false);
   const [hintCell, setHintCell] = useState<CellPosition | null>(null);
   const [hintSuggestions, setHintSuggestions] = useState<HintSuggestion[]>([]);
@@ -36,6 +40,9 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   const hasLoadedFromStorageRef = useRef(false);
 
   const activeDeferredFreezeTileIds = deferredFreezeTileIds.filter(id => temporaryTiles.some(t => t.tile_id === id));
+  // If every staged tile in the freeze got recalled, the board-cell half has no move left to ride
+  // along with, so it cancels too (matching the "recall is the cancel" behavior for this path).
+  const activeDeferredFreezeBoardCells = activeDeferredFreezeTileIds.length > 0 ? deferredFreezeBoardCells : [];
 
   // Load persisted hints when player ID and game ID become available
   useEffect(() => {
@@ -204,13 +211,11 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
         .map(c => temporaryTiles.find(t => t.row === c.row && t.col === c.col)?.tile_id)
         .filter((id): id is string => Boolean(id));
 
-      if (committedCells.length > 0 && stagedTileIds.length > 0) {
-        flashError('Pick either board tiles or tiles placed this turn, not both');
-        return;
-      }
-
+      // Any staged tile in the mix means this freeze can only take effect once a move commits, so
+      // both pools (staged tiles and already-committed board tiles) defer together to that point.
       if (stagedTileIds.length > 0) {
         setDeferredFreezeTileIds(stagedTileIds);
+        setDeferredFreezeBoardCells(committedCells);
         setArmedCard(null);
         setPendingFrozenCells([]);
         setPendingArmedCell(null);
@@ -248,7 +253,10 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     setPendingArmedCell(null);
     setPendingFrozenCells([]);
   }, []);
-  const cancelDeferredFreeze = useCallback(() => setDeferredFreezeTileIds([]), []);
+  const cancelDeferredFreeze = useCallback(() => {
+    setDeferredFreezeTileIds([]);
+    setDeferredFreezeBoardCells([]);
+  }, []);
   const cancelDeferredHeal = useCallback(() => setDeferredHeal(false), []);
 
   const activeHintTiles = hintSuggestions.length > 0
@@ -264,6 +272,7 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     confirmArmedCardAt,
     cancelPendingArmedCell,
     deferredFreezeTileIds: activeDeferredFreezeTileIds,
+    deferredFreezeBoardCells: activeDeferredFreezeBoardCells,
     cancelDeferredFreeze,
     deferredHeal,
     cancelDeferredHeal,

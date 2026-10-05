@@ -167,6 +167,7 @@ interface PowerCardBarProps {
   pendingArmedCell: CellPosition | null;
   pendingFrozenCells?: CellPosition[];
   deferredFreezeTileIds: string[];
+  deferredFreezeBoardCells?: CellPosition[];
   deferredHeal?: boolean;
   onCancelDeferredHeal?: () => void;
   estimatedScore?: number;
@@ -194,6 +195,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   pendingArmedCell,
   pendingFrozenCells = [],
   deferredFreezeTileIds,
+  deferredFreezeBoardCells = [],
   deferredHeal = false,
   onCancelDeferredHeal,
   estimatedScore = 0,
@@ -221,7 +223,7 @@ export const PowerCardBar = memo(function PowerCardBar({
   const validCards = cards.filter(card => POWER_CARDS_META[card]);
 
   if (deferredFreezeTileIds.length > 0) {
-    const count = deferredFreezeTileIds.length;
+    const count = deferredFreezeTileIds.length + deferredFreezeBoardCells.length;
     return (
       <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-cyan-400/80 bg-gradient-to-r from-sky-950 via-cyan-950 to-slate-950 px-3 py-1.5 text-xs text-cyan-100 shadow-[0_0_20px_rgba(6,182,212,0.4)] ring-1 ring-cyan-400/30">
         <div className="flex items-center gap-2 min-w-0">
