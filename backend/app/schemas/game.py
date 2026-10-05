@@ -35,6 +35,7 @@ class GameStateResponse(BaseModel):
     tile_bag_counts: dict[str, int]
     turn_time_limit: Optional[int] = None
     turn_started_at: Optional[datetime] = None
+    game_mode: str = "HP"
     max_turns: Optional[int] = None
     starting_hp: Optional[int] = None
     pending_effect: Optional[dict[str, Any]] = None

@@ -1103,6 +1103,16 @@ async def test_cd16_fancy_mode_grants_a_card_when_the_next_turn_starts(open_tabl
     assert len(bob_after["cards"]) == 1
 
 
+async def test_cd17_fancy_mode_grants_the_host_a_card_at_game_start(open_table):
+    """The first turn never passes through a turn-advance helper, so it needs its own grant."""
+    table = await open_table("Alice", "Bob", game_mode="FANCY")
+    alice, _ = table.seats
+
+    alice_cards = (await table.player(alice))["cards"]
+
+    assert len(alice_cards) == 1
+
+
 # --- Realtime sync (RT) --------------------------------------------------------------------------
 
 @pytest.mark.parametrize("action, event_type", [

@@ -53,6 +53,7 @@ export interface GameState {
   tile_bag_counts: Record<string, number>;
   turn_time_limit: TurnTimeLimit;
   turn_started_at: string | null;
+  game_mode?: GameMode;
   max_turns: number | null;
   starting_hp?: number | null;
   pending_effect: PendingEffect | null;

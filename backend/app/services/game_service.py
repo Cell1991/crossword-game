@@ -521,6 +521,7 @@ class GameService:
             tile_bag_counts=tile_bag_counts,
             turn_time_limit=room.turn_time_limit if room else None,
             turn_started_at=turn_started_at,
+            game_mode=game.game_mode,
             max_turns=game.max_turns,
             starting_hp=game.starting_hp,
             pending_effect=GameService._visible_pending_effect(game.pending_effect, requesting_player_id),

@@ -39,6 +39,10 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
   const cardRevealQueueRef = useRef<Array<{ card: string; playerId: string }>>([]);
   const cardPhaseTimerRef = useRef<number | null>(null);
   const isRevealingRef = useRef(false);
+  /** Fancy mode grants a card automatically at the start of every turn (no board tile to attribute
+   * it to, and the recipient isn't always the player whose move just committed) - so instead of
+   * threading a reveal event through every turn-advance path, just watch our own hand for growth. */
+  const myFancyCardsRef = useRef<string[] | null>(null);
 
   const showNextCardReveal = useCallback(() => {
     if (cardPhaseTimerRef.current !== null) {
@@ -129,6 +133,18 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       const snapshot = `${myToken}|${JSON.stringify({ ...state, server_time: null })}`;
       if (snapshot === lastSnapshotRef.current) return;
       lastSnapshotRef.current = snapshot;
+
+      if (state.game_mode === 'FANCY' && myPlayerId) {
+        const myCards = state.players.find(p => p.id === myPlayerId)?.cards ?? [];
+        const seenCount = myFancyCardsRef.current?.length ?? null;
+        if (seenCount !== null && myCards.length > seenCount) {
+          const newCards = myCards.slice(seenCount);
+          cardRevealQueueRef.current.push(...newCards.map(card => ({ card, playerId: myPlayerId })));
+          if (!isRevealingRef.current) showNextCardReveal();
+        }
+        myFancyCardsRef.current = myCards;
+      }
+
       setGameState(prev => {
         if (!prev) return state;
         if (state.turn_number < prev.turn_number) {
@@ -174,7 +190,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
       setError(error instanceof Error ? error.message : 'Failed to load game state');
       setLoading(false);
     }
-  }, [gameId, isSpectator, myToken, isDebug, myPlayerId, setError]);
+  }, [gameId, isSpectator, myToken, isDebug, myPlayerId, setError, showNextCardReveal]);
 
   useEffect(() => {
     if (!hydrated || !session) return;

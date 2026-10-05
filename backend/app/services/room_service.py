@@ -311,6 +311,9 @@ class RoomService:
         game.tile_bag = bag
         game.status = "PLAYING"
         game.current_player_id = players[0].id if players else None
+        if players:
+            from app.services.game_service import GameService  # deferred: avoids a circular import
+            GameService.grant_fancy_card(game, players[0])
         num_players = len(players) if players else 1
         game.max_turns = (room.max_turns * num_players) if (room.game_mode == "TURNS" and room.max_turns) else None
         game.starting_hp = starting_hp
