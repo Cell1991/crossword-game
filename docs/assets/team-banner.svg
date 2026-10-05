@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 240" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="teamBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0f172a" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#090d16" stop-opacity="0.98"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Card Clip Path for Avatars -->
+    <clipPath id="avatarClip">
+      <circle cx="36" cy="36" r="32"/>
+    </clipPath>
+
+    <!-- Shadow -->
+    <filter id="teamShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <style>
+      @keyframes slowLeadGlow {
+        0%, 100% { stroke-opacity: 0.4; }
+        50% { stroke-opacity: 1.0; }
+      }
+      .anim-lead-glow { animation: slowLeadGlow 4s ease-in-out infinite; }
+    </style>
+  </defs>
+
+  <!-- Container Base -->
+  <rect width="1200" height="240" fill="url(#teamBg)" rx="16"/>
+
+  <!-- Top Title / HUD Header -->
+  <g transform="translate(600, 24)">
+    <text x="0" y="0" fill="#64748b" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="4">
+      CROSSWORD COMBAT ARENA • CORE DEVELOPMENT CREW
+    </text>
+  </g>
+
+  <!-- ==================== 6 TEAM MEMBER CARDS ==================== -->
+
+  <!-- MEMBER 1: Cell1991 (x = 25) -->
+  <g transform="translate(25, 42)" filter="url(#teamShadow)">
+    <rect width="180" height="175" rx="12" fill="#0f172a" stroke="#f59e0b" stroke-width="1.8" class="anim-lead-glow"/>
+    <rect x="0" y="0" width="180" height="24" rx="12" fill="#78350f" fill-opacity="0.4"/>
+    <text x="90" y="16" fill="#fde68a" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="1">👑 LEAD ARCHITECT</text>
+    
+    <!-- Avatar Circle Frame -->
+    <circle cx="90" cy="62" r="28" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+    <image xlink:href="https://github.com/Cell1991.png" href="https://github.com/Cell1991.png" x="62" y="34" width="56" height="56" clip-path="url(#avatarClip)"/>
+    <circle cx="90" cy="62" r="28" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+
+    <text x="90" y="112" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="12" font-weight="900" text-anchor="middle">Cell1991</text>
+    <text x="90" y="128" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">Chu</text>
+    <rect x="20" y="142" width="140" height="20" rx="6" fill="#020617" stroke="#334155" stroke-width="0.8"/>
+    <text x="90" y="155" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5" font-weight="700" text-anchor="middle">Core Game Engine</text>
+  </g>
+
+  <!-- MEMBER 2: friend47 (x = 220) -->
+  <g transform="translate(220, 42)" filter="url(#teamShadow)">
+    <rect width="180" height="175" rx="12" fill="#0f172a" stroke="#0284c7" stroke-width="1.2"/>
+    <rect x="0" y="0" width="180" height="24" rx="12" fill="#0369a1" fill-opacity="0.3"/>
+    <text x="90" y="16" fill="#7dd3fc" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="1">⚡ MULTIPLAYER</text>
+    
+    <circle cx="90" cy="62" r="28" fill="#1e293b" stroke="#38bdf8" stroke-width="1.2"/>
+    <image xlink:href="https://github.com/friend47.png" href="https://github.com/friend47.png" x="62" y="34" width="56" height="56" clip-path="url(#avatarClip)"/>
+    <circle cx="90" cy="62" r="28" fill="none" stroke="#38bdf8" stroke-width="1.2"/>
+
+    <text x="90" y="112" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="12" font-weight="900" text-anchor="middle">friend47</text>
+    <text x="90" y="128" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">Peerapatr</text>
+    <rect x="20" y="142" width="140" height="20" rx="6" fill="#020617" stroke="#334155" stroke-width="0.8"/>
+    <text x="90" y="155" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5" font-weight="700" text-anchor="middle">WebSocket &amp; Sync</text>
+  </g>
+
+  <!-- MEMBER 3: waiwaix43 (x = 415) -->
+  <g transform="translate(415, 42)" filter="url(#teamShadow)">
+    <rect width="180" height="175" rx="12" fill="#0f172a" stroke="#c084fc" stroke-width="1.2"/>
+    <rect x="0" y="0" width="180" height="24" rx="12" fill="#581c87" fill-opacity="0.3"/>
+    <text x="90" y="16" fill="#e9d5ff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="1">🤖 AI BOT TRIAD</text>
+    
+    <circle cx="90" cy="62" r="28" fill="#1e293b" stroke="#c084fc" stroke-width="1.2"/>
+    <image xlink:href="https://github.com/waiwaix43.png" href="https://github.com/waiwaix43.png" x="62" y="34" width="56" height="56" clip-path="url(#avatarClip)"/>
+    <circle cx="90" cy="62" r="28" fill="none" stroke="#c084fc" stroke-width="1.2"/>
+
+    <text x="90" y="112" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="12" font-weight="900" text-anchor="middle">waiwaix43</text>
+    <text x="90" y="128" fill="#c084fc" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">waiwaix43</text>
+    <rect x="20" y="142" width="140" height="20" rx="6" fill="#020617" stroke="#334155" stroke-width="0.8"/>
+    <text x="90" y="155" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5" font-weight="700" text-anchor="middle">Bot Solver Heuristics</text>
+  </g>
+
+  <!-- MEMBER 4: Natthaset2547 (x = 610) -->
+  <g transform="translate(610, 42)" filter="url(#teamShadow)">
+    <rect width="180" height="175" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="1.2"/>
+    <rect x="0" y="0" width="180" height="24" rx="12" fill="#064e3b" fill-opacity="0.3"/>
+    <text x="90" y="16" fill="#6ee7b7" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="1">📖 LEXICON &amp; SPELLS</text>
+    
+    <circle cx="90" cy="62" r="28" fill="#1e293b" stroke="#10b981" stroke-width="1.2"/>
+    <image xlink:href="https://github.com/Natthaset2547.png" href="https://github.com/Natthaset2547.png" x="62" y="34" width="56" height="56" clip-path="url(#avatarClip)"/>
+    <circle cx="90" cy="62" r="28" fill="none" stroke="#10b981" stroke-width="1.2"/>
+
+    <text x="90" y="112" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="12" font-weight="900" text-anchor="middle">Natthaset2547</text>
+    <text x="90" y="128" fill="#34d399" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">Natthaset</text>
+    <rect x="20" y="142" width="140" height="20" rx="6" fill="#020617" stroke="#334155" stroke-width="0.8"/>
+    <text x="90" y="155" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5" font-weight="700" text-anchor="middle">Grimoire Dictionary</text>
+  </g>
+
+  <!-- MEMBER 5: Rednoselittledog (x = 805) -->
+  <g transform="translate(805, 42)" filter="url(#teamShadow)">
+    <rect width="180" height="175" rx="12" fill="#0f172a" stroke="#f43f5e" stroke-width="1.2"/>
+    <rect x="0" y="0" width="180" height="24" rx="12" fill="#881337" fill-opacity="0.3"/>
+    <text x="90" y="16" fill="#fca5a5" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="1">🎨 CANVAS &amp; FX</text>
+    
+    <circle cx="90" cy="62" r="28" fill="#1e293b" stroke="#f43f5e" stroke-width="1.2"/>
+    <image xlink:href="https://github.com/Rednoselittledog.png" href="https://github.com/Rednoselittledog.png" x="62" y="34" width="56" height="56" clip-path="url(#avatarClip)"/>
+    <circle cx="90" cy="62" r="28" fill="none" stroke="#f43f5e" stroke-width="1.2"/>
+
+    <text x="90" y="112" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="12" font-weight="900" text-anchor="middle">Rednoselittledog</text>
+    <text x="90" y="128" fill="#fb7185" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">Kanin Noisiri</text>
+    <rect x="20" y="142" width="140" height="20" rx="6" fill="#020617" stroke="#334155" stroke-width="0.8"/>
+    <text x="90" y="155" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5" font-weight="700" text-anchor="middle">60 FPS Board Engine</text>
+  </g>
+
+  <!-- MEMBER 6: ReFresh-bit (x = 1000) -->
+  <g transform="translate(1000, 42)" filter="url(#teamShadow)">
+    <rect width="175" height="175" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2"/>
+    <rect x="0" y="0" width="175" height="24" rx="12" fill="#0369a1" fill-opacity="0.3"/>
+    <text x="87" y="16" fill="#7dd3fc" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="1">🐳 DEVOPS &amp; DB</text>
+    
+    <circle cx="87" cy="62" r="28" fill="#1e293b" stroke="#38bdf8" stroke-width="1.2"/>
+    <image xlink:href="https://github.com/ReFresh-bit.png" href="https://github.com/ReFresh-bit.png" x="59" y="34" width="56" height="56" clip-path="url(#avatarClip)"/>
+    <circle cx="87" cy="62" r="28" fill="none" stroke="#38bdf8" stroke-width="1.2"/>
+
+    <text x="87" y="112" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="12" font-weight="900" text-anchor="middle">ReFresh-bit</text>
+    <text x="87" y="128" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">ReFresh-bit</text>
+    <rect x="18" y="142" width="140" height="20" rx="6" fill="#020617" stroke="#334155" stroke-width="0.8"/>
+    <text x="87" y="155" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5" font-weight="700" text-anchor="middle">Docker &amp; Gateway</text>
+  </g>
+</svg>

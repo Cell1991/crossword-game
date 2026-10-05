@@ -169,29 +169,10 @@ Players acquire tactical Power Cards by placing letters onto **Secret Power (★
 
 <br/>
 
-### 🗺️ The $19 \times 27$ Modular Matrix Geometry
-
-```
-                    COLUMNS: 0 ──────────────────────── 13 ──────────────────────── 26
- ROW  0  ┌─────────────────────────────────────────────────────────────────────────┐
-         │  [3L]         [2L]                  [3L]                  [2L]         [3L] │
-         │         [2L]        [★]                      [★]        [2L]            │
-         │   [2L]        [3L]        [2L]        [2L]        [3L]        [2L]      │
-         │                                                                         │
- ROW  9  │  [3L]   [★]   [2L]   [2L]       ★ CENTER (9,13)      [2L]   [2L]   [★]  [3L] │
-         │                                                                         │
-         │   [2L]        [3L]        [2L]        [2L]        [3L]        [2L]      │
-         │         [2L]        [★]                      [★]        [2L]            │
- ROW 18  │  [3L]         [2L]                  [3L]                  [2L]         [3L] │
-         └─────────────────────────────────────────────────────────────────────────┘
-```
-
-- **⭐ Center Star**: Coordinates `(Row 9, Col 13)`. The opening move of the match must cover this tile.
-- **🔢 Multiplier Math**:
-  - **Triple Letter (3L)**: Triples ($3\times$) the newly placed tile point value in all newly formed words.
-  - **Double Letter (2L)**: Doubles ($2\times$) the newly placed tile point value in all newly formed words.
-  - **Secret Power Square (★)**: Triggers an instant Power Card drop to the player's hand (capacity 3 cards).
-  - **🎯 All-Tiles Bingo**: Placing all 7 rack tiles in a single turn triggers a lethal **+50 Points Bonus** and screen shockwave!
+<!-- Animated 19x27 Matrix Geometry Blueprint SVG -->
+<div align="center">
+  <img src="docs/assets/matrix-geometry.svg" alt="19x27 Tactical Matrix Geometry Blueprint" width="100%" />
+</div>
 
 ---
 
@@ -326,68 +307,68 @@ crossword-game/
 
 ## 🚀 Quick Start & Installation
 
+<br/>
+
+<!-- Animated Quick Start & Runtime Deployment Banner SVG -->
+<div align="center">
+  <img src="docs/assets/quickstart-banner.svg" alt="Quick Start & Installation Guide" width="100%" />
+</div>
+
+<br/>
+
 ### Option 1: 🐳 Docker Compose (Full Stack Orchestration)
 
-Launch the complete container stack (Frontend, Backend, PostgreSQL, Nginx Gateway, Adminer, and Ngrok tunnel):
+Launch the complete container stack (**Frontend**, **Backend**, **PostgreSQL**, **Nginx Gateway**, **Adminer**, and **Ngrok tunnel**):
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Cell1991/crossword-game.git
-   cd crossword-game
-   ```
+```bash
+# 1. Clone repository & enter workspace
+git clone https://github.com/Cell1991/crossword-game.git
+cd crossword-game
 
-2. **Prepare environment variables**:
-   ```bash
-   cp .env.example .env
-   ```
+# 2. Copy environment template
+cp .env.example .env
 
-3. **Start all containers**:
-   ```bash
-   docker compose up --build
-   ```
+# 3. Launch full stack with live reload
+docker compose up --build
+```
 
-4. **Access the application**:
-   - 🌐 **Web Client**: [http://localhost:3000](http://localhost:3000) *(or via Gateway at [http://localhost:8090](http://localhost:8090))*
-   - 🔌 **API Documentation (Swagger UI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
-   - 🗄️ **Database Adminer**: [http://localhost:8085](http://localhost:8085)
-   - 🚇 **Ngrok Console (Tunneling)**: [http://localhost:4040](http://localhost:4040)
+#### 🌐 Active Service Ports & Endpoints
+| Service | Local URL | Port | Role & Function |
+| :--- | :--- | :---: | :--- |
+| **Web Client** | [http://localhost:3000](http://localhost:3000) | `3000` | Next.js 16 Client & Canvas 2D Engine *(Gateway: [http://localhost:8090](http://localhost:8090))* |
+| **API Docs (Swagger)** | [http://localhost:8000/docs](http://localhost:8000/docs) | `8000` | Interactive OpenAPI / Swagger Documentation & Live Testing |
+| **Database Adminer** | [http://localhost:8085](http://localhost:8085) | `8085` | PostgreSQL Web GUI Management & Table Inspector |
+| **Ngrok Tunnel** | [http://localhost:4040](http://localhost:4040) | `4040` | Live Public Webhook & Remote Multiplayer Inspection |
 
 ---
 
 ### Option 2: 🛠️ Local Development (Zero-Config SQLite)
 
-You can run the backend and frontend locally without installing PostgreSQL. The backend automatically initializes and uses a local **SQLite** database (`crossword.db`) by default.
+Run the backend and frontend locally without installing PostgreSQL. The backend automatically initializes an embedded **SQLite** database (`crossword.db`) and pre-seeds the CSW24 lexicon.
 
-#### 1. Backend Setup
 ```bash
+# ─── 1. BACKEND SETUP (FastAPI) ─────────────────────────────────
 cd backend
-
-# Create and activate virtual environment
 python -m venv venv
-# On Windows (PowerShell):
+
+# Windows (PowerShell):
 .\venv\Scripts\Activate.ps1
-# On Linux/macOS:
+# Linux / macOS:
 source venv/bin/activate
 
-# Install dependencies
 pip install -r requirements.txt
-
-# Start backend development server
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### 2. Frontend Setup
 ```bash
+# ─── 2. FRONTEND SETUP (Next.js 16) ─────────────────────────────
 cd frontend
-
-# Install npm dependencies
 npm install
-
-# Start development server (serves app and proxies /api & /ws to localhost:8000)
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+> [!TIP]
+> Once launched, open **[http://localhost:3000](http://localhost:3000)** to enter the Arena lobby.
 
 ---
 
@@ -456,17 +437,24 @@ ws://localhost:3000/ws/games/{game_id}?token={session_token}
 
 ## 🧪 Testing & Verification
 
-The backend includes comprehensive automated test suites verifying Scrabble rule compliance, combat mechanics, card interactions, and room lifecycles:
+<br/>
+
+<!-- Animated Testing Suite & Verification Matrix SVG -->
+<div align="center">
+  <img src="docs/assets/testing-suite.svg" alt="Automated Test Suite & Verification Matrix" width="100%" />
+</div>
+
+<br/>
+
+Execute the automated Pytest harness covering Scrabble compliance, damage mitigation, and card states:
 
 ```bash
 cd backend
 
-# Run the test suite with python module path configured
-# On Windows PowerShell:
-$env:PYTHONPATH="."
-pytest tests/ -v
+# Windows PowerShell:
+$env:PYTHONPATH="." ; pytest tests/ -v
 
-# On Linux/macOS:
+# Linux / macOS:
 PYTHONPATH=. pytest tests/ -v
 ```
 
@@ -474,62 +462,23 @@ PYTHONPATH=. pytest tests/ -v
 
 ## 👥 Contributors & Development Team
 
+<br/>
+
+<!-- Animated Core Development Crew SVG -->
 <div align="center">
-
-<table>
-  <tr>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/Cell1991">
-        <img src="https://github.com/Cell1991.png" width="90px;" alt="Cell1991" style="border-radius: 50%;" /><br />
-        <sub><b>Cell1991</b></sub>
-      </a>
-      <br />
-      <sub>Chu</sub>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/friend47">
-        <img src="https://github.com/friend47.png" width="90px;" alt="friend47" style="border-radius: 50%;" /><br />
-        <sub><b>friend47</b></sub>
-      </a>
-      <br />
-      <sub>Peerapatr</sub>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/waiwaix43">
-        <img src="https://github.com/waiwaix43.png" width="90px;" alt="waiwaix43" style="border-radius: 50%;" /><br />
-        <sub><b>waiwaix43</b></sub>
-      </a>
-      <br />
-      <sub>waiwaix43</sub>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/Natthaset2547">
-        <img src="https://github.com/Natthaset2547.png" width="90px;" alt="Natthaset2547" style="border-radius: 50%;" /><br />
-        <sub><b>Natthaset2547</b></sub>
-      </a>
-      <br />
-      <sub>Natthaset</sub>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/Rednoselittledog">
-        <img src="https://github.com/Rednoselittledog.png" width="90px;" alt="Rednoselittledog" style="border-radius: 50%;" /><br />
-        <sub><b>Rednoselittledog</b></sub>
-      </a>
-      <br />
-      <sub>Kanin Noisiri</sub>
-    </td>
-    <td align="center" width="16.66%">
-      <a href="https://github.com/ReFresh-bit">
-        <img src="https://github.com/ReFresh-bit.png" width="90px;" alt="ReFresh-bit" style="border-radius: 50%;" /><br />
-        <sub><b>ReFresh-bit</b></sub>
-      </a>
-      <br />
-      <sub>ReFresh-bit</sub>
-    </td>
-  </tr>
-</table>
-
+  <img src="docs/assets/team-banner.svg" alt="Core Development Crew" width="100%" />
 </div>
+
+<br/>
+
+<p align="center">
+  <a href="https://github.com/Cell1991"><img src="https://img.shields.io/badge/Cell1991-Chu-f59e0b?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="Cell1991" /></a>
+  <a href="https://github.com/friend47"><img src="https://img.shields.io/badge/friend47-Peerapatr-0284c7?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="friend47" /></a>
+  <a href="https://github.com/waiwaix43"><img src="https://img.shields.io/badge/waiwaix43-waiwaix43-a855f7?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="waiwaix43" /></a>
+  <a href="https://github.com/Natthaset2547"><img src="https://img.shields.io/badge/Natthaset2547-Natthaset-10b981?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="Natthaset2547" /></a>
+  <a href="https://github.com/Rednoselittledog"><img src="https://img.shields.io/badge/Rednoselittledog-Kanin-f43f5e?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="Rednoselittledog" /></a>
+  <a href="https://github.com/ReFresh-bit"><img src="https://img.shields.io/badge/ReFresh--bit-ReFresh-38bdf8?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="ReFresh-bit" /></a>
+</p>
 
 ---
 
