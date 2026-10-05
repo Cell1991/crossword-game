@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <!-- ========================================================================= -->
 <!-- ⚔️ HERO BANNER (Animated Cyberpunk SVG Header with Floating 3D Tiles)     -->
@@ -31,74 +31,49 @@
 <br/>
 
 <!-- ========================================================================= -->
-<!-- 🧭 QUICK JUMP NAVIGATION BAR                                              -->
+<!-- 🧭 TACTICAL NAVIGATION RADAR & SITEMAP MATRIX                            -->
 <!-- ========================================================================= -->
-<table>
-  <tr>
-    <td align="center" width="20%">
-      <a href="#-bento-grid-feature-matrix">
-        <b>🍱 Bento Grid</b><br/>
-        <sub>Feature Highlights</sub>
-      </a>
-    </td>
-    <td align="center" width="20%">
-      <a href="#-game-modes--ai-opponents">
-        <b>🎮 Game Modes</b><br/>
-        <sub>HP, Turns &amp; AI Bots</sub>
-      </a>
-    </td>
-    <td align="center" width="20%">
-      <a href="#-tactical-power-card-deck">
-        <b>⚡ Power Cards</b><br/>
-        <sub>11 Tactical Spells</sub>
-      </a>
-    </td>
-    <td align="center" width="20%">
-      <a href="#-1927-modular-matrix--scoring">
-        <b>📐 Matrix &amp; Multipliers</b><br/>
-        <sub>19×27 Grid Geometry</sub>
-      </a>
-    </td>
-    <td align="center" width="20%">
-      <a href="#-combat-lifecycle--sequence">
-        <b>🔄 Combat Flow</b><br/>
-        <sub>1.0s Shield Window</sub>
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="20%">
-      <a href="#-system-architecture">
-        <b>🏗️ Architecture</b><br/>
-        <sub>Full-Stack Dataflow</sub>
-      </a>
-    </td>
-    <td align="center" width="20%">
-      <a href="#-database-entity-relationship-model">
-        <b>🗄️ Database ERD</b><br/>
-        <sub>SQLAlchemy Schemas</sub>
-      </a>
-    </td>
-    <td align="center" width="20%">
-      <a href="#-project-directory-tree">
-        <b>📂 Directory Tree</b><br/>
-        <sub>File Organization</sub>
-      </a>
-    </td>
-    <td align="center" width="20%">
-      <a href="#-quick-start--installation">
-        <b>🚀 Quick Start</b><br/>
-        <sub>Docker &amp; SQLite Setup</sub>
-      </a>
-    </td>
-    <td align="center" width="20%">
-      <a href="#-api--websocket-specification">
-        <b>📡 API &amp; WebSockets</b><br/>
-        <sub>REST &amp; Live Events</sub>
-      </a>
-    </td>
-  </tr>
-</table>
+<a href="https://github.com/Cell1991/crossword-game">
+  <img src="docs/assets/nav-matrix.svg" alt="Tactical Navigation Sitemap" width="100%" />
+</a>
+
+<br/><br/>
+
+<p align="center">
+  <a href="#-bento-grid-feature-matrix">
+    <img src="https://img.shields.io/badge/🍱_01._Bento_Grid-Feature_Highlights-0284c7?style=for-the-badge&amp;logo=blueprint&amp;logoColor=white" alt="Bento Grid" />
+  </a>
+  <a href="#-game-modes--ai-opponents">
+    <img src="https://img.shields.io/badge/🎮_02._Game_Modes-HP_%26_Turn_Arena-ef4444?style=for-the-badge&amp;logo=gamepad&amp;logoColor=white" alt="Game Modes" />
+  </a>
+  <a href="#-tactical-power-card-deck">
+    <img src="https://img.shields.io/badge/⚡_03._Power_Cards-11_Tactical_Spells-f59e0b?style=for-the-badge&amp;logo=lightning&amp;logoColor=white" alt="Power Cards" />
+  </a>
+  <a href="#-1927-modular-matrix--scoring">
+    <img src="https://img.shields.io/badge/📐_04._19x27_Matrix-Multipliers_%26_Bingo-10b981?style=for-the-badge&amp;logo=matrix&amp;logoColor=white" alt="Matrix" />
+  </a>
+  <a href="#-combat-lifecycle--sequence">
+    <img src="https://img.shields.io/badge/🔄_05._Combat_Flow-1.0s_Shield_Window-6366f1?style=for-the-badge&amp;logo=statuspage&amp;logoColor=white" alt="Combat Flow" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="#-system-architecture">
+    <img src="https://img.shields.io/badge/🏗️_06._Architecture-FastAPI_%26_Next.js-0ea5e9?style=for-the-badge&amp;logo=fastapi&amp;logoColor=white" alt="Architecture" />
+  </a>
+  <a href="#-database-entity-relationship-model">
+    <img src="https://img.shields.io/badge/🗄️_07._Database_ERD-SQLAlchemy_Async-a855f7?style=for-the-badge&amp;logo=postgresql&amp;logoColor=white" alt="Database ERD" />
+  </a>
+  <a href="#-project-directory-tree">
+    <img src="https://img.shields.io/badge/📂_08._Code_Tree-Monorepo_Layout-f97316?style=for-the-badge&amp;logo=files&amp;logoColor=white" alt="Directory Tree" />
+  </a>
+  <a href="#-quick-start--installation">
+    <img src="https://img.shields.io/badge/🚀_09._Quick_Start-Docker_%26_SQLite-10b981?style=for-the-badge&amp;logo=docker&amp;logoColor=white" alt="Quick Start" />
+  </a>
+  <a href="#-api--websocket-specification">
+    <img src="https://img.shields.io/badge/📡_10._API_%26_WS-Live_Stream-f43f5e?style=for-the-badge&amp;logo=socketdotio&amp;logoColor=white" alt="API & WebSocket" />
+  </a>
+</p>
 
 </div>
 
