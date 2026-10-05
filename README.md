@@ -240,57 +240,19 @@ Players acquire tactical Power Cards by placing letters onto **Secret Power (★
 
 <br/>
 
-<!-- Animated Turn & Combat Flow Graphic -->
+<!-- Animated 5-Step Combat Lifecycle Pipeline -->
 <div align="center">
-  <img src="./docs/assets/combat-flow.svg" alt="Turn and Combat Lifecycle" width="100%" />
+  <img src="./docs/assets/combat-flow.svg" alt="Turn and Combat Lifecycle Pipeline" width="100%" />
 </div>
 
 <br/>
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor P1 as 👤 Player 1 (Active)
-    participant Canvas as 🎨 Canvas 60 FPS HUD
-    participant WS as ⚡ WebSocket Hub
-    participant Engine as ⚙️ Backend Engine
-    participant DB as 🗄️ Database (Async)
-    actor P2 as 👤 Player 2 (Rival)
+<!-- Crystal-Clear Combat Sequence Diagram Infographic -->
+<div align="center">
+  <img src="./docs/assets/combat-sequence.svg" alt="Combat Sequence Arbitration" width="100%" />
+</div>
 
-    P1->>Canvas: Drag & stage tiles onto 19x27 matrix
-    Canvas->>Engine: POST /api/moves/validate (Provisional Check)
-    Engine-->>Canvas: Return valid status + Estimated score breakdown
-    Canvas->>WS: Send PLACEMENT_PREVIEW (Ghost tile coordinates)
-    WS-->>P2: Render translucent opponent placement ghost
-
-    P1->>Canvas: Click [Confirm Move]
-    Canvas->>Engine: POST /api/moves/commit
-    activate Engine
-    Engine->>Engine: 1. Verify tile ownership in player rack
-    Engine->>Engine: 2. Verify orthogonal connectivity & center coverage
-    Engine->>Engine: 3. Verify all formed words in CSW24 Lexicon
-    Engine->>Engine: 4. Compute 2L, 3L & 50-pt Bingo multipliers
-    Engine->>Engine: 5. Award Power Card if landed on Secret Power cell
-    
-    alt Rival holds Shield or Shield Card
-        Engine->>Engine: Open 1.0s pending damage reaction window
-        Engine->>WS: Broadcast EVENT: EFFECT_PENDING (DAMAGE)
-        WS-->>P2: Display 1.0s Shield countdown alert
-        opt P2 activates Shield
-            P2->>Engine: POST /api/games/{id}/cards/use {card: "SHIELD"}
-            Engine->>Engine: Absorb attack damage / Negate strike
-        end
-    else Direct Damage Execution
-        Engine->>Engine: Deduct HP directly from all living rivals
-    end
-
-    Engine->>DB: Persist board state, player racks & score/damage logs
-    Engine->>WS: Broadcast EVENT: MOVE_COMMITTED
-    deactivate Engine
-
-    WS-->>P1: Refill rack from tile bag & trigger particle FX
-    WS-->>P2: Animate placed tiles, deduct HP bar & start turn timer
-```
+<br/>
 
 ---
 
@@ -305,208 +267,18 @@ sequenceDiagram
 
 <br/>
 
-```mermaid
-graph TB
-    %% Actors
-    User(["👤 Player / Spectator<br/>[Desktop & Mobile Browsers]"])
-
-    %% Subgraphs
-    subgraph Client["🖥️ Client Layer (Frontend Next.js 16 + React 19)"]
-        UI["<b>Next.js 16 App Router</b><br/>[Tailwind CSS 4 & Lucide Icons]"]
-        CanvasEngine["<b>60 FPS Canvas Engine</b><br/>[BoardCompositor & Frustum Culling]"]
-        FXEngine["<b>FX & Particles Engine</b><br/>[Shockwaves, Starlight Trails & Auras]"]
-        AudioEngine["<b>Web Audio Engine</b><br/>[Synthesized FX & Background Music]"]
-        Overlay["<b>CSS 3D Overlay</b><br/>[Hardware-Accelerated Multipliers]"]
-        WSClient["<b>WebSocket Sync Client</b><br/>[Real-Time State & Ghost Previews]"]
-    end
-
-    subgraph ProxyTier["🌐 Gateway & Ingress Tier"]
-        CustomServer["<b>Node HTTP + Net Proxy</b><br/>[server.js / Next Server :3000]"]
-        Gateway["<b>Nginx Reverse Proxy</b><br/>[nginx.conf :8090]"]
-        Tunnel["<b>Public Tunnel</b><br/>[Ngrok Container :4040]"]
-    end
-
-    subgraph BackendTier["⚙️ Application Backend (FastAPI Python 3.12)"]
-        APIRouter["<b>FastAPI REST Router</b><br/>[Rooms, Games, Moves, Cards, Dict, Debug]"]
-        WSHub["<b>WebSocket Connection Hub</b><br/>[Room Broadcasting & Spectator Feed]"]
-        GameService["<b>Game Lifecycle Engine</b><br/>[Turns, Timeouts, Rematch, Eliminations]"]
-        MoveService["<b>Move & Combat Engine</b><br/>[Scoring, Connectivity & Damage]"]
-        CardService["<b>Power Card Processor</b><br/>[Shields, Freezes, Steals & Bans]"]
-        BotService["<b>Autonomous AI Bot Engine</b><br/>[SparkBot, Nexus AI & Titan AI]"]
-        GrimoireEngine["<b>Grimoire Solver & Anagrams</b><br/>[Positional Anchor Word Finder]"]
-        RuleEngine["<b>CSW24 Lexicon Validator</b><br/>[Orthogonal Word Extraction]"]
-    end
-
-    subgraph DataTier["🗄️ Persistence & Lexicon Tier"]
-        DB[("<b>Database</b><br/>[SQLite Local / PostgreSQL 16 Async]")]
-        DictService["<b>3-Tier Dictionary Service</b><br/>[L1 RAM &bull; L2 DB &bull; L3 Online API]"]
-        Lexicon[("<b>Tournament CSW24 Lexicon</b><br/>[wordlist.txt]")]
-    end
-
-    %% Wiring
-    User -->|Interacts with UI| UI
-    UI -->|Render Board| CanvasEngine
-    UI -->|Trigger FX| FXEngine
-    UI -->|Synthesize Audio| AudioEngine
-    UI -->|Synchronize Transform| Overlay
-    UI -->|Sync Events| WSClient
-
-    User -.->|Public Access| Tunnel
-    Tunnel --> Gateway
-    Gateway --> CustomServer
-    WSClient ===>|WS /ws/games| CustomServer
-    UI ===>|HTTP /api| CustomServer
-
-    CustomServer -->|Forward /api & /ws| APIRouter
-    APIRouter --> GameService
-    APIRouter --> MoveService
-    APIRouter --> CardService
-    APIRouter --> DictService
-    APIRouter --> WSHub
-
-    MoveService --> RuleEngine
-    MoveService --> BotService
-    BotService --> GrimoireEngine
-    RuleEngine --> Lexicon
-
-    DictService --> DB
-    GameService ===> DB
-    MoveService ===> DB
-
-    GameService -->|Broadcast Events| WSHub
-    MoveService -->|Broadcast Moves| WSHub
-    WSHub -.->|Push Real-Time JSON Stream| WSClient
-```
-
 ---
 
 ## 🗄️ Database Entity-Relationship Model
 
-```mermaid
-erDiagram
-    GameRoom ||--o{ Game : "spawns"
-    Game ||--|{ GamePlayer : "contains"
-    Game ||--o{ Move : "records"
-    Game ||--o{ BoardCell : "maintains"
-    Game ||--o{ GameTile : "tracks"
-    GamePlayer ||--o{ PlayerCard : "holds"
-    DictionaryWord ||--o{ WordDefinition : "defines"
+<br/>
 
-    GameRoom {
-        string id PK
-        string game_pin UK
-        string host_player_id
-        string game_mode "HP | TURNS"
-        string status "WAITING | PLAYING | FINISHED"
-        int max_players
-        int starting_hp
-        int turn_timer_seconds
-        int max_turns
-        boolean is_debug
-        datetime created_at
-    }
+<!-- Crystal-Clear Database ER Diagram Infographic -->
+<div align="center">
+  <img src="./docs/assets/database-schema.svg" alt="Database Entity-Relationship Architecture" width="100%" />
+</div>
 
-    Game {
-        string id PK
-        string room_id FK
-        string status "PLAYING | FINISHED"
-        int turn_number
-        string current_player_id
-        json board_state "sparse coordinates"
-        json tile_bag "remaining tiles"
-        json tile_bag_counts "frequencies"
-        int consecutive_passes
-        string winner_player_id
-        string win_reason
-        json pending_effect "1s shield window"
-        string pending_double_target_id
-        string banned_letter
-        datetime created_at
-    }
-
-    GamePlayer {
-        string id PK
-        string game_id FK
-        string display_name
-        int score
-        int hp
-        int max_hp
-        json rack "active 7 tiles"
-        json cards "held power cards"
-        boolean is_host
-        boolean is_ready
-        string connection_status "ONLINE | OFFLINE"
-        string session_token UK
-        int seat_index
-        boolean has_shield
-    }
-
-    Move {
-        string id PK
-        string game_id FK
-        string player_id FK
-        int turn_number
-        string move_type "PLACE | PASS | EXCHANGE"
-        json placed_tiles
-        json words_formed
-        int score
-        int hp_damage
-        json cards_awarded
-        datetime created_at
-    }
-
-    BoardCell {
-        string id PK
-        string game_id FK
-        int row
-        int col
-        string letter
-        int value
-        string owner_player_id
-        int placed_turn
-        boolean is_blank
-        string multiplier "3L | 2L | POWER"
-    }
-
-    GameTile {
-        string id PK
-        string game_id FK
-        string tile_id
-        string letter
-        int value
-        boolean is_blank
-        boolean is_drawn
-        string current_holder_id
-    }
-
-    PlayerCard {
-        string id PK
-        string game_id FK
-        string player_id FK
-        string card_type "11 card types"
-        boolean is_used
-        int used_turn
-        datetime created_at
-    }
-
-    DictionaryWord {
-        int id PK
-        string word UK
-        boolean is_valid
-        int length
-        string definition
-    }
-
-    WordDefinition {
-        int id PK
-        string word FK
-        string part_of_speech
-        string definition
-        string phonetics
-        string audio_url
-        string source_tier "L1 | L2 | L3"
-    }
-```
+<br/>
 
 ---
 
