@@ -1,237 +1,237 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" width="100%" height="100%">
-  <defs>
-    <!-- Background Gradient -->
-    <radialGradient id="matrixBg" cx="50%" cy="50%" r="70%">
-      <stop offset="0%" stop-color="#0f172a" stop-opacity="0.95"/>
-      <stop offset="60%" stop-color="#090d16" stop-opacity="0.98"/>
-      <stop offset="100%" stop-color="#020617" stop-opacity="1"/>
-    </radialGradient>
+ <defs>
+ <!-- Background Gradient -->
+ <radialGradient id="matrixBg" cx="50%" cy="50%" r="70%">
+ <stop offset="0%" stop-color="#0f172a" stop-opacity="0.95"/>
+ <stop offset="60%" stop-color="#090d16" stop-opacity="0.98"/>
+ <stop offset="100%" stop-color="#020617" stop-opacity="1"/>
+ </radialGradient>
 
-    <!-- Star Glow Filter -->
-    <filter id="matrixShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
-    </filter>
+ <!-- Star Glow Filter -->
+ <filter id="matrixShadow" x="-10%" y="-10%" width="120%" height="120%">
+ <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+ </filter>
 
-    <style>
-      @keyframes slowGlowCenter {
-        0%, 100% { stroke-opacity: 0.4; stroke-width: 1.5; }
-        50% { stroke-opacity: 1.0; stroke-width: 2.5; }
-      }
-      .anim-star-center { animation: slowGlowCenter 4s ease-in-out infinite; }
-    </style>
-  </defs>
+ <style>
+ @keyframes slowGlowCenter {
+ 0%, 100% { stroke-opacity: 0.4; stroke-width: 1.5; }
+ 50% { stroke-opacity: 1.0; stroke-width: 2.5; }
+ }
+ .anim-star-center { animation: slowGlowCenter 4s ease-in-out infinite; }
+ </style>
+ </defs>
 
-  <!-- Background Base Canvas -->
-  <rect width="1200" height="460" fill="url(#matrixBg)" rx="16"/>
+ <!-- Background Base Canvas -->
+ <rect width="1200" height="460" fill="url(#matrixBg)" rx="16"/>
 
-  <!-- Top Title / HUD Header -->
-  <g transform="translate(600, 26)">
-    <text x="0" y="0" fill="#64748b" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="4">
-      MODULAR GRID TOPOLOGY &amp; CELL MULTIPLIER SPECIFICATION
-    </text>
-  </g>
+ <!-- Top Title / HUD Header -->
+ <g transform="translate(600, 26)">
+ <text x="0" y="0" fill="#64748b" font-family="'Inter', sans-serif" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="4">
+ MODULAR GRID TOPOLOGY &amp; CELL MULTIPLIER SPECIFICATION
+ </text>
+ </g>
 
-  <!-- ==================== LEFT: 19x27 BOARD BLUEPRINT (x = 30) ==================== -->
-  <g transform="translate(30, 48)" filter="url(#matrixShadow)">
-    <rect width="660" height="385" rx="14" fill="#090d16" stroke="#1e293b" stroke-width="1.5"/>
+ <!-- ==================== LEFT: 19x27 BOARD BLUEPRINT (x = 30) ==================== -->
+ <g transform="translate(30, 48)" filter="url(#matrixShadow)">
+ <rect width="660" height="385" rx="14" fill="#090d16" stroke="#1e293b" stroke-width="1.5"/>
 
-    <!-- Grid Header -->
-    <rect x="0" y="0" width="660" height="34" rx="14" fill="#0f172a" fill-opacity="0.8"/>
-    <text x="20" y="22" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="11" font-weight="900" letter-spacing="1">
-      🗺️ 19 ROWS × 27 COLUMNS (513 CELLS)
-    </text>
-    <text x="640" y="22" fill="#94a3b8" font-family="'Inter', monospace" font-size="10" font-weight="700" text-anchor="end">
-      COLS: 0 ──────────────── 13 ──────────────── 26
-    </text>
+ <!-- Grid Header -->
+ <rect x="0" y="0" width="660" height="34" rx="14" fill="#0f172a" fill-opacity="0.8"/>
+ <text x="20" y="22" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="11" font-weight="900" letter-spacing="1">
+ 19 ROWS × 27 COLUMNS (513 CELLS)
+ </text>
+ <text x="640" y="22" fill="#94a3b8" font-family="'Inter', monospace" font-size="10" font-weight="700" text-anchor="end">
+ COLS: 0  13  26
+ </text>
 
-    <!-- Blueprint Board Outer Frame -->
-    <rect x="20" y="50" width="620" height="315" rx="8" fill="#030712" stroke="#334155" stroke-width="1"/>
+ <!-- Blueprint Board Outer Frame -->
+ <rect x="20" y="50" width="620" height="315" rx="8" fill="#030712" stroke="#334155" stroke-width="1"/>
 
-    <!-- Blueprint Grid Lines -->
-    <g stroke="#1e293b" stroke-width="0.8">
-      <!-- Horizontal row guides -->
-      <line x1="20" y1="85" x2="640" y2="85"/>
-      <line x1="20" y1="120" x2="640" y2="120"/>
-      <line x1="20" y1="155" x2="640" y2="155"/>
-      <line x1="20" y1="190" x2="640" y2="190"/>
-      <line x1="20" y1="225" x2="640" y2="225"/>
-      <line x1="20" y1="260" x2="640" y2="260"/>
-      <line x1="20" y1="295" x2="640" y2="295"/>
-      <line x1="20" y1="330" x2="640" y2="330"/>
+ <!-- Blueprint Grid Lines -->
+ <g stroke="#1e293b" stroke-width="0.8">
+ <!-- Horizontal row guides -->
+ <line x1="20" y1="85" x2="640" y2="85"/>
+ <line x1="20" y1="120" x2="640" y2="120"/>
+ <line x1="20" y1="155" x2="640" y2="155"/>
+ <line x1="20" y1="190" x2="640" y2="190"/>
+ <line x1="20" y1="225" x2="640" y2="225"/>
+ <line x1="20" y1="260" x2="640" y2="260"/>
+ <line x1="20" y1="295" x2="640" y2="295"/>
+ <line x1="20" y1="330" x2="640" y2="330"/>
 
-      <!-- Vertical col guides -->
-      <line x1="60" y1="50" x2="60" y2="365"/>
-      <line x1="120" y1="50" x2="120" y2="365"/>
-      <line x1="180" y1="50" x2="180" y2="365"/>
-      <line x1="240" y1="50" x2="240" y2="365"/>
-      <line x1="300" y1="50" x2="300" y2="365"/>
-      <line x1="360" y1="50" x2="360" y2="365"/>
-      <line x1="420" y1="50" x2="420" y2="365"/>
-      <line x1="480" y1="50" x2="480" y2="365"/>
-      <line x1="540" y1="50" x2="540" y2="365"/>
-      <line x1="600" y1="50" x2="600" y2="365"/>
-    </g>
+ <!-- Vertical col guides -->
+ <line x1="60" y1="50" x2="60" y2="365"/>
+ <line x1="120" y1="50" x2="120" y2="365"/>
+ <line x1="180" y1="50" x2="180" y2="365"/>
+ <line x1="240" y1="50" x2="240" y2="365"/>
+ <line x1="300" y1="50" x2="300" y2="365"/>
+ <line x1="360" y1="50" x2="360" y2="365"/>
+ <line x1="420" y1="50" x2="420" y2="365"/>
+ <line x1="480" y1="50" x2="480" y2="365"/>
+ <line x1="540" y1="50" x2="540" y2="365"/>
+ <line x1="600" y1="50" x2="600" y2="365"/>
+ </g>
 
-    <!-- Row Coordinate Labels (Left) -->
-    <g font-family="'Inter', monospace" font-size="9" fill="#64748b" text-anchor="middle">
-      <text x="35" y="72">R0</text>
-      <text x="35" y="142">R4</text>
-      <text x="35" y="212">R9</text>
-      <text x="35" y="282">R14</text>
-      <text x="35" y="352">R18</text>
-    </g>
+ <!-- Row Coordinate Labels (Left) -->
+ <g font-family="'Inter', monospace" font-size="9" fill="#64748b" text-anchor="middle">
+ <text x="35" y="72">R0</text>
+ <text x="35" y="142">R4</text>
+ <text x="35" y="212">R9</text>
+ <text x="35" y="282">R14</text>
+ <text x="35" y="352">R18</text>
+ </g>
 
-    <!-- Symmetric Multiplier Cells on Grid -->
-    
-    <!-- 3L Cells (Triple Letter - Blue) -->
-    <g fill="#0284c7" stroke="#38bdf8" stroke-width="1">
-      <rect x="315" y="58" width="28" height="22" rx="4"/>
-      <text x="329" y="73" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <!-- Symmetric Multiplier Cells on Grid -->
+ 
+ <!-- 3L Cells (Triple Letter - Blue) -->
+ <g fill="#0284c7" stroke="#38bdf8" stroke-width="1">
+ <rect x="315" y="58" width="28" height="22" rx="4"/>
+ <text x="329" y="73" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
 
-      <rect x="315" y="335" width="28" height="22" rx="4"/>
-      <text x="329" y="350" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <rect x="315" y="335" width="28" height="22" rx="4"/>
+ <text x="329" y="350" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
 
-      <rect x="75" y="75" width="28" height="22" rx="4"/>
-      <text x="89" y="90" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <rect x="75" y="75" width="28" height="22" rx="4"/>
+ <text x="89" y="90" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
 
-      <rect x="555" y="75" width="28" height="22" rx="4"/>
-      <text x="569" y="90" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <rect x="555" y="75" width="28" height="22" rx="4"/>
+ <text x="569" y="90" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
 
-      <rect x="75" y="315" width="28" height="22" rx="4"/>
-      <text x="89" y="330" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <rect x="75" y="315" width="28" height="22" rx="4"/>
+ <text x="89" y="330" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
 
-      <rect x="555" y="315" width="28" height="22" rx="4"/>
-      <text x="569" y="330" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <rect x="555" y="315" width="28" height="22" rx="4"/>
+ <text x="569" y="330" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
 
-      <rect x="55" y="200" width="28" height="22" rx="4"/>
-      <text x="69" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <rect x="55" y="200" width="28" height="22" rx="4"/>
+ <text x="69" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
 
-      <rect x="575" y="200" width="28" height="22" rx="4"/>
-      <text x="589" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <rect x="575" y="200" width="28" height="22" rx="4"/>
+ <text x="589" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
 
-      <rect x="250" y="200" width="28" height="22" rx="4"/>
-      <text x="264" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ <rect x="250" y="200" width="28" height="22" rx="4"/>
+ <text x="264" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
 
-      <rect x="380" y="200" width="28" height="22" rx="4"/>
-      <text x="394" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
-    </g>
+ <rect x="380" y="200" width="28" height="22" rx="4"/>
+ <text x="394" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">3L</text>
+ </g>
 
-    <!-- 2L Cells (Double Letter - Teal/Emerald) -->
-    <g fill="#0369a1" stroke="#7dd3fc" stroke-width="1">
-      <rect x="220" y="110" width="28" height="22" rx="4"/>
-      <text x="234" y="125" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ <!-- 2L Cells (Double Letter - Teal/Emerald) -->
+ <g fill="#0369a1" stroke="#7dd3fc" stroke-width="1">
+ <rect x="220" y="110" width="28" height="22" rx="4"/>
+ <text x="234" y="125" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
 
-      <rect x="410" y="110" width="28" height="22" rx="4"/>
-      <text x="424" y="125" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ <rect x="410" y="110" width="28" height="22" rx="4"/>
+ <text x="424" y="125" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
 
-      <rect x="220" y="285" width="28" height="22" rx="4"/>
-      <text x="234" y="300" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ <rect x="220" y="285" width="28" height="22" rx="4"/>
+ <text x="234" y="300" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
 
-      <rect x="410" y="285" width="28" height="22" rx="4"/>
-      <text x="424" y="300" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ <rect x="410" y="285" width="28" height="22" rx="4"/>
+ <text x="424" y="300" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
 
-      <rect x="180" y="200" width="28" height="22" rx="4"/>
-      <text x="194" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ <rect x="180" y="200" width="28" height="22" rx="4"/>
+ <text x="194" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
 
-      <rect x="450" y="200" width="28" height="22" rx="4"/>
-      <text x="464" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
-    </g>
+ <rect x="450" y="200" width="28" height="22" rx="4"/>
+ <text x="464" y="215" fill="#ffffff" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">2L</text>
+ </g>
 
-    <!-- ★ Secret Power Cells (Purple / Violet) -->
-    <g fill="#581c87" stroke="#c084fc" stroke-width="1">
-      <rect x="120" y="58" width="28" height="22" rx="4"/>
-      <text x="134" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="62">★</text>
+ <!-- ★ Secret Power Cells (Purple / Violet) -->
+ <g fill="#581c87" stroke="#c084fc" stroke-width="1">
+ <rect x="120" y="58" width="28" height="22" rx="4"/>
+ <text x="134" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="62">★</text>
 
-      <rect x="510" y="58" width="28" height="22" rx="4"/>
-      <text x="524" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="62">★</text>
+ <rect x="510" y="58" width="28" height="22" rx="4"/>
+ <text x="524" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="62">★</text>
 
-      <rect x="120" y="335" width="28" height="22" rx="4"/>
-      <text x="134" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="339">★</text>
+ <rect x="120" y="335" width="28" height="22" rx="4"/>
+ <text x="134" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="339">★</text>
 
-      <rect x="510" y="335" width="28" height="22" rx="4"/>
-      <text x="524" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="339">★</text>
+ <rect x="510" y="335" width="28" height="22" rx="4"/>
+ <text x="524" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="339">★</text>
 
-      <rect x="120" y="200" width="28" height="22" rx="4"/>
-      <text x="134" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="204">★</text>
+ <rect x="120" y="200" width="28" height="22" rx="4"/>
+ <text x="134" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="204">★</text>
 
-      <rect x="510" y="200" width="28" height="22" rx="4"/>
-      <text x="524" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="204">★</text>
-    </g>
+ <rect x="510" y="200" width="28" height="22" rx="4"/>
+ <text x="524" y="12" fill="#f5d0fe" font-size="12" text-anchor="middle" dy="204">★</text>
+ </g>
 
-    <!-- ⭐ CENTER STAR CELL (Row 9, Col 13) -->
-    <g class="anim-star-center">
-      <rect x="312" y="194" width="36" height="34" rx="6" fill="#d97706" stroke="#fef08a" stroke-width="2"/>
-      <text x="330" y="218" fill="#ffffff" font-family="'Inter', sans-serif" font-size="18" font-weight="900" text-anchor="middle">★</text>
-    </g>
+ <!-- ★ CENTER STAR CELL (Row 9, Col 13) -->
+ <g class="anim-star-center">
+ <rect x="312" y="194" width="36" height="34" rx="6" fill="#d97706" stroke="#fef08a" stroke-width="2"/>
+ <text x="330" y="218" fill="#ffffff" font-family="'Inter', sans-serif" font-size="18" font-weight="900" text-anchor="middle">★</text>
+ </g>
 
-    <rect x="240" y="235" width="180" height="20" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
-    <text x="330" y="248" fill="#fde68a" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">
-      ★ CENTER STAR (ROW 9, COL 13)
-    </text>
-  </g>
+ <rect x="240" y="235" width="180" height="20" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
+ <text x="330" y="248" fill="#fde68a" font-family="'Inter', sans-serif" font-size="9" font-weight="900" text-anchor="middle">
+ ★ CENTER STAR (ROW 9, COL 13)
+ </text>
+ </g>
 
-  <!-- ==================== RIGHT: 4 MULTIPLIER SPEC CARDS (x = 710) ==================== -->
-  <g transform="translate(710, 48)">
+ <!-- ==================== RIGHT: 4 MULTIPLIER SPEC CARDS (x = 710) ==================== -->
+ <g transform="translate(710, 48)">
 
-    <!-- CARD 1: CENTER STAR -->
-    <g transform="translate(0, 0)" filter="url(#matrixShadow)">
-      <rect width="460" height="85" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
-      <rect x="12" y="16" width="46" height="52" rx="8" fill="#78350f" stroke="#fbbf24" stroke-width="1.2"/>
-      <text x="35" y="49" fill="#fde68a" font-family="'Inter', sans-serif" font-size="24" font-weight="900" text-anchor="middle">★</text>
-      
-      <text x="70" y="32" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="13" font-weight="900">⭐ CENTER STAR (9, 13)</text>
-      <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
-        Mandatory Opening Move Anchor
-      </text>
-      <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
-        First word of the match must cover this coordinate.
-      </text>
-    </g>
+ <!-- CARD 1: CENTER STAR -->
+ <g transform="translate(0, 0)" filter="url(#matrixShadow)">
+ <rect width="460" height="85" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+ <rect x="12" y="16" width="46" height="52" rx="8" fill="#78350f" stroke="#fbbf24" stroke-width="1.2"/>
+ <text x="35" y="49" fill="#fde68a" font-family="'Inter', sans-serif" font-size="24" font-weight="900" text-anchor="middle">★</text>
+ 
+ <text x="70" y="32" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="13" font-weight="900">★ CENTER STAR (9, 13)</text>
+ <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
+ Mandatory Opening Move Anchor
+ </text>
+ <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
+ First word of the match must cover this coordinate.
+ </text>
+ </g>
 
-    <!-- CARD 2: TRIPLE LETTER (3L) -->
-    <g transform="translate(0, 98)" filter="url(#matrixShadow)">
-      <rect width="460" height="85" rx="10" fill="#0f172a" stroke="#0284c7" stroke-width="1.2"/>
-      <rect x="12" y="16" width="46" height="52" rx="8" fill="#0284c7" stroke="#38bdf8" stroke-width="1.2"/>
-      <text x="35" y="49" fill="#ffffff" font-family="'Inter', sans-serif" font-size="16" font-weight="900" text-anchor="middle">3L</text>
-      
-      <text x="70" y="32" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="13" font-weight="900">🔢 TRIPLE LETTER (3× MULTIPLIER)</text>
-      <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
-        Triples the newly placed tile point value
-      </text>
-      <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
-        Applies across all horizontal and vertical words formed.
-      </text>
-    </g>
+ <!-- CARD 2: TRIPLE LETTER (3L) -->
+ <g transform="translate(0, 98)" filter="url(#matrixShadow)">
+ <rect width="460" height="85" rx="10" fill="#0f172a" stroke="#0284c7" stroke-width="1.2"/>
+ <rect x="12" y="16" width="46" height="52" rx="8" fill="#0284c7" stroke="#38bdf8" stroke-width="1.2"/>
+ <text x="35" y="49" fill="#ffffff" font-family="'Inter', sans-serif" font-size="16" font-weight="900" text-anchor="middle">3L</text>
+ 
+ <text x="70" y="32" fill="#38bdf8" font-family="'Inter', sans-serif" font-size="13" font-weight="900"> TRIPLE LETTER (3× MULTIPLIER)</text>
+ <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
+ Triples the newly placed tile point value
+ </text>
+ <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
+ Applies across all horizontal and vertical words formed.
+ </text>
+ </g>
 
-    <!-- CARD 3: DOUBLE LETTER (2L) -->
-    <g transform="translate(0, 196)" filter="url(#matrixShadow)">
-      <rect width="460" height="85" rx="10" fill="#0f172a" stroke="#0369a1" stroke-width="1.2"/>
-      <rect x="12" y="16" width="46" height="52" rx="8" fill="#0369a1" stroke="#7dd3fc" stroke-width="1.2"/>
-      <text x="35" y="49" fill="#ffffff" font-family="'Inter', sans-serif" font-size="16" font-weight="900" text-anchor="middle">2L</text>
-      
-      <text x="70" y="32" fill="#7dd3fc" font-family="'Inter', sans-serif" font-size="13" font-weight="900">🔢 DOUBLE LETTER (2× MULTIPLIER)</text>
-      <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
-        Doubles the newly placed letter value
-      </text>
-      <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
-        Strategic stepping stone for high-yield combos.
-      </text>
-    </g>
+ <!-- CARD 3: DOUBLE LETTER (2L) -->
+ <g transform="translate(0, 196)" filter="url(#matrixShadow)">
+ <rect width="460" height="85" rx="10" fill="#0f172a" stroke="#0369a1" stroke-width="1.2"/>
+ <rect x="12" y="16" width="46" height="52" rx="8" fill="#0369a1" stroke="#7dd3fc" stroke-width="1.2"/>
+ <text x="35" y="49" fill="#ffffff" font-family="'Inter', sans-serif" font-size="16" font-weight="900" text-anchor="middle">2L</text>
+ 
+ <text x="70" y="32" fill="#7dd3fc" font-family="'Inter', sans-serif" font-size="13" font-weight="900"> DOUBLE LETTER (2× MULTIPLIER)</text>
+ <text x="70" y="50" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
+ Doubles the newly placed letter value
+ </text>
+ <text x="70" y="66" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
+ Strategic stepping stone for high-yield combos.
+ </text>
+ </g>
 
-    <!-- CARD 4: SECRET POWER & BINGO -->
-    <g transform="translate(0, 294)" filter="url(#matrixShadow)">
-      <rect width="460" height="91" rx="10" fill="#0f172a" stroke="#a855f7" stroke-width="1.2"/>
-      <rect x="12" y="20" width="46" height="52" rx="8" fill="#581c87" stroke="#c084fc" stroke-width="1.2"/>
-      <text x="35" y="53" fill="#f5d0fe" font-size="22" text-anchor="middle">★</text>
-      
-      <text x="70" y="34" fill="#c084fc" font-family="'Inter', sans-serif" font-size="13" font-weight="900">★ POWER CELL &amp; 🎯 +50 BINGO</text>
-      <text x="70" y="52" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
-        Power Cards Drop &amp; All-7-Tiles Bonus
-      </text>
-      <text x="70" y="68" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
-        Power cell awards tactical card. 7-tile bingo yields +50 pts!
-      </text>
-    </g>
-  </g>
+ <!-- CARD 4: SECRET POWER & BINGO -->
+ <g transform="translate(0, 294)" filter="url(#matrixShadow)">
+ <rect width="460" height="91" rx="10" fill="#0f172a" stroke="#a855f7" stroke-width="1.2"/>
+ <rect x="12" y="20" width="46" height="52" rx="8" fill="#581c87" stroke="#c084fc" stroke-width="1.2"/>
+ <text x="35" y="53" fill="#f5d0fe" font-size="22" text-anchor="middle">★</text>
+ 
+ <text x="70" y="34" fill="#c084fc" font-family="'Inter', sans-serif" font-size="13" font-weight="900">★ POWER CELL &amp; +50 BINGO</text>
+ <text x="70" y="52" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5" font-weight="600">
+ Power Cards Drop &amp; All-7-Tiles Bonus
+ </text>
+ <text x="70" y="68" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9.5">
+ Power cell awards tactical card. 7-tile bingo yields +50 pts!
+ </text>
+ </g>
+ </g>
 </svg>
