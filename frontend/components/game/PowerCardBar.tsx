@@ -346,26 +346,26 @@ export const PowerCardBar = memo(function PowerCardBar({
     };
 
     return (
-      <div className="flex flex-col w-full gap-2 rounded-xl border border-emerald-400/80 bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-950 p-2.5 text-xs text-emerald-100 shadow-[0_0_25px_rgba(16,185,129,0.35)] ring-1 ring-emerald-500/40">
+      <div className="flex flex-col w-full gap-1.5 sm:gap-2 rounded-xl border border-emerald-400/80 bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-950 p-2 sm:p-2.5 text-xs text-emerald-100 shadow-[0_0_25px_rgba(16,185,129,0.35)] ring-1 ring-emerald-500/40 select-none">
         {spySwapStep === 'own' && (
-          <div className="flex flex-col items-center gap-2 w-full">
+          <div className="flex flex-col items-center gap-1.5 sm:gap-2 w-full">
             {/* Header + Counter */}
             <div className="flex items-center justify-between w-full px-0.5">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-400/60 shadow-[0_0_8px_rgba(16,185,129,0.5)]">
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                <div className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-emerald-500/20 border border-emerald-400/60 shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0">
                   {POWER_CARDS_META.SPY_SWAP?.icon}
                 </div>
-                <div>
+                <div className="truncate">
                   <span className="font-extrabold text-emerald-300 text-xs">Pick 1–3 tiles to swap:</span>
                 </div>
               </div>
-              <span className="font-mono font-black text-emerald-300 text-xs bg-emerald-950/90 px-2.5 py-0.5 rounded-lg border border-emerald-500/40">
+              <span className="font-mono font-black text-emerald-300 text-[11px] sm:text-xs bg-emerald-950/90 px-2 py-0.5 rounded-md border border-emerald-500/40 shrink-0">
                 {spyOwnTileIds.length}/3 Picked
               </span>
             </div>
 
             {/* Tiles Row */}
-            <div className="flex flex-nowrap items-center justify-center gap-1.5 sm:gap-2 w-full overflow-x-auto hide-scrollbar py-1">
+            <div className="flex flex-nowrap items-center justify-center gap-1 sm:gap-1.5 w-full py-0.5 overflow-hidden">
               {ownRack.map(tile => {
                 const selected = spyOwnTileIds.includes(tile.id);
                 return (
@@ -374,9 +374,9 @@ export const PowerCardBar = memo(function PowerCardBar({
                     type="button"
                     aria-pressed={selected}
                     onClick={() => toggleOwnTile(tile.id)}
-                    className={`tile-face relative flex shrink-0 h-[42px] w-[36px] sm:h-[46px] sm:w-[40px] flex-col items-center justify-center overflow-hidden rounded-xl border font-sans cursor-pointer transition-all active:scale-95 ${
+                    className={`tile-face relative flex shrink-0 h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] flex-col items-center justify-center overflow-hidden rounded-lg sm:rounded-xl border font-sans cursor-pointer transition-all active:scale-95 ${
                       selected
-                        ? 'border-emerald-300 ring-2 ring-emerald-400 shadow-[0_0_16px_rgba(16,185,129,0.8)] -translate-y-1 scale-105'
+                        ? 'border-emerald-300 ring-2 ring-emerald-400 shadow-[0_0_14px_rgba(16,185,129,0.8)] -translate-y-0.5 scale-[1.04]'
                         : 'border-amber-100/80 hover:brightness-105'
                     }`}
                   >
@@ -384,7 +384,7 @@ export const PowerCardBar = memo(function PowerCardBar({
                       <div className="relative z-20 flex items-center justify-center">
                         <svg
                           viewBox="0 0 24 24"
-                          className="tile-blank-star w-4 h-4 sm:w-5 sm:h-5"
+                          className="tile-blank-star w-3.5 h-3.5 sm:w-4 sm:h-4"
                           fill="currentColor"
                           stroke="currentColor"
                           strokeWidth="1.5"
@@ -395,7 +395,7 @@ export const PowerCardBar = memo(function PowerCardBar({
                       </div>
                     ) : (
                       <span
-                        className={`tile-letter tile-letter-orange text-[22px] sm:text-[24px] leading-none font-maple inline-block ${
+                        className={`tile-letter tile-letter-orange text-[18px] sm:text-[20px] leading-none font-maple inline-block ${
                           tile.letter.toUpperCase() === 'W'
                             ? 'scale-x-90 -translate-x-[0.5px]'
                             : tile.letter.toUpperCase() === 'M'
@@ -406,7 +406,7 @@ export const PowerCardBar = memo(function PowerCardBar({
                         {tile.letter}
                       </span>
                     )}
-                    <span className="tile-score-blue absolute bottom-0.5 right-0.5 z-20 text-[9px] sm:text-[10px] font-maple">
+                    <span className="tile-score-blue absolute bottom-0.5 right-0.5 z-20 text-[8px] sm:text-[9px] font-maple leading-none">
                       {tile.value}
                     </span>
                   </button>
@@ -415,12 +415,12 @@ export const PowerCardBar = memo(function PowerCardBar({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end gap-2 w-full pt-1">
+            <div className="flex items-center justify-end gap-1.5 sm:gap-2 w-full pt-0.5">
               <button
                 type="button"
                 disabled={!spyOwnTileIds.length || busy || !opponents.length}
                 onClick={() => setSpySwapStep('opponent')}
-                className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-400 to-teal-400 px-3.5 py-1.5 font-black text-slate-950 hover:brightness-110 shadow-[0_0_12px_rgba(16,185,129,0.5)] disabled:opacity-40 transition-all cursor-pointer uppercase text-xs active:scale-95"
+                className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-400 to-teal-400 px-3 py-1 sm:px-3.5 sm:py-1.5 font-black text-slate-950 hover:brightness-110 shadow-[0_0_12px_rgba(16,185,129,0.5)] disabled:opacity-40 transition-all cursor-pointer uppercase text-xs active:scale-95"
               >
                 <span>Next</span>
                 <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
@@ -428,7 +428,7 @@ export const PowerCardBar = memo(function PowerCardBar({
               <button
                 type="button"
                 onClick={cancelSpySwap}
-                className="rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-3 py-1.5 font-bold text-slate-400 hover:text-white cursor-pointer text-xs active:scale-95"
+                className="rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-2.5 py-1 sm:px-3 sm:py-1.5 font-bold text-slate-400 hover:text-white cursor-pointer text-xs active:scale-95"
               >
                 Cancel
               </button>
@@ -437,9 +437,9 @@ export const PowerCardBar = memo(function PowerCardBar({
         )}
 
         {spySwapStep === 'opponent' && (
-          <div className="flex flex-col items-center gap-2 w-full">
+          <div className="flex flex-col items-center gap-1.5 sm:gap-2 w-full">
             <span className="font-extrabold text-emerald-300 text-xs self-start">Select Target Opponent:</span>
-            <div className="flex flex-wrap items-center justify-center gap-2 w-full py-1">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 w-full py-0.5">
               {opponents.map(opponent => (
                 <button
                   key={opponent.id}
@@ -450,17 +450,17 @@ export const PowerCardBar = memo(function PowerCardBar({
                     setSpyTargetTileIndices([]);
                     setSpySwapStep('tiles');
                   }}
-                  className="rounded-lg border border-emerald-400/60 bg-emerald-950/70 hover:bg-emerald-800/90 px-3.5 py-1.5 font-extrabold text-emerald-200 hover:text-white disabled:opacity-40 transition-all cursor-pointer shadow-md text-xs active:scale-95"
+                  className="rounded-lg border border-emerald-400/60 bg-emerald-950/70 hover:bg-emerald-800/90 px-3 py-1 sm:px-3.5 sm:py-1.5 font-extrabold text-emerald-200 hover:text-white disabled:opacity-40 transition-all cursor-pointer shadow-md text-xs active:scale-95"
                 >
                   {opponent.display_name} ({opponent.rack_count} tiles)
                 </button>
               ))}
             </div>
-            <div className="flex items-center justify-end w-full">
+            <div className="flex items-center justify-end w-full pt-0.5">
               <button
                 type="button"
                 onClick={cancelSpySwap}
-                className="rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-3 py-1.5 font-bold text-slate-400 hover:text-white cursor-pointer text-xs active:scale-95"
+                className="rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-2.5 py-1 sm:px-3 sm:py-1.5 font-bold text-slate-400 hover:text-white cursor-pointer text-xs active:scale-95"
               >
                 Cancel
               </button>
@@ -469,11 +469,11 @@ export const PowerCardBar = memo(function PowerCardBar({
         )}
 
         {spySwapStep === 'tiles' && selectedOpponent && (
-          <div className="flex flex-col items-center gap-2 w-full">
+          <div className="flex flex-col items-center gap-1.5 sm:gap-2 w-full">
             <span className="font-extrabold text-emerald-300 text-xs self-start">
               Pick {spyOwnTileIds.length} from {selectedOpponent.display_name}:
             </span>
-            <div className="flex flex-nowrap items-center justify-center gap-2 w-full overflow-x-auto hide-scrollbar py-1">
+            <div className="flex flex-nowrap items-center justify-center gap-1 sm:gap-1.5 w-full py-0.5 overflow-hidden">
               {Array.from({ length: selectedOpponent.rack_count }, (_, index) => {
                 const selected = spyTargetTileIndices.includes(index);
                 return (
@@ -482,9 +482,9 @@ export const PowerCardBar = memo(function PowerCardBar({
                     type="button"
                     disabled={!selected && spyTargetTileIndices.length >= spyOwnTileIds.length}
                     onClick={() => toggleTargetSlot(index)}
-                    className={`h-[42px] w-[36px] sm:h-[46px] sm:w-[40px] shrink-0 rounded-xl border font-black text-base transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+                    className={`h-[38px] w-[32px] sm:h-[42px] sm:w-[36px] shrink-0 rounded-lg sm:rounded-xl border font-black text-sm sm:text-base transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
                       selected
-                        ? 'border-emerald-300 bg-emerald-700 text-white ring-2 ring-emerald-400 shadow-[0_0_16px_rgba(16,185,129,0.8)] -translate-y-1 scale-105'
+                        ? 'border-emerald-300 bg-emerald-700 text-white ring-2 ring-emerald-400 shadow-[0_0_14px_rgba(16,185,129,0.8)] -translate-y-0.5 scale-[1.04]'
                         : 'border-slate-700 bg-slate-800/90 text-slate-300 hover:border-emerald-400 hover:text-white'
                     }`}
                   >
@@ -493,7 +493,7 @@ export const PowerCardBar = memo(function PowerCardBar({
                 );
               })}
             </div>
-            <div className="flex items-center justify-end gap-2 w-full pt-1">
+            <div className="flex items-center justify-end gap-1.5 sm:gap-2 w-full pt-0.5">
               <button
                 type="button"
                 disabled={busy || spyTargetTileIndices.length !== spyOwnTileIds.length}
@@ -501,21 +501,21 @@ export const PowerCardBar = memo(function PowerCardBar({
                   onUseSpySwap(spyTargetPlayerId!, spyOwnTileIds, spyTargetTileIndices);
                   cancelSpySwap();
                 }}
-                className="rounded-lg bg-gradient-to-r from-emerald-400 to-teal-400 px-4 py-1.5 font-black text-slate-950 hover:brightness-110 shadow-[0_0_12px_rgba(16,185,129,0.5)] disabled:opacity-40 transition-all cursor-pointer uppercase text-xs active:scale-95"
+                className="rounded-lg bg-gradient-to-r from-emerald-400 to-teal-400 px-3.5 py-1 sm:px-4 sm:py-1.5 font-black text-slate-950 hover:brightness-110 shadow-[0_0_12px_rgba(16,185,129,0.5)] disabled:opacity-40 transition-all cursor-pointer uppercase text-xs active:scale-95"
               >
                 Confirm Swap
               </button>
               <button
                 type="button"
                 onClick={() => setSpySwapStep('opponent')}
-                className="rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-3 py-1.5 font-bold text-slate-300 hover:text-white cursor-pointer text-xs active:scale-95"
+                className="rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-2.5 py-1 sm:px-3 sm:py-1.5 font-bold text-slate-300 hover:text-white cursor-pointer text-xs active:scale-95"
               >
                 Back
               </button>
               <button
                 type="button"
                 onClick={cancelSpySwap}
-                className="rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-3 py-1.5 font-bold text-slate-400 hover:text-white cursor-pointer text-xs active:scale-95"
+                className="rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-2.5 py-1 sm:px-3 sm:py-1.5 font-bold text-slate-400 hover:text-white cursor-pointer text-xs active:scale-95"
               >
                 Cancel
               </button>
