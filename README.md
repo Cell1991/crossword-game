@@ -94,14 +94,29 @@
 
 ### Core Feature Specification
 
-| Core Pillar | Technical Implementation | Gameplay & Strategic Impact |
-| :--- | :--- | :--- |
-| **60 FPS Canvas Engine** | Custom `BoardCompositor` with offscreen double-buffered bitmap grid caching, dynamic frustum culling, inertial camera pan/zoom, and starlight comet particle trails (`FXRenderer`). | Butter-smooth 60 FPS rendering on high-DPI desktop and mobile screens, eliminating DOM lag across the expansive $19 \times 27$ grid. |
-| **HP Combat Engine** | Scored word points are converted authoritatively into lethal damage dealt to living rivals. Features a 1.0-second reactive `SHIELD` reaction window, rack-based `HEAL`, and spectator demotion at 0 HP. | Replaces passive word games with high-intensity elimination combat where defensive timing and offensive burst damage decide victory. |
-| **3-Tier Dictionary &amp; Grimoire** | In-memory **CSW24 Tournament Lexicon** (`wordlist.txt`), multi-tier definition cache (**L1 RAM** &rarr; **L2 Database** &rarr; **L3 Async Online API**), and positional anagram spellbook (`grimoire.py`). | Sub-millisecond orthogonal validation with rich definitions, phonetic IPA transcriptions, and instant AI move generation. |
-| **Autonomous AI Bot Triad** | 3 difficulty profiles (**SparkBot / Easy**, **Nexus AI / Medium**, **Titan AI / Hard**) driven by heuristic candidate solvers and auto-scheduled turn executors (`bot_service.py`). | Enables solo offline practice or automatically fills vacant lobby seats with believable, competitive tactical opponents. |
-| **Low-Latency WebSocket Stream** | Persistent real-time stream (`/ws/games/{id}`) broadcasting turn clocks, translucent placement ghosts, card shockwaves, spectator feeds, and 15-second reconnection grace. | True sub-second multiplayer synchronization allowing rivals to watch opponents stage tiles live before committing. |
-| **Dynamic Sound &amp; Audio FX** | Web Audio API synthesized sound FX, ambient background soundtracks (`BackgroundMusic`), and 4 switchable tile palettes (Wooden, Golden, Ivory, Neon Obsidian). | Immersive audio-visual tactile feedback on tile drops, power card triggers, Bingo bonuses, and elimination alerts. |
+- **60 FPS Canvas Engine**  
+  **Implementation:** Custom `BoardCompositor` with offscreen double-buffered bitmap grid caching, dynamic frustum culling, inertial camera pan/zoom, and starlight comet particle trails (`FXRenderer`).  
+  **Strategic Impact:** Butter-smooth 60 FPS rendering on high-DPI desktop and mobile screens, eliminating DOM lag across the expansive $19 \times 27$ grid.
+
+- **HP Combat Engine**  
+  **Implementation:** Scored word points are converted authoritatively into lethal damage dealt to living rivals. Features a 1.0-second reactive `SHIELD` reaction window, rack-based `HEAL`, and spectator demotion at 0 HP.  
+  **Strategic Impact:** Replaces passive word games with high-intensity elimination combat where defensive timing and offensive burst damage decide victory.
+
+- **3-Tier Dictionary & Grimoire**  
+  **Implementation:** In-memory **CSW24 Tournament Lexicon** (`wordlist.txt`), multi-tier definition cache (**L1 RAM** &rarr; **L2 Database** &rarr; **L3 Async Online API**), and positional anagram spellbook (`grimoire.py`).  
+  **Strategic Impact:** Sub-millisecond orthogonal validation with rich definitions, phonetic IPA transcriptions, and instant AI move generation.
+
+- **Autonomous AI Bot Triad**  
+  **Implementation:** 3 difficulty profiles (**SparkBot / Easy**, **Nexus AI / Medium**, **Titan AI / Hard**) driven by heuristic candidate solvers and auto-scheduled turn executors (`bot_service.py`).  
+  **Strategic Impact:** Enables solo offline practice or automatically fills vacant lobby seats with believable, competitive tactical opponents.
+
+- **Low-Latency WebSocket Stream**  
+  **Implementation:** Persistent real-time stream (`/ws/games/{id}`) broadcasting turn clocks, translucent placement ghosts, card shockwaves, spectator feeds, and 15-second reconnection grace.  
+  **Strategic Impact:** True sub-second multiplayer synchronization allowing rivals to watch opponents stage tiles live before committing.
+
+- **Dynamic Sound & Audio FX**  
+  **Implementation:** Web Audio API synthesized sound FX, ambient background soundtracks (`BackgroundMusic`), and 4 switchable tile palettes (Wooden, Golden, Ivory, Neon Obsidian).  
+  **Strategic Impact:** Immersive audio-visual tactile feedback on tile drops, power card triggers, Bingo bonuses, and elimination alerts.
 
 ---
 
@@ -139,19 +154,38 @@ Players acquire tactical Power Cards by placing letters onto **Secret Power (Pow
 
 ### Tactical Spell & Card Index
 
-| Card Name | Backend Key | Target Type | Energy Cost | Tactical Mechanics & Strategic Application |
-| :--- | :--- | :--- | :---: | :--- |
-| **Shield** | `SHIELD` | Passive / Reaction | 0 | Automatically deflects the next incoming attack damage or hostile tile swap during the 1.0s defense reaction window. |
-| **Heal** | `HEAL` | Instant Self | 0 | Instantly restores HP equal to the sum of all tile point values currently sitting in your rack. |
-| **Freeze Tile** | `FREEZE_TILE` | Board Cell | 0 | Locks a targeted board tile in ice crystal armor. Rivals cannot connect words to this tile until your next turn. |
-| **Destroy Tile** | `DESTROY_TILE` | Board Cell | 0 | Demolishes 1 existing tile from the matrix, severing enemy word pathways or reopening premium multiplier cells. |
-| **Double Damage** | `DOUBLE_DAMAGE` | Targeted Rival | 0 | Charges your next committed word with $2\times$ lethal attack damage directed at a chosen opponent. |
-| **Spy Swap** | `SPY_SWAP` | Targeted Rival | 0 | Stealthily swaps 1 to 3 designated tiles from your rack with random tiles stolen directly from a rival's rack. |
-| **Hint** | `HINT` | Your Turn | 0 | Computes and highlights the top 3 highest-scoring legal word placements and coordinate paths on the current board. |
-| **Ban Letter** | `BAN_LETTER` | Room Global | 0 | Declares a specific alphabet character banned across the match; opponents cannot place this letter on their turn. |
-| **Free Exchange** | `FREE_EXCHANGE` | Instant Self | 0 | Allows you to discard and redraw selected rack tiles from the bag without forfeiting or advancing your turn. |
-| **Draw Tile** | `DRAW_TILE` | Instant Self | 0 | Immediately draws 1 extra bonus tile from the bag into your active rack. |
-| **Move Heal** | `MOVE_HEAL` | Self Passive | 0 | Passively heals your HP proportional to the score of your next committed word placement. |
+- **Shield** (`SHIELD`) &bull; `Passive / Reaction` &bull; `Cost: 0`  
+  Automatically deflects the next incoming attack damage or hostile tile swap during the 1.0s defense reaction window.
+
+- **Heal** (`HEAL`) &bull; `Instant Self` &bull; `Cost: 0`  
+  Instantly restores HP equal to the sum of all tile point values currently sitting in your rack.
+
+- **Freeze Tile** (`FREEZE_TILE`) &bull; `Board Cell` &bull; `Cost: 0`  
+  Locks a targeted board tile in ice crystal armor. Rivals cannot connect words to this tile until your next turn.
+
+- **Destroy Tile** (`DESTROY_TILE`) &bull; `Board Cell` &bull; `Cost: 0`  
+  Demolishes 1 existing tile from the matrix, severing enemy word pathways or reopening premium multiplier cells.
+
+- **Double Damage** (`DOUBLE_DAMAGE`) &bull; `Targeted Rival` &bull; `Cost: 0`  
+  Charges your next committed word with $2\times$ lethal attack damage directed at a chosen opponent.
+
+- **Spy Swap** (`SPY_SWAP`) &bull; `Targeted Rival` &bull; `Cost: 0`  
+  Stealthily swaps 1 to 3 designated tiles from your rack with random tiles stolen directly from a rival's rack.
+
+- **Hint** (`HINT`) &bull; `Your Turn` &bull; `Cost: 0`  
+  Computes and highlights the top 3 highest-scoring legal word placements and coordinate paths on the current board.
+
+- **Ban Letter** (`BAN_LETTER`) &bull; `Room Global` &bull; `Cost: 0`  
+  Declares a specific alphabet character banned across the match; opponents cannot place this letter on their turn.
+
+- **Free Exchange** (`FREE_EXCHANGE`) &bull; `Instant Self` &bull; `Cost: 0`  
+  Allows you to discard and redraw selected rack tiles from the bag without forfeiting or advancing your turn.
+
+- **Draw Tile** (`DRAW_TILE`) &bull; `Instant Self` &bull; `Cost: 0`  
+  Immediately draws 1 extra bonus tile from the bag into your active rack.
+
+- **Move Heal** (`MOVE_HEAL`) &bull; `Self Passive` &bull; `Cost: 0`  
+  Passively heals your HP proportional to the score of your next committed word placement.
 
 > [!NOTE]
 > In **Turn Count Mode (`TURNS`)**, all HP-specific combat cards (`HEAL`, `DOUBLE_DAMAGE`, `SHIELD`, `MOVE_HEAL`) are automatically excluded from the random card drop pool to preserve classic Scrabble balance.
@@ -332,13 +366,18 @@ cp .env.example .env
 docker compose up --build
 ```
 
-####  Active Service Ports & Endpoints
-| Service | Local URL | Port | Role & Function |
-| :--- | :--- | :---: | :--- |
-| **Web Client** | [http://localhost:3000](http://localhost:3000) | `3000` | Next.js 16 Client & Canvas 2D Engine *(Gateway: [http://localhost:8090](http://localhost:8090))* |
-| **API Docs (Swagger)** | [http://localhost:8000/docs](http://localhost:8000/docs) | `8000` | Interactive OpenAPI / Swagger Documentation & Live Testing |
-| **Database Adminer** | [http://localhost:8085](http://localhost:8085) | `8085` | PostgreSQL Web GUI Management & Table Inspector |
-| **Ngrok Tunnel** | [http://localhost:4040](http://localhost:4040) | `4040` | Live Public Webhook & Remote Multiplayer Inspection |
+#### Active Service Ports & Endpoints
+- **Web Client** &bull; `Port 3000` &bull; [http://localhost:3000](http://localhost:3000)  
+  Next.js 16 Client & Canvas 2D Engine *(Gateway: [http://localhost:8090](http://localhost:8090))*
+
+- **API Docs (Swagger)** &bull; `Port 8000` &bull; [http://localhost:8000/docs](http://localhost:8000/docs)  
+  Interactive OpenAPI / Swagger Documentation & Live Testing
+
+- **Database Adminer** &bull; `Port 8085` &bull; [http://localhost:8085](http://localhost:8085)  
+  PostgreSQL Web GUI Management & Table Inspector
+
+- **Ngrok Tunnel** &bull; `Port 4040` &bull; [http://localhost:4040](http://localhost:4040)  
+  Live Public Webhook & Remote Multiplayer Inspection
 
 ---
 
@@ -347,7 +386,7 @@ docker compose up --build
 Run the backend and frontend locally without installing PostgreSQL. The backend automatically initializes an embedded **SQLite** database (`crossword.db`) and pre-seeds the CSW24 lexicon.
 
 ```bash
-#  1. BACKEND SETUP (FastAPI) 
+# 1. BACKEND SETUP (FastAPI)
 cd backend
 python -m venv venv
 
@@ -361,7 +400,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ```bash
-#  2. FRONTEND SETUP (Next.js 16) 
+# 2. FRONTEND SETUP (Next.js 16)
 cd frontend
 npm install
 npm run dev
@@ -377,39 +416,31 @@ npm run dev
 ### REST API Specification
 
 #### Room & Lobby Management (`/api/rooms`)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/rooms` | Retrieve a list of active public rooms waiting for players. |
-| `POST` | `/api/rooms` | Create a new room with game mode (`HP` or `TURNS`), timer limits, and player capacity. |
-| `GET` | `/api/rooms/{game_pin}` | Get room lobby details, joined players, and spectator counts. |
-| `PATCH` | `/api/rooms/{game_pin}` | Update room settings (host only: max players, turn time limits). |
-| `POST` | `/api/rooms/{game_pin}/join` | Join a room using its 6-digit Game PIN. |
-| `POST` | `/api/rooms/{game_pin}/leave` | Leave a room lobby. |
-| `POST` | `/api/rooms/{game_pin}/start` | Start the game match (host only). |
+- `GET /api/rooms` &mdash; Retrieve a list of active public rooms waiting for players.
+- `POST /api/rooms` &mdash; Create a new room with game mode (`HP` or `TURNS`), timer limits, and player capacity.
+- `GET /api/rooms/{game_pin}` &mdash; Get room lobby details, joined players, and spectator counts.
+- `PATCH /api/rooms/{game_pin}` &mdash; Update room settings (host only: max players, turn time limits).
+- `POST /api/rooms/{game_pin}/join` &mdash; Join a room using its 6-digit Game PIN.
+- `POST /api/rooms/{game_pin}/leave` &mdash; Leave a room lobby.
+- `POST /api/rooms/{game_pin}/start` &mdash; Start the game match (host only).
 
 #### Game & Move Actions (`/api/games` & `/api/moves`)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/games/{game_id}` | Fetch current authoritative game state, player HP, scores, and board state. |
-| `POST` | `/api/moves/validate` | Dry-run validation of provisional placed tiles without committing turn. |
-| `POST` | `/api/moves/commit` | Commit a move, calculate multipliers, apply Bingo bonus, and deal damage. |
-| `POST` | `/api/games/{game_id}/pass` | Pass turn to the next eligible player (4 consecutive passes end match). |
-| `POST` | `/api/games/{game_id}/exchange` | Exchange rack tiles with the tile bag (requires $\ge 7$ bag tiles). |
-| `POST` | `/api/games/{game_id}/timeout` | Advance turn when countdown timer expires. |
-| `POST` | `/api/games/{game_id}/effects/resolve` | Finalize pending attack damage or tile swaps after the shield reaction window. |
-| `POST` | `/api/games/{game_id}/rematch` | Create or join a synchronized rematch lobby following game completion. |
-| `POST` | `/api/games/{game_id}/bot/plan` | Plan AI bot move based on rack, difficulty, and board state. |
-| `POST` | `/api/games/{game_id}/bot/execute` | Commit a planned AI bot move, exchange, or pass. |
+- `GET /api/games/{game_id}` &mdash; Fetch current authoritative game state, player HP, scores, and board state.
+- `POST /api/moves/validate` &mdash; Dry-run validation of provisional placed tiles without committing turn.
+- `POST /api/moves/commit` &mdash; Commit a move, calculate multipliers, apply Bingo bonus, and deal damage.
+- `POST /api/games/{game_id}/pass` &mdash; Pass turn to the next eligible player (4 consecutive passes end match).
+- `POST /api/games/{game_id}/exchange` &mdash; Exchange rack tiles with the tile bag (requires $\ge 7$ bag tiles).
+- `POST /api/games/{game_id}/timeout` &mdash; Advance turn when countdown timer expires.
+- `POST /api/games/{game_id}/effects/resolve` &mdash; Finalize pending attack damage or tile swaps after the shield reaction window.
+- `POST /api/games/{game_id}/rematch` &mdash; Create or join a synchronized rematch lobby following game completion.
+- `POST /api/games/{game_id}/bot/plan` &mdash; Plan AI bot move based on rack, difficulty, and board state.
+- `POST /api/games/{game_id}/bot/execute` &mdash; Commit a planned AI bot move, exchange, or pass.
 
 #### Tactical Power Cards (`/api/games/{game_id}/cards`)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/games/{game_id}/cards/use` | Deploy a held Power Card (`SHIELD`, `HEAL`, `FREEZE_TILE`, `DESTROY_TILE`, `DOUBLE_DAMAGE`, `SPY_SWAP`, `HINT`, `BAN_LETTER`, `FREE_EXCHANGE`, `DRAW_TILE`). |
+- `POST /api/games/{game_id}/cards/use` &mdash; Deploy a held Power Card (`SHIELD`, `HEAL`, `FREEZE_TILE`, `DESTROY_TILE`, `DOUBLE_DAMAGE`, `SPY_SWAP`, `HINT`, `BAN_LETTER`, `FREE_EXCHANGE`, `DRAW_TILE`).
 
 #### Dictionary & Definitions (`/api/dictionary`)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/dictionary/{word}` | Query word definitions, phonetic transcriptions, and meanings (L1 &rarr; L2 &rarr; L3). |
+- `GET /api/dictionary/{word}` &mdash; Query word definitions, phonetic transcriptions, and meanings (L1 &rarr; L2 &rarr; L3).
 
 ---
 
