@@ -200,6 +200,91 @@ class SoundSynthesizer {
       osc.stop(now + idx * 0.05 + 0.5);
     });
   }
+
+  /**
+   * Warm, soft acoustic piano note for the 7 rack tile positions:
+   * Slot 0: โด (Do - C5 / 523.25 Hz)
+   * Slot 1: เร (Re - D5 / 587.33 Hz)
+   * Slot 2: มี (Mi - E5 / 659.25 Hz)
+   * Slot 3: ฟา (Fa - F5 / 698.46 Hz)
+   * Slot 4: ซอล (Sol - G5 / 783.99 Hz)
+   * Slot 5: ลา (La - A5 / 880.00 Hz)
+   * Slot 6: ที (Ti - B5 / 987.77 Hz)
+   */
+  playPianoNote(slotIndex: number) {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    const PIANO_NOTES = [
+      523.25, // 0: โด (Do - C5)
+      587.33, // 1: เร (Re - D5)
+      659.25, // 2: มี (Mi - E5)
+      698.46, // 3: ฟา (Fa - F5)
+      783.99, // 4: ซอล (Sol - G5)
+      880.00, // 5: ลา (La - A5)
+      987.77, // 6: ที (Ti - B5)
+    ];
+
+    const noteIdx = Math.max(0, Math.min(PIANO_NOTES.length - 1, slotIndex));
+    const fundamental = PIANO_NOTES[noteIdx];
+
+    // Master gain for gentle, well-balanced acoustic volume
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(0.16, now);
+    masterGain.connect(ctx.destination);
+
+    // Warm Lowpass Filter simulating wooden piano soundboard & felt damper
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(fundamental * 3.8, now);
+    filter.frequency.exponentialRampToValueAtTime(fundamental * 1.4, now + 0.7);
+    filter.Q.setValueAtTime(1.1, now);
+    filter.connect(masterGain);
+
+    // Harmonics for rich, natural, non-fatiguing piano timbre
+    const harmonics = [
+      { mult: 0.5, type: 'sine' as const, gain: 0.18, decay: 0.70 }, // Warm lower resonance
+      { mult: 1.0, type: 'sine' as const, gain: 0.65, decay: 0.90 }, // Fundamental note
+      { mult: 2.0, type: 'triangle' as const, gain: 0.22, decay: 0.45 }, // 1st Octave harmonic
+      { mult: 3.0, type: 'sine' as const, gain: 0.08, decay: 0.30 }, // 12th harmonic
+    ];
+
+    harmonics.forEach(({ mult, type, gain: harmonicGain, decay }) => {
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      osc.type = type;
+      osc.frequency.setValueAtTime(fundamental * mult, now);
+
+      // Fast, gentle attack (4ms) to avoid clicks, followed by smooth exponential decay
+      gainNode.gain.setValueAtTime(0.001, now);
+      gainNode.gain.linearRampToValueAtTime(harmonicGain, now + 0.005);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+
+      osc.connect(gainNode);
+      gainNode.connect(filter);
+
+      osc.start(now);
+      osc.stop(now + decay + 0.05);
+    });
+
+    // Soft felt hammer attack thud (subtle acoustic realism)
+    const hammerOsc = ctx.createOscillator();
+    const hammerGain = ctx.createGain();
+    hammerOsc.type = 'sine';
+    hammerOsc.frequency.setValueAtTime(fundamental * 0.4, now);
+    hammerOsc.frequency.exponentialRampToValueAtTime(50, now + 0.02);
+
+    hammerGain.gain.setValueAtTime(0.035, now);
+    hammerGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+    hammerOsc.connect(hammerGain);
+    hammerGain.connect(masterGain);
+
+    hammerOsc.start(now);
+    hammerOsc.stop(now + 0.03);
+  }
 }
 
 export const soundFx = new SoundSynthesizer();

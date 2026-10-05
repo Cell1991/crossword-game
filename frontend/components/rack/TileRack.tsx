@@ -6,6 +6,7 @@ import { isBlankLetter } from '@/lib/tiles';
 import { moveFixedElement } from '@/lib/dom';
 import { RotateCcw, Check, SkipForward, Shuffle, ArrowLeftRight, X } from 'lucide-react';
 import { FloatingTile } from './FloatingTile';
+import { soundFx } from '@/lib/soundFx';
 
 interface TileRackProps {
   /** Fixed seats. `null` means the seat is empty — either the tile is on the board or the bag ran dry. */
@@ -143,6 +144,7 @@ export const TileRack = memo(function TileRack({
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, slotIndex: number, tile: Tile) => {
+    soundFx.playPianoNote(slotIndex);
     if (!canStageMove) return;
     // While exchanging, don't drag — just capture click on release
     if (!isExchanging) {
@@ -232,8 +234,9 @@ export const TileRack = memo(function TileRack({
                     <div
                       key={`slot-${slotIndex}`}
                       data-rack-slot={slotIndex}
+                      onClick={() => soundFx.playPianoNote(slotIndex)}
                       aria-hidden="true"
-                      className={`relative shrink-0 h-[44px] w-[38px] sm:h-[46px] sm:w-[42px] rounded-[10px] border border-indigo-950/70 bg-[#060516]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.85)] transition-all sm:rounded-xl ${
+                      className={`relative shrink-0 h-[44px] w-[38px] sm:h-[46px] sm:w-[42px] rounded-[10px] border border-indigo-950/70 bg-[#060516]/80 shadow-[inset_0_2px_5px_rgba(0,0,0,0.85)] transition-all sm:rounded-xl cursor-pointer ${
                         isExternalDragActive
                           ? 'ring-1 ring-amber-400/40'
                           : ''

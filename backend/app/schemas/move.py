@@ -30,6 +30,8 @@ class CommitMoveRequest(BaseModel):
     # A FREEZE_TILE card played on one of these placed tiles: freezes it once the move commits,
     # in the same turn (rather than needing an already-committed tile from a prior turn).
     freeze_tile_id: Optional[str] = None
+    use_heal: Optional[bool] = False
+    use_shield: Optional[bool] = False
 
 class CommitMoveResponse(BaseModel):
     success: bool
@@ -45,6 +47,8 @@ class CommitMoveResponse(BaseModel):
     cards_awarded: list[str] = []
     damage_dealt: Optional[dict[str, int]] = None
     double_damage_target_id: Optional[str] = None
+    healed_amount: Optional[int] = None
+    shield_awarded: Optional[int] = None
 
 class ExchangeTilesRequest(BaseModel):
     # No upper bound: cards such as DRAW_TILE can push a rack past RACK_SIZE.

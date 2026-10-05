@@ -294,6 +294,7 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
         break;
       }
       case 'CARD_USED': {
+        loadGameState();
         const playerId = event.payload?.playerId;
         const card = event.payload?.card;
         if (!playerId || !card) break;
@@ -311,13 +312,27 @@ export function useGameSync({ gameId, session, hydrated, isDebug, toasts, onSnap
         // Trigger cinematic board burst & screen vignette pulses
         if (card === 'FREEZE_TILE') {
           setScreenVignette('FREEZE');
-          const row = typeof event.payload?.row === 'number' ? event.payload.row : undefined;
-          const col = typeof event.payload?.col === 'number' ? event.payload.col : undefined;
-          if (row !== undefined && col !== undefined) {
+          const cells = Array.isArray(event.payload?.cells) ? (event.payload.cells as { row: number; col: number }[]) : [];
+          if (cells.length > 0) {
             setBoardCellEffects(prev => [
               ...prev,
-              { id: `freeze-${Date.now()}-${Math.random()}`, type: 'FREEZE', row, col, timestamp: Date.now() },
+              ...cells.map(c => ({
+                id: `freeze-${Date.now()}-${c.row}-${c.col}`,
+                type: 'FREEZE' as const,
+                row: c.row,
+                col: c.col,
+                timestamp: Date.now(),
+              })),
             ]);
+          } else {
+            const row = typeof event.payload?.row === 'number' ? event.payload.row : undefined;
+            const col = typeof event.payload?.col === 'number' ? event.payload.col : undefined;
+            if (row !== undefined && col !== undefined) {
+              setBoardCellEffects(prev => [
+                ...prev,
+                { id: `freeze-${Date.now()}-${Math.random()}`, type: 'FREEZE', row, col, timestamp: Date.now() },
+              ]);
+            }
           }
         } else if (card === 'DESTROY_TILE') {
           setScreenVignette('DESTROY');

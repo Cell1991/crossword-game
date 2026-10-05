@@ -28,6 +28,8 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   // Confirm Move (see commitMove's freezeTileId). Recalling that tile clears it below - that
   // recall *is* the cancel, so no extra confirmation step is needed for this path.
   const [deferredFreezeTileId, setDeferredFreezeTileId] = useState<string | null>(null);
+  const [deferredHeal, setDeferredHeal] = useState<boolean>(false);
+  const [deferredShield, setDeferredShield] = useState<boolean>(false);
   const [hintCell, setHintCell] = useState<CellPosition | null>(null);
   const [hintSuggestions, setHintSuggestions] = useState<HintSuggestion[]>([]);
   const [activeHintIndex, setActiveHintIndex] = useState<number>(0);
@@ -117,7 +119,17 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
   }, [busy, flashError, flashInfo, gameId, myPlayerId, reload]);
 
   const playSimpleCard = useCallback(
-    (card: 'HINT' | 'HEAL' | 'SHIELD') => runCard({ card }),
+    (card: 'HINT' | 'HEAL' | 'SHIELD') => {
+      if (card === 'HEAL') {
+        setDeferredHeal(prev => !prev);
+        return;
+      }
+      if (card === 'SHIELD') {
+        setDeferredShield(prev => !prev);
+        return;
+      }
+      return runCard({ card });
+    },
     [runCard],
   );
 
@@ -217,6 +229,8 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     setPendingFrozenCells([]);
   }, []);
   const cancelDeferredFreeze = useCallback(() => setDeferredFreezeTileId(null), []);
+  const cancelDeferredHeal = useCallback(() => setDeferredHeal(false), []);
+  const cancelDeferredShield = useCallback(() => setDeferredShield(false), []);
 
   const activeHintTiles = hintSuggestions.length > 0
     ? (hintSuggestions[activeHintIndex]?.tiles ?? null)
@@ -232,6 +246,10 @@ export function usePowerCards({ gameId, myPlayerId, boardState, temporaryTiles, 
     cancelPendingArmedCell,
     deferredFreezeTileId: activeDeferredFreezeTileId,
     cancelDeferredFreeze,
+    deferredHeal,
+    cancelDeferredHeal,
+    deferredShield,
+    cancelDeferredShield,
     hintCell,
     hintSuggestions,
     activeHintIndex,

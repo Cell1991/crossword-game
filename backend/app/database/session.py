@@ -175,6 +175,8 @@ def _upgrade_existing_schema(connection):
             "frozen_tile": "JSON",
             "pending_effect": "JSON",
             "pending_double_target_id": "VARCHAR(36)",
+            "pending_heal_player_id": "VARCHAR(36)",
+            "pending_shield_player_id": "VARCHAR(36)",
             "pending_card_events": "JSON",
             "winner_id": "VARCHAR(36)",
         },

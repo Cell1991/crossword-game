@@ -16,6 +16,7 @@ from app.database.state import (
     bag_tiles, board_state, player_rack, replace_board_state, replace_game_tiles, replace_player_cards,
 )
 from app.services.game_service import GameService
+import math
 import random
 
 class MoveService:
@@ -189,6 +190,8 @@ class MoveService:
         player_id: str,
         placed_tiles: list[PlacedTileInput],
         freeze_tile_id: str | None = None,
+        use_heal: bool = False,
+        use_shield: bool = False,
     ) -> tuple[CommitMoveResponse, Game, GamePlayer]:
         stmt_game = select(Game).where(Game.id == game_id).with_for_update()
         game = (await db.execute(stmt_game)).scalar_one_or_none()
@@ -309,6 +312,39 @@ class MoveService:
         # Award score
         player.score += score
 
+        # Handle Heal & Shield activated on this move
+        healed_amount = 0
+        is_heal_active = bool(use_heal or (game.pending_heal_player_id == player.id))
+        if is_heal_active and "HEAL" in (player.cards or []):
+            held_cards = list(player.cards or [])
+            held_cards.remove("HEAL")
+            player.cards = held_cards
+            flag_modified(player, "cards")
+            game.pending_heal_player_id = None
+            if score > 0:
+                healed_amount = math.ceil(score * 0.60)
+                max_cap = getattr(player, "max_hp", 100) or 100
+                player.hp = min(max_cap, player.hp + healed_amount)
+                flag_modified(player, "hp")
+        elif is_heal_active:
+            game.pending_heal_player_id = None
+
+        shield_awarded = 0
+        is_shield_active = bool(use_shield or (game.pending_shield_player_id == player.id))
+        if is_shield_active and "SHIELD" in (player.cards or []):
+            held_cards = list(player.cards or [])
+            held_cards.remove("SHIELD")
+            player.cards = held_cards
+            flag_modified(player, "cards")
+            game.pending_shield_player_id = None
+            if score > 0:
+                shield_awarded = math.ceil(score * 0.75)
+                player.has_shield = True
+                player.shield_amount = max(getattr(player, "shield_amount", 0) or 0, shield_awarded)
+                flag_modified(player, "shield_amount")
+        elif is_shield_active:
+            game.pending_shield_player_id = None
+
         cards_awarded: list[str] = []
         power_cells_hit = [pt for pt in placed_tiles if Board.is_power_cell(pt.row, pt.col)]
         if power_cells_hit:
@@ -334,6 +370,25 @@ class MoveService:
                 "row": freeze_target.row,
                 "col": freeze_target.col,
                 "description": f"Froze newly placed tile '{freeze_target.letter}' at ({freeze_target.row}, {freeze_target.col})",
+            })
+        if healed_amount > 0:
+            cards_used.append({
+                "card": "HEAL",
+                "player_id": player.id,
+                "player_name": player.display_name,
+                "amount": healed_amount,
+                "hp_after": player.hp,
+                "turn_number": game.turn_number,
+                "description": f"Healed self for +{healed_amount} HP (60% of {score} pts, Current HP: {player.hp})",
+            })
+        if shield_awarded > 0:
+            cards_used.append({
+                "card": "SHIELD",
+                "player_id": player.id,
+                "player_name": player.display_name,
+                "shield_amount": shield_awarded,
+                "turn_number": game.turn_number,
+                "description": f"Activated Shield protection (+{shield_awarded} shield, 75% of {score} pts)",
             })
         game.pending_card_events = []
         flag_modified(game, "pending_card_events")
@@ -432,6 +487,8 @@ class MoveService:
             cards_awarded=cards_awarded,
             damage_dealt=damage_dealt if damage_dealt else None,
             double_damage_target_id=double_damage_target_id,
+            healed_amount=healed_amount if healed_amount > 0 else None,
+            shield_awarded=shield_awarded if shield_awarded > 0 else None,
         )
 
         return res, game, player

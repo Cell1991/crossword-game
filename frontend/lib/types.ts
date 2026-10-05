@@ -180,6 +180,8 @@ export interface CommitMoveResponse {
   winner_id?: string | null;
   card_awarded?: string | null;
   cards_awarded?: string[];
+  healed_amount?: number | null;
+  shield_awarded?: number | null;
 }
 
 export interface CreateRoomResponse {

@@ -167,6 +167,11 @@ interface PowerCardBarProps {
   pendingArmedCell: CellPosition | null;
   pendingFrozenCells?: CellPosition[];
   deferredFreezeTileId: string | null;
+  deferredHeal?: boolean;
+  onCancelDeferredHeal?: () => void;
+  deferredShield?: boolean;
+  onCancelDeferredShield?: () => void;
+  estimatedScore?: number;
   myScore?: number;
   busy?: boolean;
   onUseSimple: (card: SimpleCard) => void;
@@ -189,6 +194,11 @@ export const PowerCardBar = memo(function PowerCardBar({
   pendingArmedCell,
   pendingFrozenCells = [],
   deferredFreezeTileId,
+  deferredHeal = false,
+  onCancelDeferredHeal,
+  deferredShield = false,
+  onCancelDeferredShield,
+  estimatedScore = 0,
   myScore = 0,
   busy,
   onUseSimple,
@@ -224,6 +234,54 @@ export const PowerCardBar = memo(function PowerCardBar({
           type="button"
           onClick={onCancelDeferredFreeze}
           className="flex shrink-0 items-center gap-1.5 rounded-lg border border-cyan-400/40 bg-cyan-950/80 hover:bg-cyan-900 px-2.5 py-1 text-xs font-bold text-cyan-200 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
+        >
+          <X className="w-3.5 h-3.5" />
+          <span>Unmark</span>
+        </button>
+      </div>
+    );
+  }
+
+  if (deferredHeal) {
+    const healVal = Math.ceil((estimatedScore || 0) * 0.6);
+    return (
+      <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-rose-400/80 bg-gradient-to-r from-rose-950 via-pink-950 to-slate-950 px-3 py-1.5 text-xs text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.4)] ring-1 ring-rose-400/30">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-rose-500/20 border border-rose-400/50 shadow-[0_0_8px_rgba(244,63,94,0.5)] shrink-0">
+            <Heart className="w-3.5 h-3.5 fill-rose-400 text-rose-200" />
+          </div>
+          <span className="font-semibold text-slate-100 text-xs truncate">
+            <strong className="text-rose-300 font-extrabold">Heal Armed</strong> — +{healVal} HP on move (60%)
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={onCancelDeferredHeal}
+          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-rose-400/40 bg-rose-950/80 hover:bg-rose-900 px-2.5 py-1 text-xs font-bold text-rose-200 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
+        >
+          <X className="w-3.5 h-3.5" />
+          <span>Unmark</span>
+        </button>
+      </div>
+    );
+  }
+
+  if (deferredShield) {
+    const shieldVal = Math.ceil((estimatedScore || 0) * 0.75);
+    return (
+      <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-sky-400/80 bg-gradient-to-r from-sky-950 via-blue-950 to-slate-950 px-3 py-1.5 text-xs text-sky-100 shadow-[0_0_20px_rgba(14,165,233,0.4)] ring-1 ring-sky-400/30">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-sky-500/20 border border-sky-400/50 shadow-[0_0_8px_rgba(14,165,233,0.5)] shrink-0">
+            <Shield className="w-3.5 h-3.5 text-sky-200 fill-sky-400/20" />
+          </div>
+          <span className="font-semibold text-slate-100 text-xs truncate">
+            <strong className="text-sky-300 font-extrabold">Shield Armed</strong> — +{shieldVal} Shield on move (75%)
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={onCancelDeferredShield}
+          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-sky-400/40 bg-sky-950/80 hover:bg-sky-900 px-2.5 py-1 text-xs font-bold text-sky-200 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
         >
           <X className="w-3.5 h-3.5" />
           <span>Unmark</span>
@@ -731,8 +789,10 @@ export const PowerCardBar = memo(function PowerCardBar({
               } else if (card === 'SPY_SWAP') {
                 setSpySwapStep('own');
                 setSpyOwnTileIds([]);
-              } else if (card === 'HEAL' || card === 'HINT' || card === 'SHIELD') {
+              } else if (card === 'HINT') {
                 setConfirmingSimpleCard(card);
+              } else if (card === 'HEAL' || card === 'SHIELD') {
+                onUseSimple(card as SimpleCard);
               } else {
                 onUseSimple(card as SimpleCard);
               }

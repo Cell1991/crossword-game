@@ -64,6 +64,8 @@ class Game(Base):
     frozen_tile = Column(JSON, nullable=True)  # {"row", "col", "set_by", "expires_turn"}
     pending_effect = Column(JSON, nullable=True)  # {"type": "DAMAGE"|"SWAP", "source_player_id", "expires_at", ...}
     pending_double_target_id = Column(String(36), nullable=True)
+    pending_heal_player_id = Column(String(36), nullable=True)
+    pending_shield_player_id = Column(String(36), nullable=True)
     pending_card_events = Column(JSON, default=list, nullable=True)  # [{"card": "...", "player_id": "...", ...}]
     winner_id = Column(String(36), nullable=True)
     created_at = Column(DateTime(timezone=True), default=get_utc_now, index=True)
