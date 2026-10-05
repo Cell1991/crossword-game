@@ -1,7 +1,9 @@
 <div align="center">
 
-# ⚔️ CROSSWORD BATTLE ARENA (WORDX)
-### Real-Time Multiplayer Word Combat & Power Card Strategy
+<!-- Animated Cyberpunk Hero Banner -->
+<img src="./docs/assets/hero-banner.svg" alt="Crossword Battle Arena Hero Banner" width="100%" />
+
+<br/><br/>
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -9,12 +11,13 @@
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
 [![Database](https://img.shields.io/badge/SQLite%20%7C%20PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS%204-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Canvas Engine](https://img.shields.io/badge/Engine-60%20FPS%20Canvas-F59E0B?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br/>
 
-**A next-generation real-time multiplayer Crossword combat game blending competitive word building strategy with RPG health elimination, tactical Power Cards, adaptive AI bot opponents, and a 60 FPS Canvas rendering engine.**
+**A next-generation real-time multiplayer Crossword combat battleground fusing competitive word-building strategy with RPG health elimination, tactical Power Cards, autonomous AI bots, and an ultra-smooth 60 FPS Canvas rendering engine.**
 
 <br/>
 
@@ -23,51 +26,51 @@
     <td align="center" width="25%">
       <a href="#-system-overview">
         <b>🌟 Overview</b><br/>
-        <sub>Core Engine & Highlights</sub>
+        <sub>Engine &amp; Core Highlights</sub>
       </a>
     </td>
     <td align="center" width="25%">
       <a href="#-game-modes--ai-opponents">
         <b>🎮 Game Modes</b><br/>
-        <sub>HP Combat, Turns & AI Bots</sub>
+        <sub>HP Combat, Turns &amp; AI Bots</sub>
       </a>
     </td>
     <td align="center" width="25%">
-      <a href="#-power-card-arsenal">
+      <a href="#-tactical-power-card-arsenal">
         <b>⚡ Power Cards</b><br/>
-        <sub>Tactical Deck & Mechanics</sub>
+        <sub>Tactical Deck &amp; Effects</sub>
       </a>
     </td>
     <td align="center" width="25%">
-      <a href="#-board-mechanics--scoring">
-        <b>📐 Board & Scoring</b><br/>
-        <sub>19×27 Grid & Multipliers</sub>
+      <a href="#-1927-modular-matrix--scoring">
+        <b>📐 Matrix &amp; Scoring</b><br/>
+        <sub>19×27 Grid &amp; Multipliers</sub>
       </a>
     </td>
   </tr>
   <tr>
     <td align="center" width="25%">
-      <a href="#-system-architecture">
-        <b>🏗️ Architecture</b><br/>
-        <sub>Tier Diagram & Move Sequence</sub>
+      <a href="#-turn--combat-lifecycle">
+        <b>🔄 Combat Lifecycle</b><br/>
+        <sub>Turn Flow &amp; Shield Window</sub>
       </a>
     </td>
     <td align="center" width="25%">
-      <a href="#-project-structure">
-        <b>📂 Project Structure</b><br/>
-        <sub>Full Directory Tree</sub>
+      <a href="#-system-architecture">
+        <b>🏗️ Architecture</b><br/>
+        <sub>Full Stack Data Pipeline</sub>
       </a>
     </td>
     <td align="center" width="25%">
       <a href="#-quick-start--installation">
         <b>🚀 Quick Start</b><br/>
-        <sub>Docker & Local Setup</sub>
+        <sub>Docker &amp; Local Setup</sub>
       </a>
     </td>
     <td align="center" width="25%">
       <a href="#-api--websocket-specification">
-        <b>📡 API & WebSockets</b><br/>
-        <sub>REST Endpoints & Events</sub>
+        <b>📡 API &amp; WebSockets</b><br/>
+        <sub>REST Endpoints &amp; Stream</sub>
       </a>
     </td>
   </tr>
@@ -81,29 +84,29 @@
 
 ## 🌟 System Overview
 
-**Crossword Battle Arena** elevates classic crossword puzzle gameplay into a tactical, real-time battleground. Players place letters on an expansive **$19 \times 27$ grid** (starter coordinates centered at $(9, 13)$) validated against the official tournament **CSW24 Lexicon**. In battle mode, every point scored deals direct lethal damage to opponents, reinforced with power-ups, shields, and board-disrupting tactical cards.
+**Crossword Battle Arena (WordX)** elevates classic Scrabble & crossword mechanics into an adrenaline-fueled tactical combat sport. Players place letters on an expansive **$19 \times 27$ Modular Matrix** (starter coordinates centered at `(Row 9, Col 13)`), validated against the official tournament **CSW24 Lexicon**. In battle mode, every point scored inflicts direct lethal damage upon rival health bars, reinforced with tactical shields, reactive heals, and board-disrupting spells.
 
 <br/>
 
 <table>
   <tr>
     <td width="50%" valign="top">
-      <h3>⚔️ Real-Time Combat & Health Engine</h3>
-      <p>Convert scored points into authoritative HP damage dealt to all living opponents. Survive by timing reactive <b>Shields</b> during the 1-second defense reaction window or recovering life with tile-based <b>Heals</b>.</p>
+      <h3>⚔️ Real-Time HP Combat Engine</h3>
+      <p>Convert word scores into direct authoritative HP damage dealt to all living opponents. Mitigate lethal strikes by activating reactive <b>Shields</b> during the 1.0-second defense window, or regenerate life with rack-based <b>Heals</b>.</p>
     </td>
     <td width="50%" valign="top">
-      <h3>🎨 60 FPS HTML5 Canvas Rendering Engine</h3>
-      <p>Custom multi-layer 2D canvas pipeline (<code>BoardCompositor</code>) featuring offscreen double-buffered grid caching, smooth physics-based panning and pinch/wheel zooming, and a decoupled CSS 3D hardware-accelerated multiplier overlay.</p>
+      <h3>🎨 60 FPS HTML5 Canvas Rendering</h3>
+      <p>Multi-layer 2D canvas pipeline (<code>BoardCompositor</code>) featuring offscreen double-buffered grid caching, smooth physics-based panning and pinch/wheel zooming, and decoupled hardware-accelerated CSS 3D multiplier badges.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h3>⚡ Low-Latency WebSocket Synchronization</h3>
-      <p>Bidirectional WebSocket stream (<code>/ws/games/{gameId}</code>) broadcasting sub-second turn transitions, live placement previews, active card resolution, timer countdowns, and real-time spectator feeds.</p>
+      <h3>⚡ Low-Latency WebSocket Stream</h3>
+      <p>Bidirectional WebSocket stream (<code>/ws/games/{gameId}</code>) broadcasting sub-second turn transitions, translucent opponent placement ghosts, active card animations, countdown timers, and spectator feeds.</p>
     </td>
     <td width="50%" valign="top">
-      <h3>📖 3-Tier Dictionary & Definition Engine</h3>
-      <p>High-speed in-memory CSW24 lexicon validation paired with a 3-tier definition lookup: <b>L1 RAM Cache</b> &rarr; <b>L2 Database Persistence</b> &rarr; <b>L3 Asynchronous Online Fallback</b> with phonetics and parts of speech.</p>
+      <h3>📖 3-Tier Dictionary &amp; Definition Engine</h3>
+      <p>High-speed in-memory CSW24 lexicon validation paired with a 3-tier definition lookup: <b>L1 RAM Cache</b> &rarr; <b>L2 Database Persistence</b> &rarr; <b>L3 Asynchronous Online Fallback</b> with phonetic transcriptions and parts of speech.</p>
     </td>
   </tr>
 </table>
@@ -112,11 +115,20 @@
 
 ## 🎮 Game Modes & AI Opponents
 
-Choose between high-stakes elimination battles, classic tournament scoring, or solo training with distinct AI bot personalities:
+Choose between high-stakes elimination deathmatches, classic tournament rounds, or solo training with autonomous AI bot personalities:
+
+<br/>
+
+<!-- Animated Game Modes Graphic -->
+<div align="center">
+  <img src="./docs/assets/game-modes.svg" alt="Game Modes Breakdown" width="100%" />
+</div>
+
+<br/>
 
 | Mode | Win Condition | Core Mechanics & Scoring Flow |
 | :--- | :--- | :--- |
-| **⚔️ HP Deathmatch (`HP`)** | Last Player Standing | Players start with configurable HP (**default 100 HP**, range 10–1000). Every valid word scored deals direct HP damage to all living opponents. When HP reaches 0, the player is eliminated. Mitigate damage via reactive `SHIELD` or regenerate life with `HEAL`. |
+| **⚔️ HP Deathmatch (`HP`)** | Last Player Standing | Players start with configurable HP (**default 100 HP**, range 10–1000). Every valid word scored deals direct HP damage to all living rivals. When HP reaches 0, the player is demoted to spectator mode. Mitigate damage via reactive `SHIELD` or heal with `HEAL`. |
 | **🏆 Turn Count Mode (`TURNS`)** | Highest Cumulative Score | Traditional tournament rules across fixed rounds (**default 7/14/21/28**, configurable up to 500 turns). Deals no HP damage. HP-specific cards are automatically excluded from the Secret Power pool to focus purely on strategic board placement. |
 | **🤖 Solo Practice / AI Bot** | Practice & AI Challenge | Play solo to practice board layouts or challenge one of three distinct AI Bot personalities with automated turn scheduling. |
 | **👁️ Spectator Mode** | Live Spectating | Spectators can watch live matches in real-time with placement previews and turn history without occupying player seats. |
@@ -125,54 +137,139 @@ Choose between high-stakes elimination battles, classic tournament scoring, or s
 
 | Bot Profile | Difficulty | AI Tactical Profile |
 | :--- | :--- | :--- |
-| ⚡ **SparkBot** | **Easy** | Novice AI. Prefers simple, short common words with relaxed board control. |
-| 🔮 **Nexus AI** | **Medium** | Tactical AI. Evaluates mid-tier word lengths, strategic multiplier cells, and balanced card management. |
-| 🛡️ **Titan AI** | **Hard** | Master AI. Aggressive high-scoring rack exploitation, seeking maximum multiplier yields and Bingo bonuses. |
+| ⚡ **SparkBot** | **Easy / Novice** | Prefers simple, short common words with relaxed board control. Great for casual warmups. |
+| 🔮 **Nexus AI** | **Medium / Tactical** | Evaluates mid-tier word lengths, strategic multiplier cells, and balanced card management. |
+| 🛡️ **Titan AI** | **Hard / Master** | Aggressive high-scoring rack exploitation, seeking maximum multiplier yields and Bingo bonuses. |
 
 ---
 
-## ⚡ 7 Power Card Arsenal
+## ⚡ Tactical Power Card Arsenal
 
-Players collect tactical Power Cards by placing letters onto **Lightning Power** cells on the board (maximum **3 cards** held at any time). Cards can be deployed to defend, disrupt opponents, or alter the board:
+Players collect tactical Power Cards by placing letters onto **Secret Power** squares on the board (maximum **3 cards** held at any time). Cards can be deployed to defend, disrupt opponents, or alter the board:
+
+<br/>
+
+<!-- Animated Power Cards Showcase -->
+<div align="center">
+  <img src="./docs/assets/power-cards.svg" alt="Tactical Power Cards Arsenal" width="100%" />
+</div>
+
+<br/>
 
 | Card | Backend ID | Target Type | Effect & Tactical Mechanics |
 | :--- | :--- | :--- | :--- |
-| 🛡️ **Shield** | `SHIELD` | Passive / Reaction | Blocks the next incoming attack damage or hostile tile swap completely. |
+| 🛡️ **Shield** | `SHIELD` | Passive / Reaction | Blocks the next incoming attack damage or hostile tile swap completely during the 1.0s defense window. |
 | 💖 **Heal** | `HEAL` | Instant Self | Restores HP equal to the sum of all tile point values currently in your rack. |
 | ❄️ **Freeze Tile** | `FREEZE_TILE` | Board Cell | Locks a board tile in ice so opponents cannot connect words to it until your next turn. |
-| 💥 **Destroy Tile** | `DESTROY_TILE` | Board Cell | Removes 1 tile from the board to break enemy words or reopen multiplier cells. |
-| ⚔️ **Double Damage** | `DOUBLE_DAMAGE` | Targeted Rival | Your next confirmed word deals double ($2\times$) attack damage to a targeted opponent. |
-| 🔄 **Spy Swap** | `SPY_SWAP` | Targeted Rival | Swap 1 to 3 rack tiles with random tiles stolen directly from an opponent. |
-| 👁️ **Hint** | `HINT` | Your Turn | Highlights the top 3 highest-scoring word placements and point values. |
+| 💥 **Destroy Tile** | `DESTROY_TILE` | Board Cell | Demolishes 1 tile from the board to break enemy word paths or reopen multiplier cells. |
+| ⚔️ **Double Damage** | `DOUBLE_DAMAGE` | Targeted Rival | Your next confirmed word deals double ($2\times$) lethal attack damage to a targeted opponent. |
+| 🔄 **Spy Swap** | `SPY_SWAP` | Targeted Rival | Swap 1 to 3 rack tiles with random tiles stolen directly from a rival's rack. |
+| 👁️ **Hint** | `HINT` | Your Turn | Highlights the top 3 highest-scoring word placements and point values on the current board. |
+| 🚫 **Ban Letter** | `BAN_LETTER` | Room Global | Temporarily bans a specific letter from being placed by rivals. |
+| 🔄 **Free Exchange** | `FREE_EXCHANGE` | Instant Self | Swaps designated rack tiles with the bag without forfeiting your turn. |
+| 🎴 **Draw Tile** | `DRAW_TILE` | Instant Self | Draws an extra bonus tile into your rack. |
+| 💖 **Move Heal** | `MOVE_HEAL` | Self Passive | Automatically heals your HP proportional to the score of your next committed word. |
 
 > [!NOTE]
-> In **Turn Count Mode (`TURNS`)**, HP-specific cards (`HEAL`, `DOUBLE_DAMAGE`, `SHIELD`) are automatically omitted from the random card reward pool.
+> In **Turn Count Mode (`TURNS`)**, HP-specific cards (`HEAL`, `DOUBLE_DAMAGE`, `SHIELD`, `MOVE_HEAL`) are automatically omitted from the random card drop pool.
 
 ---
 
-## 📐 Board Mechanics & Scoring
+## 📐 19×27 Modular Matrix & Scoring
+
+<br/>
+
+<!-- Animated Board Radar & Multipliers -->
+<div align="center">
+  <img src="./docs/assets/board-radar.svg" alt="19x27 Tactical Matrix Radar" width="100%" />
+</div>
+
+<br/>
 
 ### 🗺️ The $19 \times 27$ Modular Grid
-
-The game features an expanded **$19 \times 27$ grid** (19 rows $\times$ 27 columns) designed with an infinite-ready sparse coordinate architecture:
-- **Center Cell**: Located at `(Row 9, Col 13)`. The first move of the match must cover this tile.
-- **Sparse State Representation**: Saved in the database as coordinate keys `"{row}_{col}"`, allowing fast indexing and memory efficiency.
-- **Mirror Coordinate Geometry**: Multipliers follow a periodic mirror pattern, ensuring symmetrical tactical hotspots across the board.
+- **Center Starter Cell**: Located at `(Row 9, Col 13)`. The first move of the match must cover this tile.
+- **Sparse State Representation**: Saved in the database as coordinate keys `"{row}_{col}"`, ensuring fast index lookups and low memory footprint.
+- **Mirror Coordinate Geometry**: Multipliers follow a periodic mirror pattern, generating symmetrical tactical hotspots across the matrix.
 
 ### 🌟 Premium Multiplier Squares
 
 | Multiplier Square | Icon / Indicator | Multiplier Value | Board Functionality |
 | :--- | :---: | :---: | :--- |
-| **Triple Letter (3L)** | `3L` (Blue/Cyan) | $\times 3$ | Triples the point value of the newly placed letter on this cell. |
+| **Triple Letter (3L)** | `3L` (Blue/Cyan) | $\times 3$ | Triples the point value of the newly placed letter on this cell in all formed words. |
 | **Double Letter (2L)** | `2L` (Light Blue) | $\times 2$ | Doubles the point value of the newly placed letter on this cell. |
-| **Secret Power** | ★ (Violet / Purple) | Power Card Drop | Awards a random tactical Power Card to the player's hand when a tile is placed on it (if hand $< 3$). |
+| **Secret Power** | ★ (Violet / Purple) | Power Card Drop | Awards a random tactical Power Card to hand when a tile lands on it (if hand $< 3$). |
 | **All-Tiles Bingo** | 🎯 `ALL_TILES_BONUS` | **+50 Points** | Extra bonus awarded when a player places all 7 rack tiles in a single turn. |
+
+---
+
+## 🔄 Turn & Combat Lifecycle
+
+<br/>
+
+<!-- Animated Combat Flow Diagram -->
+<div align="center">
+  <img src="./docs/assets/combat-flow.svg" alt="Turn and Combat Lifecycle" width="100%" />
+</div>
+
+<br/>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor P1 as 👤 Player 1 (Active)
+    participant Canvas as 🎨 Canvas & UI
+    participant WS as ⚡ WebSocket Hub
+    participant Engine as ⚙️ Backend Engine
+    participant DB as 🗄️ Database (Async)
+    actor P2 as 👤 Player 2 (Rival)
+
+    P1->>Canvas: Drag & place tiles onto 19x27 matrix
+    Canvas->>Engine: POST /api/moves/validate (Provisional Check)
+    Engine-->>Canvas: Return valid status + Estimated score breakdown
+    Canvas->>WS: Send PLACEMENT_PREVIEW (Ghost tile positions)
+    WS-->>P2: Render translucent opponent placement ghost
+
+    P1->>Canvas: Click [Confirm Move]
+    Canvas->>Engine: POST /api/moves/commit
+    activate Engine
+    Engine->>Engine: 1. Verify tile ownership in player rack
+    Engine->>Engine: 2. Check orthogonal connectivity & center cover
+    Engine->>Engine: 3. Verify CSW24 dictionary validity
+    Engine->>Engine: 4. Compute 2L, 3L & 50-pt Bingo multipliers
+    Engine->>Engine: 5. Award Power Cards if placed on Secret Power cell
+    
+    alt Opponent has Shield or Shield Card
+        Engine->>Engine: Open 1.0s pending damage reaction window
+        Engine->>WS: Broadcast EVENT: EFFECT_PENDING (DAMAGE)
+        WS-->>P2: Display 1s Shield alert countdown
+        opt P2 activates Shield
+            P2->>Engine: POST /api/games/{id}/cards/use {card: "SHIELD"}
+            Engine->>Engine: Absorb damage / Negate attack
+        end
+    else Immediate Damage Execution
+        Engine->>Engine: Deduct HP directly from all living rivals
+    end
+
+    Engine->>DB: Save updated board state, player racks & scores
+    Engine->>WS: Broadcast EVENT: MOVE_COMMITTED
+    deactivate Engine
+
+    WS-->>P1: Synchronize rack, refill tiles & trigger particle FX
+    WS-->>P2: Animate placed tiles, update HP bar & start turn clock
+```
 
 ---
 
 ## 🏗️ System Architecture
 
-The application is engineered into modular, loosely coupled tiers designed for high-concurrency real-time gameplay:
+<br/>
+
+<!-- Animated System Architecture Pipeline -->
+<div align="center">
+  <img src="./docs/assets/architecture-flow.svg" alt="System Architecture Pipeline" width="100%" />
+</div>
+
+<br/>
 
 ```mermaid
 graph TB
@@ -243,55 +340,6 @@ graph TB
     WSHub -.->|Push JSON Event Stream| WSClient
 ```
 
-<br/>
-
-### 🔄 Real-Time Turn & Move Execution Lifecycle
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor P1 as 👤 Player 1 (Active)
-    participant Canvas as 🎨 Canvas & UI
-    participant WS as ⚡ WebSocket Hub
-    participant Engine as ⚙️ Backend Engine
-    participant DB as 🗄️ Database (Async)
-    actor P2 as 👤 Player 2 (Opponent)
-
-    P1->>Canvas: Drag & place tiles onto 19x27 board
-    Canvas->>Engine: POST /api/moves/validate (Provisional Check)
-    Engine-->>Canvas: Return valid status + Estimated score breakdown
-    Canvas->>WS: Send PLACEMENT_PREVIEW (Ghost tile positions)
-    WS-->>P2: Render translucent opponent placement ghost
-
-    P1->>Canvas: Click [Confirm Move]
-    Canvas->>Engine: POST /api/moves/commit
-    activate Engine
-    Engine->>Engine: 1. Verify tile ownership in player rack
-    Engine->>Engine: 2. Check orthogonal connectivity & center cover
-    Engine->>Engine: 3. Verify CSW24 dictionary validity
-    Engine->>Engine: 4. Compute 2L, 3L & 50-pt Bingo multipliers
-    Engine->>Engine: 5. Award Power Cards if placed on Secret Power cell
-    
-    alt Opponent has Shield or Shield Card
-        Engine->>Engine: Open 1-second pending damage reaction window
-        Engine->>WS: Broadcast EVENT: EFFECT_PENDING (DAMAGE)
-        WS-->>P2: Display 1s Shield alert countdown
-        opt P2 activates Shield
-            P2->>Engine: POST /api/games/{id}/cards/use {card: "SHIELD"}
-            Engine->>Engine: Absorb damage / Negate attack
-        end
-    else Immediate Damage Execution
-        Engine->>Engine: Deduct HP directly from all living opponents
-    end
-
-    Engine->>DB: Save updated board state, player racks & scores
-    Engine->>WS: Broadcast EVENT: MOVE_COMMITTED
-    deactivate Engine
-
-    WS-->>P1: Synchronize rack, refill tiles & trigger particle FX
-    WS-->>P2: Animate placed tiles, update HP bar & start turn clock
-```
-
 ---
 
 ## 📂 Project Structure
@@ -360,6 +408,9 @@ crossword-game/
 │   ├── package.json                        # Frontend dependencies & scripts
 │   └── tailwind.config.ts                  # Tailwind CSS 4 styling configuration
 │
+├── docs/                                   # Documentation & Animated Assets
+│   ├── assets/                             # Animated SVGs (Hero, Modes, Cards, Radar, Arch, Flow)
+│   └── TEST_SCENARIOS.md                   # Complete test scenarios and edge-case matrix
 ├── gateway/                                # Nginx gateway configuration
 │   └── nginx.conf                          # Reverse proxy routing for frontend & backend
 ├── docker-compose.yml                      # Full 5-service container stack orchestration
@@ -468,7 +519,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 #### ⚡ Tactical Power Cards (`/api/games/{game_id}/cards`)
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `POST` | `/api/games/{game_id}/cards/use` | Deploy a held Power Card (`SHIELD`, `HEAL`, `FREEZE_TILE`, `DESTROY_TILE`, `DOUBLE_DAMAGE`, `SPY_SWAP`, `HINT`). |
+| `POST` | `/api/games/{game_id}/cards/use` | Deploy a held Power Card (`SHIELD`, `HEAL`, `FREEZE_TILE`, `DESTROY_TILE`, `DOUBLE_DAMAGE`, `SPY_SWAP`, `HINT`, `BAN_LETTER`, `FREE_EXCHANGE`, `DRAW_TILE`). |
 
 #### 📖 Dictionary & Definitions (`/api/dictionary`)
 | Method | Endpoint | Description |
@@ -583,5 +634,5 @@ PYTHONPATH=. pytest tests/ -v
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 <div align="center">
-  <sub>Built with ❤️ by the development team for competitive word puzzle and strategy enthusiasts.</sub>
+  <sub>Built with ❤️ by the development team for competitive word puzzle and tactical strategy enthusiasts.</sub>
 </div>
