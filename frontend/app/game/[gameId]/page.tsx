@@ -635,10 +635,10 @@ export default function GamePage() {
 
   return (
     <div
-      className="wordx-game-shell relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden bg-[#030712]"
+      className="wordx-game-shell relative flex h-[100dvh] min-h-[100dvh] w-screen flex-col overflow-hidden bg-slate-950"
       style={{
         ...TILE_THEME_STYLE,
-        background: 'radial-gradient(ellipse 70% 55% at 50% -10%, rgba(79, 70, 229, 0.18), rgba(245, 158, 11, 0.08) 50%, transparent 85%), radial-gradient(ellipse 45% 45% at 0% 100%, rgba(6, 182, 212, 0.10), transparent 70%), radial-gradient(ellipse 45% 45% at 100% 50%, rgba(147, 51, 234, 0.09), transparent 70%), #030712',
+        background: 'radial-gradient(ellipse at 48% 50%, rgba(8, 145, 178, 0.09), transparent 46%), radial-gradient(ellipse at 88% 8%, rgba(99, 102, 241, 0.11), transparent 34%), linear-gradient(135deg, #020617 0%, #0b1224 58%, #12152f 100%)',
       }}
     >
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 shadow-[inset_0_0_130px_rgba(0,0,0,0.42)]" />
