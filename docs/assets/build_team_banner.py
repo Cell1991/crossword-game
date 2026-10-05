@@ -1,41 +1,60 @@
 import json
+import urllib.request
+import base64
+
+def download_avatars(users):
+    avatars = {}
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    for u in users:
+        # Fetch larger 200x200 high-res avatar
+        url = f'https://github.com/{u}.png?size=200'
+        req = urllib.request.Request(url, headers=headers)
+        try:
+            with urllib.request.urlopen(req) as resp:
+                data = resp.read()
+                b64 = base64.b64encode(data).decode('utf-8')
+                avatars[u] = f'data:image/png;base64,{b64}'
+                print(f'{u}: {len(data)} bytes -> Base64 OK')
+        except Exception as e:
+            print(f'{u} error: {e}')
+    return avatars
 
 def main():
-    with open('docs/assets/avatars_b64.json', 'r', encoding='utf-8') as f:
-        avatars = json.load(f)
-
     members = [
         {
-            'user': 'Cell1991', 'name': 'Chu', 'role': '👑 LEAD ARCHITECT', 'sub': 'Core Game Engine',
-            'color': '#f59e0b', 'bg': '#78350f', 'border': '#f59e0b', 'text_role': '#fde68a', 'text_name': '#fbbf24',
+            'user': 'Cell1991', 'name': 'Chu',
+            'color': '#f59e0b', 'border': '#f59e0b', 'text_name': '#fbbf24',
             'x': 25, 'w': 180, 'glow': 'anim-lead-glow'
         },
         {
-            'user': 'friend47', 'name': 'Peerapatr', 'role': '⚡ MULTIPLAYER', 'sub': 'WebSocket &amp; Sync',
-            'color': '#0284c7', 'bg': '#0369a1', 'border': '#38bdf8', 'text_role': '#7dd3fc', 'text_name': '#38bdf8',
-            'x': 220, 'w': 180, 'glow': ''
+            'user': 'friend47', 'name': 'Peerapatr',
+            'color': '#0284c7', 'border': '#38bdf8', 'text_name': '#38bdf8',
+            'x': 220, 'w': 180, 'glow': 'anim-card-glow'
         },
         {
-            'user': 'waiwaix43', 'name': 'waiwaix43', 'role': '🤖 AI BOT TRIAD', 'sub': 'Bot Heuristics',
-            'color': '#c084fc', 'bg': '#581c87', 'border': '#c084fc', 'text_role': '#e9d5ff', 'text_name': '#c084fc',
-            'x': 415, 'w': 180, 'glow': ''
+            'user': 'waiwaix43', 'name': 'waiwaix43',
+            'color': '#c084fc', 'border': '#c084fc', 'text_name': '#c084fc',
+            'x': 415, 'w': 180, 'glow': 'anim-card-glow'
         },
         {
-            'user': 'Natthaset2547', 'name': 'Natthaset', 'role': '📖 LEXICON', 'sub': 'Grimoire Lexicon',
-            'color': '#10b981', 'bg': '#064e3b', 'border': '#10b981', 'text_role': '#6ee7b7', 'text_name': '#34d399',
-            'x': 610, 'w': 180, 'glow': ''
+            'user': 'Natthaset2547', 'name': 'Natthaset',
+            'color': '#10b981', 'border': '#10b981', 'text_name': '#34d399',
+            'x': 610, 'w': 180, 'glow': 'anim-card-glow'
         },
         {
-            'user': 'Rednoselittledog', 'name': 'Kanin Noisiri', 'role': '🎨 CANVAS &amp; FX', 'sub': '60 FPS Engine',
-            'color': '#f43f5e', 'bg': '#881337', 'border': '#f43f5e', 'text_role': '#fca5a5', 'text_name': '#fb7185',
-            'x': 805, 'w': 180, 'glow': ''
+            'user': 'Rednoselittledog', 'name': 'Kanin Noisiri',
+            'color': '#f43f5e', 'border': '#f43f5e', 'text_name': '#fb7185',
+            'x': 805, 'w': 180, 'glow': 'anim-card-glow'
         },
         {
-            'user': 'ReFresh-bit', 'name': 'ReFresh-bit', 'role': '🐳 DEVOPS &amp; DB', 'sub': 'Docker &amp; Gateway',
-            'color': '#38bdf8', 'bg': '#0369a1', 'border': '#38bdf8', 'text_role': '#7dd3fc', 'text_name': '#38bdf8',
-            'x': 1000, 'w': 175, 'glow': ''
+            'user': 'ReFresh-bit', 'name': 'ReFresh-bit',
+            'color': '#38bdf8', 'border': '#38bdf8', 'text_name': '#38bdf8',
+            'x': 1000, 'w': 175, 'glow': 'anim-card-glow'
         }
     ]
+
+    users = [m['user'] for m in members]
+    avatars = download_avatars(users)
 
     svg_cards = []
     for i, m in enumerate(members):
@@ -43,27 +62,29 @@ def main():
         b64 = avatars.get(u, '')
         clip_id = f'clip_avatar_{i}'
         glow_class = f' class="{m["glow"]}"' if m['glow'] else ''
-        mid_x = m['x'] + m['w'] // 2
+        mid_x = m['w'] // 2
+        r = 44  # Large 88px diameter avatar!
         
         card = f'''  <!-- MEMBER {i+1}: {u} -->
   <a href="https://github.com/{u}" target="_parent">
     <g transform="translate({m['x']}, 42)" filter="url(#teamShadow)">
-      <rect width="{m['w']}" height="175" rx="12" fill="#0f172a" stroke="{m['border']}" stroke-width="1.5"{glow_class}/>
-      <rect x="0" y="0" width="{m['w']}" height="24" rx="12" fill="{m['bg']}" fill-opacity="0.4"/>
-      <text x="{m['w']//2}" y="16" fill="{m['text_role']}" font-family="'Inter', -apple-system, sans-serif" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="1">{m['role']}</text>
+      <!-- Card Container Box -->
+      <rect width="{m['w']}" height="185" rx="14" fill="#0f172a" stroke="{m['border']}" stroke-width="1.6"{glow_class}/>
       
-      <!-- Avatar Circle Frame with Embedded Base64 Image -->
-      <clipPath id="{clip_id}">
-        <circle cx="{m['w']//2}" cy="62" r="28"/>
-      </clipPath>
-      <circle cx="{m['w']//2}" cy="62" r="28" fill="#1e293b"/>
-      <image href="{b64}" xlink:href="{b64}" x="{m['w']//2 - 28}" y="34" width="56" height="56" clip-path="url(#{clip_id})" preserveAspectRatio="xMidYMid slice"/>
-      <circle cx="{m['w']//2}" cy="62" r="28" fill="none" stroke="{m['color']}" stroke-width="2"/>
+      <!-- Top Subtle Glow Line -->
+      <path d="M 20 0 L {m['w'] - 20} 0" stroke="{m['color']}" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
 
-      <text x="{m['w']//2}" y="112" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="12" font-weight="900" text-anchor="middle">{u}</text>
-      <text x="{m['w']//2}" y="128" fill="{m['text_name']}" font-family="'Inter', sans-serif" font-size="10" font-weight="700" text-anchor="middle">{m['name']}</text>
-      <rect x="18" y="142" width="{m['w'] - 36}" height="20" rx="6" fill="#020617" stroke="#334155" stroke-width="0.8"/>
-      <text x="{m['w']//2}" y="155" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5" font-weight="700" text-anchor="middle">{m['sub']}</text>
+      <!-- Large Circular Avatar Frame (Diameter 88px) -->
+      <clipPath id="{clip_id}">
+        <circle cx="{mid_x}" cy="65" r="{r}"/>
+      </clipPath>
+      <circle cx="{mid_x}" cy="65" r="{r}" fill="#1e293b"/>
+      <image href="{b64}" xlink:href="{b64}" x="{mid_x - r}" y="{65 - r}" width="{r*2}" height="{r*2}" clip-path="url(#{clip_id})" preserveAspectRatio="xMidYMid slice"/>
+      <circle cx="{mid_x}" cy="65" r="{r}" fill="none" stroke="{m['color']}" stroke-width="2.5"/>
+
+      <!-- Member Names (No Roles) -->
+      <text x="{mid_x}" y="138" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900" text-anchor="middle">{u}</text>
+      <text x="{mid_x}" y="158" fill="{m['text_name']}" font-family="'Inter', sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">{m['name']}</text>
     </g>
   </a>'''
         svg_cards.append(card)
@@ -71,7 +92,7 @@ def main():
     cards_content = '\n\n'.join(svg_cards)
 
     full_svg = f'''<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 240" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 250" width="100%" height="100%">
   <defs>
     <!-- Background Gradient -->
     <radialGradient id="teamBg" cx="50%" cy="50%" r="70%">
@@ -90,12 +111,17 @@ def main():
         0%, 100% {{ stroke-opacity: 0.4; }}
         50% {{ stroke-opacity: 1.0; }}
       }}
+      @keyframes slowCardGlow {{
+        0%, 100% {{ stroke-opacity: 0.35; }}
+        50% {{ stroke-opacity: 0.85; }}
+      }}
       .anim-lead-glow {{ animation: slowLeadGlow 4s ease-in-out infinite; }}
+      .anim-card-glow {{ animation: slowCardGlow 5s ease-in-out infinite; }}
     </style>
   </defs>
 
   <!-- Container Base -->
-  <rect width="1200" height="240" fill="url(#teamBg)" rx="16"/>
+  <rect width="1200" height="250" fill="url(#teamBg)" rx="16"/>
 
   <!-- Top Title / HUD Header -->
   <g transform="translate(600, 24)">
@@ -111,7 +137,7 @@ def main():
     with open('docs/assets/team-banner.svg', 'w', encoding='utf-8') as f:
         f.write(full_svg)
 
-    print('team-banner.svg successfully written with embedded Base64 avatars!')
+    print('team-banner.svg successfully generated with extra-large avatars and clean no-role design!')
 
 if __name__ == '__main__':
     main()
