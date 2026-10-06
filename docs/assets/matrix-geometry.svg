@@ -3,41 +3,64 @@
   <defs>
     <!-- Background Gradient -->
     <radialGradient id="matrixBg" cx="50%" cy="50%" r="70%">
-      <stop offset="0%" stop-color="#0f172a" stop-opacity="0.95"/>
-      <stop offset="60%" stop-color="#090d16" stop-opacity="0.98"/>
+      <stop offset="0%" stop-color="#0b132b" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#070c1d" stop-opacity="0.98"/>
       <stop offset="100%" stop-color="#020617" stop-opacity="1"/>
     </radialGradient>
 
-    <!-- In-Game Authentic Wood Tile Linear Gradient -->
+    <!-- In-Game 3L Fire Cell Gradient (Glossy Red) -->
+    <linearGradient id="cell3LGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#dc2626"/>
+      <stop offset="45%" stop-color="#991b1b"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
+    </linearGradient>
+
+    <!-- In-Game 2L Earth Cell Gradient (Glossy Green) -->
+    <linearGradient id="cell2LGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="45%" stop-color="#16a34a"/>
+      <stop offset="100%" stop-color="#14532d"/>
+    </linearGradient>
+
+    <!-- In-Game Power Cell Gradient (Cyan Gem) -->
+    <linearGradient id="cellPowerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+
+    <!-- In-Game Wood Tile Face Gradient (Amber / Gold Wood) -->
     <linearGradient id="woodTileGrad" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#fbbf24"/>
-      <stop offset="28%" stop-color="#f59e0b"/>
+      <stop offset="25%" stop-color="#f59e0b"/>
       <stop offset="65%" stop-color="#d97706"/>
-      <stop offset="88%" stop-color="#b45309"/>
+      <stop offset="90%" stop-color="#b45309"/>
       <stop offset="100%" stop-color="#78350f"/>
     </linearGradient>
 
-    <!-- Tile Top Gloss Highlight -->
-    <linearGradient id="tileGlossHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
-      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.1"/>
+    <!-- Top Gloss Highlight -->
+    <linearGradient id="glossReflection" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0.15"/>
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
 
-    <!-- Star Glow & Drop Shadow Filters -->
+    <!-- Drop Shadow Filters -->
     <filter id="matrixShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
-    </filter>
-    <filter id="tileDropShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="2.5" stdDeviation="2" flood-color="#000000" flood-opacity="0.75"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.65"/>
     </filter>
 
     <style>
       @keyframes slowGlowCenter {
-        0%, 100% { stroke-opacity: 0.4; stroke-width: 1.5; filter: drop-shadow(0 0 4px #fbbf24); }
-        50% { stroke-opacity: 1.0; stroke-width: 2.5; filter: drop-shadow(0 0 10px #f59e0b); }
+        0%, 100% { filter: drop-shadow(0 0 3px #fbbf24); }
+        50% { filter: drop-shadow(0 0 9px #f59e0b); }
+      }
+      @keyframes slowGlowPower {
+        0%, 100% { opacity: 0.88; filter: drop-shadow(0 0 3px #22d3ee); }
+        50% { opacity: 1.0; filter: drop-shadow(0 0 8px #38bdf8); }
       }
       .anim-star-center { animation: slowGlowCenter 4s ease-in-out infinite; }
+      .anim-power-glow { animation: slowGlowPower 3.5s ease-in-out infinite; }
     </style>
   </defs>
 
@@ -52,10 +75,10 @@
   </g>
 
   <!-- ========================================================================= -->
-  <!-- LEFT: 19x27 BOARD BLUEPRINT WITH IN-GAME CANVAS CELLS & WOOD TILES        -->
+  <!-- LEFT: 19x27 BOARD BLUEPRINT WITH AUTHENTIC GAME CELLS (MATCHING SCREENSHOT)-->
   <!-- ========================================================================= -->
   <g transform="translate(30, 44)" filter="url(#matrixShadow)">
-    <rect width="660" height="390" rx="14" fill="#090d16" stroke="#1e293b" stroke-width="1.5"/>
+    <rect width="660" height="390" rx="14" fill="#070c1d" stroke="#1e293b" stroke-width="1.5"/>
 
     <!-- Grid Header Bar -->
     <rect x="0" y="0" width="660" height="34" rx="14" fill="#0f172a" fill-opacity="0.85"/>
@@ -67,9 +90,9 @@
     </text>
 
     <!-- Blueprint Board Outer Frame -->
-    <rect x="20" y="46" width="620" height="324" rx="8" fill="#030712" stroke="#334155" stroke-width="1"/>
+    <rect x="20" y="46" width="620" height="324" rx="8" fill="#080e22" stroke="#1e293b" stroke-width="1"/>
 
-    <!-- Golden Grid Mesh lines (In-Game look: rgba(245, 190, 72, 0.20)) -->
+    <!-- Golden Grid Mesh lines (In-Game look: rgba(245, 190, 72, 0.18)) -->
     <g stroke="rgba(245, 190, 72, 0.18)" stroke-width="0.8">
       <!-- Horizontal row lines -->
       <line x1="20" y1="82" x2="640" y2="82"/>
@@ -106,67 +129,44 @@
     </g>
 
     <!-- ==================== SPECIAL IN-GAME MULTIPLIER CELLS ==================== -->
-    <!-- 3L Fire Cells (#7f1d1d crimson, #ef4444 border, white 3L) -->
+    <!-- 3L FIRE CELLS (Glossy Ruby Red with italic 3L) -->
     <g>
-      <rect x="315" y="52" width="30" height="26" rx="4" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.2"/>
-      <text x="330" y="70" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
-
-      <rect x="315" y="338" width="30" height="26" rx="4" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.2"/>
-      <text x="330" y="356" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
-
-      <rect x="74" y="88" width="30" height="26" rx="4" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.2"/>
-      <text x="89" y="106" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
-
-      <rect x="556" y="88" width="30" height="26" rx="4" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.2"/>
-      <text x="571" y="106" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
-
-      <rect x="74" y="302" width="30" height="26" rx="4" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.2"/>
-      <text x="89" y="320" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
-
-      <rect x="556" y="302" width="30" height="26" rx="4" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.2"/>
-      <text x="571" y="320" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
-
-      <rect x="250" y="196" width="30" height="26" rx="4" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.2"/>
-      <text x="265" y="214" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
-
-      <rect x="380" y="196" width="30" height="26" rx="4" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.2"/>
-      <text x="395" y="214" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">3L</text>
+      <g transform="translate(315, 52)"><rect width="30" height="26" rx="5" fill="url(#cell3LGrad)" stroke="#f87171" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">3L</text></g>
+      <g transform="translate(315, 338)"><rect width="30" height="26" rx="5" fill="url(#cell3LGrad)" stroke="#f87171" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">3L</text></g>
+      <g transform="translate(74, 88)"><rect width="30" height="26" rx="5" fill="url(#cell3LGrad)" stroke="#f87171" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">3L</text></g>
+      <g transform="translate(556, 88)"><rect width="30" height="26" rx="5" fill="url(#cell3LGrad)" stroke="#f87171" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">3L</text></g>
+      <g transform="translate(74, 302)"><rect width="30" height="26" rx="5" fill="url(#cell3LGrad)" stroke="#f87171" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">3L</text></g>
+      <g transform="translate(556, 302)"><rect width="30" height="26" rx="5" fill="url(#cell3LGrad)" stroke="#f87171" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">3L</text></g>
+      <g transform="translate(250, 196)"><rect width="30" height="26" rx="5" fill="url(#cell3LGrad)" stroke="#f87171" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">3L</text></g>
+      <g transform="translate(380, 196)"><rect width="30" height="26" rx="5" fill="url(#cell3LGrad)" stroke="#f87171" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">3L</text></g>
     </g>
 
-    <!-- 2L Earth Cells (#166534 green, #22c55e border, white 2L) -->
+    <!-- 2L EARTH CELLS (Glossy Emerald Green with italic 2L) -->
     <g>
-      <rect x="218" y="124" width="30" height="26" rx="4" fill="#166534" stroke="#22c55e" stroke-width="1.2"/>
-      <text x="233" y="142" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">2L</text>
-
-      <rect x="412" y="124" width="30" height="26" rx="4" fill="#166534" stroke="#22c55e" stroke-width="1.2"/>
-      <text x="427" y="142" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">2L</text>
-
-      <rect x="218" y="268" width="30" height="26" rx="4" fill="#166534" stroke="#22c55e" stroke-width="1.2"/>
-      <text x="233" y="286" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">2L</text>
-
-      <rect x="412" y="268" width="30" height="26" rx="4" fill="#166534" stroke="#22c55e" stroke-width="1.2"/>
-      <text x="427" y="286" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">2L</text>
+      <g transform="translate(218, 124)"><rect width="30" height="26" rx="5" fill="url(#cell2LGrad)" stroke="#4ade80" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">2L</text></g>
+      <g transform="translate(412, 124)"><rect width="30" height="26" rx="5" fill="url(#cell2LGrad)" stroke="#4ade80" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">2L</text></g>
+      <g transform="translate(218, 268)"><rect width="30" height="26" rx="5" fill="url(#cell2LGrad)" stroke="#4ade80" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">2L</text></g>
+      <g transform="translate(412, 268)"><rect width="30" height="26" rx="5" fill="url(#cell2LGrad)" stroke="#4ade80" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">2L</text></g>
+      <g transform="translate(284, 160)"><rect width="30" height="26" rx="5" fill="url(#cell2LGrad)" stroke="#4ade80" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">2L</text></g>
+      <g transform="translate(346, 160)"><rect width="30" height="26" rx="5" fill="url(#cell2LGrad)" stroke="#4ade80" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">2L</text></g>
+      <g transform="translate(284, 232)"><rect width="30" height="26" rx="5" fill="url(#cell2LGrad)" stroke="#4ade80" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">2L</text></g>
+      <g transform="translate(346, 232)"><rect width="30" height="26" rx="5" fill="url(#cell2LGrad)" stroke="#4ade80" stroke-width="1.2"/><rect width="30" height="12" rx="4" fill="url(#glossReflection)"/><text x="15" y="18" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11.5" font-weight="900" font-style="italic" text-anchor="middle">2L</text></g>
     </g>
 
-    <!-- Secret Power Cells (#0e7490 cyan, #22d3ee border, cyan star) -->
-    <g>
-      <rect x="122" y="52" width="30" height="26" rx="4" fill="#0e7490" stroke="#22d3ee" stroke-width="1.2"/>
-      <text x="137" y="71" fill="#e0f2fe" font-size="16" text-anchor="middle">★</text>
-
-      <rect x="508" y="52" width="30" height="26" rx="4" fill="#0e7490" stroke="#22d3ee" stroke-width="1.2"/>
-      <text x="523" y="71" fill="#e0f2fe" font-size="16" text-anchor="middle">★</text>
-
-      <rect x="122" y="338" width="30" height="26" rx="4" fill="#0e7490" stroke="#22d3ee" stroke-width="1.2"/>
-      <text x="137" y="357" fill="#e0f2fe" font-size="16" text-anchor="middle">★</text>
-
-      <rect x="508" y="338" width="30" height="26" rx="4" fill="#0e7490" stroke="#22d3ee" stroke-width="1.2"/>
-      <text x="523" y="357" fill="#e0f2fe" font-size="16" text-anchor="middle">★</text>
+    <!-- SECRET POWER CELLS (Glowing Cyan with Yellow Lightning ⚡) -->
+    <g class="anim-power-glow">
+      <g transform="translate(122, 52)"><rect width="30" height="26" rx="6" fill="url(#cellPowerGrad)" stroke="#38bdf8" stroke-width="1.5"/><text x="15" y="19" fill="#facc15" font-size="15" font-weight="900" text-anchor="middle">⚡</text></g>
+      <g transform="translate(508, 52)"><rect width="30" height="26" rx="6" fill="url(#cellPowerGrad)" stroke="#38bdf8" stroke-width="1.5"/><text x="15" y="19" fill="#facc15" font-size="15" font-weight="900" text-anchor="middle">⚡</text></g>
+      <g transform="translate(122, 338)"><rect width="30" height="26" rx="6" fill="url(#cellPowerGrad)" stroke="#38bdf8" stroke-width="1.5"/><text x="15" y="19" fill="#facc15" font-size="15" font-weight="900" text-anchor="middle">⚡</text></g>
+      <g transform="translate(508, 338)"><rect width="30" height="26" rx="6" fill="url(#cellPowerGrad)" stroke="#38bdf8" stroke-width="1.5"/><text x="15" y="19" fill="#facc15" font-size="15" font-weight="900" text-anchor="middle">⚡</text></g>
+      <g transform="translate(186, 88)"><rect width="30" height="26" rx="6" fill="url(#cellPowerGrad)" stroke="#38bdf8" stroke-width="1.5"/><text x="15" y="19" fill="#facc15" font-size="15" font-weight="900" text-anchor="middle">⚡</text></g>
+      <g transform="translate(444, 88)"><rect width="30" height="26" rx="6" fill="url(#cellPowerGrad)" stroke="#38bdf8" stroke-width="1.5"/><text x="15" y="19" fill="#facc15" font-size="15" font-weight="900" text-anchor="middle">⚡</text></g>
     </g>
 
     <!-- Center Star Cell (Row 9, Col 13) -->
-    <g class="anim-star-center">
-      <rect x="314" y="194" width="32" height="30" rx="6" fill="#1e1b4b" stroke="#fbbf24" stroke-width="2"/>
-      <text x="330" y="216" fill="#fbbf24" font-size="18" text-anchor="middle">★</text>
+    <g transform="translate(314, 194)" class="anim-star-center">
+      <rect width="32" height="30" rx="6" fill="#1e1b4b" stroke="#fbbf24" stroke-width="2"/>
+      <text x="16" y="22" fill="#fbbf24" font-size="18" text-anchor="middle">★</text>
     </g>
 
     <!-- Center Star Coordinate Tag -->
@@ -185,9 +185,10 @@
     <g transform="translate(0, 0)" filter="url(#matrixShadow)">
       <rect width="460" height="88" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1.4"/>
       <!-- Center Star replica badge -->
-      <rect x="14" y="18" width="50" height="52" rx="8" fill="#1e1b4b" stroke="#fbbf24" stroke-width="1.8"/>
-      <text x="39" y="52" fill="#fbbf24" font-size="26" text-anchor="middle">★</text>
-      
+      <g transform="translate(14, 18)">
+        <rect width="50" height="52" rx="8" fill="#1e1b4b" stroke="#fbbf24" stroke-width="1.8"/>
+        <text x="25" y="34" fill="#fbbf24" font-size="26" text-anchor="middle">★</text>
+      </g>
       <text x="76" y="33" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="13" font-weight="900">★ CENTER STAR (9, 13)</text>
       <text x="76" y="52" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11.5" font-weight="600">
         Mandatory Opening Move Anchor
@@ -201,10 +202,11 @@
     <g transform="translate(0, 100)" filter="url(#matrixShadow)">
       <rect width="460" height="88" rx="10" fill="#0f172a" stroke="#ef4444" stroke-width="1.3"/>
       <!-- In-game 3L Fire replica badge -->
-      <rect x="14" y="18" width="50" height="52" rx="8" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.6"/>
-      <rect x="17" y="21" width="44" height="46" rx="6" fill="#ef4444" fill-opacity="0.25"/>
-      <text x="39" y="51" fill="#ffffff" font-family="'Inter', sans-serif" font-size="19" font-weight="900" text-anchor="middle">3L</text>
-      
+      <g transform="translate(14, 18)">
+        <rect width="50" height="52" rx="8" fill="url(#cell3LGrad)" stroke="#f87171" stroke-width="1.6"/>
+        <rect width="50" height="24" rx="7" fill="url(#glossReflection)"/>
+        <text x="25" y="33" fill="#ffffff" font-family="'Inter', sans-serif" font-size="19" font-weight="900" font-style="italic" text-anchor="middle">3L</text>
+      </g>
       <text x="76" y="33" fill="#f87171" font-family="'Inter', sans-serif" font-size="13" font-weight="900">TRIPLE LETTER (3× MULTIPLIER)</text>
       <text x="76" y="52" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11.5" font-weight="600">
         Triples newly placed tile point value
@@ -218,10 +220,11 @@
     <g transform="translate(0, 200)" filter="url(#matrixShadow)">
       <rect width="460" height="88" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.3"/>
       <!-- In-game 2L Earth replica badge -->
-      <rect x="14" y="18" width="50" height="52" rx="8" fill="#166534" stroke="#22c55e" stroke-width="1.6"/>
-      <rect x="17" y="21" width="44" height="46" rx="6" fill="#22c55e" fill-opacity="0.25"/>
-      <text x="39" y="51" fill="#ffffff" font-family="'Inter', sans-serif" font-size="19" font-weight="900" text-anchor="middle">2L</text>
-      
+      <g transform="translate(14, 18)">
+        <rect width="50" height="52" rx="8" fill="url(#cell2LGrad)" stroke="#4ade80" stroke-width="1.6"/>
+        <rect width="50" height="24" rx="7" fill="url(#glossReflection)"/>
+        <text x="25" y="33" fill="#ffffff" font-family="'Inter', sans-serif" font-size="19" font-weight="900" font-style="italic" text-anchor="middle">2L</text>
+      </g>
       <text x="76" y="33" fill="#4ade80" font-family="'Inter', sans-serif" font-size="13" font-weight="900">DOUBLE LETTER (2× MULTIPLIER)</text>
       <text x="76" y="52" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11.5" font-weight="600">
         Doubles newly placed letter value
@@ -231,15 +234,16 @@
       </text>
     </g>
 
-    <!-- CARD 4: SECRET POWER & BINGO -->
+    <!-- CARD 4: SECRET POWER SQUARE (⚡) -->
     <g transform="translate(0, 300)" filter="url(#matrixShadow)">
       <rect width="460" height="92" rx="10" fill="#0f172a" stroke="#06b6d4" stroke-width="1.3"/>
       <!-- In-game Power cell replica badge -->
-      <rect x="14" y="20" width="50" height="52" rx="8" fill="#0e7490" stroke="#22d3ee" stroke-width="1.6"/>
-      <rect x="17" y="23" width="44" height="46" rx="6" fill="#22d3ee" fill-opacity="0.25"/>
-      <text x="39" y="55" fill="#e0f2fe" font-size="26" text-anchor="middle">★</text>
-      
-      <text x="76" y="34" fill="#22d3ee" font-family="'Inter', sans-serif" font-size="13" font-weight="900">★ POWER CELL &amp; +50 BINGO</text>
+      <g transform="translate(14, 20)">
+        <rect width="50" height="52" rx="10" fill="url(#cellPowerGrad)" stroke="#38bdf8" stroke-width="1.8"/>
+        <rect width="50" height="24" rx="8" fill="url(#glossReflection)"/>
+        <text x="25" y="36" fill="#facc15" font-size="26" font-weight="900" text-anchor="middle">⚡</text>
+      </g>
+      <text x="76" y="34" fill="#22d3ee" font-family="'Inter', sans-serif" font-size="13" font-weight="900">SECRET POWER SQUARE (⚡)</text>
       <text x="76" y="53" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11.5" font-weight="600">
         Power Cards Drop &amp; All-7-Tiles Bonus
       </text>
