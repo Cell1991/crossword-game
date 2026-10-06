@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="100%" height="100%">
  <defs>
  <!-- Background Gradient -->
@@ -142,12 +142,12 @@
 
  <!-- Card 4: All-Tiles Bingo Bonus -->
  <g transform="translate(0, 270)">
- <rect width="490" height="85" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2"/>
- <rect x="15" y="22" width="42" height="42" rx="8" fill="#78350f" stroke="#fbbf24" stroke-width="1.5"/>
- <text x="36" y="49" fill="#fef08a" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">+50</text>
- <text x="75" y="36" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="14" font-weight="900">ALL-TILES BINGO BONUS (+50 PTS)</text>
- <text x="75" y="56" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">
- Placing all 7 rack tiles in a single turn triggers a lethal +50 score bonus &amp; screen shockwave!
+ <rect width="490" height="75" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2"/>
+ <rect x="15" y="17" width="42" height="42" rx="8" fill="#78350f" stroke="#fbbf24" stroke-width="1.5"/>
+ <text x="36" y="44" fill="#fef08a" font-family="'Inter', sans-serif" font-size="14" font-weight="900" text-anchor="middle">+50</text>
+ <text x="75" y="32" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="14" font-weight="900">ALL-TILES BINGO BONUS (+50 PTS)</text>
+ <text x="75" y="52" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">
+ Placing all 7 rack tiles in 1 turn awards +50 bonus pts &amp; screen shockwave.
  </text>
  </g>
  </g>

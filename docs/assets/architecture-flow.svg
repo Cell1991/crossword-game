@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="100%" height="100%">
  <defs>
  <radialGradient id="archBg" cx="50%" cy="50%" r="70%">
@@ -152,13 +152,13 @@
  <g transform="translate(15, 190)">
  <rect width="290" height="50" rx="6" fill="#1e293b" stroke="#7c3aed" stroke-width="1"/>
  <text x="12" y="20" fill="#c084fc" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">WebSocket Connection Hub</text>
- <text x="12" y="36" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Room broadcasting, reconnection grace period &amp; spectator stream</text>
+ <text x="12" y="36" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Live broadcasting, 15s reconnect grace &amp; spectator feed</text>
  </g>
 
  <g transform="translate(15, 250)">
  <rect width="290" height="45" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
  <text x="12" y="18" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="10.5" font-weight="800">Game Lifecycle Manager</text>
- <text x="12" y="32" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5">Pass/timeout arbitration, rematch lobby spawning &amp; room garbage collector</text>
+ <text x="12" y="32" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8.5">Turn timeout, rematch lobbies &amp; room lifecycle garbage collection</text>
  </g>
  </g>
 
