@@ -32,7 +32,6 @@ interface PremiumCellOverlayProps {
   temporaryTiles: PlacedTile[];
   remotePlacements: CellPosition[];
   model?: BoardModel;
-  lowPower?: boolean;
 }
 
 /**
@@ -45,36 +44,22 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
   temporaryTiles,
   remotePlacements,
   model: propModel,
-  lowPower = false,
 }: PremiumCellOverlayProps) {
   const layerRef = useRef<HTMLDivElement>(null);
 
-  // Pure GPU transform: 0ms DOM reflow, 60-144 FPS batched via RAF
+  // Pure GPU transform: 0ms DOM reflow, 60-144 FPS
   useLayoutEffect(() => {
     const layer = layerRef.current;
     if (!layer) return;
     layer.style.transformOrigin = '0 0';
     layer.style.willChange = 'transform';
 
-    let rafId: number | null = null;
-    const updateTransform = () => {
+    const applyCamera = () => {
       const { scale, offset } = camera.getView();
       layer.style.transform = `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${scale})`;
     };
-    updateTransform();
-
-    const applyCamera = () => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        updateTransform();
-      });
-    };
-    const unsubscribe = camera.subscribe(applyCamera);
-    return () => {
-      unsubscribe();
-      if (rafId !== null) cancelAnimationFrame(rafId);
-    };
+    applyCamera();
+    return camera.subscribe(applyCamera);
   }, [camera]);
 
   const occupied = useMemo(() => {
@@ -116,24 +101,20 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
           return (
             <span
               key={`power-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              className={`absolute border border-cyan-200/75 bg-cyan-400/20 [contain:paint] ${
-                isSolid && !lowPower ? 'board-power-pulse shadow-[inset_0_0_10px_rgba(165,243,252,0.18),0_0_18px_rgba(34,211,238,0.45)]' : ''
-              }`}
+              className={`absolute border border-cyan-200/75 bg-cyan-400/20 shadow-[inset_0_0_10px_rgba(165,243,252,0.18),0_0_18px_rgba(34,211,238,0.45)] [contain:paint] ${isSolid ? 'board-power-pulse' : ''}`}
               style={{
                 left: `${col * baseCellSize + 1}px`,
                 top: `${row * baseCellSize + 1}px`,
                 width: `${squareSize}px`,
                 height: `${squareSize}px`,
                 borderRadius: isEcho ? '6px' : '4px',
-                animationDelay: !lowPower ? `${-((row * 5 + col * 3) % 13) / 10}s` : undefined,
+                animationDelay: `${-((row * 5 + col * 3) % 13) / 10}s`,
                 opacity: alpha,
-                filter: isSolid && !lowPower ? 'brightness(1.15)' : undefined,
+                filter: isSolid ? 'brightness(1.15)' : undefined,
                 ...CULL_OFFSCREEN,
               }}
             >
-              {!lowPower && (
-                <span className="board-lightning-halo absolute left-1/2 top-1/2 h-[64%] w-[64%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
-              )}
+              <span className="board-lightning-halo absolute left-1/2 top-1/2 h-[64%] w-[64%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
               <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -158,9 +139,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
           return (
             <span
               key={`triple-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              className={`absolute border border-red-300/60 bg-red-950/20 [contain:paint] ${
-                isSolid && !lowPower ? 'board-triple-aura' : ''
-              }`}
+              className={`absolute border border-red-300/60 bg-red-950/20 [contain:paint] ${isSolid ? 'board-triple-aura' : ''}`}
               style={{
                 left: `${col * baseCellSize + 1}px`,
                 top: `${row * baseCellSize + 1}px`,
@@ -168,13 +147,11 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
                 height: `${squareSize}px`,
                 borderRadius: isEcho ? '6px' : '4px',
                 opacity: alpha,
-                filter: isSolid && !lowPower ? 'brightness(1.1)' : undefined,
+                filter: isSolid ? 'brightness(1.1)' : undefined,
                 ...CULL_OFFSCREEN,
               }}
             >
-              {!lowPower && (
-                <span className="board-fire-core absolute inset-[18%] rounded-full bg-red-400/40 pointer-events-none" />
-              )}
+              <span className="board-fire-core absolute inset-[18%] rounded-full bg-red-400/40 pointer-events-none" />
               <span
                 className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white font-bold pointer-events-none"
                 style={{ fontSize: `${baseFontSize}px` }}
@@ -197,9 +174,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
           return (
             <span
               key={`double-${row}-${col}-${isEcho ? 'echo' : 'board'}`}
-              className={`absolute border border-orange-300/45 bg-orange-400/10 [contain:paint] ${
-                isSolid && !lowPower ? 'board-double-aura' : ''
-              }`}
+              className={`absolute border border-orange-300/45 bg-orange-400/10 [contain:paint] ${isSolid ? 'board-double-aura' : ''}`}
               style={{
                 left: `${col * baseCellSize + 1}px`,
                 top: `${row * baseCellSize + 1}px`,
@@ -207,17 +182,13 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
                 height: `${squareSize}px`,
                 borderRadius: isEcho ? '6px' : '4px',
                 opacity: alpha,
-                filter: isSolid && !lowPower ? 'brightness(1.1)' : undefined,
+                filter: isSolid ? 'brightness(1.1)' : undefined,
                 ...CULL_OFFSCREEN,
               }}
             >
-              {!lowPower && (
-                <>
-                  <span className="board-earth-glow absolute inset-[12%] rounded-full pointer-events-none" />
-                  <span className="board-earth-mountain board-earth-mountain-back absolute inset-x-0 bottom-0 h-[70%]" />
-                  <span className="board-earth-mountain board-earth-mountain-front absolute inset-x-0 bottom-0 h-[62%]" />
-                </>
-              )}
+              <span className="board-earth-glow absolute inset-[12%] rounded-full pointer-events-none" />
+              <span className="board-earth-mountain board-earth-mountain-back absolute inset-x-0 bottom-0 h-[70%]" />
+              <span className="board-earth-mountain board-earth-mountain-front absolute inset-x-0 bottom-0 h-[62%]" />
               <span
                 className="board-premium-label absolute inset-0 z-30 flex items-center justify-center leading-none text-white font-bold pointer-events-none"
                 style={{ fontSize: `${baseFontSize}px` }}
@@ -231,9 +202,7 @@ export const PremiumCellOverlay = memo(function PremiumCellOverlay({
         {/* 4. Center Start Star */}
         {!isCellOccupied(CENTER_ROW, CENTER_COL) && (
           <span
-            className={`absolute border border-amber-300/35 [contain:paint] ${
-              !lowPower ? 'shadow-[0_0_18px_rgba(251,191,36,0.25)] board-center-pulse' : ''
-            }`}
+            className="absolute border border-amber-300/35 shadow-[0_0_18px_rgba(251,191,36,0.25)] board-center-pulse [contain:paint]"
             style={{
               left: `${CENTER_COL * baseCellSize + 1}px`,
               top: `${CENTER_ROW * baseCellSize + 1}px`,

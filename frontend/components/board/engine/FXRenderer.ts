@@ -55,8 +55,7 @@ export class FXRenderer {
     cell: CellPosition,
     isValid: boolean | null,
     offset: { x: number; y: number },
-    cellSize: number,
-    lowPower: boolean = false
+    cellSize: number
   ): void {
     const pad = Math.max(1, cellSize * 0.06);
     const x = offset.x + cell.col * cellSize + pad;
@@ -68,17 +67,12 @@ export class FXRenderer {
     ctx.lineWidth = Math.max(2, cellSize * 0.04);
     if (isValid === false) {
       ctx.strokeStyle = '#f87171';
-      if (!lowPower) {
-        ctx.shadowColor = 'rgba(239, 68, 68, 0.65)';
-        ctx.shadowBlur = Math.max(4, cellSize * 0.15);
-      }
+      ctx.shadowColor = 'rgba(239, 68, 68, 0.65)';
     } else {
       ctx.strokeStyle = '#fbbf24';
-      if (!lowPower) {
-        ctx.shadowColor = 'rgba(245, 158, 11, 0.65)';
-        ctx.shadowBlur = Math.max(4, cellSize * 0.15);
-      }
+      ctx.shadowColor = 'rgba(245, 158, 11, 0.65)';
     }
+    ctx.shadowBlur = Math.max(4, cellSize * 0.15);
     drawRoundedRect(ctx, x, y, w, w, radius);
     ctx.stroke();
     ctx.restore();
@@ -89,8 +83,7 @@ export class FXRenderer {
     cell: CellPosition,
     offset: { x: number; y: number },
     cellSize: number,
-    isValid?: boolean | null,
-    lowPower: boolean = false
+    isValid?: boolean | null
   ): void {
     const pad = Math.max(1, cellSize * 0.06);
     const x = offset.x + cell.col * cellSize + pad;
@@ -102,10 +95,8 @@ export class FXRenderer {
 
     if (isValid === true) {
       // 1. Radiant Emerald Victory Halo
-      if (!lowPower) {
-        ctx.shadowColor = 'rgba(34, 197, 94, 0.85)';
-        ctx.shadowBlur = Math.max(12, cellSize * 0.32);
-      }
+      ctx.shadowColor = 'rgba(34, 197, 94, 0.85)';
+      ctx.shadowBlur = Math.max(12, cellSize * 0.32);
 
       const haloGrad = ctx.createLinearGradient(x, y, x + w, y + w);
       haloGrad.addColorStop(0, '#86efac');  // Crisp warm lime-mint
@@ -128,10 +119,8 @@ export class FXRenderer {
       ctx.stroke();
     } else {
       // 1. Ambient Warm Golden Aura
-      if (!lowPower) {
-        ctx.shadowColor = 'rgba(245, 158, 11, 0.85)';
-        ctx.shadowBlur = Math.max(6, cellSize * 0.22);
-      }
+      ctx.shadowColor = 'rgba(245, 158, 11, 0.85)';
+      ctx.shadowBlur = Math.max(6, cellSize * 0.22);
 
       // 2. Luxury Amber-Gold Gradient Ring
       const haloGrad = ctx.createLinearGradient(x, y, x + w, y + w);

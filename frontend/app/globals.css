@@ -485,24 +485,6 @@ body {
   contain: layout style;
 }
 
-/* Mobile performance optimization: skip continuous board keyframe loops and heavy blur shadows on touch screens */
-@media (pointer: coarse) and (max-width: 1024px) {
-  .board-power-pulse,
-  .board-lightning-halo,
-  .board-lightning-logo,
-  .board-lightning-spark,
-  .board-center-pulse,
-  .board-triple-aura,
-  .board-fire-core,
-  .board-double-aura,
-  .board-earth-glow,
-  .board-earth-mountain,
-  .board-earth-speck {
-    animation: none !important;
-    box-shadow: none !important;
-  }
-}
-
 /* Allow live preview animations inside Game Guide modal on mobile & touch devices */
 .guide-modal .board-power-pulse { animation: board-power-pulse 2.4s ease-in-out infinite !important; }
 .guide-modal .board-lightning-halo { animation: board-lightning-flash 1.1s ease-in-out infinite !important; }

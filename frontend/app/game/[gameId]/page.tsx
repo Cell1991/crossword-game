@@ -716,7 +716,7 @@ export default function GamePage() {
       }}
     >
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 shadow-[inset_0_0_130px_rgba(0,0,0,0.42)]" />
-      <ParticleField className="pointer-events-none fixed inset-0 w-screen h-screen z-0 opacity-40 hidden sm:block" accent="245, 158, 11" />
+      <ParticleField className="pointer-events-none fixed inset-0 w-screen h-screen z-0 opacity-40" accent="245, 158, 11" />
       <GameHud
         isSpectator={isSpectator}
         isEliminated={isEliminated}

@@ -12,17 +12,12 @@ function detectLowPowerDevice() {
   if (typeof navigator === 'undefined') return false;
   if (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches) return true;
   const device = navigator as Navigator & { deviceMemory?: number };
-  return (device.hardwareConcurrency ?? 8) <= 4 || (device.deviceMemory ?? 8) <= 4;
+  return (device.hardwareConcurrency ?? 8) <= 8 || (device.deviceMemory ?? 8) <= 8;
 }
 
-function canvasPixelRatio(lowPower: boolean) {
+function canvasPixelRatio(_lowPower: boolean) {
   if (typeof window === 'undefined') return 1;
-  const dpr = window.devicePixelRatio || 1;
-  if (lowPower) {
-    // Mobile / low-power: cap at 1.25 (or 1 on phones) to avoid rendering 4x-9x redundant pixels
-    return window.innerWidth < 640 ? 1 : Math.min(dpr, 1.25);
-  }
-  return Math.min(dpr, 2);
+  return Math.min(window.devicePixelRatio || 1, 2);
 }
 
 /** What the board shows, apart from the camera and the canvas size. */
@@ -108,7 +103,6 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   /** Fingers on the board. Two of them pinch: zoom by how far they spread, pan by how their midpoint moves. */
   const touchPointsRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; x: number; y: number } | null>(null);
-  const pinchCanvasRectRef = useRef<DOMRect | null>(null);
   const tilePlacementTimesRef = useRef<Map<string, number>>(new Map());
   const flipTileTimesRef = useRef<Map<string, number>>(new Map());
   const prevTemporaryTilesRef = useRef<PlacedTile[]>([]);
@@ -119,7 +113,6 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
   const hoverTrailMapRef = useRef<Map<string, { row: number; col: number; time: number }>>(new Map());
   const currentHoverCellRef = useRef<CellPosition | null>(dragHoverCell ?? null);
   const dragHoverAnimRef = useRef<number | null>(null);
-  const drawRafRef = useRef<number | null>(null);
 
   const stopMomentum = useCallback(() => {
     if (momentumAnimRef.current !== null) {
@@ -128,11 +121,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
     }
   }, []);
 
-  const drawImmediate = useCallback(() => {
-    if (drawRafRef.current !== null) {
-      cancelAnimationFrame(drawRafRef.current);
-      drawRafRef.current = null;
-    }
+  const draw = useCallback(() => {
     const canvas = canvasRef.current;
     const content = sceneRef.current;
     if (!canvas || !content) return;
@@ -157,23 +146,6 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       dragHoverTrails: hoverTrailMapRef.current,
     });
   }, [camera, lowPower]);
-
-  const draw = useCallback(() => {
-    if (drawRafRef.current !== null) return;
-    drawRafRef.current = requestAnimationFrame(() => {
-      drawRafRef.current = null;
-      drawImmediate();
-    });
-  }, [drawImmediate]);
-
-  useEffect(() => {
-    return () => {
-      if (drawRafRef.current !== null) {
-        cancelAnimationFrame(drawRafRef.current);
-        drawRafRef.current = null;
-      }
-    };
-  }, []);
 
   const startHoverAnimLoop = useCallback(() => {
     if (lowPower) {
@@ -378,8 +350,8 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       pendingFrozenCells,
       model: modelRef.current,
     };
-    drawImmediate();
-  }, [boardState, dragPreviewCell, dragPreviewIsValid, dragPreviewTile, draggingTileId, drawImmediate, frozenTile, hintCell, hintTiles, pendingArmedCell, pendingArmedCard, pendingFrozenCells, remotePlacements, selectedCell, temporaryTiles, temporaryTilesValid]);
+    draw();
+  }, [boardState, dragPreviewCell, dragPreviewIsValid, dragPreviewTile, draggingTileId, draw, frozenTile, hintCell, hintTiles, pendingArmedCell, pendingArmedCard, pendingFrozenCells, remotePlacements, selectedCell, temporaryTiles, temporaryTilesValid]);
 
   // Size the canvas to its container, and centre the board the first time it has a size.
   useLayoutEffect(() => {
@@ -461,7 +433,6 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
           panMovedRef.current = true;
           isPanningRef.current = false;
           pinchRef.current = measurePinch();
-          pinchCanvasRectRef.current = canvasRef.current?.getBoundingClientRect() ?? null;
           e.currentTarget.setPointerCapture(e.pointerId);
         }
         return;
@@ -497,7 +468,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       const pinch = pinchRef.current;
       if (pinch && touchPointsRef.current.size >= 2) {
         const next = measurePinch();
-        const rect = pinchCanvasRectRef.current ?? canvasRef.current?.getBoundingClientRect();
+        const rect = canvasRef.current?.getBoundingClientRect();
         if (rect) {
           camera.setOffset(prev => ({ x: prev.x + next.x - pinch.x, y: prev.y + next.y - pinch.y }));
           if (pinch.distance > 0) camera.zoomBy(next.distance / pinch.distance, next.x - rect.left, next.y - rect.top);
@@ -543,10 +514,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       touchPointsRef.current.delete(e.pointerId);
       if (pinchRef.current) {
         // Lifting a finger ends the pinch; the finger still down does not start a pan or a click.
-        if (touchPointsRef.current.size < 2) {
-          pinchRef.current = null;
-          pinchCanvasRectRef.current = null;
-        }
+        if (touchPointsRef.current.size < 2) pinchRef.current = null;
         if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
         return;
       }
@@ -664,10 +632,7 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
       onPointerCancel={(e) => {
         stopMomentum();
         touchPointsRef.current.delete(e.pointerId);
-        if (touchPointsRef.current.size < 2) {
-          pinchRef.current = null;
-          pinchCanvasRectRef.current = null;
-        }
+        if (touchPointsRef.current.size < 2) pinchRef.current = null;
         pendingPointerRef.current = null;
         pendingDragRef.current = false;
         isPanningRef.current = false;
@@ -680,7 +645,6 @@ export const BoardCanvas = React.memo<BoardCanvasProps>(function BoardCanvas({
         temporaryTiles={temporaryTiles}
         remotePlacements={remotePlacements}
         model={modelRef.current}
-        lowPower={lowPower}
       />
     </div>
   );

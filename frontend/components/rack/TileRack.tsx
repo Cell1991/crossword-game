@@ -361,7 +361,7 @@ export const TileRack = memo(function TileRack({
           {/* Desktop Row 1: Utility Controls (Recall, Shuffle, Swap) */}
           <div className="grid grid-cols-3 gap-1.5 w-full">
             {isExchanging ? (
-              <div className="col-span-3 flex items-center justify-between gap-2 px-3 py-1 bg-gradient-to-r from-[#220b16]/95 via-[#130b20]/95 to-[#0a0b1c]/95 border border-red-500/30 rounded-xl shadow-[0_4px_14px_rgba(0,0,0,0.6),0_0_12px_rgba(220,38,38,0.15),inset_0_1px_1px_rgba(255,255,255,0.12)] relative overflow-hidden sm:backdrop-blur-xl">
+              <div className="col-span-3 flex items-center justify-between gap-2 px-3 py-1 bg-gradient-to-r from-[#220b16]/95 via-[#130b20]/95 to-[#0a0b1c]/95 border border-red-500/30 rounded-xl shadow-[0_4px_14px_rgba(0,0,0,0.6),0_0_12px_rgba(220,38,38,0.15),inset_0_1px_1px_rgba(255,255,255,0.12)] relative overflow-hidden backdrop-blur-xl">
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
                 <button
                   type="button"

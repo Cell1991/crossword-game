@@ -187,8 +187,7 @@ export class BoardCompositor {
         config.dragPreviewCell,
         config.dragPreviewIsValid,
         offset,
-        cellSize,
-        config.lowPower
+        cellSize
       );
     }
 
@@ -206,7 +205,7 @@ export class BoardCompositor {
         t => t.row === config.selectedCell!.row && t.col === config.selectedCell!.col
       );
       if (!isTemporary) {
-        FXRenderer.renderSelection(ctx, config.selectedCell, offset, cellSize, config.temporaryTilesValid, config.lowPower);
+        FXRenderer.renderSelection(ctx, config.selectedCell, offset, cellSize, config.temporaryTilesValid);
       }
     }
     } finally {

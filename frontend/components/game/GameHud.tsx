@@ -112,13 +112,13 @@ export const GameHud: React.FC<GameHudProps> = ({
   };
 
   return (
-    <div className="gameplay-top-hud-container relative z-30 w-full shrink-0 flex flex-col border-b border-indigo-500/20 bg-gradient-to-r from-[#060718] via-[#0e102e] to-[#060718] sm:from-[#060718]/96 sm:via-[#0e102e]/98 sm:to-[#060718]/96 shadow-[0_6px_30px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.1)] sm:backdrop-blur-2xl">
+    <div className="gameplay-top-hud-container relative z-30 w-full shrink-0 flex flex-col border-b border-indigo-500/20 bg-gradient-to-r from-[#060718]/96 via-[#0e102e]/98 to-[#060718]/96 shadow-[0_6px_30px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-2xl">
       {/* Top radiant starlight specular filament */}
       <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/50 via-purple-400/35 to-transparent pointer-events-none" />
 
-      {/* Atmospheric center nebula glow (desktop only for mobile 120 FPS performance) */}
-      <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[32rem] h-14 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="hidden sm:block absolute top-1/2 left-1/4 -translate-y-1/2 w-48 h-12 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+      {/* Atmospheric center nebula glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[32rem] h-14 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-48 h-12 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
       {/* ROW 1: System Bar */}
       <header className="gameplay-top-hud relative z-10 flex md:grid w-full items-center justify-between md:grid-cols-[1fr_auto_1fr] gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2">
