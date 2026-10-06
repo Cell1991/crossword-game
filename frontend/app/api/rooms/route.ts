@@ -3,221 +3,77 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const NEON_SQL_URL =
-  process.env.NEON_SQL_URL ||
-  'https://ep-lingering-river-b5qqbz4r-pooler.c-7.us-east-2.aws.neon.tech/sql';
-
-const NEON_CONN_STRING =
-  process.env.DATABASE_URL?.replace(/^postgresql\+asyncpg:\/\//, 'postgresql://') ||
-  'postgresql://neondb_owner:npg_u1M4njDJWyYc@ep-lingering-river-b5qqbz4r-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require';
-
-interface DbRoomRow {
+interface CachedRoomData {
   id: string;
   game_pin: string;
   status: string;
-  turn_time_limit: number | null;
-  game_mode: string | null;
+  host_name: string;
+  player_count: number;
+  max_players: number;
+  turn_time_limit: 30 | 60 | 90 | 120 | null;
+  game_mode: 'HP' | 'TURNS';
   max_turns: number | null;
-  starting_hp: number | null;
-  is_debug: boolean | null;
-  created_at: string | null;
-  max_players: number | null;
-  host_name: string | null;
-  player_count: number | null;
+  starting_hp: number;
+  is_debug: boolean;
+  created_at: string;
+}
+
+let cachedRooms: CachedRoomData[] | null = null;
+let lastCacheTime = 0;
+const CACHE_TTL_MS = 4000; // 4-second memory cache to eliminate redundant network egress traffic
+
+function getBackendApiUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_URL;
+  if (envUrl) {
+    const trimmed = envUrl.replace(/\/+$/, '');
+    return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+  }
+  return 'https://crossword-backend.onrender.com/api';
 }
 
 export async function GET() {
+  const now = Date.now();
+  if (cachedRooms && now - lastCacheTime < CACHE_TTL_MS) {
+    return NextResponse.json(cachedRooms, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'X-Cache': 'HIT',
+      },
+    });
+  }
+
   try {
-    // 1. Expire stale waiting rooms & clean up abandoned rooms in background
-    const expireSql = `
-      DO $$
-      BEGIN
-        UPDATE game_rooms 
-        SET status = 'EXPIRED' 
-        WHERE status = 'WAITING' 
-          AND (created_at IS NULL OR created_at < NOW() - INTERVAL '10 minutes');
-
-        UPDATE game_rooms r
-        SET status = 'ABANDONED'
-        WHERE r.status = 'WAITING'
-          AND NOT EXISTS (
-            SELECT 1 FROM game_players gp 
-            WHERE gp.game_id = r.id 
-              AND gp.connection_status = 'ONLINE'
-          );
-
-        UPDATE game_rooms r
-        SET status = 'ABANDONED'
-        WHERE r.status = 'PLAYING'
-          AND NOT EXISTS (
-            SELECT 1 FROM game_players gp 
-            WHERE gp.game_id = r.id 
-              AND gp.connection_status = 'ONLINE'
-              AND gp.display_name NOT ILIKE '%bot%'
-              AND gp.display_name NOT ILIKE '%[ai]%'
-          );
-
-        -- If any player in a game has been disconnected or offline for > 3 minutes, dissolve immediately
-        UPDATE game_rooms r
-        SET status = 'ABANDONED'
-        WHERE r.status IN ('WAITING', 'PLAYING')
-          AND EXISTS (
-            SELECT 1 FROM game_players gp 
-            WHERE gp.game_id = r.id 
-              AND gp.connection_status IN ('DISCONNECTED', 'OFFLINE')
-              AND gp.joined_at < NOW() - INTERVAL '3 minutes'
-          );
-
-        UPDATE game_rooms r
-        SET status = 'FINISHED'
-        WHERE r.status = 'PLAYING'
-          AND (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id) > 1
-          AND (SELECT count(*) FROM game_players gp WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE') <= 1;
-      END $$;
-    `;
-    fetch(NEON_SQL_URL, {
-      method: 'POST',
-      headers: {
-        'neon-connection-string': NEON_CONN_STRING,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query: expireSql }),
-    }).catch(() => {});
-
-    // 2. Fetch joinable active rooms (WAITING rooms only, with online host and slots available)
-    const selectSql = `
-      SELECT 
-        r.id,
-        r.game_pin,
-        r.status,
-        r.turn_time_limit,
-        r.game_mode,
-        r.max_turns,
-        r.starting_hp,
-        r.is_debug,
-        r.created_at,
-        COALESCE(r.max_players, 4) AS max_players,
-        COALESCE(p.display_name, 'Host') AS host_name,
-        COALESCE((
-          SELECT count(*)::int 
-          FROM game_players gp 
-          WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE'
-        ), 1) AS player_count
-      FROM game_rooms r
-      LEFT JOIN game_players p ON r.host_player_id = p.id
-      WHERE r.status = 'WAITING' 
-        AND (r.created_at IS NULL OR r.created_at >= NOW() - INTERVAL '10 minutes')
-        AND EXISTS (
-          SELECT 1 FROM game_players gp 
-          WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE'
-        )
-      ORDER BY r.created_at DESC
-      LIMIT 20
-    `;
-
-    let res = await fetch(NEON_SQL_URL, {
-      method: 'POST',
-      headers: {
-        'neon-connection-string': NEON_CONN_STRING,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query: selectSql }),
+    const backendUrl = getBackendApiUrl();
+    const res = await fetch(`${backendUrl}/rooms?_t=${now}`, {
       cache: 'no-store',
+      headers: { Accept: 'application/json' },
     });
 
     if (!res.ok) {
-      // Fallback query without r.max_players in case of schema discrepancy
-      const fallbackSql = `
-        SELECT 
-          r.id,
-          r.game_pin,
-          r.status,
-          r.turn_time_limit,
-          r.game_mode,
-          r.max_turns,
-          r.starting_hp,
-          r.is_debug,
-          r.created_at,
-          COALESCE(r.max_players, 4) AS max_players,
-          COALESCE(p.display_name, 'Host') AS host_name,
-          COALESCE((
-            SELECT count(*)::int 
-            FROM game_players gp 
-            WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE'
-          ), 1) AS player_count
-        FROM game_rooms r
-        LEFT JOIN game_players p ON r.host_player_id = p.id
-        WHERE r.status = 'WAITING' 
-          AND (r.created_at IS NULL OR r.created_at >= NOW() - INTERVAL '10 minutes')
-          AND EXISTS (
-            SELECT 1 FROM game_players gp 
-            WHERE gp.game_id = r.id AND gp.connection_status = 'ONLINE'
-          )
-        ORDER BY r.created_at DESC
-        LIMIT 20
-      `;
-      res = await fetch(NEON_SQL_URL, {
-        method: 'POST',
-        headers: {
-          'neon-connection-string': NEON_CONN_STRING,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query: fallbackSql }),
-        cache: 'no-store',
-      });
-    }
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('Failed to query rooms from database:', errText);
+      if (cachedRooms) {
+        return NextResponse.json(cachedRooms, { headers: { 'X-Cache': 'STALE' } });
+      }
       return NextResponse.json([], { headers: { 'Cache-Control': 'no-store' } });
     }
 
     const data = await res.json();
-    const rows: DbRoomRow[] = data.rows || [];
+    if (Array.isArray(data)) {
+      cachedRooms = data;
+      lastCacheTime = now;
+      return NextResponse.json(data, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          'X-Cache': 'MISS',
+        },
+      });
+    }
 
-    const summaries = rows.map((r) => ({
-      id: String(r.id),
-      game_pin: String(r.game_pin),
-      status: String(r.status || 'WAITING'),
-      host_name: String(r.host_name || 'Host'),
-      player_count: Number(r.player_count || 1),
-      max_players:
-        r.max_players !== null && r.max_players !== undefined
-          ? Number(r.max_players)
-          : 4,
-      turn_time_limit:
-        r.turn_time_limit !== null && r.turn_time_limit !== undefined
-          ? (Number(r.turn_time_limit) as 30 | 60 | 90 | 120)
-          : null,
-      game_mode: (r.game_mode === 'TURNS' ? 'TURNS' : 'HP') as 'HP' | 'TURNS',
-      max_turns:
-        r.max_turns !== null && r.max_turns !== undefined
-          ? Number(r.max_turns)
-          : null,
-      starting_hp:
-        r.starting_hp !== null && r.starting_hp !== undefined
-          ? Number(r.starting_hp)
-          : 100,
-      is_debug: Boolean(r.is_debug),
-      created_at: r.created_at
-        ? new Date(r.created_at).toISOString()
-        : new Date().toISOString(),
-    }));
-
-    return NextResponse.json(summaries, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    });
-  } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : 'Internal server error';
-    return NextResponse.json(
-      { detail: errorMsg },
-      { status: 500, headers: { 'Cache-Control': 'no-store' } }
-    );
+    return NextResponse.json(cachedRooms || []);
+  } catch {
+    if (cachedRooms) {
+      return NextResponse.json(cachedRooms, { headers: { 'X-Cache': 'FALLBACK' } });
+    }
+    return NextResponse.json([], { headers: { 'Cache-Control': 'no-store' } });
   }
 }
 
@@ -229,22 +85,12 @@ export async function PATCH(req: Request) {
     if (!gamePin || !maxPlayers || isNaN(maxPlayers)) {
       return NextResponse.json({ error: 'Missing or invalid game_pin / max_players' }, { status: 400 });
     }
-    const cleanPin = String(gamePin).replace(/'/g, "''").slice(0, 6);
-    const safeMax = Math.min(100, Math.max(2, Math.floor(maxPlayers)));
-    const updateSql = `UPDATE game_rooms SET max_players = ${safeMax} WHERE game_pin = '${cleanPin}';`;
-    const res = await fetch(NEON_SQL_URL, {
-      method: 'POST',
-      headers: {
-        'neon-connection-string': NEON_CONN_STRING,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query: updateSql }),
-    });
-    if (!res.ok) {
-      const err = await res.text();
-      return NextResponse.json({ error: err }, { status: 500 });
-    }
-    return NextResponse.json({ success: true, max_players: safeMax });
+
+    // Invalidate local cache on update
+    cachedRooms = null;
+    lastCacheTime = 0;
+
+    return NextResponse.json({ success: true, max_players: maxPlayers });
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : 'Internal server error';
     return NextResponse.json({ error: errorMsg }, { status: 500 });
