@@ -121,19 +121,23 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
     }
 
     window.addEventListener('resize', onResize);
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerup', onPointerUp, { passive: true });
-    window.addEventListener('pointercancel', onPointerUp, { passive: true });
+    if (!isTouchDevice) {
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+      window.addEventListener('pointerup', onPointerUp, { passive: true });
+      window.addEventListener('pointercancel', onPointerUp, { passive: true });
+    }
 
     const draw = () => {
       const now = performance.now();
-      if (document.visibilityState === 'hidden') {
-        frame = requestAnimationFrame(draw);
-        return;
-      }
-      if (now - lastDrawAt < frameInterval) {
-        frame = requestAnimationFrame(draw);
-        return;
+      if (!isTouchDevice) {
+        if (document.visibilityState === 'hidden') {
+          frame = requestAnimationFrame(draw);
+          return;
+        }
+        if (now - lastDrawAt < frameInterval) {
+          frame = requestAnimationFrame(draw);
+          return;
+        }
       }
       lastDrawAt = now;
       ctx.clearRect(0, 0, width, height);
@@ -141,10 +145,12 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       // 1. Draw Beams
       ctx.lineWidth = 1.5;
       for (const beam of beams) {
-        beam.y -= beam.speed;
-        if (beam.y + beam.length < 0) {
-          beam.y = height + 100;
-          beam.x = Math.random() * width;
+        if (!isTouchDevice) {
+          beam.y -= beam.speed;
+          if (beam.y + beam.length < 0) {
+            beam.y = height + 100;
+            beam.x = Math.random() * width;
+          }
         }
         const gradient = ctx.createLinearGradient(beam.x, beam.y, beam.x, beam.y + beam.length);
         gradient.addColorStop(0, `rgba(${accent}, ${beam.opacity})`);
@@ -173,36 +179,42 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       }
       ctx.stroke();
 
-      // 3. Draw Nodes in Radiant Gold (no pale white on hover/touch)
+      // 3. Draw Nodes in Radiant Gold
       ctx.font = isTouchDevice ? 'bold 9.5px monospace' : 'bold 11.5px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
       for (const node of nodes) {
-        node.y += node.vy;
-        if (node.y > height + 20) {
-          node.y = -20;
-          node.x = Math.random() * width;
-        }
+        if (!isTouchDevice) {
+          node.y += node.vy;
+          if (node.y > height + 20) {
+            node.y = -20;
+            node.x = Math.random() * width;
+          }
 
-        const dist = Math.hypot(mouse.x - node.x, mouse.y - node.y);
-        if (dist < MOUSE_RADIUS || Math.random() > 0.985) {
-          node.char = CHARS[Math.floor(Math.random() * CHARS.length)];
-        }
+          const dist = Math.hypot(mouse.x - node.x, mouse.y - node.y);
+          if (dist < MOUSE_RADIUS || Math.random() > 0.985) {
+            node.char = CHARS[Math.floor(Math.random() * CHARS.length)];
+          }
 
-        if (dist < MOUSE_RADIUS) {
-          ctx.strokeStyle = `rgba(${accent}, ${0.5 * (1 - dist / MOUSE_RADIUS)})`;
-          ctx.beginPath();
-          ctx.moveTo(node.x, node.y);
-          ctx.lineTo(mouse.x, mouse.y);
-          ctx.stroke();
-        }
+          if (dist < MOUSE_RADIUS) {
+            ctx.strokeStyle = `rgba(${accent}, ${0.5 * (1 - dist / MOUSE_RADIUS)})`;
+            ctx.beginPath();
+            ctx.moveTo(node.x, node.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.stroke();
+          }
 
-        ctx.fillStyle = dist < MOUSE_RADIUS ? 'rgb(251, 191, 36)' : `rgba(${accent}, 0.55)`;
+          ctx.fillStyle = dist < MOUSE_RADIUS ? 'rgb(251, 191, 36)' : `rgba(${accent}, 0.55)`;
+        } else {
+          ctx.fillStyle = `rgba(${accent}, 0.55)`;
+        }
         ctx.fillText(node.char, node.x, node.y);
       }
 
-      frame = requestAnimationFrame(draw);
+      if (!isTouchDevice) {
+        frame = requestAnimationFrame(draw);
+      }
     };
 
     draw();
@@ -212,9 +224,11 @@ export default function ParticleField({ className = '', accent = '251, 191, 36' 
       if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
       if (resizeObserver) resizeObserver.disconnect();
       window.removeEventListener('resize', onResize);
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
-      window.removeEventListener('pointercancel', onPointerUp);
+      if (!isTouchDevice) {
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+        window.removeEventListener('pointercancel', onPointerUp);
+      }
     };
   }, [accent]);
 

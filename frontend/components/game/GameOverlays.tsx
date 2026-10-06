@@ -13,7 +13,7 @@ export const PendingEffectBanner: React.FC<{
   busy: boolean;
   onShield: () => void;
 }> = ({ effect, canShield, busy, onShield }) => (
-  <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gradient-to-r from-sky-950/95 via-slate-950/95 to-sky-950/95 border border-sky-400/60 text-sky-200 text-sm font-semibold px-5 py-2.5 rounded-2xl shadow-[0_12px_36px_rgba(0,0,0,0.7),0_0_24px_rgba(56,189,248,0.35)] backdrop-blur-md">
+  <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gradient-to-r from-sky-950/95 via-slate-950/95 to-sky-950/95 border border-sky-400/60 text-sky-200 text-sm font-semibold px-5 py-2.5 rounded-2xl shadow-[0_12px_36px_rgba(0,0,0,0.7),0_0_24px_rgba(56,189,248,0.35)] sm:backdrop-blur-md">
     <span>{effect.type === 'SWAP' ? '🔄 A tile swap is pending…' : '⚔️ Damage is pending…'}</span>
     {canShield && (
       <button
@@ -56,7 +56,7 @@ export const ToastStack: React.FC<{
             transition={{ type: 'spring', stiffness: 500, damping: 28 }}
             role="status"
             aria-live="polite"
-            className="pointer-events-auto relative flex items-center justify-between gap-3 w-fit max-w-[min(32rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-emerald-400/40 bg-gradient-to-r from-emerald-950/95 via-slate-950/95 to-emerald-950/95 pl-3.5 pr-2.5 py-2.5 sm:py-3 text-sm font-semibold tracking-wide text-emerald-100 shadow-[0_12px_36px_rgba(0,0,0,0.6),0_0_24px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/25 backdrop-blur-md select-none"
+            className="pointer-events-auto relative flex items-center justify-between gap-3 w-fit max-w-[min(32rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-emerald-400/40 bg-gradient-to-r from-emerald-950/95 via-slate-950/95 to-emerald-950/95 pl-3.5 pr-2.5 py-2.5 sm:py-3 text-sm font-semibold tracking-wide text-emerald-100 shadow-[0_12px_36px_rgba(0,0,0,0.6),0_0_24px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/25 sm:backdrop-blur-md select-none"
           >
             <span className="absolute inset-x-8 top-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-90" />
             <div className="flex items-center gap-2.5 min-w-0">
@@ -92,7 +92,7 @@ export const ToastStack: React.FC<{
             transition={{ type: 'spring', stiffness: 500, damping: 28 }}
             role="alert"
             aria-live="assertive"
-            className="pointer-events-auto relative flex items-center justify-between gap-3 w-fit max-w-[min(32rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-rose-500/50 bg-gradient-to-r from-rose-950/95 via-slate-950/95 to-rose-950/95 pl-3.5 pr-2.5 py-2.5 sm:py-3 text-sm font-semibold tracking-wide text-rose-100 shadow-[0_14px_40px_rgba(0,0,0,0.7),0_0_28px_rgba(244,63,94,0.4)] ring-1 ring-rose-400/30 backdrop-blur-md select-none"
+            className="pointer-events-auto relative flex items-center justify-between gap-3 w-fit max-w-[min(32rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-rose-500/50 bg-gradient-to-r from-rose-950/95 via-slate-950/95 to-rose-950/95 pl-3.5 pr-2.5 py-2.5 sm:py-3 text-sm font-semibold tracking-wide text-rose-100 shadow-[0_14px_40px_rgba(0,0,0,0.7),0_0_28px_rgba(244,63,94,0.4)] ring-1 ring-rose-400/30 sm:backdrop-blur-md select-none"
           >
             <span className="absolute inset-x-8 top-0 h-0.5 bg-gradient-to-r from-transparent via-rose-400 to-transparent opacity-90 shadow-[0_0_8px_#fb7185]" />
             <div className="flex items-center gap-2.5 min-w-0">

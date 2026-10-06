@@ -20,7 +20,7 @@ export const LetterBagCard: React.FC<LetterBagCardProps> = ({
         ref={buttonRef}
         type="button"
         onClick={onClick}
-        className="group relative flex w-full items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-gradient-to-br from-[#181636]/90 via-[#100f26]/95 to-[#090818]/95 hover:from-[#221f4a]/95 hover:to-[#12102e] border border-amber-400/35 hover:border-amber-300 shadow-[0_6px_24px_rgba(0,0,0,0.65),inset_0_1px_1px_rgba(255,255,255,0.18)] hover:shadow-[0_0_26px_rgba(245,158,11,0.35),inset_0_1px_1px_rgba(255,255,255,0.3)] backdrop-blur-xl transition-all duration-200 cursor-pointer text-left select-none overflow-hidden active:scale-[0.98]"
+        className="group relative flex w-full items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-gradient-to-br from-[#181636]/90 via-[#100f26]/95 to-[#090818]/95 hover:from-[#221f4a]/95 hover:to-[#12102e] border border-amber-400/35 hover:border-amber-300 shadow-[0_6px_24px_rgba(0,0,0,0.65),inset_0_1px_1px_rgba(255,255,255,0.18)] hover:shadow-[0_0_26px_rgba(245,158,11,0.35),inset_0_1px_1px_rgba(255,255,255,0.3)] sm:backdrop-blur-xl transition-all duration-200 cursor-pointer text-left select-none overflow-hidden active:scale-[0.98]"
         aria-label={`Show letter bag breakdown, ${tileBagCount} tiles remaining`}
       >
         {/* Celestial Glass Starlight Specular Shimmer */}

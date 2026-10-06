@@ -67,7 +67,7 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
 
   return (
     <div
-      className={`inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs sm:text-sm font-black px-3 py-1 rounded-xl border transition-all duration-200 select-none backdrop-blur-xl relative overflow-hidden ${
+      className={`inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs sm:text-sm font-black px-3 py-1 rounded-xl border transition-all duration-200 select-none sm:backdrop-blur-xl relative overflow-hidden ${
         isLowTime
           ? 'border-rose-400/80 bg-gradient-to-r from-rose-950/95 via-[#2a0c16]/98 to-rose-950/95 text-rose-200 shadow-[0_0_20px_rgba(244,63,94,0.6),inset_0_1px_1px_rgba(255,255,255,0.25)] ring-1 ring-rose-400/60 animate-pulse'
           : 'border-amber-400/40 bg-gradient-to-r from-[#181636]/90 via-[#100f28]/95 to-[#090818]/90 text-amber-200 shadow-[0_4px_14px_rgba(0,0,0,0.6),0_0_12px_rgba(245,158,11,0.2),inset_0_1px_1px_rgba(255,255,255,0.18)] hover:border-amber-400/60'

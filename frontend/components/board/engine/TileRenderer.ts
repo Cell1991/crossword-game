@@ -190,7 +190,8 @@ function drawGlacialCracks(
   x: number,
   y: number,
   tileW: number,
-  cellSize: number
+  cellSize: number,
+  lowPower: boolean = false
 ) {
   ctx.save();
   ctx.lineCap = 'round';
@@ -207,21 +208,23 @@ function drawGlacialCracks(
   ctx.lineTo(x + tileW * 0.08, y + tileW * 0.65);
   ctx.stroke();
 
-  // Branch 1A
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(224, 242, 254, 0.85)';
-  ctx.lineWidth = Math.max(0.55, cellSize * 0.014);
-  ctx.moveTo(x + tileW * 0.34, y + tileW * 0.16);
-  ctx.lineTo(x + tileW * 0.48, y + tileW * 0.22);
-  ctx.lineTo(x + tileW * 0.58, y + tileW * 0.18);
-  ctx.stroke();
+  if (!lowPower) {
+    // Branch 1A
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(224, 242, 254, 0.85)';
+    ctx.lineWidth = Math.max(0.55, cellSize * 0.014);
+    ctx.moveTo(x + tileW * 0.34, y + tileW * 0.16);
+    ctx.lineTo(x + tileW * 0.48, y + tileW * 0.22);
+    ctx.lineTo(x + tileW * 0.58, y + tileW * 0.18);
+    ctx.stroke();
 
-  // Branch 1B
-  ctx.beginPath();
-  ctx.moveTo(x + tileW * 0.20, y + tileW * 0.32);
-  ctx.lineTo(x + tileW * 0.28, y + tileW * 0.44);
-  ctx.lineTo(x + tileW * 0.26, y + tileW * 0.58);
-  ctx.stroke();
+    // Branch 1B
+    ctx.beginPath();
+    ctx.moveTo(x + tileW * 0.20, y + tileW * 0.32);
+    ctx.lineTo(x + tileW * 0.28, y + tileW * 0.44);
+    ctx.lineTo(x + tileW * 0.26, y + tileW * 0.58);
+    ctx.stroke();
+  }
 
   // Major Crack 2: Bottom-spanning glacial fracture
   ctx.beginPath();
@@ -234,25 +237,27 @@ function drawGlacialCracks(
   ctx.lineTo(x + tileW * 0.92, y + tileW * 0.86);
   ctx.stroke();
 
-  // Branch 2A
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(186, 230, 253, 0.8)';
-  ctx.lineWidth = Math.max(0.5, cellSize * 0.012);
-  ctx.moveTo(x + tileW * 0.46, y + tileW * 0.84);
-  ctx.lineTo(x + tileW * 0.50, y + tileW * 0.96);
-  ctx.moveTo(x + tileW * 0.70, y + tileW * 0.76);
-  ctx.lineTo(x + tileW * 0.66, y + tileW * 0.64);
-  ctx.stroke();
+  if (!lowPower) {
+    // Branch 2A
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(186, 230, 253, 0.8)';
+    ctx.lineWidth = Math.max(0.5, cellSize * 0.012);
+    ctx.moveTo(x + tileW * 0.46, y + tileW * 0.84);
+    ctx.lineTo(x + tileW * 0.50, y + tileW * 0.96);
+    ctx.moveTo(x + tileW * 0.70, y + tileW * 0.76);
+    ctx.lineTo(x + tileW * 0.66, y + tileW * 0.64);
+    ctx.stroke();
 
-  // Major Crack 3: Top-Right / Right Edge fracture
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.88)';
-  ctx.lineWidth = Math.max(0.7, cellSize * 0.018);
-  ctx.moveTo(x + tileW * 0.92, y + tileW * 0.18);
-  ctx.lineTo(x + tileW * 0.74, y + tileW * 0.30);
-  ctx.lineTo(x + tileW * 0.78, y + tileW * 0.48);
-  ctx.lineTo(x + tileW * 0.88, y + tileW * 0.62);
-  ctx.stroke();
+    // Major Crack 3: Top-Right / Right Edge fracture
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.88)';
+    ctx.lineWidth = Math.max(0.7, cellSize * 0.018);
+    ctx.moveTo(x + tileW * 0.92, y + tileW * 0.18);
+    ctx.lineTo(x + tileW * 0.74, y + tileW * 0.30);
+    ctx.lineTo(x + tileW * 0.78, y + tileW * 0.48);
+    ctx.lineTo(x + tileW * 0.88, y + tileW * 0.62);
+    ctx.stroke();
+  }
 
   ctx.restore();
 }
@@ -263,7 +268,8 @@ function drawGlacialIceBlock(
   y: number,
   tileW: number,
   radius: number,
-  cellSize: number
+  cellSize: number,
+  lowPower: boolean = false
 ) {
   ctx.save();
 
@@ -306,37 +312,37 @@ function drawGlacialIceBlock(
   // 3. Inner Electric Cyan Refractive Prismatic Rim
   ctx.strokeStyle = '#00f0ff';
   ctx.lineWidth = Math.max(1.2, cellSize * 0.028);
-  ctx.shadowColor = '#00f0ff';
-  ctx.shadowBlur = Math.max(4, cellSize * 0.1);
+  if (!lowPower) {
+    ctx.shadowColor = '#00f0ff';
+    ctx.shadowBlur = Math.max(4, cellSize * 0.1);
+  }
   drawRoundedRect(ctx, x + innerMargin + 0.5, y + innerMargin + 0.5, innerW - 1, innerW - 1, innerR);
   ctx.stroke();
-  ctx.shadowBlur = 0;
+  if (!lowPower) {
+    ctx.shadowBlur = 0;
+  }
 
-  // 4. Intricate Frost Ferns (Flourishing from all 4 corners into the ice core)
+  // 4. Intricate Frost Ferns (Flourishing from corners into the ice core)
   if (cellSize >= 14) {
     const fernScale = innerW;
     // Top-Left corner fern cluster
     drawFrostFern(ctx, x + innerMargin + 2, y + innerMargin + 2, 0.78, fernScale * 0.46, 0.15, 0.95);
-    drawFrostFern(ctx, x + innerMargin + 4, y + innerMargin + 1, 0.45, fernScale * 0.32, -0.1, 0.88);
-    
     // Bottom-Left corner fern cluster (large prominent feather)
     drawFrostFern(ctx, x + innerMargin + 2, y + innerMargin + innerW - 2, -0.82, fernScale * 0.50, -0.2, 0.98);
-    drawFrostFern(ctx, x + innerMargin + 6, y + innerMargin + innerW - 1, -0.52, fernScale * 0.36, 0.1, 0.90);
 
-    // Top-Right corner fern cluster
-    drawFrostFern(ctx, x + innerMargin + innerW - 2, y + innerMargin + 2, 2.35, fernScale * 0.42, -0.15, 0.92);
-
-    // Bottom-Right corner fern cluster
-    drawFrostFern(ctx, x + innerMargin + innerW - 2, y + innerMargin + innerW - 4, -2.4, fernScale * 0.38, 0.12, 0.88);
-
-    // Side edge micro-tufts
-    drawFrostFern(ctx, x + innerMargin + 1, y + innerMargin + innerW * 0.45, 0.2, fernScale * 0.28, 0.05, 0.82);
-    drawFrostFern(ctx, x + innerMargin + innerW - 1, y + innerMargin + innerW * 0.52, 3.0, fernScale * 0.28, -0.05, 0.82);
+    if (!lowPower) {
+      drawFrostFern(ctx, x + innerMargin + 4, y + innerMargin + 1, 0.45, fernScale * 0.32, -0.1, 0.88);
+      drawFrostFern(ctx, x + innerMargin + 6, y + innerMargin + innerW - 1, -0.52, fernScale * 0.36, 0.1, 0.90);
+      drawFrostFern(ctx, x + innerMargin + innerW - 2, y + innerMargin + 2, 2.35, fernScale * 0.42, -0.15, 0.92);
+      drawFrostFern(ctx, x + innerMargin + innerW - 2, y + innerMargin + innerW - 4, -2.4, fernScale * 0.38, 0.12, 0.88);
+      drawFrostFern(ctx, x + innerMargin + 1, y + innerMargin + innerW * 0.45, 0.2, fernScale * 0.28, 0.05, 0.82);
+      drawFrostFern(ctx, x + innerMargin + innerW - 1, y + innerMargin + innerW * 0.52, 3.0, fernScale * 0.28, -0.05, 0.82);
+    }
   }
 
   // 5. Razor-sharp Glacial Fracture Cracks
   if (cellSize >= 12) {
-    drawGlacialCracks(ctx, x + innerMargin, y + innerMargin, innerW, cellSize);
+    drawGlacialCracks(ctx, x + innerMargin, y + innerMargin, innerW, cellSize, lowPower);
   }
 
   // 6. Top-Diagonal Glassy Specular Ice Sheet
@@ -356,8 +362,10 @@ function drawGlacialIceBlock(
 
   ctx.restore();
 
-  // 7. Outer Perimeter Frost Needles (protruding outward around the ice block)
-  drawPerimeterFrostNeedles(ctx, x, y, tileW, tileW, radius);
+  // 7. Outer Perimeter Frost Needles (desktop only)
+  if (!lowPower) {
+    drawPerimeterFrostNeedles(ctx, x, y, tileW, tileW, radius);
+  }
 
   ctx.restore();
 }
@@ -561,7 +569,7 @@ export class TileRenderer {
     const isSmall = lowPower && cellSize < 16;
     if (isFrozen) {
       // 3D Glacial Ice Block Encasing (matching realistic reference)
-      drawGlacialIceBlock(ctx, x + pad, y + pad, tileW, radius, cellSize);
+      drawGlacialIceBlock(ctx, x + pad, y + pad, tileW, radius, cellSize, lowPower);
     } else if (effectiveIsRemote) {
       const ghostGrad = ctx.createLinearGradient(0, y + pad, 0, y + pad + tileW);
       ghostGrad.addColorStop(0, '#0284c7');

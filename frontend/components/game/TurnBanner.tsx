@@ -92,14 +92,14 @@ export const TurnBanner: React.FC<TurnBannerProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
       aria-live="polite"
-      className={`relative flex min-w-0 w-full items-center justify-between gap-2.5 rounded-2xl border px-3 sm:px-3.5 py-1.5 sm:py-2 overflow-hidden backdrop-blur-xl ${bannerStyle}`}
+      className={`relative flex min-w-0 w-full items-center justify-between gap-2.5 rounded-2xl border px-3 sm:px-3.5 py-1.5 sm:py-2 overflow-hidden sm:backdrop-blur-xl ${bannerStyle}`}
     >
       {/* Crystalline Specular Top Shimmer */}
       <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent rounded-t-2xl pointer-events-none" />
 
-      {/* Ambient Starlight Glow Orb */}
+      {/* Ambient Starlight Glow Orb (desktop only) */}
       {isMyTurn && (
-        <div className="absolute -left-4 -top-4 w-20 h-20 bg-amber-400/20 rounded-full blur-xl pointer-events-none" />
+        <div className="hidden sm:block absolute -left-4 -top-4 w-20 h-20 bg-amber-400/20 rounded-full blur-xl pointer-events-none" />
       )}
 
       {/* Left: Icon & Turn Title */}

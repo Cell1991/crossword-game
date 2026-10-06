@@ -21,7 +21,7 @@ export const HintSuggestionsOverlay: React.FC<HintSuggestionsOverlayProps> = ({
   return (
     <div className="relative flex flex-col items-center max-w-[calc(100vw-1rem)] pointer-events-auto animate-in fade-in slide-in-from-top-3 duration-200 select-none mx-auto">
       {/* Self-contained Capsule with permanent rounded corners & hidden scrollbars */}
-      <div className="flex items-center gap-1.5 sm:gap-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-2xl bg-neutral-950/95 backdrop-blur-2xl border border-amber-500/40 shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(245,158,11,0.2)] text-white max-w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-1.5 sm:gap-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-2xl bg-neutral-950/95 sm:backdrop-blur-2xl border border-amber-500/40 shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(245,158,11,0.2)] text-white max-w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {/* 3 Suggestion Pills */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {suggestions.map((s, idx) => {
