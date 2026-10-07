@@ -47,6 +47,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
 
   // HP Damage, Heal, & Shield State Tracking
   const prevHpRef = useRef(player.hp);
+  const isMountedRef = useRef(false);
   const prevShieldRef = useRef(Boolean(player.has_shield));
   const prevShieldAmountRef = useRef(player.shield_amount ?? 0);
   const wasTargetedRef = useRef(isTargeted);
@@ -97,14 +98,24 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
     }
   }, [player.score]);
 
-  // HP Damage and Heal Tracking
+  // HP Damage and Heal Tracking (Guarded against mount / tab switch / reset false positives)
   useEffect(() => {
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      prevHpRef.current = player.hp;
+      wasTargetedRef.current = isTargeted;
+      return;
+    }
+
     const prevHp = prevHpRef.current;
     const currentHp = player.hp;
     const wasTargeted = wasTargetedRef.current;
 
     prevHpRef.current = currentHp;
     wasTargetedRef.current = isTargeted;
+
+    // Ignore if no change
+    if (currentHp === prevHp) return;
 
     if (currentHp < prevHp) {
       const delta = prevHp - currentHp;
@@ -125,6 +136,11 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         clearTimeout(clearTimer);
       };
     } else if (currentHp > prevHp) {
+      // Don't trigger combat heal on match restart / rematch (e.g. from 0 HP back to starting HP)
+      if (prevHp <= 0 && currentHp === playerMaxHp) {
+        return;
+      }
+
       const delta = currentHp - prevHp;
 
       // Play celestial heal sound effect
@@ -142,7 +158,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         clearTimeout(clearTimer);
       };
     }
-  }, [player.hp, isTargeted]);
+  }, [player.hp, isTargeted, playerMaxHp]);
 
   // Shield Gain Tracking
   useEffect(() => {

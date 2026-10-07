@@ -36,8 +36,6 @@ interface GameHudProps {
   totalPlayers?: number;
   onExit: () => void;
   onOpenInfo: () => void;
-  onOpenMatchLog?: () => void;
-  moveCount?: number;
   onOpenGuide?: () => void;
   onOpenGrimoire?: () => void;
   isGrimoireEnabled?: boolean;
@@ -65,8 +63,6 @@ export const GameHud: React.FC<GameHudProps> = ({
   totalPlayers = 1,
   onExit,
   onOpenInfo,
-  onOpenMatchLog,
-  moveCount,
   onOpenGuide,
   onOpenGrimoire,
   isGrimoireEnabled = false,
@@ -247,28 +243,6 @@ export const GameHud: React.FC<GameHudProps> = ({
             <ScrollText className="h-3.5 w-3.5 text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.7)] relative z-10" />
             <span className="relative z-10 font-black">Stats</span>
           </button>
-
-          {/* Dedicated Match Log & Lexicon Button (Available on all devices, great for Spectators & iPads) */}
-          {onOpenMatchLog && (
-            <button
-              type="button"
-              onClick={onOpenMatchLog}
-              className="group relative flex h-8 sm:h-9 items-center justify-center gap-1 sm:gap-1.5 rounded-xl border border-purple-400/40 bg-gradient-to-b from-[#1c1438]/90 via-[#120f2e]/95 to-[#09071c]/95 text-purple-200 hover:text-white hover:border-purple-400/80 hover:shadow-[0_0_18px_rgba(168,85,247,0.35)] px-2.5 sm:px-3 text-xs font-bold transition-all shrink-0 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.15)] active:scale-95 overflow-hidden"
-              title="Match Log & Word Lexicon"
-              aria-label="Open Match Log and Word Lexicon"
-            >
-              <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent pointer-events-none" />
-              <ScrollText className="h-3.5 w-3.5 text-purple-300 drop-shadow-[0_0_6px_rgba(168,85,247,0.8)] relative z-10" />
-              <span className="relative z-10 font-black text-[11px] sm:text-xs">
-                Log
-              </span>
-              {typeof moveCount === 'number' && moveCount > 0 && (
-                <span className="relative z-10 px-1 py-0.2 rounded-full bg-purple-400/20 text-[9px] font-mono font-bold text-purple-200 ml-0.5">
-                  {moveCount}
-                </span>
-              )}
-            </button>
-          )}
 
           <div className="hidden lg:block">
             <SpectatorBadge count={spectatorCount} />

@@ -182,6 +182,7 @@ export interface CommitMoveResponse {
   card_awarded?: string | null;
   cards_awarded?: string[];
   healed_amount?: number | null;
+  rack?: Tile[];
 }
 
 export interface CreateRoomResponse {

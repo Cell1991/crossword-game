@@ -22,12 +22,7 @@ class GameEndService:
             winner = living_players[0].get("id") if living_players else cls.determine_winner(players, game_mode)
             return True, "Game ended: only one player has HP remaining", winner
 
-        # Rule 1 is removed as per user request: HP battle should only end when HP or tiles run out.
-        # if consecutive_passes >= max_passes and len(players) > 0:
-        #     winner = cls.determine_winner(players, game_mode)
-        #     return True, f"Game ended: {consecutive_passes} consecutive passes by players", winner
-
-        # Rule 2: Tile bag is empty AND at least one player has exhausted their rack
+        # Tile bag is empty AND at least one player has exhausted their rack
         if len(tile_bag) == 0:
             for p in players:
                 rack = p.get("rack", [])

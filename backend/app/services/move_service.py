@@ -11,6 +11,7 @@ from app.game.game_end import GameEndService
 from app.game.tiles import TileService
 from app.services.game_service import GameService
 from app.schemas.move import PlacedTileInput, ValidateMoveResponse, CommitMoveResponse, WordFormed, CellPosition
+from app.schemas.player import TileSchema
 from app.game.board import Board
 from app.database.state import (
     bag_tiles, board_state, player_rack, replace_board_state, replace_game_tiles, replace_player_cards,
@@ -318,10 +319,11 @@ class MoveService:
                         removed = True
                         break
 
-        # Draw replacement tiles from tile bag (auto-replenishes if bag runs out)
+        # Draw replacement tiles from tile bag (finite in TURNS/Classic mode, refills only in HP/Fancy battles)
         tiles_needed = len(placed_tiles)
         bag = list(game.tile_bag) if (game.tile_bag is not None and isinstance(game.tile_bag, list)) else await bag_tiles(db, game.id)
-        drawn_tiles, remaining_bag = TileService.draw_tiles(bag, tiles_needed, refill_if_empty=True)
+        refill_bag = game.game_mode in ("HP", "FANCY")
+        drawn_tiles, remaining_bag = TileService.draw_tiles(bag, tiles_needed, refill_if_empty=refill_bag)
         remaining_rack.extend(drawn_tiles)
         player.rack = remaining_rack
         game.tile_bag = remaining_bag
@@ -466,13 +468,10 @@ class MoveService:
         completed_turn = game.turn_number
         reached_max_turns = bool(game.max_turns and completed_turn >= game.max_turns)
         game.consecutive_passes = 0
-        if game.max_turns is not None:
-            is_over, reason, winner = False, None, None
-        else:
-            is_over, reason, winner = GameEndService.check_game_over(
-                game.tile_bag, GameService.players_summary(all_players), game.consecutive_passes,
-                game_mode=game.game_mode,
-            )
+        is_over, reason, winner = GameEndService.check_game_over(
+            game.tile_bag, GameService.players_summary(all_players), game.consecutive_passes,
+            game_mode=game.game_mode,
+        )
         game_over = is_over or reached_max_turns or GameService.too_few_players(all_players)
         if game_over:
             winner = await GameService.finish_game(db, game, all_players, winner)
@@ -508,6 +507,7 @@ class MoveService:
             double_damage_target_id=double_damage_target_id,
             healed_amount=healed_amount if healed_amount > 0 else None,
             revealed_card_events=revealed_card_events,
+            rack=[TileSchema(**t) for t in player.rack] if player.rack else [],
         )
 
         return res, game, player

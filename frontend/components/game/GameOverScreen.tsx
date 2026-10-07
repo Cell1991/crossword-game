@@ -12,12 +12,12 @@ import {
   Swords,
   Copy,
   Check,
-  Shield,
-  Star,
   Award,
   History,
+  Skull,
+  Timer,
 } from 'lucide-react';
-import { GameState, Player } from '@/lib/types';
+import { GameState } from '@/lib/types';
 import ParticleField from '@/components/effects/ParticleField';
 import FullscreenButton from '@/components/ui/FullscreenButton';
 import { MatchHistoryModal } from '@/components/history/MatchHistoryModal';
@@ -42,17 +42,45 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
   const [isReplayOpen, setIsReplayOpen] = useState(false);
 
   const rematchPin = gameState.rematch_pin;
-  // Blood mode (no turn limit) is a last-one-standing fight: the podium must agree with the
-  // server's winner_id (ranked by survival/HP - see GameEndService.determine_winner), not score.
-  const isHpMode = gameState.max_turns === null;
+  const rawMode = gameState.game_mode || (gameState.max_turns !== null ? 'TURNS' : 'HP');
+  const isHpMode = rawMode === 'HP' || rawMode === 'FANCY' || gameState.max_turns === null;
+  const isFancyMode = rawMode === 'FANCY';
+  const isTurnsMode = rawMode === 'TURNS' || gameState.max_turns !== null;
+
+  // Sorting & Placement Rules:
+  // 1. Winner is always 1st place.
+  // 2. In HP Survival mode:
+  //    - Living survivors (HP > 0) rank above eliminated players.
+  //    - Among living survivors, sort by remaining HP desc, then score desc.
+  //    - Among eliminated players (HP = 0), sort by score desc (or survival contribution).
+  // 3. In TURNS mode:
+  //    - Purely by highest final score.
   const sorted = [...(gameState.players ?? [])].sort((a, b) => {
-    if (isHpMode) {
+    if (gameState.winner_id) {
       if (a.id === gameState.winner_id) return -1;
       if (b.id === gameState.winner_id) return 1;
+    }
+
+    if (isHpMode) {
+      const aAlive = a.hp > 0 && a.connection_status !== 'OFFLINE';
+      const bAlive = b.hp > 0 && b.connection_status !== 'OFFLINE';
+
+      if (aAlive && !bAlive) return -1;
+      if (!aAlive && bAlive) return 1;
+
+      if (aAlive && bAlive) {
+        if (b.hp !== a.hp) return b.hp - a.hp;
+        return b.score - a.score;
+      }
+
+      if (b.score !== a.score) return b.score - a.score;
       return b.hp - a.hp;
     }
-    return b.score - a.score;
+
+    if (b.score !== a.score) return b.score - a.score;
+    return b.hp - a.hp;
   });
+
   // Server determines the winner
   const winner = gameState.players.find(p => p.id === gameState.winner_id) || sorted[0];
   const isMeWinner = Boolean(winner && myPlayerId && winner.id === myPlayerId);
@@ -88,39 +116,49 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
       {/* Volumetric Celestial Light Rays */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_top,rgba(6,182,212,0.2)_0%,rgba(147,51,234,0.15)_35%,transparent_70%)]" />
 
-      {/* Floating Golden Magical Runes & Constellation Background Elements */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden opacity-35">
-        <div className="absolute top-1/4 left-[8%] text-amber-300 font-mono text-xl animate-pulse">ᚠ</div>
-        <div className="absolute top-1/3 right-[12%] text-cyan-300 font-mono text-2xl animate-pulse" style={{ animationDelay: '1s' }}>ᛗ</div>
-        <div className="absolute bottom-1/3 left-[15%] text-purple-300 font-mono text-lg animate-pulse" style={{ animationDelay: '2s' }}>ᚨ</div>
-        <div className="absolute top-2/3 right-[8%] text-amber-200 font-mono text-xl animate-pulse" style={{ animationDelay: '1.5s' }}>ᚦ</div>
-      </div>
-
       {/* Dynamic Cosmic Star Particle Field */}
       <ParticleField className="pointer-events-none fixed inset-0 h-full w-full" />
       <FullscreenButton className="fixed top-3.5 right-3.5 sm:top-5 sm:right-5 z-40" />
 
       {/* MAIN CONTENT WRAPPER */}
-      <div className="relative z-10 my-auto flex w-full max-w-4xl flex-col items-center gap-6 sm:gap-8">
+      <div className="relative z-10 my-auto flex w-full max-w-4xl flex-col items-center gap-5 sm:gap-7">
         
-        {/* TOP SECTION: MYSTICAL BANNER & 3D METALLIC GAME OVER TITLE */}
+        {/* TOP SECTION: MATCH COMPLETED + GAME MODE IDENTIFIER + TITLE */}
         <div className="flex flex-col items-center text-center gap-2 animate-in fade-in slide-in-from-top-4 duration-700">
           
-          {/* Glowing Digital Cyan Banner with Runes */}
-          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-950/80 border border-cyan-400/50 shadow-[0_0_20px_rgba(6,182,212,0.3)] backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-300 animate-spin" style={{ animationDuration: '6s' }} />
-            <span className="text-[11px] sm:text-xs font-black tracking-[0.25em] text-cyan-300 uppercase">
-              ◆ MATCH COMPLETED ◆
-            </span>
-            <Sparkles className="w-3.5 h-3.5 text-cyan-300 animate-spin" style={{ animationDuration: '6s' }} />
+          {/* Top Pill: Game Mode & Match Completed */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-950/80 border border-cyan-400/50 shadow-[0_0_16px_rgba(6,182,212,0.25)] backdrop-blur-md">
+              <Sparkles className="w-3 h-3 text-cyan-300 animate-spin" style={{ animationDuration: '6s' }} />
+              <span className="text-[10.5px] sm:text-xs font-black tracking-[0.2em] text-cyan-300 uppercase">
+                MATCH COMPLETED
+              </span>
+            </div>
+
+            {/* Distinct Game Mode Badge */}
+            {isFancyMode ? (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-purple-900/90 via-indigo-900/90 to-purple-900/90 border border-purple-400/60 shadow-[0_0_14px_rgba(168,85,247,0.35)] text-[10.5px] sm:text-xs font-black tracking-wider text-purple-200 uppercase">
+                <Sparkles className="w-3 h-3 text-purple-300 animate-pulse" />
+                <span>COSMIC CARDS • HP BATTLE</span>
+              </div>
+            ) : isHpMode ? (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-rose-950/90 via-red-950/90 to-rose-950/90 border border-rose-500/60 shadow-[0_0_14px_rgba(244,63,94,0.35)] text-[10.5px] sm:text-xs font-black tracking-wider text-rose-200 uppercase">
+                <Heart className="w-3 h-3 text-rose-400 fill-rose-400 animate-pulse" />
+                <span>HP SURVIVAL • LAST STANDING</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-950/90 via-yellow-950/90 to-amber-950/90 border border-amber-500/60 shadow-[0_0_14px_rgba(245,158,11,0.35)] text-[10.5px] sm:text-xs font-black tracking-wider text-amber-200 uppercase">
+                <Timer className="w-3 h-3 text-amber-400" />
+                <span>TURNS MODE • HIGHEST SCORE{gameState.max_turns ? ` (${gameState.max_turns}T)` : ''}</span>
+              </div>
+            )}
           </div>
 
           {/* Large Metallic 3D Beveled Title */}
-          <div className="relative mt-1">
-            {/* Atmospheric Glow Behind Title */}
+          <div className="relative mt-0.5">
             <div className="absolute -inset-4 rounded-full bg-gradient-to-r from-amber-500/20 via-yellow-400/30 to-amber-600/20 blur-2xl pointer-events-none" />
             
-            <h1 className="relative text-4xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none uppercase">
+            <h1 className="relative text-4xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none uppercase font-maple">
               {isMeWinner ? (
                 <span className="text-transparent bg-clip-text bg-gradient-to-b from-yellow-100 via-amber-300 to-amber-600 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] filter drop-shadow-[0_0_25px_rgba(251,191,36,0.65)]">
                   VICTORY!
@@ -147,7 +185,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
         {/* CENTRAL FOCUS: GRAND MULTI-TIERED VICTORY PODIUM */}
         <div className="w-full flex flex-col items-center gap-4">
           
-          {/* Podium Layout: Custom proportional grid for 2 players (Gold right & wider), 3-col Olympic for 3+ */}
+          {/* Podium Layout */}
           <div className={`w-full ${
             sorted.length === 1
               ? 'flex justify-center max-w-sm'
@@ -205,15 +243,30 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                     )}
                   </div>
 
-                  {/* Silver Score Orb */}
-                  <div className="w-full px-2 py-1 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-400/60 text-slate-100 font-mono font-black text-xs sm:text-base md:text-lg shadow-[0_0_12px_rgba(203,213,225,0.2)]">
-                    {secondPlace.score} <span className="text-[8px] sm:text-xs font-semibold text-slate-400">PTS</span>
+                  {/* Silver Score Orb + HP Status */}
+                  <div className="w-full flex flex-col items-center gap-1 px-2 py-1 sm:px-3 sm:py-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-400/60 text-slate-100 shadow-[0_0_12px_rgba(203,213,225,0.2)]">
+                    <div className="font-mono font-black text-xs sm:text-base md:text-lg">
+                      {secondPlace.score} <span className="text-[8px] sm:text-xs font-semibold text-slate-400">PTS</span>
+                    </div>
+                    {isHpMode && (
+                      <div className="text-[9px] sm:text-[10.5px] font-bold">
+                        {secondPlace.hp > 0 ? (
+                          <span className="text-emerald-400 flex items-center gap-1">
+                            <Heart className="w-2.5 h-2.5 fill-current" /> {secondPlace.hp} HP
+                          </span>
+                        ) : (
+                          <span className="text-rose-400/90 flex items-center gap-1 font-semibold">
+                            <Skull className="w-2.5 h-2.5" /> Knocked Out
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* 🥇 1ST PLACE (Right in 2-Player, Center Tallest in 3-Tier Podium) */}
+            {/* 🥇 1ST PLACE (Center Tallest in 3-Tier Podium, Right in 2-Player) */}
             {firstPlace && (
               <div className="order-2 flex flex-col items-center w-full min-w-0">
                 <div className={`w-full relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-amber-950/80 via-slate-900/95 to-slate-950 border-2 border-amber-400 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_40px_rgba(251,191,36,0.4)] backdrop-blur-2xl ring-2 ring-amber-400/50 flex flex-col items-center text-center transition-all hover:scale-[1.02] justify-between ${
@@ -276,13 +329,21 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                     )}
                   </div>
 
-                  {/* Gold Score Orb */}
-                  <div className={`w-full rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 border-2 border-amber-400/80 text-amber-300 font-mono font-black shadow-[0_0_18px_rgba(251,191,36,0.35)] ${
+                  {/* Gold Score Orb + HP Status */}
+                  <div className={`w-full flex flex-col items-center gap-1 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 border-2 border-amber-400/80 text-amber-300 font-mono font-black shadow-[0_0_18px_rgba(251,191,36,0.35)] ${
                     isTwoPlayers
-                      ? 'px-2 py-1.5 sm:px-6 sm:py-3 text-sm sm:text-xl md:text-2xl'
-                      : 'px-2 py-1 sm:px-5 sm:py-2.5 text-xs sm:text-lg md:text-xl'
+                      ? 'px-2 py-1.5 sm:px-4 sm:py-2.5'
+                      : 'px-2 py-1 sm:px-3 sm:py-2'
                   }`}>
-                    {firstPlace.score} <span className="text-[8px] sm:text-xs font-bold text-amber-400/80">PTS</span>
+                    <div className={isTwoPlayers ? 'text-sm sm:text-xl md:text-2xl' : 'text-xs sm:text-lg md:text-xl'}>
+                      {firstPlace.score} <span className="text-[8px] sm:text-xs font-bold text-amber-400/80">PTS</span>
+                    </div>
+                    {isHpMode && (
+                      <div className="text-[9.5px] sm:text-xs font-bold text-emerald-300 flex items-center gap-1">
+                        <Heart className="w-3 h-3 fill-current text-emerald-400" />
+                        <span>{firstPlace.hp > 0 ? `${firstPlace.hp} HP (Survivor)` : 'Winner'}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -333,9 +394,24 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                     )}
                   </div>
 
-                  {/* Bronze Score Orb */}
-                  <div className="w-full px-2 py-1 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-950 via-slate-850 to-amber-950 border border-amber-600/70 text-amber-200 font-mono font-black text-xs sm:text-base md:text-lg shadow-[0_0_12px_rgba(217,119,6,0.2)]">
-                    {thirdPlace.score} <span className="text-[8px] sm:text-xs font-semibold text-amber-400/80">PTS</span>
+                  {/* Bronze Score Orb + HP Status */}
+                  <div className="w-full flex flex-col items-center gap-1 px-2 py-1 sm:px-3 sm:py-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-950 via-slate-850 to-amber-950 border border-amber-600/70 text-amber-200 shadow-[0_0_12px_rgba(217,119,6,0.2)]">
+                    <div className="font-mono font-black text-xs sm:text-base md:text-lg">
+                      {thirdPlace.score} <span className="text-[8px] sm:text-xs font-semibold text-amber-400/80">PTS</span>
+                    </div>
+                    {isHpMode && (
+                      <div className="text-[9px] sm:text-[10.5px] font-bold">
+                        {thirdPlace.hp > 0 ? (
+                          <span className="text-emerald-400 flex items-center gap-1">
+                            <Heart className="w-2.5 h-2.5 fill-current" /> {thirdPlace.hp} HP
+                          </span>
+                        ) : (
+                          <span className="text-rose-400/90 flex items-center gap-1 font-semibold">
+                            <Skull className="w-2.5 h-2.5" /> Knocked Out
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -343,7 +419,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
 
           </div>
 
-          {/* RUNNERS-UP (4th, 5th, 6th place if present) */}
+          {/* RUNNERS-UP (4th, 5th, 6th, 7th place if present) */}
           {remainingPlayers.length > 0 && (
             <div className="w-full max-w-2xl rounded-2xl bg-slate-900/80 backdrop-blur-md border border-slate-800/80 p-3.5 space-y-2 shadow-lg">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 px-2 flex items-center gap-1.5">
@@ -363,7 +439,23 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                       {player.display_name} {player.id === myPlayerId && '(You)'}
                     </span>
                   </div>
-                  <span className="font-mono font-black text-emerald-400 text-sm">{player.score} pts</span>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    {isHpMode && (
+                      <span className="text-[10px] sm:text-xs font-bold">
+                        {player.hp > 0 ? (
+                          <span className="text-emerald-400 flex items-center gap-1">
+                            <Heart className="w-3 h-3 fill-current" /> {player.hp} HP
+                          </span>
+                        ) : (
+                          <span className="text-rose-400/80 flex items-center gap-1">
+                            <Skull className="w-3 h-3" /> Knocked Out
+                          </span>
+                        )}
+                      </span>
+                    )}
+                    <span className="font-mono font-black text-amber-400 text-sm">{player.score} pts</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -408,7 +500,6 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
               disabled={joining}
               className="group relative flex flex-1 items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-black text-sm sm:text-base shadow-[0_0_35px_rgba(6,182,212,0.5),inset_0_1px_1px_rgba(255,255,255,0.4)] border-2 border-cyan-300 ring-2 ring-cyan-400/40 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all cursor-pointer overflow-hidden"
             >
-              {/* Light Shimmering Gleam */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
               
               <RotateCcw className={`w-4 h-4 sm:w-5 sm:h-5 ${joining ? 'animate-spin' : ''}`} strokeWidth={2.5} />

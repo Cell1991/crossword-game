@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Any, Optional
 
 from app.core.config import settings
+from app.schemas.player import TileSchema
 
 class PlacedTileInput(BaseModel):
     row: int
@@ -56,6 +57,7 @@ class CommitMoveResponse(BaseModel):
     # Card events (e.g. a reactive SHIELD block) that were held back until this move committed -
     # that is how "who used Shield" only becomes visible after the turn ends.
     revealed_card_events: list[dict[str, Any]] = []
+    rack: Optional[list[TileSchema]] = None
 
 class ExchangeTilesRequest(BaseModel):
     # No upper bound: cards such as DRAW_TILE can push a rack past RACK_SIZE.

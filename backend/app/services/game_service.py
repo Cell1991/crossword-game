@@ -639,13 +639,10 @@ class GameService:
         db.add(pass_move)
 
         # Check end condition
-        if game.max_turns is not None:
-            is_over, reason, winner = False, None, None
-        else:
-            is_over, reason, winner = GameEndService.check_game_over(
-                game.tile_bag, GameService.players_summary(players), game.consecutive_passes,
-                GameService.scoreless_turn_limit(players), game_mode=game.game_mode,
-            )
+        is_over, reason, winner = GameEndService.check_game_over(
+            game.tile_bag, GameService.players_summary(players), game.consecutive_passes,
+            GameService.scoreless_turn_limit(players), game_mode=game.game_mode,
+        )
         if is_over or reached_max_turns:
             winner = await GameService.finish_game(db, game, players, winner)
 
@@ -833,13 +830,10 @@ class GameService:
 
         # Rules §6: an exchange scores nothing, so it counts towards the scoreless turns that end the game.
         game.consecutive_passes += 1
-        if game.max_turns is not None:
-            scoreless_over, reason, winner = False, None, None
-        else:
-            scoreless_over, reason, winner = GameEndService.check_game_over(
-                game.tile_bag, GameService.players_summary(players), game.consecutive_passes,
-                GameService.scoreless_turn_limit(players), game_mode=game.game_mode,
-            )
+        scoreless_over, reason, winner = GameEndService.check_game_over(
+            game.tile_bag, GameService.players_summary(players), game.consecutive_passes,
+            GameService.scoreless_turn_limit(players), game_mode=game.game_mode,
+        )
         reached_max_turns = bool(game.max_turns and game.turn_number >= game.max_turns)
         game_over = scoreless_over or reached_max_turns or GameService.too_few_players(players)
         if game_over:

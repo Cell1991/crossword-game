@@ -320,7 +320,9 @@ export async function startGame(gamePin: string, hostPlayerId: string): Promise<
 
 export async function getGameState(gameId: string, token: string, debug = false): Promise<GameState> {
   const debugParam = debug ? '&debug=true' : '';
-  const res = await fetch(`${getApiBase()}/games/${gameId}?token=${encodeURIComponent(token)}${debugParam}`);
+  const res = await fetch(`${getApiBase()}/games/${gameId}?token=${encodeURIComponent(token)}${debugParam}`, {
+    cache: 'no-store',
+  });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Failed to fetch game state');

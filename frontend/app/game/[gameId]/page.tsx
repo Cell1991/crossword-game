@@ -36,7 +36,6 @@ import { HintSuggestionsOverlay } from '@/components/game/HintSuggestionsOverlay
 import { BlankTilePickerModal } from '@/components/game/BlankTilePickerModal';
 import { ConfirmExitModal } from '@/components/game/ConfirmExitModal';
 import { MobileInfoModal } from '@/components/game/MobileInfoModal';
-import { MatchLogModal } from '@/components/game/MatchLogModal';
 import BackgroundMusic from '@/components/audio/BackgroundMusic';
 import { GameGuideModal } from '@/components/game/GameGuideModal';
 import { GrimoireModal } from '@/components/game/GrimoireModal';
@@ -141,7 +140,6 @@ export default function GamePage() {
   const [botStagedTiles, setBotStagedTiles] = useState<PlacedTile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
-  const [isMatchLogOpen, setIsMatchLogOpen] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
@@ -413,14 +411,27 @@ export default function GamePage() {
         if (res.healed_amount) {
           toasts.flashInfo(`❤️ Healed +${res.healed_amount} HP from move!`);
         }
+        if (res.rack && res.rack.length > 0) {
+          reconcile(res.rack);
+        }
         setGameState(prev => {
           if (!prev) return prev;
           return {
             ...prev,
             turn_number: res.turn_number ?? prev.turn_number + 1,
             current_player_id: res.next_player_id ?? prev.current_player_id,
+            players: prev.players.map(p => {
+              if (p.id === myPlayerId && res.rack) {
+                return {
+                  ...p,
+                  rack: res.rack,
+                };
+              }
+              return p;
+            }),
           };
         });
+        reload();
       }
     } catch (error: unknown) {
       flashError(error instanceof Error ? error.message : 'Failed to commit move');
@@ -428,7 +439,7 @@ export default function GamePage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [cards, clearStagedMove, flashError, gameId, myPlayerId, reload, setError, setGameState, staged.estimatedScore, temporaryTiles, toasts, validationReason, validationState]);
+  }, [cards, clearStagedMove, flashError, gameId, myPlayerId, reconcile, reload, setError, setGameState, staged.estimatedScore, temporaryTiles, toasts, validationReason, validationState]);
 
   const handlePassTurn = useCallback(async () => {
     if (!myPlayerId) return;
@@ -735,8 +746,6 @@ export default function GamePage() {
         totalPlayers={gameState.players.length}
         onExit={handleExit}
         onOpenInfo={() => setIsMobileInfoOpen(true)}
-        onOpenMatchLog={() => setIsMatchLogOpen(true)}
-        moveCount={sync.moveHistory.length}
         onOpenGuide={() => setIsGuideOpen(true)}
         onOpenGrimoire={() => setIsGrimoireOpen(true)}
         isGrimoireEnabled={Boolean(gameState.enable_grimoire)}
@@ -1015,16 +1024,6 @@ export default function GamePage() {
         moveHistory={sync.moveHistory}
         cardUseEffects={sync.cardUseEffects}
         pendingDoubleTargetId={gameState.pending_double_target_id}
-      />
-
-      {/* Dedicated Match Log & Word Lexicon Modal */}
-      <MatchLogModal
-        isOpen={isMatchLogOpen}
-        onClose={() => setIsMatchLogOpen(false)}
-        moveHistory={sync.moveHistory}
-        myPlayerId={myPlayerId}
-        turnNumber={gameState.turn_number}
-        players={gameState.players ?? []}
       />
 
       {/* Wildcard Blank Tile Letter Picker Modal */}
